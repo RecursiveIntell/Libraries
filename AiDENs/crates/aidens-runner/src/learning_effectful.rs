@@ -47,6 +47,9 @@ pub struct CheckEvidenceV1 {
     pub clippy_passed: bool,
     pub test_executed: bool,
     pub test_passed: bool,
+    pub fmt_output_digest: String,
+    pub clippy_output_digest: String,
+    pub test_output_digest: String,
     pub output_digest: String,
 }
 
@@ -56,6 +59,10 @@ pub struct EffectfulEvaluationReportV1 {
     pub execution_mode: String,
     pub before_tree_digest: String,
     pub after_tree_digest: String,
+    #[serde(default)]
+    pub rollback_tree_digest: String,
+    #[serde(default)]
+    pub rollback_verified: bool,
     pub patch_digest: String,
     pub permit_use_receipt_id: String,
     pub sandbox_capability: SandboxCapabilityTruthReceiptV1,
@@ -173,6 +180,8 @@ where
         .await
         .map_err(owner_error)?;
     let before_tree_digest = digest_tree(&workspace.host_path)?;
+    let rollback_source =
+        sandbox_workspace::prepare_workspace(&workspace.host_path).map_err(owner_error)?;
     let patch_fs = sandbox_workspace::LocalPatchFs::new(&workspace.host_path);
     let line_map = apply_patch(&request.patch, &patch_fs).map_err(owner_error)?;
     let after_tree_digest = digest_tree(&workspace.host_path)?;
@@ -227,6 +236,14 @@ where
     let triples = attribute_effects(&request.patch, &checks, &line_map, 12).map_err(owner_error)?;
     let attributed = AttributedRunResult::new(triples, checks.clone());
     let verification = adjudicate_real_checks(&request, &checks);
+    restore_workspace(&rollback_source.host_path, &workspace.host_path)?;
+    let rollback_tree_digest = digest_tree(&workspace.host_path)?;
+    let rollback_verified = rollback_tree_digest == before_tree_digest;
+    if !rollback_verified {
+        return Err(EffectfulEvaluationError::Owner(format!(
+            "rollback tree digest mismatch: expected {before_tree_digest}, observed {rollback_tree_digest}"
+        )));
+    }
     let check_evidence = CheckEvidenceV1 {
         fmt_executed: true,
         fmt_passed: checks.fmt_pass,
@@ -234,6 +251,15 @@ where
         clippy_passed: checks.clippy_pass,
         test_executed: true,
         test_passed: checks.test_pass,
+        fmt_output_digest: digest_bytes(
+            format!("{}\n{}\n{}", fmt.exit_code, fmt.stdout, fmt.stderr).as_bytes(),
+        ),
+        clippy_output_digest: digest_bytes(
+            format!("{}\n{}\n{}", clippy.exit_code, clippy.stdout, clippy.stderr).as_bytes(),
+        ),
+        test_output_digest: digest_bytes(
+            format!("{}\n{}\n{}", test.exit_code, test.stdout, test.stderr).as_bytes(),
+        ),
         output_digest: digest_bytes(
             format!(
                 "{}\n{}\n{}\n{}\n{}\n{}",
@@ -250,6 +276,8 @@ where
         execution_mode: "real_sandbox".into(),
         before_tree_digest,
         after_tree_digest,
+        rollback_tree_digest,
+        rollback_verified,
         patch_digest,
         permit_use_receipt_id: request.permit_use.receipt_id.as_str().to_string(),
         sandbox_capability: capability,
@@ -426,6 +454,14 @@ fn digest_tree(root: &Path) -> Result<String, EffectfulEvaluationError> {
         hash_framed(&mut hasher, &bytes);
     }
     Ok(format!("blake3:{}", hasher.finalize().to_hex()))
+}
+
+fn restore_workspace(snapshot: &Path, workspace: &Path) -> Result<(), EffectfulEvaluationError> {
+    if workspace.exists() {
+        std::fs::remove_dir_all(workspace).map_err(owner_error)?;
+    }
+    std::fs::create_dir_all(workspace).map_err(owner_error)?;
+    sandbox_workspace::copy_dir_recursive_pub(snapshot, workspace).map_err(owner_error)
 }
 
 fn digest_json(value: &impl Serialize) -> Result<String, EffectfulEvaluationError> {
@@ -697,6 +733,8 @@ mod tests {
         );
         assert_eq!(report.execution_mode, "real_sandbox");
         assert_ne!(report.before_tree_digest, report.after_tree_digest);
+        assert!(report.rollback_verified);
+        assert_eq!(report.before_tree_digest, report.rollback_tree_digest);
         assert_eq!(
             report.verification.disposition,
             VerificationDisposition::EligibleForPromotion
@@ -798,6 +836,26 @@ mod tests {
             first.cea_backpointer.external_id.as_deref(),
             Some(first.cea_run_hash.as_str())
         );
+
+        let memory_dir = tempfile::tempdir().unwrap();
+        let memory = semantic_memory::MemoryStore::open(semantic_memory::MemoryConfig {
+            base_dir: memory_dir.path().to_path_buf(),
+            ..semantic_memory::MemoryConfig::default()
+        })
+        .unwrap();
+        let lifecycle = crate::learning_lifecycle::ProcedureLifecycleAdapter::new(&memory);
+        let error = lifecycle
+            .record_effectful_evaluation(
+                "procedure:synthetic",
+                "blake3:synthetic",
+                &first,
+                "effectful:synthetic",
+            )
+            .await
+            .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("publication-complete real sandbox evidence"));
     }
 
     #[tokio::test]

@@ -888,6 +888,48 @@ AFTER DELETE ON episodes BEGIN
 END;
 "#;
 
+/// V37 migration: immutable owner receipts for real effectful procedure evaluation.
+/// Fixture simulation remains in `procedural_memory_events` and cannot satisfy
+/// this separate promotion prerequisite.
+const MIGRATION_V37: &str = r#"
+CREATE TABLE IF NOT EXISTS procedural_effectful_evaluations (
+    receipt_id              TEXT PRIMARY KEY,
+    caller_idempotency_key  TEXT NOT NULL UNIQUE,
+    payload_digest          TEXT NOT NULL,
+    artifact_id             TEXT NOT NULL REFERENCES procedural_memory_artifacts(artifact_id),
+    artifact_digest         TEXT NOT NULL,
+    receipt_json            TEXT NOT NULL,
+    content_digest          TEXT NOT NULL UNIQUE,
+    created_at              TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_procedural_effectful_artifact
+    ON procedural_effectful_evaluations(artifact_id);
+CREATE TRIGGER IF NOT EXISTS procedural_effectful_evaluations_no_update
+BEFORE UPDATE ON procedural_effectful_evaluations BEGIN
+    SELECT RAISE(ABORT, 'procedure effectful evaluation receipts are immutable');
+END;
+CREATE TRIGGER IF NOT EXISTS procedural_effectful_evaluations_no_delete
+BEFORE DELETE ON procedural_effectful_evaluations BEGIN
+    SELECT RAISE(ABORT, 'procedure effectful evaluation receipts are immutable');
+END;
+
+CREATE TABLE IF NOT EXISTS procedural_lifecycle_permit_uses (
+    permit_id       TEXT PRIMARY KEY,
+    artifact_id     TEXT NOT NULL REFERENCES procedural_memory_artifacts(artifact_id),
+    operation       TEXT NOT NULL,
+    event_id        TEXT NOT NULL UNIQUE,
+    used_at         TEXT NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS procedural_lifecycle_permit_uses_no_update
+BEFORE UPDATE ON procedural_lifecycle_permit_uses BEGIN
+    SELECT RAISE(ABORT, 'procedure lifecycle permit uses are immutable');
+END;
+CREATE TRIGGER IF NOT EXISTS procedural_lifecycle_permit_uses_no_delete
+BEFORE DELETE ON procedural_lifecycle_permit_uses BEGIN
+    SELECT RAISE(ABORT, 'procedure lifecycle permit uses are immutable');
+END;
+"#;
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -927,10 +969,11 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (34, MIGRATION_V34),
     (35, MIGRATION_V35),
     (36, MIGRATION_V36),
+    (37, MIGRATION_V37),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 36;
+pub const MAX_SCHEMA_VERSION: u32 = 37;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {

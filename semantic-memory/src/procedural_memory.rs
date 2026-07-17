@@ -19,6 +19,8 @@ use std::collections::{BTreeMap, BTreeSet};
 
 pub const PROCEDURAL_MEMORY_ARTIFACT_V1: &str = "procedural_memory_artifact_v1";
 pub const PROCEDURE_TEST_RECEIPT_V1: &str = "procedure_test_receipt_v1";
+pub const PROCEDURE_EFFECTFUL_EVALUATION_RECEIPT_V1: &str =
+    "procedure_effectful_evaluation_receipt_v1";
 pub const PROCEDURE_LIFECYCLE_RECEIPT_V1: &str = "procedure_lifecycle_receipt_v1";
 const PROCEDURE_LIFECYCLE_POLICY_V1: &str = "procedure_lifecycle_policy_v1";
 const PROCEDURE_ACTION_POLICY_V1: &str = "procedure_action_policy_v1";
@@ -414,6 +416,61 @@ pub struct ProcedureTestReceiptV1 {
     pub receipt_digest: String,
 }
 
+/// Canonical semantic-memory prerequisite for promotion after a real effectful evaluation.
+///
+/// Detailed sandbox, verifier, and attribution truth remains owned by the referenced systems.
+/// This immutable owner receipt binds those canonical backpointers to one procedure artifact.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProcedureEffectfulEvaluationReceiptV1 {
+    pub schema_version: String,
+    pub receipt_id: String,
+    pub artifact_id: String,
+    pub artifact_digest: String,
+    pub sandbox_capability_receipt_id: String,
+    pub check_receipt_ids: Vec<String>,
+    pub verification_receipt_id: String,
+    pub cea_receipt_id: String,
+    pub pre_tree_digest: String,
+    pub post_tree_digest: String,
+    pub verified: bool,
+    pub receipt_digest: String,
+    pub created_at: String,
+}
+
+impl ProcedureEffectfulEvaluationReceiptV1 {
+    #[allow(clippy::too_many_arguments)]
+    pub fn verified(
+        artifact_id: impl Into<String>,
+        artifact_digest: impl Into<String>,
+        sandbox_capability_receipt_id: impl Into<String>,
+        check_receipt_ids: Vec<String>,
+        verification_receipt_id: impl Into<String>,
+        cea_receipt_id: impl Into<String>,
+        pre_tree_digest: impl Into<String>,
+        post_tree_digest: impl Into<String>,
+    ) -> Result<Self, MemoryError> {
+        let mut receipt = Self {
+            schema_version: PROCEDURE_EFFECTFUL_EVALUATION_RECEIPT_V1.into(),
+            receipt_id: String::new(),
+            artifact_id: artifact_id.into(),
+            artifact_digest: artifact_digest.into(),
+            sandbox_capability_receipt_id: sandbox_capability_receipt_id.into(),
+            check_receipt_ids,
+            verification_receipt_id: verification_receipt_id.into(),
+            cea_receipt_id: cea_receipt_id.into(),
+            pre_tree_digest: pre_tree_digest.into(),
+            post_tree_digest: post_tree_digest.into(),
+            verified: true,
+            receipt_digest: String::new(),
+            created_at: now(),
+        };
+        receipt.receipt_id = effectful_receipt_identity(&receipt);
+        validate_effectful_receipt_shape(&receipt)?;
+        receipt.receipt_digest = effectful_receipt_digest(&receipt);
+        Ok(receipt)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProcedureLifecycleReceiptV1 {
     pub schema_version: String,
@@ -436,23 +493,75 @@ pub struct ProcedureLifecycleReceiptV1 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProcedureLifecyclePermitV1 {
     pub schema_version: String,
+    pub permit_id: String,
     pub principal: String,
     pub caller_id: String,
     pub capability: String,
     pub elevation: String,
+    pub artifact_id: String,
+    pub operation: String,
+    pub expires_at: String,
 }
 
 impl ProcedureLifecyclePermitV1 {
     pub const CAPABILITY: &'static str = "memory.procedure.lifecycle";
 
+    /// Legacy source-compatible constructor. Its wildcard scope is deliberately
+    /// invalid for effects; use [`Self::elevated_for`] for an actionable permit.
     pub fn elevated(principal: impl Into<String>, caller_id: impl Into<String>) -> Self {
-        Self {
+        let mut permit = Self {
             schema_version: PROCEDURE_LIFECYCLE_POLICY_V1.into(),
+            permit_id: String::new(),
             principal: principal.into(),
             caller_id: caller_id.into(),
             capability: Self::CAPABILITY.into(),
             elevation: "explicit_operator_approval".into(),
-        }
+            artifact_id: "*".into(),
+            operation: "*".into(),
+            expires_at: "2999-01-01T00:00:00Z".into(),
+        };
+        permit.refresh_id();
+        permit
+    }
+
+    pub fn elevated_for(
+        principal: impl Into<String>,
+        caller_id: impl Into<String>,
+        operation: impl Into<String>,
+        artifact_id: impl Into<String>,
+        expires_at: impl Into<String>,
+    ) -> Self {
+        let mut permit = Self {
+            schema_version: PROCEDURE_LIFECYCLE_POLICY_V1.into(),
+            permit_id: String::new(),
+            principal: principal.into(),
+            caller_id: caller_id.into(),
+            capability: Self::CAPABILITY.into(),
+            elevation: "explicit_operator_approval".into(),
+            artifact_id: artifact_id.into(),
+            operation: operation.into(),
+            expires_at: expires_at.into(),
+        };
+        permit.refresh_id();
+        permit
+    }
+
+    fn expected_id(&self) -> String {
+        digest_serializable(&(
+            "procedure_lifecycle_permit_v1",
+            &self.schema_version,
+            &self.principal,
+            &self.caller_id,
+            &self.capability,
+            &self.elevation,
+            &self.artifact_id,
+            &self.operation,
+            &self.expires_at,
+        ))
+    }
+
+    fn refresh_id(&mut self) {
+        self.permit_id = self.expected_id();
     }
 }
 
@@ -681,6 +790,68 @@ impl MemoryStore {
         .await
     }
 
+    /// Persist a verified real-evaluation backpointer without importing sandbox, verifier, or CEA
+    /// authority into semantic-memory. The receipt is immutable and materially bound to the tested
+    /// procedure version.
+    pub async fn record_effectful_procedure_evaluation(
+        &self,
+        receipt: ProcedureEffectfulEvaluationReceiptV1,
+        caller_idempotency_key: impl Into<String>,
+    ) -> Result<ProcedureEffectfulEvaluationReceiptV1, MemoryError> {
+        if !verify_procedure_effectful_evaluation_receipt_v1(&receipt) {
+            return Err(rejected("invalid effectful evaluation receipt"));
+        }
+        let key = caller_idempotency_key.into();
+        if key.trim().is_empty() {
+            return Err(rejected("idempotency key is required"));
+        }
+        let payload_digest = digest_serializable(&("effectful_evaluation", &receipt));
+        self.with_write_conn(move |conn| {
+            with_transaction(conn, |tx| {
+                if let Some(stored) = load_idempotent_effectful_receipt(tx, &key, &payload_digest)?
+                {
+                    return Ok(stored);
+                }
+                let artifact = load_artifact_tx(tx, &receipt.artifact_id)?.ok_or_else(|| {
+                    MemoryError::ProceduralMemoryNotFound {
+                        artifact_id: receipt.artifact_id.clone(),
+                    }
+                })?;
+                require_latest(
+                    tx,
+                    &receipt.artifact_id,
+                    &[ProcedureLifecycleDispositionV1::Tested],
+                )?;
+                if artifact.artifact_digest != receipt.artifact_digest {
+                    return Err(rejected(
+                        "effectful evaluation artifact digest does not match canonical artifact",
+                    ));
+                }
+                tx.execute(
+                    "INSERT INTO procedural_effectful_evaluations
+                     (receipt_id, caller_idempotency_key, payload_digest, artifact_id,
+                      artifact_digest, receipt_json, content_digest, created_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                    params![
+                        receipt.receipt_id,
+                        key,
+                        payload_digest,
+                        receipt.artifact_id,
+                        receipt.artifact_digest,
+                        serde_json::to_string(&receipt).map_err(rejected)?,
+                        receipt.receipt_digest,
+                        receipt.created_at,
+                    ],
+                )
+                .map_err(|error| MemoryError::ProceduralMemoryConflict {
+                    key: format!("effectful evaluation: {error}"),
+                })?;
+                Ok(receipt)
+            })
+        })
+        .await
+    }
+
     pub async fn promote_procedure(
         &self,
         permit: ProcedureLifecyclePermitV1,
@@ -777,7 +948,7 @@ async fn lifecycle_control(
     disposition: ProcedureLifecycleDispositionV1,
     reason: Option<String>,
 ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
-    validate_lifecycle_permit(&permit)?;
+    validate_lifecycle_permit(&permit, operation, &artifact_id)?;
     let payload_digest = digest_serializable(&(operation, &permit, &artifact_id, &reason));
     store
         .with_write_conn(move |conn| {
@@ -785,6 +956,16 @@ async fn lifecycle_control(
             with_transaction(conn, |tx| {
                 if let Some(receipt) = load_idempotent_receipt(tx, &key, &payload_digest)? {
                     return Ok(receipt);
+                }
+                let permit_used = tx.query_row(
+                    "SELECT EXISTS(SELECT 1 FROM procedural_lifecycle_permit_uses WHERE permit_id = ?1)",
+                    params![permit.permit_id],
+                    |row| row.get::<_, bool>(0),
+                )?;
+                if permit_used {
+                    return Err(MemoryError::ProceduralMemoryUnauthorized {
+                        principal: permit.principal.clone(),
+                    });
                 }
                 let artifact = load_artifact_tx(tx, &artifact_id)?.ok_or_else(|| {
                     MemoryError::ProceduralMemoryNotFound {
@@ -803,6 +984,11 @@ async fn lifecycle_control(
                         if latest != ProcedureLifecycleDispositionV1::Tested {
                             return Err(rejected(
                                 "promotion requires the latest deterministic test to pass",
+                            ));
+                        }
+                        if latest_verified_effectful_evaluation(tx, &artifact)?.is_none() {
+                            return Err(rejected(
+                                "promotion requires a verified effectful evaluation receipt",
                             ));
                         }
                         if let Some(previous_id) = artifact.supersedes.as_ref() {
@@ -856,7 +1042,7 @@ async fn lifecycle_control(
                     }
                     _ => return Err(rejected("invalid controlled lifecycle transition")),
                 }
-                append_lifecycle(
+                let receipt = append_lifecycle(
                     tx,
                     &key,
                     operation,
@@ -868,7 +1054,20 @@ async fn lifecycle_control(
                         .map(|text| format!("reason:{}", digest_serializable(&text)))
                         .collect(),
                     None,
-                )
+                )?;
+                tx.execute(
+                    "INSERT INTO procedural_lifecycle_permit_uses
+                     (permit_id, artifact_id, operation, event_id, used_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5)",
+                    params![
+                        permit.permit_id,
+                        artifact_id,
+                        operation,
+                        receipt.event_id,
+                        receipt.committed_at,
+                    ],
+                )?;
+                Ok(receipt)
             })
         })
         .await
@@ -1437,12 +1636,22 @@ fn action_permit_allows(
             .is_some_and(|expiry| expiry.with_timezone(&Utc) > Utc::now())
 }
 
-fn validate_lifecycle_permit(permit: &ProcedureLifecyclePermitV1) -> Result<(), MemoryError> {
+fn validate_lifecycle_permit(
+    permit: &ProcedureLifecyclePermitV1,
+    operation: &str,
+    artifact_id: &str,
+) -> Result<(), MemoryError> {
     if permit.schema_version != PROCEDURE_LIFECYCLE_POLICY_V1
+        || permit.permit_id != permit.expected_id()
         || permit.capability != ProcedureLifecyclePermitV1::CAPABILITY
         || permit.principal.trim().is_empty()
         || permit.caller_id.trim().is_empty()
         || permit.elevation != "explicit_operator_approval"
+        || permit.artifact_id != artifact_id
+        || permit.operation != operation
+        || DateTime::parse_from_rfc3339(&permit.expires_at)
+            .ok()
+            .is_none_or(|expiry| expiry.with_timezone(&Utc) <= Utc::now())
     {
         Err(MemoryError::ProceduralMemoryUnauthorized {
             principal: permit.principal.clone(),
@@ -1576,6 +1785,41 @@ fn load_idempotent_receipt(
         })
 }
 
+fn load_idempotent_effectful_receipt(
+    tx: &Transaction<'_>,
+    key: &str,
+    payload_digest: &str,
+) -> Result<Option<ProcedureEffectfulEvaluationReceiptV1>, MemoryError> {
+    let stored: Option<(String, String)> = tx
+        .query_row(
+            "SELECT payload_digest, receipt_json FROM procedural_effectful_evaluations
+             WHERE caller_idempotency_key = ?1",
+            params![key],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .optional()?;
+    let Some((stored_digest, json)) = stored else {
+        return Ok(None);
+    };
+    if stored_digest != payload_digest {
+        return Err(MemoryError::ProceduralMemoryConflict { key: key.into() });
+    }
+    let receipt: ProcedureEffectfulEvaluationReceiptV1 =
+        serde_json::from_str(&json).map_err(|error| MemoryError::CorruptData {
+            table: "procedural_effectful_evaluations",
+            row_id: key.into(),
+            detail: error.to_string(),
+        })?;
+    if !verify_procedure_effectful_evaluation_receipt_v1(&receipt) {
+        return Err(MemoryError::CorruptData {
+            table: "procedural_effectful_evaluations",
+            row_id: key.into(),
+            detail: "stored effectful evaluation receipt failed verification".into(),
+        });
+    }
+    Ok(Some(receipt))
+}
+
 fn load_artifact_tx(
     tx: &Transaction<'_>,
     artifact_id: &str,
@@ -1643,6 +1887,40 @@ fn latest_passing_test(
     .transpose()
 }
 
+fn latest_verified_effectful_evaluation(
+    conn: &rusqlite::Connection,
+    artifact: &ProceduralMemoryArtifactV1,
+) -> Result<Option<ProcedureEffectfulEvaluationReceiptV1>, MemoryError> {
+    let raw: Option<String> = conn
+        .query_row(
+            "SELECT receipt_json FROM procedural_effectful_evaluations
+             WHERE artifact_id = ?1 AND artifact_digest = ?2 ORDER BY rowid DESC LIMIT 1",
+            params![artifact.artifact_id, artifact.artifact_digest],
+            |row| row.get(0),
+        )
+        .optional()?;
+    let Some(json) = raw else {
+        return Ok(None);
+    };
+    let receipt: ProcedureEffectfulEvaluationReceiptV1 =
+        serde_json::from_str(&json).map_err(|error| MemoryError::CorruptData {
+            table: "procedural_effectful_evaluations",
+            row_id: artifact.artifact_id.clone(),
+            detail: error.to_string(),
+        })?;
+    if !verify_procedure_effectful_evaluation_receipt_v1(&receipt)
+        || receipt.artifact_id != artifact.artifact_id
+        || receipt.artifact_digest != artifact.artifact_digest
+    {
+        return Err(MemoryError::CorruptData {
+            table: "procedural_effectful_evaluations",
+            row_id: artifact.artifact_id.clone(),
+            detail: "stored effectful evaluation receipt failed material verification".into(),
+        });
+    }
+    Ok(Some(receipt))
+}
+
 fn parse_disposition(value: &str) -> Result<ProcedureLifecycleDispositionV1, MemoryError> {
     match value {
         "compiled" => Ok(ProcedureLifecycleDispositionV1::Compiled),
@@ -1653,6 +1931,87 @@ fn parse_disposition(value: &str) -> Result<ProcedureLifecycleDispositionV1, Mem
         "rolled_back" => Ok(ProcedureLifecycleDispositionV1::RolledBack),
         _ => Err(rejected("unknown lifecycle disposition")),
     }
+}
+
+fn validate_effectful_receipt_shape(
+    receipt: &ProcedureEffectfulEvaluationReceiptV1,
+) -> Result<(), MemoryError> {
+    let references = [
+        receipt.artifact_id.as_str(),
+        receipt.artifact_digest.as_str(),
+        receipt.sandbox_capability_receipt_id.as_str(),
+        receipt.verification_receipt_id.as_str(),
+        receipt.cea_receipt_id.as_str(),
+        receipt.pre_tree_digest.as_str(),
+        receipt.post_tree_digest.as_str(),
+    ];
+    let unique_checks: BTreeSet<&str> = receipt
+        .check_receipt_ids
+        .iter()
+        .map(String::as_str)
+        .collect();
+    if receipt.schema_version != PROCEDURE_EFFECTFUL_EVALUATION_RECEIPT_V1
+        || receipt.receipt_id != effectful_receipt_identity(receipt)
+        || references.iter().any(|value| value.trim().is_empty())
+        || receipt.check_receipt_ids.is_empty()
+        || receipt
+            .check_receipt_ids
+            .iter()
+            .any(|value| value.trim().is_empty())
+        || unique_checks.len() != receipt.check_receipt_ids.len()
+        || !receipt.verified
+        || (DateTime::parse_from_rfc3339(&receipt.created_at).is_err()
+            && chrono::NaiveDateTime::parse_from_str(&receipt.created_at, "%Y-%m-%d %H:%M:%S%.6f")
+                .is_err())
+    {
+        Err(rejected(
+            "effectful evaluation receipt must be verified and fully owner-bound",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn effectful_receipt_identity(receipt: &ProcedureEffectfulEvaluationReceiptV1) -> String {
+    digest_serializable(&(
+        "procedure_effectful_evaluation_receipt_id_v1",
+        &receipt.schema_version,
+        &receipt.artifact_id,
+        &receipt.artifact_digest,
+        &receipt.sandbox_capability_receipt_id,
+        &receipt.check_receipt_ids,
+        &receipt.verification_receipt_id,
+        &receipt.cea_receipt_id,
+        &receipt.pre_tree_digest,
+        &receipt.post_tree_digest,
+        receipt.verified,
+        &receipt.created_at,
+    ))
+}
+
+fn effectful_receipt_digest(receipt: &ProcedureEffectfulEvaluationReceiptV1) -> String {
+    digest_serializable(&(
+        &receipt.schema_version,
+        &receipt.receipt_id,
+        &receipt.artifact_id,
+        &receipt.artifact_digest,
+        &receipt.sandbox_capability_receipt_id,
+        &receipt.check_receipt_ids,
+        &receipt.verification_receipt_id,
+        &receipt.cea_receipt_id,
+        &receipt.pre_tree_digest,
+        &receipt.post_tree_digest,
+        receipt.verified,
+        &receipt.created_at,
+    ))
+}
+
+/// Verify the immutable real-evaluation owner receipt and all material backpointer fields.
+pub fn verify_procedure_effectful_evaluation_receipt_v1(
+    receipt: &ProcedureEffectfulEvaluationReceiptV1,
+) -> bool {
+    validate_effectful_receipt_shape(receipt).is_ok()
+        && receipt.receipt_digest == effectful_receipt_digest(receipt)
 }
 
 /// Verify the content-addressed deterministic fixture-test receipt.

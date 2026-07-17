@@ -3,11 +3,13 @@
 //! This module owns no lifecycle state, permit, receipt, eligibility, or store. It only forwards
 //! requests to [`MemoryStore`] and returns the owner's [`ProcedureLifecycleReceiptV1`] unchanged.
 
+use crate::learning_effectful::EffectfulEvaluationReportV1;
 use aidens_contracts::CanonicalBackpointerV1;
 use semantic_memory::{
-    MemoryError, MemoryStore, ProceduralMemoryArtifactV1, ProcedureLifecyclePermitV1,
-    ProcedureLifecycleReceiptV1,
+    MemoryError, MemoryStore, ProceduralMemoryArtifactV1, ProcedureEffectfulEvaluationReceiptV1,
+    ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1,
 };
+use verification_adjudication::VerificationDisposition;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProcedureLifecycleProjectionV1 {
@@ -69,6 +71,66 @@ impl<'a> ProcedureLifecycleAdapter<'a> {
     ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
         self.store
             .test_procedure(artifact_id, caller_idempotency_key)
+            .await
+    }
+
+    /// Bind a publication-complete real evaluation to the canonical procedure owner.
+    ///
+    /// The adapter stores only owner-native receipt IDs and digests. Sandbox,
+    /// verification, check, and CEA payload truth remains in those owner crates.
+    pub async fn record_effectful_evaluation(
+        &self,
+        artifact_id: &str,
+        artifact_digest: &str,
+        report: &EffectfulEvaluationReportV1,
+        caller_idempotency_key: impl Into<String>,
+    ) -> Result<ProcedureEffectfulEvaluationReceiptV1, MemoryError> {
+        let checks_complete = report.checks.fmt_executed
+            && report.checks.fmt_passed
+            && report.checks.clippy_executed
+            && report.checks.clippy_passed
+            && report.checks.test_executed
+            && report.checks.test_passed
+            && !report.checks.fmt_output_digest.is_empty()
+            && !report.checks.clippy_output_digest.is_empty()
+            && !report.checks.test_output_digest.is_empty();
+        if report.execution_mode != "real_sandbox"
+            || !report.verified
+            || !report.cea_persisted
+            || report.verification.disposition != VerificationDisposition::EligibleForPromotion
+            || !report.sandbox_capability.verify()
+            || !checks_complete
+            || report.before_tree_digest.is_empty()
+            || report.after_tree_digest.is_empty()
+            || !report.rollback_verified
+            || report.rollback_tree_digest != report.before_tree_digest
+            || report.cea_run_hash.is_empty()
+        {
+            return Err(MemoryError::ProceduralMemoryRejected {
+                reason: "effectful evaluation requires publication-complete real sandbox evidence"
+                    .into(),
+            });
+        }
+        let receipt = ProcedureEffectfulEvaluationReceiptV1::verified(
+            artifact_id,
+            artifact_digest,
+            report.sandbox_capability.content_digest.clone(),
+            vec![
+                report.checks.fmt_output_digest.clone(),
+                report.checks.clippy_output_digest.clone(),
+                report.checks.test_output_digest.clone(),
+            ],
+            report
+                .verification
+                .promotion_decision
+                .decision_id
+                .to_string(),
+            report.cea_run_hash.clone(),
+            report.before_tree_digest.clone(),
+            report.after_tree_digest.clone(),
+        )?;
+        self.store
+            .record_effectful_procedure_evaluation(receipt, caller_idempotency_key)
             .await
     }
 

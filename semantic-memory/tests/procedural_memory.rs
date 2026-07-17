@@ -3,10 +3,10 @@ use semantic_memory::{
     CallerPrincipalV1, ElevationRequirementV1, GovernedAccessPurposeV1, MemoryConfig, MemoryStore,
     MockEmbedder, NamespaceScopeV1, OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1,
     ProceduralMemoryArtifactV1, ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1,
-    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1,
-    ProcedureLifecycleDispositionV1, ProcedureLifecyclePermitV1, ProcedurePreconditionV1,
-    ProcedureRetrievalRequestV1, ProcedureRiskV1, ProcedureStepV1, RevocationStatusV1,
-    SubjectPrincipalV1,
+    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEffectfulEvaluationReceiptV1,
+    ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1, ProcedureLifecycleDispositionV1,
+    ProcedureLifecyclePermitV1, ProcedurePreconditionV1, ProcedureRetrievalRequestV1,
+    ProcedureRiskV1, ProcedureStepV1, RevocationStatusV1, SubjectPrincipalV1,
 };
 use serde_json::json;
 use tempfile::TempDir;
@@ -99,8 +99,34 @@ fn artifact(key: &str, version: u64, supersedes: Option<String>) -> ProceduralMe
     .unwrap()
 }
 
-fn lifecycle_permit() -> ProcedureLifecyclePermitV1 {
-    ProcedureLifecyclePermitV1::elevated("principal:alice", "operator:test")
+fn lifecycle_permit(operation: &str, artifact_id: &str) -> ProcedureLifecyclePermitV1 {
+    ProcedureLifecyclePermitV1::elevated_for(
+        "principal:alice",
+        "operator:test",
+        operation,
+        artifact_id,
+        "2999-01-01T00:00:00Z",
+    )
+}
+
+fn effectful_receipt(
+    artifact: &ProceduralMemoryArtifactV1,
+) -> ProcedureEffectfulEvaluationReceiptV1 {
+    ProcedureEffectfulEvaluationReceiptV1::verified(
+        artifact.artifact_id.clone(),
+        artifact.artifact_digest.clone(),
+        "sandbox-capability:owner-receipt",
+        vec![
+            "check:fmt".into(),
+            "check:clippy".into(),
+            "check:test".into(),
+        ],
+        "verification:owner-receipt",
+        "cea:owner-receipt",
+        "tree:before",
+        "tree:after",
+    )
+    .unwrap()
 }
 
 fn request(path: ProcedureAccessPathV1) -> ProcedureRetrievalRequestV1 {
@@ -140,9 +166,16 @@ async fn promoted(store: &MemoryStore, key: &str) -> ProceduralMemoryArtifactV1 
         .await
         .unwrap();
     assert_eq!(tested.disposition, ProcedureLifecycleDispositionV1::Tested);
+    store
+        .record_effectful_procedure_evaluation(
+            effectful_receipt(&value),
+            format!("effectful:{key}"),
+        )
+        .await
+        .unwrap();
     let promoted = store
         .promote_procedure(
-            lifecycle_permit(),
+            lifecycle_permit("promote", &value.artifact_id),
             &value.artifact_id,
             format!("promote:{key}"),
         )
@@ -209,6 +242,42 @@ async fn deterministic_tests_idempotency_and_receipts_gate_promotion() {
         tested.test_receipt.as_ref().unwrap()
     ));
 
+    let missing_effectful = store
+        .promote_procedure(
+            lifecycle_permit("promote", &value.artifact_id),
+            &value.artifact_id,
+            "promote:without-effectful",
+        )
+        .await
+        .unwrap_err();
+    assert!(missing_effectful
+        .to_string()
+        .contains("verified effectful evaluation"));
+
+    let effectful = effectful_receipt(&value);
+    let persisted = store
+        .record_effectful_procedure_evaluation(effectful.clone(), "effectful:same")
+        .await
+        .unwrap();
+    let retry = store
+        .record_effectful_procedure_evaluation(effectful, "effectful:same")
+        .await
+        .unwrap();
+    assert_eq!(persisted, retry);
+    assert!(semantic_memory::verify_procedure_effectful_evaluation_receipt_v1(&persisted));
+    let promoted = store
+        .promote_procedure(
+            lifecycle_permit("promote", &value.artifact_id),
+            &value.artifact_id,
+            "promote:verified",
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        promoted.disposition,
+        ProcedureLifecycleDispositionV1::Promoted
+    );
+
     let mut failed = artifact("procedure:failed", 1, None);
     failed.evidence_test_envelope.fixtures[0].expected_effects =
         vec![ProcedureEffectV1::new("unexpected", json!(true))];
@@ -226,7 +295,118 @@ async fn deterministic_tests_idempotency_and_receipts_gate_promotion() {
         ProcedureLifecycleDispositionV1::Quarantined
     );
     assert!(store
-        .promote_procedure(lifecycle_permit(), &failed.artifact_id, "promote:failed")
+        .promote_procedure(
+            lifecycle_permit("promote", &failed.artifact_id),
+            &failed.artifact_id,
+            "promote:failed",
+        )
+        .await
+        .is_err());
+}
+
+#[tokio::test]
+async fn effectful_receipts_are_material_bound_and_fail_closed() {
+    let (store, _tmp) = store();
+    let value = artifact("procedure:effectful-binding", 1, None);
+    store
+        .compile_procedure(value.clone(), "compile:effectful-binding")
+        .await
+        .unwrap();
+    store
+        .test_procedure(&value.artifact_id, "test:effectful-binding")
+        .await
+        .unwrap();
+
+    let mut wrong_digest = effectful_receipt(&value);
+    wrong_digest.artifact_digest = "blake3:wrong".into();
+    assert!(store
+        .record_effectful_procedure_evaluation(wrong_digest, "effectful:wrong-digest")
+        .await
+        .is_err());
+
+    let mut forged = effectful_receipt(&value);
+    forged.verification_receipt_id = "verification:forged".into();
+    assert!(store
+        .record_effectful_procedure_evaluation(forged, "effectful:forged")
+        .await
+        .is_err());
+
+    let first = effectful_receipt(&value);
+    store
+        .record_effectful_procedure_evaluation(first, "effectful:conflict")
+        .await
+        .unwrap();
+    let second = effectful_receipt(&value);
+    assert!(store
+        .record_effectful_procedure_evaluation(second, "effectful:conflict")
+        .await
+        .is_err());
+}
+
+#[tokio::test]
+async fn lifecycle_permits_are_materially_scoped_expiring_and_one_shot() {
+    let (store, _tmp) = store();
+    let value = artifact("procedure:permit-scope", 1, None);
+    store
+        .compile_procedure(value.clone(), "compile:permit-scope")
+        .await
+        .unwrap();
+
+    let wrong_operation = lifecycle_permit("promote", &value.artifact_id);
+    assert!(store
+        .quarantine_procedure(
+            wrong_operation,
+            &value.artifact_id,
+            "quarantine:wrong-operation",
+            "scope test",
+        )
+        .await
+        .is_err());
+
+    let expired = ProcedureLifecyclePermitV1::elevated_for(
+        "principal:alice",
+        "operator:test",
+        "quarantine",
+        &value.artifact_id,
+        "2000-01-01T00:00:00Z",
+    );
+    assert!(store
+        .quarantine_procedure(
+            expired,
+            &value.artifact_id,
+            "quarantine:expired",
+            "expiry test",
+        )
+        .await
+        .is_err());
+
+    let permit = lifecycle_permit("quarantine", &value.artifact_id);
+    let first = store
+        .quarantine_procedure(
+            permit.clone(),
+            &value.artifact_id,
+            "quarantine:one-shot",
+            "one-shot test",
+        )
+        .await
+        .unwrap();
+    let retry = store
+        .quarantine_procedure(
+            permit.clone(),
+            &value.artifact_id,
+            "quarantine:one-shot",
+            "one-shot test",
+        )
+        .await
+        .unwrap();
+    assert_eq!(first, retry);
+    assert!(store
+        .quarantine_procedure(
+            permit,
+            &value.artifact_id,
+            "quarantine:permit-replay",
+            "one-shot test",
+        )
         .await
         .is_err());
 }
@@ -315,7 +495,11 @@ async fn expired_artifacts_and_rolled_back_promotions_are_not_candidates() {
         .await
         .unwrap();
     store
-        .promote_procedure(lifecycle_permit(), &expired.artifact_id, "promote:expired")
+        .promote_procedure(
+            lifecycle_permit("promote", &expired.artifact_id),
+            &expired.artifact_id,
+            "promote:expired",
+        )
         .await
         .unwrap_err();
     assert!(store
@@ -328,7 +512,7 @@ async fn expired_artifacts_and_rolled_back_promotions_are_not_candidates() {
     let active = promoted(&store, "procedure:rollback").await;
     let receipt = store
         .rollback_procedure(
-            lifecycle_permit(),
+            lifecycle_permit("rollback", &active.artifact_id),
             &active.artifact_id,
             "rollback:active",
             "fixture rollback",
@@ -363,7 +547,15 @@ async fn all_access_paths_reject_revoked_and_superseded_versions() {
         .await
         .unwrap();
     store
-        .promote_procedure(lifecycle_permit(), &second.artifact_id, "promote:v2")
+        .record_effectful_procedure_evaluation(effectful_receipt(&second), "effectful:v2")
+        .await
+        .unwrap();
+    store
+        .promote_procedure(
+            lifecycle_permit("promote", &second.artifact_id),
+            &second.artifact_id,
+            "promote:v2",
+        )
         .await
         .unwrap();
 
@@ -384,7 +576,7 @@ async fn all_access_paths_reject_revoked_and_superseded_versions() {
     }
     store
         .revoke_procedure(
-            lifecycle_permit(),
+            lifecycle_permit("revoke", &second.artifact_id),
             &second.artifact_id,
             "revoke:v2",
             "operator revocation",
@@ -437,7 +629,15 @@ async fn summary_laundering_and_forgetting_close_procedure_access() {
         .await
         .unwrap();
     store
-        .promote_procedure(lifecycle_permit(), &value.artifact_id, "promote:derived")
+        .record_effectful_procedure_evaluation(effectful_receipt(&value), "effectful:derived")
+        .await
+        .unwrap();
+    store
+        .promote_procedure(
+            lifecycle_permit("promote", &value.artifact_id),
+            &value.artifact_id,
+            "promote:derived",
+        )
         .await
         .unwrap();
 

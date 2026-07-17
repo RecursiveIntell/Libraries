@@ -181,16 +181,18 @@ pub use origin_authority::{
     OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1, SubjectPrincipalV1,
 };
 pub use procedural_memory::{
-    validate_procedure_artifact_v1, verify_procedure_lifecycle_receipt_v1,
-    verify_procedure_test_receipt_v1, AllowedProcedureToolV1, ApplicabilityOperatorV1,
-    ApplicabilityPredicateV1, GovernedProcedureDecisionV1, GovernedProcedureRetrievalV1,
-    ProceduralMemoryArtifactV1, ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1,
-    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEvidenceTestEnvelopeV1,
+    validate_procedure_artifact_v1, verify_procedure_effectful_evaluation_receipt_v1,
+    verify_procedure_lifecycle_receipt_v1, verify_procedure_test_receipt_v1,
+    AllowedProcedureToolV1, ApplicabilityOperatorV1, ApplicabilityPredicateV1,
+    GovernedProcedureDecisionV1, GovernedProcedureRetrievalV1, ProceduralMemoryArtifactV1,
+    ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1, ProcedureCapabilityV1,
+    ProcedureEffectV1, ProcedureEffectfulEvaluationReceiptV1, ProcedureEvidenceTestEnvelopeV1,
     ProcedureFixtureReceiptV1, ProcedureFixtureV1, ProcedureLifecycleDispositionV1,
     ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1, ProcedurePreconditionV1,
     ProcedureRetrievalRequestV1, ProcedureRevocationV1, ProcedureRiskV1, ProcedureStepV1,
     ProcedureTestReceiptV1, ProcedureValidationV1, PROCEDURAL_MEMORY_ARTIFACT_V1,
-    PROCEDURE_LIFECYCLE_RECEIPT_V1, PROCEDURE_TEST_RECEIPT_V1,
+    PROCEDURE_EFFECTFUL_EVALUATION_RECEIPT_V1, PROCEDURE_LIFECYCLE_RECEIPT_V1,
+    PROCEDURE_TEST_RECEIPT_V1,
 };
 pub use shadow_policy::{
     compare_shadow_execution_v1, evaluate_shadow_policy_promotion_v1, shadow_policy_digest,
