@@ -471,6 +471,14 @@ pub struct PairedExperimentRunner<'a> {
     config: &'a crate::config::ForgeConfig,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct TrialExecutionContext {
+    side: TrialSide,
+    pair_index: u32,
+    order_index: u32,
+    order_seed: u64,
+}
+
 impl<'a> PairedExperimentRunner<'a> {
     /// Create a new runner bound to the given backend, project adapter, and config.
     pub fn new(
@@ -567,11 +575,13 @@ impl<'a> PairedExperimentRunner<'a> {
                     .run_checks(
                         ws_path,
                         timeout,
-                        side,
-                        pair_index,
-                        order_index,
+                        TrialExecutionContext {
+                            side,
+                            pair_index,
+                            order_index,
+                            order_seed: experiment_config.trial_order_seed,
+                        },
                         &mut all_trials,
-                        experiment_config.trial_order_seed,
                     )
                     .await?;
                 match side {
@@ -618,11 +628,8 @@ impl<'a> PairedExperimentRunner<'a> {
         &self,
         workspace: &Path,
         timeout: u64,
-        side: TrialSide,
-        pair_index: u32,
-        order_index: u32,
+        context: TrialExecutionContext,
         trials: &mut Vec<TrialRecord>,
-        trial_order_seed: u64,
     ) -> ForgeResult<CheckResult> {
         let commands = self.adapter.check_commands(self.config);
         let start = std::time::Instant::now();
@@ -691,18 +698,18 @@ impl<'a> PairedExperimentRunner<'a> {
         };
 
         trials.push(TrialRecord {
-            side,
+            side: context.side,
             fmt_pass: check_result.fmt_pass,
             clippy_pass: check_result.clippy_pass,
             test_pass: check_result.test_pass,
             backend_kind: self.backend.kind(),
             duration_ms,
-            seed: trial_order_seed,
+            seed: context.order_seed,
             cache_mode: CacheMode::Unknown,
             network_available: true,
             timing_admissible: false,
-            pair_index,
-            order_index,
+            pair_index: context.pair_index,
+            order_index: context.order_index,
         });
 
         Ok(check_result)

@@ -1649,9 +1649,10 @@ fn validate_lifecycle_permit(
         || permit.elevation != "explicit_operator_approval"
         || permit.artifact_id != artifact_id
         || permit.operation != operation
-        || DateTime::parse_from_rfc3339(&permit.expires_at)
-            .ok()
-            .is_none_or(|expiry| expiry.with_timezone(&Utc) <= Utc::now())
+        || match DateTime::parse_from_rfc3339(&permit.expires_at) {
+            Ok(expiry) => expiry.with_timezone(&Utc) <= Utc::now(),
+            Err(_) => true,
+        }
     {
         Err(MemoryError::ProceduralMemoryUnauthorized {
             principal: permit.principal.clone(),
