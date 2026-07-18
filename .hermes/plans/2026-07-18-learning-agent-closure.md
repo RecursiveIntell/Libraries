@@ -47,7 +47,7 @@ Refresh this checkpoint before implementation and before any local commit.
 5. The prior blueprint embedded a hard-coded replacement unrelated to the executed patch. The blueprint now serializes the exact `StructuredPatch`, binds source/policy/image/capability/permit-use material, removes host-absolute fixture paths, and raises write risk from low to medium. Focused and live pinned-Podman regressions pass.
 6. Executable corpus v2 now contains 15 digest-pinned Rust fixtures across five family-clustered 9/3/3 partitions. Python and Rust consumers reject drift, leakage, duplicate identities, public oracle material, incomplete fixtures, and unsafe paths.
 7. A refreshed live receipt records 15 expected baseline failures and 15 treatment passes through the pinned sealed Podman image. It explicitly marks timing, paired statistics, and promotion evidence unavailable.
-8. `living-memory` contains the authorized repeated-paired and canonical Forge export APIs. The old agent-graph advisory-pilot NO-GO does not prohibit direct owner reuse; adoption remains blocked by absent owner-native repeated-paired evidence and statistics, not API authority.
+8. `aidens-runner::learning_experiment` now composes the authorized `living-memory::PairedExperimentRunner` directly over all 15 hidden-oracle evaluator tasks. The production entry point always selects its backend through Forge; injected backends are private to unit tests. This produces raw owner-native trial results only. Promotion remains blocked by absent owner-side aggregate statistics, capability-truth binding, durable evidence, replay adjudication, and lifecycle authority.
 
 ### V3 field-gap matrix
 
@@ -188,7 +188,7 @@ Refresh this checkpoint before implementation and before any local commit.
 
 **Claim:** immutable local benchmark corpus, not external generalization.
 
-### Task 3.2: Run at least 20 paired trials across five families — **BLOCKED pending canonical owner certification**
+### Task 3.2: Run at least 20 paired trials across five families — **RAW EXECUTION IMPLEMENTED; OWNER ADJUDICATION BLOCKED**
 
 **Owner:** existing canonical experiment substrate if certified; otherwise blocked.
 
@@ -197,6 +197,8 @@ Refresh this checkpoint before implementation and before any local commit.
 **GREEN:** Freeze all material digests; run baseline/candidate in randomized paired order with a recorded seed; emit all failures; compute family-clustered outcome summary and conservative non-regression gate from owner receipts.
 
 **Evidence:** immutable assignment, 40 side-execution receipts minimum, denominators, failure inventory, timing-admissibility state, analysis digest.
+
+**Observed adapter gate:** four predeclared pairs per each of 15 tasks produced 60 pairs and 120 fresh sealed-Podman sides through canonical Forge in 429.04 seconds. Every baseline failed at least one Forge check and every treatment passed fmt, strict Clippy, and tests. This is raw execution evidence, not promotion evidence: canonical `TrialRecord` still reports cache/network/timing placeholders, `ExperimentResult.diff` summarizes only the final pair, and no owner-side family aggregate or durable evidence bundle exists.
 
 ### Task 3.3: Gate promotion on paired evidence and drill revocation/rollback
 
@@ -246,17 +248,18 @@ The architecture lane described the pre-council procedure as promoted; the hosti
 2. Remove locally minted lifecycle authority. **Implemented; candidate remains `Tested`; live test passes.**
 3. Add destination/replay/retention material binding and typed blocked reason codes.
 4. Resolve the V3 child-closure field gap in canonical contracts and strengthen learning-writer validation.
-5. Obtain/certify the real Forge owner adapter; until then terminal publication remains pending.
-6. Build executable corpus v2 and owner-native statistics/replay evidence offline; do not connect it to promotion until certified.
+5. Canonical Forge owner adapter. **Implemented and live-tested for raw repeated-paired execution; owner adjudication/evidence certification remains pending.**
+6. Build owner-native statistics/replay evidence from the executable corpus; do not connect it to promotion until certified.
 7. Run crash/retry/replay/permit tests, broad gates, and a new hostile review. Commit only if no unresolved P0/P1 remains.
 
 ## Current execution receipts
 
 - Python v2 hostile validator: 14 tests passed.
-- Rust corpus consumer: 6 v2-specific tests plus the legacy consumer test passed; no oracle file is opened or projected.
-- Pinned sealed Podman corpus: 15/15 declared baseline failures and 15/15 treatment passes; 30 side executions; corpus digest `225f6ec950afa2c3c2a46bf75a55da3f5606505bc73bddc6527e357186c2a9bb`.
+- Rust corpus consumer: 7 v2-specific tests plus the legacy consumer test passed; learner-safe inspection opens no oracle, while the crate-private evaluator loader independently rejects hidden-oracle drift.
+- Pinned sealed Podman corpus: 15/15 declared baseline failures and 15/15 treatment passes; 30 side executions; corpus digest `2736bcbf625b495187e8d96dbf6ce4140b21cd3a244d833b2294fc59a330fb3f`.
+- Canonical Forge repeated-paired adapter: 60 pairs and 120 fresh sealed-Podman sides; all baselines failed at least one Forge check and all treatments passed fmt, strict Clippy, and tests; 429.04 seconds. The first live run exposed six treatment-format defects and a public test-injection P1; generator-owned oracle material was corrected and regenerated, and backend injection is now module-private.
 - The corpus receipt directly records the Podman/Python/validator digests, observed rootless mode, local image digest, exact sealed argv template, no-pull policy, keep-id user namespace, no-new-privileges, network isolation, read-only root, dropped capabilities, timeout and cleanup contract, and UTC recording time.
 - Live pinned-Podman controller: passed and left the candidate non-promoted.
 - Live public CLI: passed and remained `blocked-evidence-insufficient` with terminal publication pending.
-- Affected packages: strict Clippy passed; `aidens-contracts` 101 passed; `aidens-receipts` 20 passed; `aidens-runner` 72 unit tests passed with 2 ignored live tests and the controller live test separately exercised; all runner integrations passed; `aidens-cli` 67 passed with its live test separately exercised plus 5 integrations.
+- Affected packages: strict Clippy passed; `aidens-contracts` 101 passed; `aidens-receipts` 20 passed; `aidens-runner` 78 unit tests passed with 2 pre-existing ignored live tests and the repeated-paired live test separately exercised; all runner integrations passed; `aidens-cli` 67 passed with its live test separately exercised plus 5 integrations.
 - Full root and AiDENs workspace checks passed. The root supported release lane passed. Second high-effort hostile review returned GO with all six prior P1 findings resolved and no new P0/P1.

@@ -76,10 +76,26 @@ mod tests {{
     }}
 }}
 '''
-        candidate = baseline.replace(
-            'let value = input.parse::<u32>().unwrap();',
-            'let value = input.parse::<u32>().map_err(|_| "invalid-integer".to_string())?;',
-        )
+        candidate = f'''pub fn parse_positive{suffix}(input: &str) -> Result<u32, String> {{
+    let value = input
+        .parse::<u32>()
+        .map_err(|_| "invalid-integer".to_string())?;
+    if value > 0 {{
+        Ok(value)
+    }} else {{
+        Err("not-positive".into())
+    }}
+}}
+
+#[cfg(test)]
+mod tests {{
+    use super::*;
+    #[test]
+    fn invalid_input_is_an_error() {{
+        assert!(parse_positive{suffix}("invalid").is_err());
+    }}
+}}
+'''
         prompt = "Replace panic-based parsing with typed error propagation."
     elif family == "iterator-safety":
         baseline = f'''pub fn even_sum{suffix}(values: &[u32]) -> u32 {{
@@ -113,7 +129,25 @@ mod tests {{
     fn public_wrapper_works() {{ assert_eq!(public_token{suffix}(), "ok"); }}
 }}
 '''
-        candidate = baseline.replace(f"    fn token{suffix}", f"    pub(super) fn token{suffix}")
+        candidate = f'''mod internal {{
+    pub(super) fn token{suffix}() -> &'static str {{
+        "ok"
+    }}
+}}
+
+pub fn public_token{suffix}() -> &'static str {{
+    internal::token{suffix}()
+}}
+
+#[cfg(test)]
+mod tests {{
+    use super::*;
+    #[test]
+    fn public_wrapper_works() {{
+        assert_eq!(public_token{suffix}(), "ok");
+    }}
+}}
+'''
         prompt = "Repair module visibility using the narrowest sufficient scope."
     elif family == "wire-schema":
         baseline = f'''pub fn encode_user{suffix}(name: &str) -> String {{

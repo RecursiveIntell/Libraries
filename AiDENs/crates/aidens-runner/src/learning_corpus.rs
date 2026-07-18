@@ -11,6 +11,7 @@ use std::ffi::OsStr;
 use std::path::{Component, Path, PathBuf};
 use std::process::Command;
 use thiserror::Error;
+use typed_patch::StructuredPatch;
 use walkdir::WalkDir;
 
 const SPLITS: [&str; 3] = ["development", "calibration", "holdout"];
@@ -89,6 +90,14 @@ pub struct V2LearnerSafeTask {
 pub struct V2ValidatedCorpus {
     pub corpus_digest: String,
     pub tasks: Vec<V2LearnerSafeTask>,
+}
+
+/// Evaluator-only task material. This type is crate-private so hidden oracle
+/// patches cannot leak through the learner-safe public corpus API.
+#[derive(Debug, Clone)]
+pub(crate) struct V2EvaluatorTask {
+    pub learner: V2LearnerSafeTask,
+    pub patch: StructuredPatch,
 }
 
 fn read_json(path: &Path) -> Result<Value, CorpusError> {
@@ -542,6 +551,50 @@ pub fn validate_and_consume_v2(root: impl AsRef<Path>) -> Result<V2ValidatedCorp
     })
 }
 
+/// Validate public corpus material, then load and digest-check evaluator-only patches.
+pub(crate) fn validate_and_load_v2_evaluator_tasks(
+    root: impl AsRef<Path>,
+) -> Result<(String, Vec<V2EvaluatorTask>), CorpusError> {
+    let root = std::fs::canonicalize(root.as_ref())
+        .map_err(|e| CorpusError::Io(format!("{}: {e}", root.as_ref().display())))?;
+    let validated = validate_and_consume_v2(&root)?;
+    let mut patch_ids = BTreeSet::new();
+    let mut evaluator_tasks = Vec::with_capacity(validated.tasks.len());
+
+    for learner in validated.tasks {
+        let relative = format!("oracles/{}.patch.json", learner.task_id);
+        let oracle_path = resolve_manifest_path(&root, &relative, "oracle", "oracles")?;
+        if !oracle_path.is_file() {
+            return Err(CorpusError::Invalid(format!(
+                "v2 oracle JSON is not a file: {relative}"
+            )));
+        }
+        let bytes = std::fs::read(&oracle_path)
+            .map_err(|e| CorpusError::Io(format!("{}: {e}", oracle_path.display())))?;
+        let oracle: Value = serde_json::from_slice(&bytes)
+            .map_err(|e| CorpusError::Schema(format!("{}: {e}", oracle_path.display())))?;
+        let actual_digest = canonical_json_sha256(&oracle)?;
+        if actual_digest != learner.oracle_digest {
+            return Err(CorpusError::Invalid(format!(
+                "v2 oracle digest mismatch: {}",
+                learner.task_id
+            )));
+        }
+        let patch: StructuredPatch = serde_json::from_value(oracle).map_err(|e| {
+            CorpusError::Schema(format!("{} typed patch: {e}", oracle_path.display()))
+        })?;
+        if !patch_ids.insert(patch.patch_id) {
+            return Err(CorpusError::Invalid(format!(
+                "duplicate v2 evaluator patch id: {}",
+                patch.patch_id
+            )));
+        }
+        evaluator_tasks.push(V2EvaluatorTask { learner, patch });
+    }
+
+    Ok((validated.corpus_digest, evaluator_tasks))
+}
+
 fn required_string(value: &Value, key: &str) -> Result<String, CorpusError> {
     string(value, key)
         .filter(|value| !value.is_empty())
@@ -816,6 +869,19 @@ mod tests {
             .filter(|task| task.split == "holdout")
             .all(|task| !task.task_path.to_string_lossy().contains("oracles")
                 && !task.fixture_path.to_string_lossy().contains("oracles")));
+    }
+
+    #[test]
+    fn v2_evaluator_loader_rejects_hidden_oracle_drift_before_execution() {
+        let (_temp, root) = copy_v2_corpus();
+        let oracle_path = root.join("oracles/borrow-check-01.patch.json");
+        let mut oracle = read_json(&oracle_path).unwrap();
+        oracle["summary"] = Value::String("tampered evaluator patch".into());
+        write_json(&oracle_path, &oracle);
+
+        assert!(validate_and_consume_v2(&root).is_ok());
+        let error = validate_and_load_v2_evaluator_tasks(&root).unwrap_err();
+        assert!(error.to_string().contains("oracle digest mismatch"));
     }
 
     #[test]

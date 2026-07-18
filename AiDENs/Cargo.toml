@@ -65,6 +65,7 @@ constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
 contract-schema-gen = { version = "0.1.0", path = "../contract-schema-gen" }
 federated-settlement = { version = "0.1.0", path = "../federated-settlement" }
 forge-memory-bridge = { version = "0.1.0", path = "../forge-memory-bridge" }
+forge-engine = { version = "0.2.0", path = "../living-memory/living-memory" }
 kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
 kernel-conformance = { version = "0.1.0", path = "../kernel-conformance" }
 kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }

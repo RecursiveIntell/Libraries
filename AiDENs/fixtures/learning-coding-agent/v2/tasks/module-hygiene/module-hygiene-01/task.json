@@ -2,7 +2,7 @@
   "baseline_expected": "fail",
   "family": "module-hygiene",
   "fixture_tree_digest": "69d43a029aacf6385b201db9ccb3afc92146438cc5220d8ceea09cddea523697",
-  "oracle_digest": "f89c101324db6ececdd96fb15c2567bb59c54429eb4c9bdcb7cb0d55bc43e9b2",
+  "oracle_digest": "6592168d33afa586033c2f945ff678621cc11834b44705df937a56d06e061e29",
   "prompt": "Repair module visibility using the narrowest sufficient scope.",
   "schema": "AiDENsExecutableLearningTaskV2",
   "split": "calibration",

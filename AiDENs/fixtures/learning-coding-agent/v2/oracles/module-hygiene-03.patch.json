@@ -7,7 +7,9 @@
           "Replace": {
             "lines": [
               "mod internal {",
-              "    pub(super) fn token_3() -> &'static str { \"ok\" }",
+              "    pub(super) fn token_3() -> &'static str {",
+              "        \"ok\"",
+              "    }",
               "}",
               "",
               "pub fn public_token_3() -> &'static str {",
@@ -18,7 +20,9 @@
               "mod tests {",
               "    use super::*;",
               "    #[test]",
-              "    fn public_wrapper_works() { assert_eq!(public_token_3(), \"ok\"); }",
+              "    fn public_wrapper_works() {",
+              "        assert_eq!(public_token_3(), \"ok\");",
+              "    }",
               "}"
             ],
             "range": {

@@ -24,6 +24,7 @@ check-runner.workspace = true
 cea-core.workspace = true
 cea-store.workspace = true
 cea-sqlite.workspace = true
+forge-engine.workspace = true
 sandbox-workspace.workspace = true
 semantic-memory.workspace = true
 stack-ids.workspace = true

@@ -2,7 +2,7 @@
   "all_executable_contracts_passed": true,
   "capabilities_dropped": "all",
   "claim_scope": "local-executable-corpus-validation-only",
-  "corpus_digest": "225f6ec950afa2c3c2a46bf75a55da3f5606505bc73bddc6527e357186c2a9bb",
+  "corpus_digest": "2736bcbf625b495187e8d96dbf6ce4140b21cd3a244d833b2294fc59a330fb3f",
   "execution_backend": "sealed-rootless-podman",
   "family_count": 5,
   "image": "localhost/aidens-rust-checks@sha256:96f6610f945d10b523a303848610bd6fbef241762c59c0e44d47af9089cb6d6b",
@@ -15,7 +15,7 @@
   "python_runtime_path": "/home/linuxbrew/.linuxbrew/Cellar/python@3.14/3.14.6/bin/python3.14",
   "python_runtime_sha256": "a7738082185395bdb559c67f09a1e8d01761a75d48362496672008c56725c2d0",
   "read_only_rootfs": true,
-  "recorded_at_utc": "2026-07-18T20:12:12+00:00",
+  "recorded_at_utc": "2026-07-18T22:51:55+00:00",
   "resolved_image_digest": "sha256:96f6610f945d10b523a303848610bd6fbef241762c59c0e44d47af9089cb6d6b",
   "rootless_observed": true,
   "rows": [
@@ -29,7 +29,7 @@
       "pair_index": 0,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 438.701,
+          "duration_ms_diagnostic_only": 2570.358,
           "exit_code": 101,
           "output_sha256": "036007a374d6005872f82c0878c3ca9103c83d5f28e2329d326a67c1cdf134e2",
           "passed": false,
@@ -37,7 +37,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 495.489,
+          "duration_ms_diagnostic_only": 3562.729,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -59,7 +59,7 @@
       "pair_index": 1,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 225.051,
+          "duration_ms_diagnostic_only": 1729.632,
           "exit_code": 101,
           "output_sha256": "e4d1f045712390a4fe1229c43459235fa8f1db348e103994dca4e88c3b71432f",
           "passed": false,
@@ -67,7 +67,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 399.852,
+          "duration_ms_diagnostic_only": 3452.374,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -89,7 +89,7 @@
       "pair_index": 2,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 224.384,
+          "duration_ms_diagnostic_only": 684.367,
           "exit_code": 101,
           "output_sha256": "ffe04061bb21bed4e7c1ef0d0d9d7dc5cb7fa7c157f19692b06a6b999d1a2951",
           "passed": false,
@@ -97,7 +97,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 405.588,
+          "duration_ms_diagnostic_only": 726.495,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -115,11 +115,11 @@
       "family": "error-propagation",
       "fixture_tree_digest": "517391538f8c4524d917d97e4ba053dcef8696807cd0f722e0a01ce5afd04a77",
       "observed_contract": true,
-      "oracle_digest": "fc81d95ff25dfcfd22c73642d8c83481659f969bccedb1326fe1dcbb3abdb28d",
+      "oracle_digest": "f9b5a9d89d2c38e5ab1aff8ad645f3c884fab7ec157e8725d4282608a6a3ab8f",
       "pair_index": 3,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 393.718,
+          "duration_ms_diagnostic_only": 759.824,
           "exit_code": 101,
           "output_sha256": "c251ee5346e82ec2c0892e8dc5037cf6167e2b71a0eb7cc677d329684ed32c35",
           "passed": false,
@@ -127,7 +127,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 404.475,
+          "duration_ms_diagnostic_only": 806.65,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -145,11 +145,11 @@
       "family": "error-propagation",
       "fixture_tree_digest": "72b7bf17c9c58eaa81d8f45fe68165f388c063334b19bd622669d2afa21bd222",
       "observed_contract": true,
-      "oracle_digest": "d8a1ea1af6fc3514612604b587dcc9bd5464c3695d4db14dc766bdd1c7cfd26f",
+      "oracle_digest": "84d2b718a515a58cb3717ff2b83f85ac2becd003546d96e9ba5f20c1e67caa2d",
       "pair_index": 4,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 385.449,
+          "duration_ms_diagnostic_only": 608.815,
           "exit_code": 101,
           "output_sha256": "c251ee5346e82ec2c0892e8dc5037cf6167e2b71a0eb7cc677d329684ed32c35",
           "passed": false,
@@ -157,7 +157,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 397.71,
+          "duration_ms_diagnostic_only": 502.572,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -175,11 +175,11 @@
       "family": "error-propagation",
       "fixture_tree_digest": "abeb9149bc463672fa3a51dc9fadfb88025d7253895f715a0a70049788674055",
       "observed_contract": true,
-      "oracle_digest": "ba8048255b988d16637de946c3359bbea71322efa267aeea4e0061220ac96231",
+      "oracle_digest": "06068f54ce2900b8c8a8e08aeeb97d51cff8d19ee5971cb008eb3817848b952d",
       "pair_index": 5,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 395.584,
+          "duration_ms_diagnostic_only": 427.542,
           "exit_code": 101,
           "output_sha256": "c251ee5346e82ec2c0892e8dc5037cf6167e2b71a0eb7cc677d329684ed32c35",
           "passed": false,
@@ -187,7 +187,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 413.507,
+          "duration_ms_diagnostic_only": 443.148,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -209,7 +209,7 @@
       "pair_index": 6,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 386.896,
+          "duration_ms_diagnostic_only": 417.792,
           "exit_code": 101,
           "output_sha256": "b8ce9d8925d513aca07b467fac70ef20e093b000d5c91ffa852317ccef5a0a7c",
           "passed": false,
@@ -217,7 +217,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 403.615,
+          "duration_ms_diagnostic_only": 440.839,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -239,7 +239,7 @@
       "pair_index": 7,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 388.251,
+          "duration_ms_diagnostic_only": 430.951,
           "exit_code": 101,
           "output_sha256": "b8ce9d8925d513aca07b467fac70ef20e093b000d5c91ffa852317ccef5a0a7c",
           "passed": false,
@@ -247,7 +247,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 400.112,
+          "duration_ms_diagnostic_only": 452.387,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -269,7 +269,7 @@
       "pair_index": 8,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 392.75,
+          "duration_ms_diagnostic_only": 430.171,
           "exit_code": 101,
           "output_sha256": "b8ce9d8925d513aca07b467fac70ef20e093b000d5c91ffa852317ccef5a0a7c",
           "passed": false,
@@ -277,7 +277,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 402.347,
+          "duration_ms_diagnostic_only": 459.296,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -295,11 +295,11 @@
       "family": "module-hygiene",
       "fixture_tree_digest": "69d43a029aacf6385b201db9ccb3afc92146438cc5220d8ceea09cddea523697",
       "observed_contract": true,
-      "oracle_digest": "f89c101324db6ececdd96fb15c2567bb59c54429eb4c9bdcb7cb0d55bc43e9b2",
+      "oracle_digest": "6592168d33afa586033c2f945ff678621cc11834b44705df937a56d06e061e29",
       "pair_index": 9,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 219.393,
+          "duration_ms_diagnostic_only": 253.831,
           "exit_code": 101,
           "output_sha256": "54429622a2b22d35de1eb0b48f17cf1fc1e18978925a49aec6c474d965bca50a",
           "passed": false,
@@ -307,7 +307,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 413.929,
+          "duration_ms_diagnostic_only": 420.126,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -325,11 +325,11 @@
       "family": "module-hygiene",
       "fixture_tree_digest": "51d1ee3f2b3a244b7670aae2199698b8ecaf7167e67bb5add05f97aa73b0a4d9",
       "observed_contract": true,
-      "oracle_digest": "9b8160d027016e4eed1eae7715beb9951dcac6d119da1b3fc9bcfbbb5488bdd6",
+      "oracle_digest": "46f308d97e0c8cae9cda5f99ecc045378e3762dc5229cf6e9e25a516c152a4e8",
       "pair_index": 10,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 245.355,
+          "duration_ms_diagnostic_only": 255.735,
           "exit_code": 101,
           "output_sha256": "d607151a2e13b9e8a80fb8645ca39f9b53c02f4f6733f7b11ab46d4bfa6fd6b4",
           "passed": false,
@@ -337,7 +337,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 391.416,
+          "duration_ms_diagnostic_only": 434.473,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -355,11 +355,11 @@
       "family": "module-hygiene",
       "fixture_tree_digest": "fbf7b72036b520504fd1078d873db5348d80c6df5b10d39a3c09fc3558f4111e",
       "observed_contract": true,
-      "oracle_digest": "3e0e7165eb3bbcda7209db5ad1512af9bc1d5e8c8e7ce320a4371bffa46367e7",
+      "oracle_digest": "8d629f928c40f8cf07aff5491913b781ae5110b3cdf47cf38d2f6e55cc475cfd",
       "pair_index": 11,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 232.38,
+          "duration_ms_diagnostic_only": 251.212,
           "exit_code": 101,
           "output_sha256": "c25884976ff0e03fd2b99130a7fb31e261de475ccd6f538d19b27ddc470a279e",
           "passed": false,
@@ -367,7 +367,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 387.561,
+          "duration_ms_diagnostic_only": 431.83,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -389,7 +389,7 @@
       "pair_index": 12,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 371.68,
+          "duration_ms_diagnostic_only": 435.051,
           "exit_code": 101,
           "output_sha256": "169d7878e6e69afdb952d71b2886ddade9785bc4c28e8ae96267bc3ba636627f",
           "passed": false,
@@ -397,7 +397,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 415.844,
+          "duration_ms_diagnostic_only": 472.087,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -419,7 +419,7 @@
       "pair_index": 13,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 386.899,
+          "duration_ms_diagnostic_only": 457.33,
           "exit_code": 101,
           "output_sha256": "169d7878e6e69afdb952d71b2886ddade9785bc4c28e8ae96267bc3ba636627f",
           "passed": false,
@@ -427,7 +427,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 413.304,
+          "duration_ms_diagnostic_only": 503.606,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -449,7 +449,7 @@
       "pair_index": 14,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 391.262,
+          "duration_ms_diagnostic_only": 437.188,
           "exit_code": 101,
           "output_sha256": "169d7878e6e69afdb952d71b2886ddade9785bc4c28e8ae96267bc3ba636627f",
           "passed": false,
@@ -457,7 +457,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 402.826,
+          "duration_ms_diagnostic_only": 475.362,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,

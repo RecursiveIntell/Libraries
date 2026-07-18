@@ -47,6 +47,7 @@ pub mod learning_candidate;
 pub mod learning_controller;
 pub mod learning_corpus;
 pub mod learning_effectful;
+pub mod learning_experiment;
 pub mod learning_lifecycle;
 pub mod learning_replay;
 mod provider_tool;
