@@ -17,6 +17,14 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import Any
 
+EXPECTED_FAMILY_SPLITS = {
+    "borrow-check": "development",
+    "error-propagation": "development",
+    "iterator-safety": "development",
+    "module-hygiene": "calibration",
+    "wire-schema": "holdout",
+}
+
 
 def canonical_bytes(value: object) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
@@ -209,8 +217,15 @@ def validate(
         fixture_digests.add(task["fixture_tree_digest"])
         oracle_digests.add(task["oracle_digest"])
         family_splits[task["family"]].add(task["split"])
-    if len(family_splits) != 5 or any(len(splits) != 1 for splits in family_splits.values()):
-        raise ValueError("families must be exactly five non-leaking clusters")
+    observed_family_splits = {
+        family: next(iter(splits))
+        for family, splits in family_splits.items()
+        if len(splits) == 1
+    }
+    if observed_family_splits != EXPECTED_FAMILY_SPLITS or any(
+        len(splits) != 1 for splits in family_splits.values()
+    ):
+        raise ValueError("canonical family-to-split mapping mismatch")
 
     runtime = None
     runtime_sha256 = None

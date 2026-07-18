@@ -15,7 +15,7 @@
   "python_runtime_path": "/home/linuxbrew/.linuxbrew/Cellar/python@3.14/3.14.6/bin/python3.14",
   "python_runtime_sha256": "a7738082185395bdb559c67f09a1e8d01761a75d48362496672008c56725c2d0",
   "read_only_rootfs": true,
-  "recorded_at_utc": "2026-07-18T20:02:01+00:00",
+  "recorded_at_utc": "2026-07-18T20:12:12+00:00",
   "resolved_image_digest": "sha256:96f6610f945d10b523a303848610bd6fbef241762c59c0e44d47af9089cb6d6b",
   "rootless_observed": true,
   "rows": [
@@ -29,7 +29,7 @@
       "pair_index": 0,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 2225.499,
+          "duration_ms_diagnostic_only": 438.701,
           "exit_code": 101,
           "output_sha256": "036007a374d6005872f82c0878c3ca9103c83d5f28e2329d326a67c1cdf134e2",
           "passed": false,
@@ -37,7 +37,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 957.01,
+          "duration_ms_diagnostic_only": 495.489,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -59,7 +59,7 @@
       "pair_index": 1,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 367.505,
+          "duration_ms_diagnostic_only": 225.051,
           "exit_code": 101,
           "output_sha256": "e4d1f045712390a4fe1229c43459235fa8f1db348e103994dca4e88c3b71432f",
           "passed": false,
@@ -67,7 +67,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 492.457,
+          "duration_ms_diagnostic_only": 399.852,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -89,7 +89,7 @@
       "pair_index": 2,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 280.355,
+          "duration_ms_diagnostic_only": 224.384,
           "exit_code": 101,
           "output_sha256": "ffe04061bb21bed4e7c1ef0d0d9d7dc5cb7fa7c157f19692b06a6b999d1a2951",
           "passed": false,
@@ -97,7 +97,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 613.456,
+          "duration_ms_diagnostic_only": 405.588,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -119,7 +119,7 @@
       "pair_index": 3,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 791.179,
+          "duration_ms_diagnostic_only": 393.718,
           "exit_code": 101,
           "output_sha256": "c251ee5346e82ec2c0892e8dc5037cf6167e2b71a0eb7cc677d329684ed32c35",
           "passed": false,
@@ -127,7 +127,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 815.425,
+          "duration_ms_diagnostic_only": 404.475,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -149,7 +149,7 @@
       "pair_index": 4,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 696.255,
+          "duration_ms_diagnostic_only": 385.449,
           "exit_code": 101,
           "output_sha256": "c251ee5346e82ec2c0892e8dc5037cf6167e2b71a0eb7cc677d329684ed32c35",
           "passed": false,
@@ -157,7 +157,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 718.827,
+          "duration_ms_diagnostic_only": 397.71,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -179,7 +179,7 @@
       "pair_index": 5,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 721.683,
+          "duration_ms_diagnostic_only": 395.584,
           "exit_code": 101,
           "output_sha256": "c251ee5346e82ec2c0892e8dc5037cf6167e2b71a0eb7cc677d329684ed32c35",
           "passed": false,
@@ -187,7 +187,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 712.756,
+          "duration_ms_diagnostic_only": 413.507,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -209,7 +209,7 @@
       "pair_index": 6,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 666.127,
+          "duration_ms_diagnostic_only": 386.896,
           "exit_code": 101,
           "output_sha256": "b8ce9d8925d513aca07b467fac70ef20e093b000d5c91ffa852317ccef5a0a7c",
           "passed": false,
@@ -217,7 +217,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 498.931,
+          "duration_ms_diagnostic_only": 403.615,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -239,7 +239,7 @@
       "pair_index": 7,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 406.278,
+          "duration_ms_diagnostic_only": 388.251,
           "exit_code": 101,
           "output_sha256": "b8ce9d8925d513aca07b467fac70ef20e093b000d5c91ffa852317ccef5a0a7c",
           "passed": false,
@@ -247,7 +247,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 1756.824,
+          "duration_ms_diagnostic_only": 400.112,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -269,7 +269,7 @@
       "pair_index": 8,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 3734.741,
+          "duration_ms_diagnostic_only": 392.75,
           "exit_code": 101,
           "output_sha256": "b8ce9d8925d513aca07b467fac70ef20e093b000d5c91ffa852317ccef5a0a7c",
           "passed": false,
@@ -277,7 +277,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 3807.428,
+          "duration_ms_diagnostic_only": 402.347,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -299,7 +299,7 @@
       "pair_index": 9,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 2155.209,
+          "duration_ms_diagnostic_only": 219.393,
           "exit_code": 101,
           "output_sha256": "54429622a2b22d35de1eb0b48f17cf1fc1e18978925a49aec6c474d965bca50a",
           "passed": false,
@@ -307,7 +307,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 3061.053,
+          "duration_ms_diagnostic_only": 413.929,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -329,7 +329,7 @@
       "pair_index": 10,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 211.021,
+          "duration_ms_diagnostic_only": 245.355,
           "exit_code": 101,
           "output_sha256": "d607151a2e13b9e8a80fb8645ca39f9b53c02f4f6733f7b11ab46d4bfa6fd6b4",
           "passed": false,
@@ -337,7 +337,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 378.88,
+          "duration_ms_diagnostic_only": 391.416,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -359,7 +359,7 @@
       "pair_index": 11,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 212.786,
+          "duration_ms_diagnostic_only": 232.38,
           "exit_code": 101,
           "output_sha256": "c25884976ff0e03fd2b99130a7fb31e261de475ccd6f538d19b27ddc470a279e",
           "passed": false,
@@ -367,7 +367,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 374.086,
+          "duration_ms_diagnostic_only": 387.561,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -389,7 +389,7 @@
       "pair_index": 12,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 363.089,
+          "duration_ms_diagnostic_only": 371.68,
           "exit_code": 101,
           "output_sha256": "169d7878e6e69afdb952d71b2886ddade9785bc4c28e8ae96267bc3ba636627f",
           "passed": false,
@@ -397,7 +397,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 390.268,
+          "duration_ms_diagnostic_only": 415.844,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -419,7 +419,7 @@
       "pair_index": 13,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 369.928,
+          "duration_ms_diagnostic_only": 386.899,
           "exit_code": 101,
           "output_sha256": "169d7878e6e69afdb952d71b2886ddade9785bc4c28e8ae96267bc3ba636627f",
           "passed": false,
@@ -427,7 +427,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 395.131,
+          "duration_ms_diagnostic_only": 413.304,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -449,7 +449,7 @@
       "pair_index": 14,
       "sides": [
         {
-          "duration_ms_diagnostic_only": 379.36,
+          "duration_ms_diagnostic_only": 391.262,
           "exit_code": 101,
           "output_sha256": "169d7878e6e69afdb952d71b2886ddade9785bc4c28e8ae96267bc3ba636627f",
           "passed": false,
@@ -457,7 +457,7 @@
           "timing_admissible": false
         },
         {
-          "duration_ms_diagnostic_only": 611.21,
+          "duration_ms_diagnostic_only": 402.826,
           "exit_code": 0,
           "output_sha256": "071adfdc854b0b0f99cdfd301410d130b6e5cb682de2224103195129caa9c146",
           "passed": true,
@@ -511,7 +511,7 @@
   "timeout_seconds": 120,
   "timing_claims_admissible": false,
   "user_namespace": "keep-id",
-  "validator_sha256": "d048a0d1aa3872c1dc5777e25c7e38f73a0bf8927f6c2ea63695cdfda7941038",
+  "validator_sha256": "f4cc97a803f669a122254358f10330e3f6b58613593ef24054ed09c9de778f87",
   "verifier_argv": [
     "cargo",
     "test",

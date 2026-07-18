@@ -142,7 +142,16 @@ class ExecutableLearningCorpusV2Tests(unittest.TestCase):
         calibration = next(task for task in manifest["tasks"] if task["split"] == "calibration")
         development["split"], calibration["split"] = calibration["split"], development["split"]
         write_manifest(root, manifest)
-        with self.assertRaisesRegex(ValueError, "non-leaking clusters"):
+        with self.assertRaisesRegex(ValueError, "canonical family-to-split mapping mismatch"):
+            validator.validate(root, False, None)
+
+    def test_unknown_family_is_rejected_even_with_refreshed_manifest_digest(self) -> None:
+        temp, root = self.copied()
+        self.addCleanup(temp.cleanup)
+        manifest = json.loads((root / "manifest.json").read_text())
+        manifest["tasks"][0]["family"] = "renamed-family"
+        write_manifest(root, manifest)
+        with self.assertRaisesRegex(ValueError, "canonical family-to-split mapping mismatch"):
             validator.validate(root, False, None)
 
     def test_manifest_path_escape_is_rejected_even_when_target_exists(self) -> None:

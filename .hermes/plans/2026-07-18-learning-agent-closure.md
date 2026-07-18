@@ -252,8 +252,8 @@ The architecture lane described the pre-council procedure as promoted; the hosti
 
 ## Current execution receipts
 
-- Python v2 hostile validator: 13 tests passed.
-- Rust corpus consumer: 5 v2-specific tests plus the legacy consumer test passed; no oracle file is opened or projected.
+- Python v2 hostile validator: 14 tests passed.
+- Rust corpus consumer: 6 v2-specific tests plus the legacy consumer test passed; no oracle file is opened or projected.
 - Pinned sealed Podman corpus: 15/15 declared baseline failures and 15/15 treatment passes; 30 side executions; corpus digest `225f6ec950afa2c3c2a46bf75a55da3f5606505bc73bddc6527e357186c2a9bb`.
 - The corpus receipt directly records the Podman/Python/validator digests, observed rootless mode, local image digest, exact sealed argv template, no-pull policy, keep-id user namespace, no-new-privileges, network isolation, read-only root, dropped capabilities, timeout and cleanup contract, and UTC recording time.
 - Live pinned-Podman controller: passed and left the candidate non-promoted.

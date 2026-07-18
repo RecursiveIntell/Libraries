@@ -14,6 +14,13 @@ use thiserror::Error;
 use walkdir::WalkDir;
 
 const SPLITS: [&str; 3] = ["development", "calibration", "holdout"];
+const V2_FAMILY_SPLITS: [(&str, &str); 5] = [
+    ("borrow-check", "development"),
+    ("error-propagation", "development"),
+    ("iterator-safety", "development"),
+    ("module-hygiene", "calibration"),
+    ("wire-schema", "holdout"),
+];
 const REQUIRED_NEGATIVE: [&str; 15] = [
     "descendant_process",
     "duplicate_key_tool_call",
@@ -385,6 +392,14 @@ pub fn validate_and_consume_v2(root: impl AsRef<Path>) -> Result<V2ValidatedCorp
         let oracle_digest = required_string(manifest_task, "oracle_digest")?;
         let expected_task_path = format!("tasks/{family}/{task_id}/task.json");
         let expected_fixture_path = format!("tasks/{family}/{task_id}/fixture");
+        let canonical_split = V2_FAMILY_SPLITS
+            .iter()
+            .find_map(|(name, split)| (*name == family).then_some(*split));
+        if canonical_split != Some(split.as_str()) {
+            return Err(CorpusError::Invalid(format!(
+                "v2 canonical family-to-split mapping mismatch: {family}/{split}"
+            )));
+        }
 
         if !ids.insert(task_id.clone()) {
             return Err(CorpusError::Invalid(format!(
@@ -853,7 +868,22 @@ mod tests {
         refresh_manifest_digest(&mut leak_manifest);
         write_json(&leak_root.join("manifest.json"), &leak_manifest);
         let leakage_error = validate_and_consume_v2(leak_root).unwrap_err();
-        assert!(leakage_error.to_string().contains("family leakage"));
+        assert!(leakage_error
+            .to_string()
+            .contains("canonical family-to-split mapping mismatch"));
+    }
+
+    #[test]
+    fn v2_rejects_unknown_family_with_refreshed_manifest_digest() {
+        let (_temp, root) = copy_v2_corpus();
+        let mut manifest = read_json(&root.join("manifest.json")).unwrap();
+        manifest["tasks"][0]["family"] = Value::String("renamed-family".into());
+        refresh_manifest_digest(&mut manifest);
+        write_json(&root.join("manifest.json"), &manifest);
+        let error = validate_and_consume_v2(root).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("canonical family-to-split mapping mismatch"));
     }
 
     #[test]
