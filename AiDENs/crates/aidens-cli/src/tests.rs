@@ -184,6 +184,21 @@ fn real_sandbox_requires_typed_request_and_rejects_wrong_schema() {
 }
 
 #[test]
+fn learn_run_rejects_unknown_mode_without_writing_report() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let out = root.join("report.json");
+    let error = learn_run_command("typo", None, out.to_str()).unwrap_err();
+    assert!(error.to_string().contains("unsupported learning run mode"));
+    assert!(!out.exists());
+
+    let cli_error = Cli::try_parse_from(["aidens", "learn", "run", "--mode", "typo"])
+        .expect_err("clap must reject unknown learning modes");
+    assert_eq!(cli_error.kind(), clap::error::ErrorKind::InvalidValue);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn clap_exposes_real_sandbox_request_surface() {
     let cli = Cli::try_parse_from([
         "aidens",

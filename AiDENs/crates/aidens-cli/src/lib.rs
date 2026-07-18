@@ -220,7 +220,11 @@ pub enum Command {
 #[derive(Debug, Subcommand)]
 pub enum LearningCommand {
     Run {
-        #[arg(long, default_value = "fixture")]
+        #[arg(
+            long,
+            default_value = "fixture",
+            value_parser = ["fixture", "mock", "real-sandbox"]
+        )]
         mode: String,
         #[arg(long)]
         source: Option<String>,
@@ -1002,6 +1006,9 @@ fn learn_real_sandbox_command(request: &str, out: Option<&str>) -> Result<String
 }
 
 pub fn learn_run_command(mode: &str, source: Option<&str>, out: Option<&str>) -> Result<String> {
+    if !matches!(mode, "fixture" | "mock") {
+        bail!("unsupported learning run mode: {mode}");
+    }
     let manifest = learning_manifest(source)?;
     let report = serde_json::json!({
         "schema": "AiDENsLearningRunReportV1", "mode": mode,

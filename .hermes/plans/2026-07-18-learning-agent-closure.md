@@ -2,7 +2,7 @@
 
 > **For Hermes:** Execute with `subagent-driven-development`, strict RED/GREEN tests, canonical-owner reuse, controller-owned integration, and final hostile review.
 
-**Status:** Council converged with a hostile **NO-GO**. Implementation is active only on the prerequisite repairs below; terminal success and promotion remain blocked until their named owner evidence exists.
+**Status:** Prerequisite repairs are implemented and the final hostile re-review returned **GO**. Terminal success and promotion remain evidence-blocked until their named canonical-owner inputs exist.
 
 **Goal:** Close the bounded real-sandbox learning-agent POC without promoting from insufficient evidence, then add a separately gated real multi-family evaluation path sufficient for an MVP promotion decision.
 
@@ -47,7 +47,7 @@ Refresh this checkpoint before implementation and before any local commit.
 5. The prior blueprint embedded a hard-coded replacement unrelated to the executed patch. The blueprint now serializes the exact `StructuredPatch`, binds source/policy/image/capability/permit-use material, removes host-absolute fixture paths, and raises write risk from low to medium. Focused and live pinned-Podman regressions pass.
 6. Executable corpus v2 now contains 15 digest-pinned Rust fixtures across five family-clustered 9/3/3 partitions. Python and Rust consumers reject drift, leakage, duplicate identities, public oracle material, incomplete fixtures, and unsafe paths.
 7. A refreshed live receipt records 15 expected baseline failures and 15 treatment passes through the pinned sealed Podman image. It explicitly marks timing, paired statistics, and promotion evidence unavailable.
-8. `living-memory` contains repeated-paired execution, but runtime adoption remains blocked by the binding agent-graph/Forge direct-integration NO-GO unless the canonical owner council identifies a separately authorized seam.
+8. `living-memory` contains the authorized repeated-paired and canonical Forge export APIs. The old agent-graph advisory-pilot NO-GO does not prohibit direct owner reuse; adoption remains blocked by absent owner-native repeated-paired evidence and statistics, not API authority.
 
 ### V3 field-gap matrix
 
@@ -127,7 +127,7 @@ Refresh this checkpoint before implementation and before any local commit.
 
 **GREEN:** Obtain a real owner-native Forge evidence bundle, call the canonical `forge_engine::export_bundle → ExportEnvelopeV3` path, validate/digest it, and construct exactly one durable backpointer per required role. The controller may not serialize its effectful report into a look-alike envelope.
 
-**Blocker:** the real-sandbox controller currently has no `ForgeStore`/`ExperimentEvidenceBundle` input, and the binding agent-graph decision is NO-GO for direct Forge integration. Until a new certification or an already-authorized owner API supplies this evidence, terminal publication must remain pending.
+**Blocker:** the real-sandbox controller currently has no valid `ExperimentEvidenceBundle` produced by canonical repeated-paired execution. `living_memory::export_bundle` is the authorized V3 owner API, but calling it without legitimate owner evidence would only manufacture lineage. Terminal publication remains pending until that evidence exists.
 
 **Gate:** focused runner tests plus semantic-memory-forge envelope validation/roundtrip.
 
@@ -172,7 +172,7 @@ Refresh this checkpoint before implementation and before any local commit.
 
 ## Phase 3 — Real paired evaluation and promotion gate
 
-**Council decision required:** Whether `living-memory::PairedExperimentRunner` may be adopted under the existing direct-Forge NO-GO. If blocked, this phase remains offline/advisory and cannot promote.
+**Authority decision:** `living-memory::PairedExperimentRunner` and `living_memory::export_bundle` may be reused directly as canonical owners; the agent-graph advisory-pilot NO-GO is unrelated. Promotion still requires owner-native repeated-paired trials, statistics, replay, and an independent lifecycle permit.
 
 ### Task 3.1: Replace metadata-only task descriptors with runnable immutable fixture packages — **IMPLEMENTED**
 
@@ -238,7 +238,7 @@ Refresh this checkpoint before implementation and before any local commit.
 
 ### Dissent resolution
 
-The architecture lane described the pre-council procedure as promoted; the hostile lane showed that promotion itself was unauthorized and insufficiently bound. Higher-authority live source plus the hostile evidence wins: the corrected controller leaves the candidate `Tested` and inactive. The architecture lane also proposed canonical Forge export, while the binding pilot decision forbids direct Forge integration. Therefore Task 2.1 is blocked rather than replaced with a fabricated envelope.
+The architecture lane described the pre-council procedure as promoted; the hostile lane showed that promotion itself was unauthorized and insufficiently bound. Higher-authority live source plus the hostile evidence wins: the corrected controller leaves the candidate `Tested` and inactive. Canonical Forge export is authorized through living-memory, but Task 2.1 remains evidence-blocked because no valid owner-native `ExperimentEvidenceBundle` exists; a fabricated envelope remains forbidden.
 
 ### Implementation order after convergence
 
@@ -258,5 +258,5 @@ The architecture lane described the pre-council procedure as promoted; the hosti
 - The corpus receipt directly records the Podman/Python/validator digests, observed rootless mode, local image digest, exact sealed argv template, no-pull policy, keep-id user namespace, no-new-privileges, network isolation, read-only root, dropped capabilities, timeout and cleanup contract, and UTC recording time.
 - Live pinned-Podman controller: passed and left the candidate non-promoted.
 - Live public CLI: passed and remained `blocked-evidence-insufficient` with terminal publication pending.
-- Affected packages: strict Clippy passed; `aidens-contracts` 101 passed; `aidens-receipts` 20 passed; `aidens-runner` 72 unit tests passed with 2 ignored live tests and the controller live test separately exercised; all runner integrations passed; `aidens-cli` 66 passed with its live test separately exercised plus 5 integrations.
+- Affected packages: strict Clippy passed; `aidens-contracts` 101 passed; `aidens-receipts` 20 passed; `aidens-runner` 72 unit tests passed with 2 ignored live tests and the controller live test separately exercised; all runner integrations passed; `aidens-cli` 67 passed with its live test separately exercised plus 5 integrations.
 - Full root and AiDENs workspace checks passed. The root supported release lane passed. Second high-effort hostile review returned GO with all six prior P1 findings resolved and no new P0/P1.
