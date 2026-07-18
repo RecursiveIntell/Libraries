@@ -49,7 +49,7 @@ point to.
 | Property | Value |
 | --- | --- |
 | Crate | `stack-ids` |
-| Current local version | `0.1.1` |
+| Current local version | `0.1.3` |
 | Rust edition | 2021 |
 | MSRV | Rust 1.75 |
 | License | Apache-2.0 |
@@ -61,7 +61,7 @@ point to.
 
 ```toml
 [dependencies]
-stack-ids = "0.1.1"
+stack-ids = "0.1.3"
 ```
 
 ## Quick start

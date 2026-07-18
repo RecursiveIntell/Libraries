@@ -254,6 +254,10 @@ fn id_ordering() {
 #[test]
 fn kernel_artifact_ids_support_parse_display_and_serde_roundtrip() {
     assert_id_roundtrip!(KernelRunId, "run-1");
+    assert_id_roundtrip!(GraphRunId, "graph-run-1");
+    assert_id_roundtrip!(GraphCheckpointAttemptId, "checkpoint-attempt-1");
+    assert_id_roundtrip!(QueueJobId, "queue-job-1");
+    assert_id_roundtrip!(BatchJobId, "batch-job-1");
     assert_id_roundtrip!(ConstraintId, "constraint-1");
     assert_id_roundtrip!(HyperedgeId, "hyperedge-1");
     assert_id_roundtrip!(ResidualId, "residual-1");

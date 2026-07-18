@@ -229,6 +229,35 @@ define_id!(
 );
 
 define_id!(
+    /// Opaque identifier for one `agent-graph` execution run.
+    ///
+    /// The graph runtime emits this type's stable textual representation at
+    /// its compatibility boundary, where run IDs are still stored as strings.
+    GraphRunId
+);
+
+define_id!(
+    /// Opaque identifier for one persisted `agent-graph` checkpoint attempt.
+    ///
+    /// This is distinct from the cross-runtime retry-lineage `AttemptId`.
+    GraphCheckpointAttemptId
+);
+
+define_id!(
+    /// Opaque identifier for a `job-queue` enqueue record.
+    ///
+    /// Its textual representation is retained at the queue storage boundary.
+    QueueJobId
+);
+
+define_id!(
+    /// Opaque identifier for an `ai-batch-queue` scheduled batch job.
+    ///
+    /// Its textual representation is retained at the queue storage boundary.
+    BatchJobId
+);
+
+define_id!(
     /// Opaque identifier for a compiled constraint unit.
     ConstraintId
 );
