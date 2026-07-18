@@ -143,6 +143,8 @@ pub enum RunBundleStoreError {
     UnsupportedSchema(String),
     #[error("run bundle durable identity validation failed: {0:?}")]
     InvalidDurableIdentity(Vec<String>),
+    #[error("run bundle child closure validation failed: {0:?}")]
+    InvalidChildClosure(Vec<String>),
     #[error("run bundle missing string run_id")]
     MissingRunId,
     #[error("run bundle not found: {0}")]
@@ -210,14 +212,24 @@ impl RunBundleStore {
         if schema != "AiDENsRunBundleV3" {
             return Err(RunBundleStoreError::UnsupportedSchema(schema.into()));
         }
-        if let Ok(typed_bundle) = serde_json::from_value::<AiDENsRunBundleV3>(bundle.clone()) {
-            if !typed_bundle.canonical_backpointers.is_empty()
-                || bundle.to_string().contains("local-process-seq")
-            {
-                typed_bundle
-                    .validate_durable_identity()
-                    .map_err(RunBundleStoreError::InvalidDurableIdentity)?;
-            }
+        let typed_bundle =
+            serde_json::from_value::<AiDENsRunBundleV3>(bundle.clone()).map_err(|source| {
+                RunBundleStoreError::Json {
+                    path: self.config.index_path.clone(),
+                    source,
+                }
+            })?;
+        if !typed_bundle.canonical_backpointers.is_empty()
+            || bundle.to_string().contains("local-process-seq")
+        {
+            typed_bundle
+                .validate_durable_identity()
+                .map_err(RunBundleStoreError::InvalidDurableIdentity)?;
+        }
+        if !typed_bundle.child_receipts.is_empty() || !typed_bundle.required_children.is_empty() {
+            typed_bundle
+                .validate_child_closure()
+                .map_err(RunBundleStoreError::InvalidChildClosure)?;
         }
         let run_id = bundle
             .get("run_id")
@@ -843,6 +855,53 @@ impl CanonicalEventLog {
         Ok(record)
     }
 
+    /// Atomically mint and append a durable occurrence receipt under the canonical log lock.
+    /// The identifier binds caller material to this exact chain position, so concurrent equal
+    /// requests remain distinct while replay from the stored receipt remains deterministic.
+    pub fn append_generated_json(
+        &self,
+        owner_crate: impl Into<String>,
+        schema_name: impl Into<String>,
+        receipt_prefix: &str,
+        identity_material: Value,
+        body: Value,
+    ) -> Result<CanonicalEventLogEntry, CanonicalEventLogError> {
+        let owner_crate = owner_crate.into();
+        let schema_name = schema_name.into();
+        let _lock = acquire_exclusive_lock(&self.config.records_path).map_err(|source| {
+            CanonicalEventLogError::Io {
+                path: lock_path_for(&self.config.records_path),
+                source,
+            }
+        })?;
+        let records = read_records(&self.config.records_path)?;
+        let sequence_number = records
+            .last()
+            .map(|record| record.sequence_number + 1)
+            .unwrap_or(0);
+        let previous_record_digest = records
+            .last()
+            .and_then(|record| record.record_digest.clone());
+        let id_material = serde_json::json!({
+            "identity_material": identity_material,
+            "sequence_number": sequence_number,
+            "previous_record_digest": previous_record_digest,
+        });
+        let id_digest = ContentDigest::compute_json(&id_material)
+            .map_err(|source| CanonicalEventLogError::Digest { source })?;
+        let receipt_id = format!("{receipt_prefix}:{}", id_digest.hex());
+        let record = CanonicalEventLogEntry::new_with_chain(
+            owner_crate,
+            schema_name,
+            receipt_id,
+            body,
+            sequence_number,
+            previous_record_digest,
+        )?;
+        self.append_record_locked(&record)?;
+        Ok(record)
+    }
+
     pub fn append_record(
         &self,
         record: &CanonicalEventLogEntry,
@@ -1317,6 +1376,18 @@ fn receipt_store_segment(value: &str) -> String {
 mod tests {
     use super::*;
 
+    fn valid_v3_value(run_id: &str) -> Value {
+        let mut bundle: AiDENsRunBundleV3 = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/p26/aidens_run_bundle_v3.json"
+        ))
+        .unwrap();
+        bundle.run_id = run_id.into();
+        bundle.canonical_backpointers.clear();
+        bundle.child_receipts.clear();
+        bundle.required_children.clear();
+        serde_json::to_value(bundle).unwrap()
+    }
+
     #[test]
     fn canonical_log_persists_owner_labeled_records() {
         let root = std::env::temp_dir().join(format!(
@@ -1340,6 +1411,39 @@ mod tests {
         assert_eq!(log.inspect("report:test").unwrap(), record);
         assert!(log.verify_digest("report:test").unwrap());
         assert!(log.verify_chain().unwrap());
+    }
+
+    #[test]
+    fn canonical_log_mints_distinct_chain_bound_occurrences_for_equal_material() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-generated-occurrence-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();
+        let material = serde_json::json!({"request":"same"});
+        let first = log
+            .append_generated_json(
+                "aidens-runner",
+                "run-occurrence-v1",
+                "run-occurrence",
+                material.clone(),
+                material.clone(),
+            )
+            .unwrap();
+        let second = log
+            .append_generated_json(
+                "aidens-runner",
+                "run-occurrence-v1",
+                "run-occurrence",
+                material.clone(),
+                material,
+            )
+            .unwrap();
+        assert_ne!(first.receipt_id, second.receipt_id);
+        assert_eq!(first.sequence_number + 1, second.sequence_number);
+        assert_eq!(second.previous_record_digest, first.record_digest);
+        assert!(log.verify_chain().unwrap());
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
@@ -1491,7 +1595,7 @@ mod tests {
     }
 
     #[test]
-    fn run_bundle_store_persists_v3_operator_evidence() {
+    fn run_bundle_store_rejects_schema_only_v3_before_publication() {
         let root =
             std::env::temp_dir().join(format!("aidens-run-bundle-store-{}", uuid::Uuid::new_v4()));
         let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
@@ -1506,25 +1610,53 @@ mod tests {
             }
         });
 
-        let record = store.write_bundle_value(&bundle).unwrap();
-        assert_eq!(record.support_tier, "supported-local");
-        assert_eq!(record.semantic_status, "exact_check");
-        assert!(record.bundle_path.exists());
-        assert!(record
-            .bundle_path
-            .display()
-            .to_string()
-            .contains(record.content_digest.hex()));
         assert!(matches!(
             store.write_bundle_value(&bundle),
-            Err(RunBundleStoreError::AlreadyExists(_))
+            Err(RunBundleStoreError::Json { .. })
         ));
+        assert!(!store.bundle_path_for_run_id("agent:fixture/run").exists());
+        assert!(store.list_records().unwrap().is_empty());
+        let _ = std::fs::remove_dir_all(root);
+    }
 
-        let reopened = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
-        let inspection = reopened.inspect("agent:fixture/run").unwrap();
-        assert!(inspection.digest_verified);
-        assert_eq!(inspection.bundle["schema"], "AiDENsRunBundleV3");
-        assert_eq!(reopened.single_bundle_path().unwrap(), record.bundle_path);
+    #[test]
+    fn typed_child_closure_is_rejected_before_bundle_or_index_publication() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-run-bundle-invalid-typed-child-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let mut bundle: aidens_contracts::AiDENsRunBundleV3 = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/p26/aidens_run_bundle_v3.json"
+        ))
+        .unwrap();
+        bundle.bundle_id = aidens_contracts::generated_artifact_id_from_material(
+            "aidens-run-bundle-v3",
+            "typed-child-prepublication-rejection",
+        );
+        let child = aidens_contracts::AiDENsRunChildReceiptV1::closed(
+            "owner:preflight",
+            serde_json::json!({"schema": "LearningPreflightReceiptV1"}),
+        )
+        .unwrap();
+        bundle.required_children = vec![child.required()];
+        bundle.child_receipts = vec![child];
+        bundle.child_receipts[0].receipt["schema"] = serde_json::json!("tampered");
+
+        let error = store
+            .write_bundle_value(&serde_json::to_value(&bundle).unwrap())
+            .unwrap_err();
+
+        assert!(matches!(
+            error,
+            RunBundleStoreError::InvalidChildClosure(ref reasons)
+                if reasons.iter().any(|reason| reason == "child-digest-mismatch:owner:preflight")
+        ));
+        assert!(!store.bundle_path_for_run_id(&bundle.run_id).exists());
+        assert_eq!(
+            std::fs::read_to_string(&store.config().index_path).unwrap(),
+            ""
+        );
         let _ = std::fs::remove_dir_all(root);
     }
 
@@ -1735,10 +1867,7 @@ mod tests {
             uuid::Uuid::new_v4()
         ));
         let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
-        let bundle = serde_json::json!({
-            "schema":"AiDENsRunBundleV3",
-            "run_id":"append-failed",
-        });
+        let bundle = valid_v3_value("append-failed");
         let digest = ContentDigest::compute_json(&bundle).unwrap();
         let expected_path = store.bundle_path_for_run_id_and_digest("append-failed", &digest);
 
@@ -1768,10 +1897,7 @@ mod tests {
             uuid::Uuid::new_v4()
         ));
         let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
-        let original = serde_json::json!({
-            "schema":"AiDENsRunBundleV3",
-            "run_id":"tampered",
-        });
+        let original = valid_v3_value("tampered");
         let record = store.write_bundle_value(&original).unwrap();
         std::fs::write(
             &record.bundle_path,
@@ -1798,24 +1924,21 @@ mod tests {
             RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&child_root)).unwrap();
         let child_receipt = serde_json::json!({"receipt_id":"effect:1"});
         let child_digest = ContentDigest::compute_json(&child_receipt).unwrap();
-        let unclosed = serde_json::json!({
-            "schema":"AiDENsRunBundleV3",
-            "run_id":"effect-without-outcome",
-            "required_children":[{"owner_id":"effect:1","digest":child_digest.hex()}],
-            "child_receipts":[{
-                "owner_id":"effect:1",
-                "digest":child_digest.hex(),
-                "closed":false,
-                "receipt":child_receipt,
-            }],
-        });
-        child_store.write_bundle_value(&unclosed).unwrap();
-        let report = child_store.reconcile().unwrap();
-        assert!(report.entries.iter().any(|entry| {
-            entry.run_id == "effect-without-outcome"
-                && entry.state == RunBundleRecoveryState::Quarantined
-                && entry.reason == "child_reference_unverified"
-        }));
+        let mut unclosed = valid_v3_value("effect-without-outcome");
+        unclosed["required_children"] = serde_json::json!([
+            {"owner_id":"effect:1","digest":child_digest.hex()}
+        ]);
+        unclosed["child_receipts"] = serde_json::json!([{
+            "owner_id":"effect:1",
+            "digest":child_digest.hex(),
+            "closed":false,
+            "receipt":child_receipt,
+        }]);
+        assert!(matches!(
+            child_store.write_bundle_value(&unclosed),
+            Err(RunBundleStoreError::InvalidChildClosure(_))
+        ));
+        assert!(child_store.list_records().unwrap().is_empty());
 
         let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_dir_all(child_root);
@@ -1828,12 +1951,7 @@ mod tests {
             uuid::Uuid::new_v4()
         ));
         let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
-        let bundle = serde_json::json!({
-            "schema":"AiDENsRunBundleV3",
-            "run_id":"bound-run",
-            "support":{"support_tier":"supported-local"},
-            "failure":{"degraded":false},
-        });
+        let bundle = valid_v3_value("bound-run");
         let record = store.write_bundle_value(&bundle).unwrap();
         assert_eq!(record.sequence_number, 0);
         assert!(record.previous_record_digest.is_none());
@@ -1872,10 +1990,7 @@ mod tests {
             uuid::Uuid::new_v4()
         ));
         let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
-        let bundle = serde_json::json!({
-            "schema":"AiDENsRunBundleV3",
-            "run_id":"original-run",
-        });
+        let bundle = valid_v3_value("original-run");
         let record = store.write_bundle_value(&bundle).unwrap();
         let mut rewritten = record.clone();
         rewritten.run_id = "rewritten-run".into();
@@ -1914,10 +2029,7 @@ mod tests {
             let store = store.clone();
             let barrier = barrier.clone();
             handles.push(std::thread::spawn(move || {
-                let bundle = serde_json::json!({
-                    "schema":"AiDENsRunBundleV3",
-                    "run_id":"same-run",
-                });
+                let bundle = valid_v3_value("same-run");
                 barrier.wait();
                 store.write_bundle_value(&bundle)
             }));

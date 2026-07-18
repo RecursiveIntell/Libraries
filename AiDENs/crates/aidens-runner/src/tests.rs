@@ -213,7 +213,10 @@ async fn canonical_log_records_provider_unavailable_report() {
     let records = reopened.list_records().unwrap();
 
     assert!(error.to_string().contains("provider unavailable"));
-    assert_eq!(records.len(), 3);
+    assert_eq!(records.len(), 4);
+    assert!(records.iter().any(|record| {
+        record.owner_crate == "aidens-runner" && record.schema_name == "run-occurrence-v1"
+    }));
     assert!(records
         .iter()
         .any(|record| record.schema_name == "tool-exposure-plan-v1"));
@@ -259,7 +262,10 @@ async fn canonical_log_records_tool_and_boundary_failure_report() {
         .iter()
         .any(|warning| warning.contains("parser-fallback")));
     assert!(output.receipt.boundary_repair_receipts.is_empty());
-    assert_eq!(records.len(), 3);
+    assert_eq!(records.len(), 4);
+    assert!(records.iter().any(|record| {
+        record.owner_crate == "aidens-runner" && record.schema_name == "run-occurrence-v1"
+    }));
     assert!(records
         .iter()
         .any(|record| record.schema_name == "tool-exposure-plan-v1"));

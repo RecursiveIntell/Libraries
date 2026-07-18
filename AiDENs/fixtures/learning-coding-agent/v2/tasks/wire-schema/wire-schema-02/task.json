@@ -1,0 +1,17 @@
+{
+  "baseline_expected": "fail",
+  "family": "wire-schema",
+  "fixture_tree_digest": "cd5f2ae33ab8d897bba91d412f7203b89420489c5902fef22f6ae915fcc6655c",
+  "oracle_digest": "bb4ab9b55c67e00deb0555d9c6dc29a7b6af9a15a17a85fd870477b973985ab6",
+  "prompt": "Restore the declared snake_case wire field without changing values.",
+  "schema": "AiDENsExecutableLearningTaskV2",
+  "split": "holdout",
+  "task_id": "wire-schema-02",
+  "treatment_expected": "pass",
+  "verifier": [
+    "cargo",
+    "test",
+    "--offline",
+    "--quiet"
+  ]
+}

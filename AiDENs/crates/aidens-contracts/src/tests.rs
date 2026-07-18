@@ -59,6 +59,157 @@ fn task2_material_bound_bundle_ids_are_stable_and_bind_required_owner_references
 }
 
 #[test]
+fn task2_typed_child_closure_is_exact_and_rebinds_bundle_identity() {
+    let base = task2_material_bundle("typed-child-closure");
+    let child = AiDENsRunChildReceiptV1::closed(
+        "owner:preflight",
+        serde_json::json!({"schema": "LearningPreflightReceiptV1", "closed": true}),
+    )
+    .unwrap();
+    let required = child.required();
+    let closed = base
+        .clone()
+        .with_child_closure(vec![child.clone()], vec![required])
+        .unwrap();
+
+    assert_ne!(base.bundle_id, closed.bundle_id);
+    assert!(closed.validate_child_closure().is_ok());
+    let roundtrip: AiDENsRunBundleV3 =
+        serde_json::from_value(serde_json::to_value(&closed).unwrap()).unwrap();
+    assert_eq!(roundtrip.child_receipts, vec![child]);
+    assert!(roundtrip.validate_child_closure().is_ok());
+}
+
+#[test]
+fn task2_typed_child_closure_rejects_missing_tampered_and_open_children() {
+    let base = task2_material_bundle("invalid-child-closure");
+    let child = AiDENsRunChildReceiptV1::closed(
+        "owner:preflight",
+        serde_json::json!({"schema": "LearningPreflightReceiptV1"}),
+    )
+    .unwrap();
+
+    let missing = base
+        .clone()
+        .with_child_closure(vec![child.clone()], Vec::new())
+        .unwrap_err();
+    assert!(missing
+        .iter()
+        .any(|reason| reason == "required-child-set-mismatch"));
+
+    let mut tampered = child.clone();
+    tampered.receipt["schema"] = serde_json::json!("tampered");
+    let tampered_error = base
+        .clone()
+        .with_child_closure(vec![tampered.clone()], vec![tampered.required()])
+        .unwrap_err();
+    assert!(tampered_error
+        .iter()
+        .any(|reason| reason == "child-digest-mismatch:owner:preflight"));
+
+    let mut open = child;
+    open.closed = false;
+    let open_error = base
+        .with_child_closure(vec![open.clone()], vec![open.required()])
+        .unwrap_err();
+    assert!(open_error
+        .iter()
+        .any(|reason| reason == "child-not-closed:owner:preflight"));
+}
+
+#[test]
+fn task2_typed_child_closure_rejects_duplicate_owners_and_canonicalizes_order() {
+    let first = AiDENsRunChildReceiptV1::closed(
+        "owner:alpha",
+        serde_json::json!({"schema": "AlphaReceiptV1"}),
+    )
+    .unwrap();
+    let second = AiDENsRunChildReceiptV1::closed(
+        "owner:beta",
+        serde_json::json!({"schema": "BetaReceiptV1"}),
+    )
+    .unwrap();
+    let first_required = first.required();
+    let second_required = second.required();
+
+    let forward = task2_material_bundle("ordered-child-closure")
+        .with_child_closure(
+            vec![first.clone(), second.clone()],
+            vec![first_required.clone(), second_required.clone()],
+        )
+        .unwrap();
+    let reverse = task2_material_bundle("ordered-child-closure")
+        .with_child_closure(
+            vec![second.clone(), first.clone()],
+            vec![second_required.clone(), first_required.clone()],
+        )
+        .unwrap();
+    assert_eq!(forward.bundle_id, reverse.bundle_id);
+    assert_eq!(forward.child_receipts, reverse.child_receipts);
+    assert_eq!(forward.required_children, reverse.required_children);
+
+    let mut noncanonical = task2_material_bundle("noncanonical-child-closure");
+    noncanonical.child_receipts = vec![second.clone(), first.clone()];
+    noncanonical.required_children = vec![second_required.clone(), first_required.clone()];
+    let noncanonical_error = noncanonical.validate_child_closure().unwrap_err();
+    assert!(noncanonical_error
+        .iter()
+        .any(|reason| reason == "child-order-noncanonical"));
+    assert!(noncanonical_error
+        .iter()
+        .any(|reason| reason == "required-child-order-noncanonical"));
+
+    let duplicate_owner = AiDENsRunChildReceiptV1::closed(
+        "owner:alpha",
+        serde_json::json!({"schema": "DifferentReceiptV1"}),
+    )
+    .unwrap();
+    let duplicate_error = task2_material_bundle("duplicate-child-owner")
+        .with_child_closure(
+            vec![first, duplicate_owner.clone()],
+            vec![first_required, duplicate_owner.required()],
+        )
+        .unwrap_err();
+    assert!(duplicate_error
+        .iter()
+        .any(|reason| reason == "duplicate-child-owner:owner:alpha"));
+    assert!(duplicate_error
+        .iter()
+        .any(|reason| reason == "duplicate-required-child-owner:owner:alpha"));
+}
+
+#[test]
+fn learning_preflight_v1_remains_compatible_without_additive_memory_owner() {
+    let legacy: LearningPreflightReceiptV1 = serde_json::from_value(serde_json::json!({
+        "schema": LearningPreflightReceiptV1::SCHEMA,
+        "material_id": "preflight:legacy-material",
+        "fixture_tree_digest": "fixture:legacy-material",
+        "patch_digest": "patch:legacy-material",
+        "patch_policy_digest": "policy:legacy-material",
+        "permit_grant_id": "permit:legacy-material",
+        "permit_use_id": "permit-use:legacy-material",
+        "permit_scope_digest": "scope:legacy-material",
+        "image": "localhost/image@sha256:legacy-material",
+        "backend_limits_digest": "limits:legacy-material",
+        "run_id": "run:legacy-material",
+        "attempt_id": "attempt:legacy-material",
+        "trial_id": "trial:legacy-material",
+        "trace_id": "trace:legacy-material",
+        "requested_recorded_at": "2026-07-18T00:00:00Z",
+        "cea_store_identity": "cea:legacy-material",
+        "receipt_root_owner": "receipts:legacy-material"
+    }))
+    .unwrap();
+
+    assert!(legacy.memory_store_owner.is_empty());
+    assert!(legacy.validate().is_ok());
+    assert!(serde_json::to_value(legacy)
+        .unwrap()
+        .get("memory_store_owner")
+        .is_none());
+}
+
+#[test]
 fn task2_material_bound_bundle_id_changes_when_owner_lineage_changes() {
     let baseline = task2_material_bundle("same caller material");
     let mut changed_backpointers = task2_owner_backpointers();

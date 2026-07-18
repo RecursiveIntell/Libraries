@@ -1,0 +1,17 @@
+{
+  "baseline_expected": "fail",
+  "family": "borrow-check",
+  "fixture_tree_digest": "dee9d0d9bfc253d18c66cb4dc1f26ab6b40d09b6e4075c2802ba238f9fd087dc",
+  "oracle_digest": "e2e7f22920df6414d42bd99bedf884ab519381e72175779feeabbe852810ba3d",
+  "prompt": "Repair the ownership move so the function returns two independently owned values.",
+  "schema": "AiDENsExecutableLearningTaskV2",
+  "split": "development",
+  "task_id": "borrow-check-01",
+  "treatment_expected": "pass",
+  "verifier": [
+    "cargo",
+    "test",
+    "--offline",
+    "--quiet"
+  ]
+}

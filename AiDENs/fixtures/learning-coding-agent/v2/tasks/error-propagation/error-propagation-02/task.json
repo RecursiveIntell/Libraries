@@ -1,0 +1,17 @@
+{
+  "baseline_expected": "fail",
+  "family": "error-propagation",
+  "fixture_tree_digest": "72b7bf17c9c58eaa81d8f45fe68165f388c063334b19bd622669d2afa21bd222",
+  "oracle_digest": "d8a1ea1af6fc3514612604b587dcc9bd5464c3695d4db14dc766bdd1c7cfd26f",
+  "prompt": "Replace panic-based parsing with typed error propagation.",
+  "schema": "AiDENsExecutableLearningTaskV2",
+  "split": "development",
+  "task_id": "error-propagation-02",
+  "treatment_expected": "pass",
+  "verifier": [
+    "cargo",
+    "test",
+    "--offline",
+    "--quiet"
+  ]
+}

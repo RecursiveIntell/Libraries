@@ -9,32 +9,38 @@ fn material_receipt_id(prefix: &str, material: serde_json::Value) -> ArtifactId 
     generated_artifact_id_from_material(prefix, &material.to_string())
 }
 
-pub(super) fn material_bound_run_context(
+pub(crate) fn material_bound_run_context(
     app_id: &str,
     prompt: &str,
-    provider_route: &ProviderRouteReportV1,
-    tool_exposure: &ToolExposureSetV1,
+    route: &ProviderRouteReportV1,
+    exposure: &ToolExposureSetV1,
     budget: &BudgetV1,
+    occurrence_receipt_id: &str,
 ) -> AidensRunContextV1 {
     let material = serde_json::json!({
         "app_id": app_id,
         "prompt": prompt,
-        "provider_kind": &provider_route.provider_kind,
-        "provider_model": &provider_route.model,
-        "provider_route": &provider_route.route,
-        "exposed_tool_ids": &tool_exposure.exposed_tool_ids,
-        "blocked_tool_ids": &tool_exposure.blocked_tool_ids,
-        "sandbox_root": &tool_exposure.sandbox_root,
+        "provider_kind": &route.provider_kind,
+        "provider_model": &route.model,
+        "provider_route": &route.route,
+        "exposed_tool_ids": &exposure.exposed_tool_ids,
+        "blocked_tool_ids": &exposure.blocked_tool_ids,
+        "sandbox_root": &exposure.sandbox_root,
         "max_tool_calls": budget.max_tool_calls,
         "max_retries": budget.max_retries,
         "max_turn_millis": budget.max_turn_millis,
-    });
-    let material = material.to_string();
+    })
+    .to_string();
     let mut context = AidensRunContextV1::new(app_id);
-    context.run_id = generated_artifact_id_from_material("run", &material);
-    context.trace_id = generated_artifact_id_from_material("trace", &material);
     context.attempt_family_id = generated_artifact_id_from_material("attempt-family", &material);
-    context.attempt_id = generated_artifact_id_from_material("attempt", &material);
+    let occurrence_material = serde_json::json!({
+        "family_material": material,
+        "occurrence_receipt_id": occurrence_receipt_id,
+    })
+    .to_string();
+    context.run_id = generated_artifact_id_from_material("run", &occurrence_material);
+    context.trace_id = generated_artifact_id_from_material("trace", &occurrence_material);
+    context.attempt_id = generated_artifact_id_from_material("attempt", &occurrence_material);
     context
 }
 

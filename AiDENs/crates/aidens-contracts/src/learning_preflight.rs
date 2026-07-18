@@ -19,6 +19,8 @@ pub struct LearningPreflightReceiptV1 {
     pub requested_recorded_at: String,
     pub cea_store_identity: String,
     pub receipt_root_owner: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub memory_store_owner: String,
 }
 
 impl LearningPreflightReceiptV1 {

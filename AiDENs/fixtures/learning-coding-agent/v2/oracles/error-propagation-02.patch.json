@@ -1,0 +1,38 @@
+{
+  "edits": [
+    {
+      "mode": "Modify",
+      "ops": [
+        {
+          "Replace": {
+            "lines": [
+              "pub fn parse_positive_2(input: &str) -> Result<u32, String> {",
+              "    let value = input.parse::<u32>().map_err(|_| \"invalid-integer\".to_string())?;",
+              "    if value > 0 { Ok(value) } else { Err(\"not-positive\".into()) }",
+              "}",
+              "",
+              "#[cfg(test)]",
+              "mod tests {",
+              "    use super::*;",
+              "    #[test]",
+              "    fn invalid_input_is_an_error() {",
+              "        assert!(parse_positive_2(\"invalid\").is_err());",
+              "    }",
+              "}"
+            ],
+            "range": {
+              "end_exclusive": 14,
+              "start": 1
+            }
+          }
+        }
+      ],
+      "path": "src/lib.rs"
+    }
+  ],
+  "notes": [
+    "evaluator-only oracle; excluded from learner public projection"
+  ],
+  "patch_id": "a26a20f0-4f8d-5e3f-af5d-b3cf113f8968",
+  "summary": "canonical evaluator patch for error-propagation-02"
+}

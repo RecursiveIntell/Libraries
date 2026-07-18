@@ -1,0 +1,37 @@
+{
+  "edits": [
+    {
+      "mode": "Modify",
+      "ops": [
+        {
+          "Replace": {
+            "lines": [
+              "pub fn encode_user_2(name: &str) -> String {",
+              "    format!(r#\"{{\"user_name\":\"{}\"}}\"#, name)",
+              "}",
+              "",
+              "#[cfg(test)]",
+              "mod tests {",
+              "    use super::*;",
+              "    #[test]",
+              "    fn preserves_snake_case_wire_name() {",
+              "        assert_eq!(encode_user_2(\"Ada\"), r#\"{\"user_name\":\"Ada\"}\"#);",
+              "    }",
+              "}"
+            ],
+            "range": {
+              "end_exclusive": 13,
+              "start": 1
+            }
+          }
+        }
+      ],
+      "path": "src/lib.rs"
+    }
+  ],
+  "notes": [
+    "evaluator-only oracle; excluded from learner public projection"
+  ],
+  "patch_id": "edd5c957-95c1-530e-9b8f-342f62344d68",
+  "summary": "canonical evaluator patch for wire-schema-02"
+}

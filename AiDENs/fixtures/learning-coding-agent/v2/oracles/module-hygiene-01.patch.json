@@ -1,0 +1,39 @@
+{
+  "edits": [
+    {
+      "mode": "Modify",
+      "ops": [
+        {
+          "Replace": {
+            "lines": [
+              "mod internal {",
+              "    pub(super) fn token_1() -> &'static str { \"ok\" }",
+              "}",
+              "",
+              "pub fn public_token_1() -> &'static str {",
+              "    internal::token_1()",
+              "}",
+              "",
+              "#[cfg(test)]",
+              "mod tests {",
+              "    use super::*;",
+              "    #[test]",
+              "    fn public_wrapper_works() { assert_eq!(public_token_1(), \"ok\"); }",
+              "}"
+            ],
+            "range": {
+              "end_exclusive": 15,
+              "start": 1
+            }
+          }
+        }
+      ],
+      "path": "src/lib.rs"
+    }
+  ],
+  "notes": [
+    "evaluator-only oracle; excluded from learner public projection"
+  ],
+  "patch_id": "7d438716-2ea8-59cb-acdd-825efd01a9be",
+  "summary": "canonical evaluator patch for module-hygiene-01"
+}

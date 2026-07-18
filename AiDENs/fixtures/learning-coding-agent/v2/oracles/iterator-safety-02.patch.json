@@ -1,0 +1,37 @@
+{
+  "edits": [
+    {
+      "mode": "Modify",
+      "ops": [
+        {
+          "Replace": {
+            "lines": [
+              "pub fn even_sum_2(values: &[u32]) -> u32 {",
+              "    values.iter().copied().filter(|value| value % 2 == 0).sum()",
+              "}",
+              "",
+              "#[cfg(test)]",
+              "mod tests {",
+              "    use super::*;",
+              "    #[test]",
+              "    fn sums_only_even_values() {",
+              "        assert_eq!(even_sum_2(&[1, 2, 3, 4]), 6);",
+              "    }",
+              "}"
+            ],
+            "range": {
+              "end_exclusive": 13,
+              "start": 1
+            }
+          }
+        }
+      ],
+      "path": "src/lib.rs"
+    }
+  ],
+  "notes": [
+    "evaluator-only oracle; excluded from learner public projection"
+  ],
+  "patch_id": "934cd247-22f4-5c25-b4c1-a5746b7d1124",
+  "summary": "canonical evaluator patch for iterator-safety-02"
+}

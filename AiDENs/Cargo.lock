@@ -398,6 +398,7 @@ dependencies = [
  "semantic-memory",
  "serde",
  "serde_json",
+ "sha2",
  "stack-ids",
  "tempfile",
  "thiserror",

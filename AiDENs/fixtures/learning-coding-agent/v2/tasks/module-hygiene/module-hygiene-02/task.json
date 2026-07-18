@@ -1,0 +1,17 @@
+{
+  "baseline_expected": "fail",
+  "family": "module-hygiene",
+  "fixture_tree_digest": "51d1ee3f2b3a244b7670aae2199698b8ecaf7167e67bb5add05f97aa73b0a4d9",
+  "oracle_digest": "9b8160d027016e4eed1eae7715beb9951dcac6d119da1b3fc9bcfbbb5488bdd6",
+  "prompt": "Repair module visibility using the narrowest sufficient scope.",
+  "schema": "AiDENsExecutableLearningTaskV2",
+  "split": "calibration",
+  "task_id": "module-hygiene-02",
+  "treatment_expected": "pass",
+  "verifier": [
+    "cargo",
+    "test",
+    "--offline",
+    "--quiet"
+  ]
+}

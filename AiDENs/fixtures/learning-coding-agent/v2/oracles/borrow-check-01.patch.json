@@ -1,0 +1,39 @@
+{
+  "edits": [
+    {
+      "mode": "Modify",
+      "ops": [
+        {
+          "Replace": {
+            "lines": [
+              "pub fn duplicate_1(input: &str) -> (String, String) {",
+              "    let owned = input.to_string();",
+              "    let moved = owned.clone();",
+              "    (owned, moved)",
+              "}",
+              "",
+              "#[cfg(test)]",
+              "mod tests {",
+              "    use super::*;",
+              "    #[test]",
+              "    fn duplicates_owned_value() {",
+              "        assert_eq!(duplicate_1(\"v\"), (\"v\".into(), \"v\".into()));",
+              "    }",
+              "}"
+            ],
+            "range": {
+              "end_exclusive": 15,
+              "start": 1
+            }
+          }
+        }
+      ],
+      "path": "src/lib.rs"
+    }
+  ],
+  "notes": [
+    "evaluator-only oracle; excluded from learner public projection"
+  ],
+  "patch_id": "1c403fc1-78cd-588b-bf6b-f1a5ebcf50a0",
+  "summary": "canonical evaluator patch for borrow-check-01"
+}

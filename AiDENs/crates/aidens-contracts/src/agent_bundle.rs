@@ -379,6 +379,46 @@ impl AiDENsRunBundleV2 {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct AiDENsRunChildReceiptV1 {
+    pub owner_id: String,
+    pub receipt: serde_json::Value,
+    pub digest: String,
+    pub closed: bool,
+}
+
+impl AiDENsRunChildReceiptV1 {
+    pub fn closed(owner_id: impl Into<String>, receipt: serde_json::Value) -> Result<Self, String> {
+        let owner_id = owner_id.into();
+        if owner_id.trim().is_empty() || owner_id.contains("local-process-seq") {
+            return Err("child-owner-id-not-durable".into());
+        }
+        let digest = canonical_stack::digest_json(&receipt)
+            .map_err(|error| format!("child-receipt-digest:{error}"))?
+            .hex()
+            .to_string();
+        Ok(Self {
+            owner_id,
+            receipt,
+            digest,
+            closed: true,
+        })
+    }
+
+    pub fn required(&self) -> AiDENsRunRequiredChildV1 {
+        AiDENsRunRequiredChildV1 {
+            owner_id: self.owner_id.clone(),
+            digest: self.digest.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct AiDENsRunRequiredChildV1 {
+    pub owner_id: String,
+    pub digest: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct AiDENsRunBundleV3 {
     pub schema: String,
     pub bundle_id: ArtifactId,
@@ -419,6 +459,10 @@ pub struct AiDENsRunBundleV3 {
     pub outputs: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub child_receipts: Vec<AiDENsRunChildReceiptV1>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub required_children: Vec<AiDENsRunRequiredChildV1>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub blocked_checks: Vec<String>,
 }
@@ -562,6 +606,101 @@ impl AiDENsRunBundleV3 {
         validate_required_coding_learning_backpointers(&self.canonical_backpointers)
     }
 
+    /// Attach heterogeneous owner receipts as a typed closure projection and
+    /// rebind the durable bundle ID to the exact closed child set.
+    pub fn with_child_closure(
+        mut self,
+        mut child_receipts: Vec<AiDENsRunChildReceiptV1>,
+        mut required_children: Vec<AiDENsRunRequiredChildV1>,
+    ) -> Result<Self, Vec<String>> {
+        child_receipts.sort_by(|left, right| {
+            (&left.owner_id, &left.digest).cmp(&(&right.owner_id, &right.digest))
+        });
+        required_children.sort_by(|left, right| {
+            (&left.owner_id, &left.digest).cmp(&(&right.owner_id, &right.digest))
+        });
+        self.child_receipts = child_receipts;
+        self.required_children = required_children;
+        self.validate_child_closure()?;
+        let material = serde_json::to_string(&serde_json::json!({
+            "base_bundle_id": &self.bundle_id,
+            "required_children": &self.required_children,
+        }))
+        .map_err(|error| vec![format!("child-closure-material-serialization:{error}")])?;
+        self.bundle_id =
+            generated_artifact_id_from_material("aidens-run-bundle-v3-child-closure", &material);
+        self.validate_durable_identity()?;
+        Ok(self)
+    }
+
+    pub fn validate_child_closure(&self) -> Result<(), Vec<String>> {
+        let mut reasons = Vec::new();
+        let mut observed = BTreeSet::new();
+        let mut observed_owners = BTreeSet::new();
+        let observed_order: Vec<_> = self
+            .child_receipts
+            .iter()
+            .map(|child| (&child.owner_id, &child.digest))
+            .collect();
+        if !observed_order.windows(2).all(|pair| pair[0] <= pair[1]) {
+            reasons.push("child-order-noncanonical".into());
+        }
+        for child in &self.child_receipts {
+            let actual = canonical_stack::digest_json(&child.receipt)
+                .map(|digest| digest.hex().to_string())
+                .map_err(|error| vec![format!("child-receipt-digest:{error}")])?;
+            if child.owner_id.trim().is_empty() || child.owner_id.contains("local-process-seq") {
+                reasons.push("child-owner-id-not-durable".into());
+            }
+            if !child.closed {
+                reasons.push(format!("child-not-closed:{}", child.owner_id));
+            }
+            if actual != child.digest {
+                reasons.push(format!("child-digest-mismatch:{}", child.owner_id));
+            }
+            if !observed.insert((child.owner_id.clone(), child.digest.clone())) {
+                reasons.push(format!("duplicate-child:{}", child.owner_id));
+            }
+            if !observed_owners.insert(child.owner_id.clone()) {
+                reasons.push(format!("duplicate-child-owner:{}", child.owner_id));
+            }
+        }
+        let mut required = BTreeSet::new();
+        let mut required_owners = BTreeSet::new();
+        let required_order: Vec<_> = self
+            .required_children
+            .iter()
+            .map(|child| (&child.owner_id, &child.digest))
+            .collect();
+        if !required_order.windows(2).all(|pair| pair[0] <= pair[1]) {
+            reasons.push("required-child-order-noncanonical".into());
+        }
+        for child in &self.required_children {
+            if child.owner_id.trim().is_empty()
+                || child.owner_id.contains("local-process-seq")
+                || child.digest.trim().is_empty()
+            {
+                reasons.push("required-child-not-durable".into());
+            }
+            if !required.insert((child.owner_id.clone(), child.digest.clone())) {
+                reasons.push(format!("duplicate-required-child:{}", child.owner_id));
+            }
+            if !required_owners.insert(child.owner_id.clone()) {
+                reasons.push(format!("duplicate-required-child-owner:{}", child.owner_id));
+            }
+        }
+        if observed != required {
+            reasons.push("required-child-set-mismatch".into());
+        }
+        reasons.sort();
+        reasons.dedup();
+        if reasons.is_empty() {
+            Ok(())
+        } else {
+            Err(reasons)
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     /// Non-durable display projection. Use `new_material_bound` for persisted bundles.
     pub fn new_projection(
@@ -641,6 +780,8 @@ impl AiDENsRunBundleV3 {
                     "canonical-tool-receipt-owner",
                 ),
             ],
+            child_receipts: Vec::new(),
+            required_children: Vec::new(),
             blocked_checks: Vec::new(),
         }
     }

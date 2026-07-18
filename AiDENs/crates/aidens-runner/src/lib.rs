@@ -877,12 +877,40 @@ impl TurnExecutorV1 {
             .with_permit_policy(self.permit_policy.clone())
             .for_provider_route(&provider_route);
         let mut tool_exposure = self.tools.plan_exposure(&tool_policy);
+        let occurrence_material = serde_json::json!({
+            "app_id": self.app_id,
+            "prompt": input.prompt,
+            "provider_kind": provider_route.provider_kind,
+            "provider_model": provider_route.model,
+            "provider_route": provider_route.route,
+            "exposed_tool_ids": tool_exposure.exposed_tool_ids,
+            "blocked_tool_ids": tool_exposure.blocked_tool_ids,
+            "sandbox_root": tool_exposure.sandbox_root,
+            "max_tool_calls": self.budget.max_tool_calls,
+            "max_retries": self.budget.max_retries,
+            "max_turn_millis": self.budget.max_turn_millis,
+        });
+        let occurrence = self
+            .canonical_receipts
+            .as_ref()
+            .ok_or_else(|| anyhow!("canonical receipt log is required for durable run identity"))?
+            .append_generated_json(
+                "aidens-runner",
+                "run-occurrence-v1",
+                "run-occurrence",
+                occurrence_material.clone(),
+                serde_json::json!({
+                    "schema": "AiDENsRunOccurrenceV1",
+                    "identity_material": occurrence_material,
+                }),
+            )?;
         let ctx = material_bound_run_context(
             &self.app_id,
             &input.prompt,
             &provider_route,
             &tool_exposure,
             &self.budget,
+            &occurrence.receipt_id,
         );
         material_bind_tool_exposure(&mut tool_exposure, &ctx);
         let mode = turn_mode_for(&provider_route, &tool_exposure);

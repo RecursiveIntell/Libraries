@@ -1,10 +1,12 @@
 //! Production composition for one bounded, real-sandbox learning run.
 //! The controller owns no evidence: receipts and CEA remain canonical owners.
 
+use crate::learning_candidate::{extract_procedure_candidate, ProcedureCandidateBlueprintV1};
 use crate::learning_effectful::{
     evaluate_effectful_persisted, validate_effect_permit, EffectfulEvaluationReportV1,
     EffectfulEvaluationRequest,
 };
+use crate::learning_lifecycle::ProcedureLifecycleAdapter;
 use aidens_contracts::{
     generated_artifact_id_from_material, LearningPreflightReceiptV1, PermitGrantV1,
     PermitUseReportV1,
@@ -12,6 +14,14 @@ use aidens_contracts::{
 use aidens_receipts::{CanonicalEventLog, CanonicalEventLogConfig};
 use cea_sqlite::SqliteCeaStore;
 use check_runner::{BackendConfig, ContainerBackend};
+use semantic_memory::{
+    AllowedProcedureToolV1, ApplicabilityPredicateV1, AuthorityScopeV1, AuthorityScopesV1,
+    ElevationRequirementV1, MemoryConfig, MemoryStore, NamespaceScopeV1, OriginAuthorityLabelV1,
+    OriginClassV1, OriginRiskV1, ProceduralMemoryArtifactV1, ProcedureActionV1,
+    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1,
+    ProcedureLifecycleReceiptV1, ProcedurePreconditionV1, ProcedureRiskV1, ProcedureStepV1,
+    RevocationStatusV1, SubjectPrincipalV1,
+};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use typed_patch::{validate_patch, PatchPolicy, StructuredPatch};
@@ -30,6 +40,7 @@ pub struct RealSandboxLearningConfig {
     pub image: String,
     pub cea_db: PathBuf,
     pub receipt_root: PathBuf,
+    pub memory_store: PathBuf,
     pub run_id: String,
     pub attempt_id: String,
     pub trial_id: String,
@@ -59,6 +70,7 @@ pub struct RealSandboxLearningOutcomeV1 {
     pub terminal_event_receipt_id: String,
     pub terminal_event_log_verified: bool,
     pub terminal_publication: TerminalPublicationStateV1,
+    pub terminal_lifecycle_receipt: Option<ProcedureLifecycleReceiptV1>,
     pub reason_codes: Vec<String>,
 }
 
@@ -131,12 +143,24 @@ pub async fn run_real_sandbox(
     )
     .map_err(|e| RealSandboxLearningError::Receipt(e.to_string()))?;
     verify_persisted(&log, &terminal_id, &terminal_body)?;
+
+    // The raw effectful report is durable evidence, but a single run must not create
+    // semantic-memory's promotion prerequisite. Register only a Tested candidate.
+    let lifecycle =
+        register_single_run_candidate(&config, &report, &preflight_id, &terminal_id).await?;
+
     Ok(RealSandboxLearningOutcomeV1 {
         report,
         terminal_event_receipt_id: terminal_id,
         terminal_event_log_verified: true,
         terminal_publication: TerminalPublicationStateV1::Pending,
-        reason_codes: vec!["terminal-v3-owner-lineage-incomplete".into()],
+        terminal_lifecycle_receipt: lifecycle,
+        reason_codes: vec![
+            "terminal-v3-publication-pending".into(),
+            "procedure-lifecycle-owner-permit-required".into(),
+            "forge-export-owner-evidence-unavailable".into(),
+            "replay-retention-policy-owner-unavailable".into(),
+        ],
     })
 }
 
@@ -164,9 +188,12 @@ fn validate(c: &RealSandboxLearningConfig) -> Result<(), RealSandboxLearningErro
             )));
         }
     }
-    if c.cea_db.as_os_str().is_empty() || c.receipt_root.as_os_str().is_empty() {
+    if c.cea_db.as_os_str().is_empty()
+        || c.receipt_root.as_os_str().is_empty()
+        || c.memory_store.as_os_str().is_empty()
+    {
         return Err(RealSandboxLearningError::Invalid(
-            "CEA and receipt owner paths are required".into(),
+            "CEA, receipt, and canonical memory-store paths are required".into(),
         ));
     }
     Ok(())
@@ -239,6 +266,7 @@ fn preflight_receipt(
         &config.recorded_at,
         &config.cea_db,
         &config.receipt_root,
+        &config.memory_store,
     ))
     .map_err(|error| RealSandboxLearningError::Invalid(error.to_string()))?;
     let material_id = generated_artifact_id_from_material("aidens-learning-preflight", &material)
@@ -262,8 +290,225 @@ fn preflight_receipt(
         requested_recorded_at: config.recorded_at.clone(),
         cea_store_identity: config.cea_db.to_string_lossy().into(),
         receipt_root_owner: config.receipt_root.to_string_lossy().into(),
+        memory_store_owner: config.memory_store.to_string_lossy().into(),
     };
     Ok((material_id, receipt))
+}
+
+/// Build the canonical procedure blueprint from a publication-complete real evaluation.
+///
+/// The artifact is the durable, owner-validated description of *what* ran
+/// (sealed cargo checks in a Rust fixture). Its lifecycle truth (compile, test,
+/// promote) lives entirely in `semantic-memory`.
+fn procedure_blueprint(
+    config: &RealSandboxLearningConfig,
+    report: &EffectfulEvaluationReportV1,
+    preflight_receipt_id: &str,
+    terminal_event_receipt_id: &str,
+) -> Result<ProceduralMemoryArtifactV1, RealSandboxLearningError> {
+    let patch_policy = patch_policy_json(&config.patch_policy);
+    let evidence_binding = serde_json::json!({
+        "schema": "AiDENsProcedureEvidenceBindingV1",
+        "preflight_receipt_id": preflight_receipt_id,
+        "terminal_event_receipt_id": terminal_event_receipt_id,
+        "run_id": config.run_id,
+        "attempt_id": config.attempt_id,
+        "trial_id": config.trial_id,
+        "trace_id": config.trace_id,
+        "patch_digest": report.patch_digest,
+        "before_tree_digest": report.before_tree_digest,
+        "after_tree_digest": report.after_tree_digest,
+        "rollback_tree_digest": report.rollback_tree_digest,
+        "patch_policy": patch_policy,
+        "sandbox_image": config.image,
+        "sandbox_capability": report.sandbox_capability,
+        "permit_use_receipt_id": report.permit_use_receipt_id,
+        "check_output_digests": {
+            "fmt": report.checks.fmt_output_digest,
+            "clippy": report.checks.clippy_output_digest,
+            "test": report.checks.test_output_digest,
+        },
+        "verification_decision_id": report.verification.promotion_decision.decision_id,
+        "cea_run_hash": report.cea_run_hash,
+    });
+    let identity_material = serde_json::to_string(&evidence_binding)
+        .map_err(|error| RealSandboxLearningError::Invalid(error.to_string()))?;
+    let artifact_id =
+        generated_artifact_id_from_material("aidens-learning-procedure", &identity_material)
+            .as_str()
+            .to_string();
+    let (step, tool) = structured_patch_step(&artifact_id, &config.patch)?;
+    let fixture_id =
+        generated_artifact_id_from_material("aidens-learning-fixture", &report.before_tree_digest)
+            .as_str()
+            .to_string();
+    let fixture = ProcedureFixtureV1::new(
+        fixture_id,
+        serde_json::json!({
+            "language": "rust",
+            "source_tree_digest": report.before_tree_digest,
+            "patch_policy": patch_policy,
+            "sandbox_image": config.image,
+            "sandbox_capability_digest": report.sandbox_capability.content_digest,
+            "evidence_binding": evidence_binding,
+        }),
+        vec!["typed-patch:structured-apply:1".into()],
+        vec![ProcedureEffectV1::new(
+            "fixture_source_edited",
+            serde_json::json!(true),
+        )],
+        vec![ProcedureEffectV1::new(
+            "network_access",
+            serde_json::json!(false),
+        )],
+    );
+    let envelope = ProcedureEvidenceTestEnvelopeV1::new("sandbox-v1", vec![fixture], vec![]);
+    let principal = config.permit_grant.granted_by.clone();
+    let origin = OriginAuthorityLabelV1::new(
+        OriginClassV1::OperatorSystem,
+        principal.clone(),
+        "aidens-learning-controller",
+        report.sandbox_capability.content_digest.clone(),
+        OriginRiskV1::Medium,
+        AuthorityScopesV1 {
+            recall: AuthorityScopeV1::Audience,
+            assertion: AuthorityScopeV1::Denied,
+            action: AuthorityScopeV1::Audience,
+        },
+        ElevationRequirementV1::ExplicitOperatorApproval,
+        None,
+        RevocationStatusV1::Active,
+        vec![principal.clone()],
+    )
+    .map_err(RealSandboxLearningError::Invalid)?
+    .with_subject_principal(
+        SubjectPrincipalV1::new(principal.clone())
+            .map_err(|reason| RealSandboxLearningError::Invalid(reason.to_string()))?,
+    )
+    .with_resource_scope(NamespaceScopeV1::exact("aidens-learning"));
+    ProceduralMemoryArtifactV1::new(
+        artifact_id,
+        ProcedureCapabilityV1::new("aidens-learning", "real-sandbox-evaluation"),
+        ProcedureActionV1::new(
+            "apply_typed_patch_and_run_sealed_checks",
+            "Apply the source-bound typed patch and run sealed cargo fmt/clippy/test",
+        ),
+        vec![ApplicabilityPredicateV1::equals(
+            "language",
+            serde_json::json!("rust"),
+        )],
+        vec![ProcedurePreconditionV1::equals(
+            "source_tree_digest",
+            serde_json::json!(report.before_tree_digest),
+        )],
+        vec![step],
+        vec![tool],
+        vec![ProcedureEffectV1::new(
+            "fixture_source_edited",
+            serde_json::json!(true),
+        )],
+        vec![ProcedureEffectV1::new(
+            "network_access",
+            serde_json::json!(false),
+        )],
+        ProcedureRiskV1::Medium,
+        origin,
+        principal.clone(),
+        vec![principal.clone()],
+        NamespaceScopeV1::exact("aidens-learning"),
+        1,
+        None,
+        envelope,
+        None,
+    )
+    .map_err(RealSandboxLearningError::Invalid)
+}
+
+fn structured_patch_step(
+    artifact_id: &str,
+    patch: &StructuredPatch,
+) -> Result<(ProcedureStepV1, AllowedProcedureToolV1), RealSandboxLearningError> {
+    let arguments = serde_json::to_value(patch)
+        .map_err(|error| RealSandboxLearningError::Invalid(error.to_string()))?;
+    let argument_schema = serde_json::json!({
+        "type": "object",
+        "properties": {
+            "patch_id": {"type": "string"},
+            "summary": {"type": "string"},
+            "edits": {"type": "array", "items": {"type": "object"}},
+            "notes": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["patch_id", "summary", "edits", "notes"],
+        "additionalProperties": false
+    });
+    let step = ProcedureStepV1::tool(
+        format!("step:{artifact_id}"),
+        "typed-patch:structured-apply:1",
+        arguments,
+        Some("restore_source_tree_from_pre_effect_snapshot".into()),
+    );
+    let tool = AllowedProcedureToolV1::new("typed-patch:structured-apply:1", argument_schema);
+    Ok((step, tool))
+}
+
+fn patch_policy_json(policy: &PatchPolicy) -> serde_json::Value {
+    serde_json::json!({
+        "forbidden_paths": policy.forbidden_paths,
+        "allow_test_modifications": policy.allow_test_modifications,
+        "max_files_changed": policy.max_files_changed,
+        "max_total_lines_changed": policy.max_total_lines_changed,
+        "max_lines_changed_per_file": policy.max_lines_changed_per_file,
+    })
+}
+
+/// Record one publication-complete evaluation without a controlled transition.
+///
+/// One successful run is effectful evidence, not paired promotion evidence. The
+/// tested candidate therefore remains unavailable for action until a separately
+/// governed multi-family evaluation and owner-issued permit authorize promotion.
+async fn register_single_run_candidate(
+    config: &RealSandboxLearningConfig,
+    report: &EffectfulEvaluationReportV1,
+    preflight_receipt_id: &str,
+    terminal_event_id: &str,
+) -> Result<Option<ProcedureLifecycleReceiptV1>, RealSandboxLearningError> {
+    let blueprint =
+        match procedure_blueprint(config, report, preflight_receipt_id, terminal_event_id) {
+            Ok(blueprint) => blueprint,
+            Err(error) => {
+                return Err(RealSandboxLearningError::Receipt(format!(
+                    "procedure blueprint construction failed: {error}"
+                )))
+            }
+        };
+    let store = MemoryStore::open(MemoryConfig {
+        base_dir: config.memory_store.clone(),
+        ..MemoryConfig::default()
+    })
+    .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    let adapter = ProcedureLifecycleAdapter::new(&store);
+    let key = generated_artifact_id_from_material(
+        "aidens-learning-lifecycle",
+        &format!("{}-{}", blueprint.artifact_id, terminal_event_id),
+    )
+    .as_str()
+    .to_string();
+    let artifact = extract_procedure_candidate(
+        Some(report),
+        Some(&ProcedureCandidateBlueprintV1 {
+            artifact: blueprint,
+        }),
+    )
+    .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    let lifecycle_receipt = store
+        .compile_procedure(artifact.clone(), format!("compile:{key}"))
+        .await
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    let tested = adapter
+        .test(&lifecycle_receipt.artifact_id, format!("test:{key}"))
+        .await
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    Ok(Some(tested))
 }
 
 fn verify_persisted(
@@ -322,6 +567,7 @@ fn fixture_digest(path: &Path) -> Result<String, RealSandboxLearningError> {
 mod tests {
     use super::*;
     use aidens_contracts::{ArtifactId, CanonicalToolSideEffectClass};
+    use semantic_memory::ProcedureLifecycleDispositionV1;
 
     fn config() -> (
         tempfile::TempDir,
@@ -390,6 +636,7 @@ mod tests {
             image: format!("localhost/aidens-rust-checks@sha256:{}", "0".repeat(64)),
             cea_db: owner_root.path().join("cea.sqlite"),
             receipt_root: owner_root.path().join("receipts"),
+            memory_store: owner_root.path().join("memory"),
             run_id: "run:controller-material".into(),
             attempt_id: "attempt:controller-material".into(),
             trial_id: "trial:controller-material".into(),
@@ -402,6 +649,7 @@ mod tests {
     #[test]
     fn preflight_identity_is_material_bound_and_readback_verified() {
         let (_fixture, _owner_root, mut config) = config();
+        assert_eq!(config.permit_grant.granted_by, "operator:controller-test");
         let digest = fixture_digest(&config.fixture).unwrap();
         let (first_id, first) = preflight_receipt(&config, digest.clone()).unwrap();
         let (same_id, same) = preflight_receipt(&config, digest).unwrap();
@@ -413,6 +661,17 @@ mod tests {
         let changed_digest = fixture_digest(&config.fixture).unwrap();
         let (changed_id, _) = preflight_receipt(&config, changed_digest).unwrap();
         assert_ne!(first_id, changed_id);
+
+        config.image = same.image.clone();
+        config.memory_store = config.memory_store.join("different-owner");
+        let changed_digest = fixture_digest(&config.fixture).unwrap();
+        let (destination_changed_id, destination_changed) =
+            preflight_receipt(&config, changed_digest).unwrap();
+        assert_ne!(first_id, destination_changed_id);
+        assert_ne!(
+            same.memory_store_owner,
+            destination_changed.memory_store_owner
+        );
 
         let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(
             config.receipt_root.clone(),
@@ -429,6 +688,26 @@ mod tests {
         verify_persisted(&log, &same_id, &body).unwrap();
     }
 
+    #[test]
+    fn procedure_step_is_the_exact_source_bound_structured_patch() {
+        let (fixture, _owner_root, config) = config();
+        let expected = serde_json::to_value(&config.patch).unwrap();
+        let (step, tool) = structured_patch_step("artifact:one", &config.patch).unwrap();
+
+        assert_eq!(step.arguments, expected);
+        assert_eq!(step.tool, "typed-patch:structured-apply:1");
+        assert_eq!(tool.tool, step.tool);
+        assert!(!step
+            .arguments
+            .to_string()
+            .contains(&fixture.path().to_string_lossy().to_string()));
+
+        let mut changed_patch = config.patch.clone();
+        changed_patch.summary = "materially different patch".into();
+        let (changed_step, _) = structured_patch_step("artifact:two", &changed_patch).unwrap();
+        assert_ne!(step.arguments, changed_step.arguments);
+    }
+
     #[tokio::test]
     async fn invalid_permit_creates_no_preflight_record_or_backend_effect() {
         let (_fixture, _owner_root, mut config) = config();
@@ -441,7 +720,7 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "requires live rootless Podman and the digest-pinned AiDENs image"]
-    async fn live_controller_persists_verified_events_but_keeps_terminal_v3_pending() {
+    async fn live_controller_registers_exact_effectful_candidate_without_promotion() {
         let (_fixture, _owner_root, mut config) = config();
         config.image = std::env::var("AIDENS_LIVE_RUST_IMAGE").unwrap_or_else(|_| {
             "localhost/aidens-rust-checks@sha256:96f6610f945d10b523a303848610bd6fbef241762c59c0e44d47af9089cb6d6b".into()
@@ -457,13 +736,23 @@ mod tests {
         assert!(outcome.report.rollback_verified);
         assert!(outcome.report.cea_persisted);
         assert!(outcome.terminal_event_log_verified);
+        let receipt = outcome
+            .terminal_lifecycle_receipt
+            .as_ref()
+            .expect("procedure lifecycle receipt must be present after effectful evaluation");
+        assert_eq!(receipt.disposition, ProcedureLifecycleDispositionV1::Tested);
         assert_eq!(
             outcome.terminal_publication,
             TerminalPublicationStateV1::Pending
         );
         assert_eq!(
             outcome.reason_codes,
-            vec!["terminal-v3-owner-lineage-incomplete"]
+            vec![
+                String::from("terminal-v3-publication-pending"),
+                String::from("procedure-lifecycle-owner-permit-required"),
+                String::from("forge-export-owner-evidence-unavailable"),
+                String::from("replay-retention-policy-owner-unavailable"),
+            ]
         );
     }
 

@@ -1,0 +1,17 @@
+{
+  "baseline_expected": "fail",
+  "family": "iterator-safety",
+  "fixture_tree_digest": "a706fe32842c1fc3e48110049732e03ef1f19d999fb6f4c7c063e77383c41f5b",
+  "oracle_digest": "6e3070e446e99ba7fcf422abd29fba120494aef85b1d60e0a3aacb443b38a401",
+  "prompt": "Correct the iterator predicate without changing the public API.",
+  "schema": "AiDENsExecutableLearningTaskV2",
+  "split": "development",
+  "task_id": "iterator-safety-01",
+  "treatment_expected": "pass",
+  "verifier": [
+    "cargo",
+    "test",
+    "--offline",
+    "--quiet"
+  ]
+}
