@@ -15,6 +15,22 @@ fn learning_inspect_consumes_manifest_without_holdout_oracles() {
 }
 
 #[test]
+fn implicit_v1_learning_run_fails_closed_as_metadata_only() {
+    let error = learn_run_command("mock", None, None)
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("metadata-only-corpus"), "{error}");
+}
+
+#[test]
+fn v2_learning_run_uses_runner_corpus_consumer() {
+    let report = learn_run_command_with_version("mock", None, None, "v2").unwrap();
+    let value: Value = serde_json::from_str(&report).unwrap();
+    assert_eq!(value["corpus_version"], "v2");
+    assert_eq!(value["scope"], "development-and-calibration-only");
+}
+
+#[test]
 fn learning_corpus_enforces_immutable_family_aware_ratio() {
     let report: Value = serde_json::from_str(&learn_inspect_command(None).unwrap()).unwrap();
     assert_eq!(report["splits"]["development"], 9);
@@ -28,6 +44,80 @@ fn learning_lifecycle_requires_explicit_permit() {
         .unwrap_err()
         .to_string();
     assert!(err.contains("explicit lifecycle permit"));
+}
+
+#[test]
+fn learning_quarantine_requires_explicit_permit() {
+    let err = learn_lifecycle_command_with_store("quarantine", "candidate-x", None, None)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("explicit lifecycle permit"), "{err}");
+}
+
+#[test]
+fn learning_quarantine_rejects_malformed_permit() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let permit = root.join("permit.json");
+    std::fs::write(&permit, "not-json").unwrap();
+    let err = learn_lifecycle_command_with_store(
+        "quarantine",
+        "candidate-x",
+        permit.to_str(),
+        Some(root.to_str().unwrap()),
+    )
+    .unwrap_err()
+    .to_string();
+    assert!(err.contains("typed canonical JSON"), "{err}");
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn learning_quarantine_forwards_wrong_artifact_to_owner() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let permit = ProcedureLifecyclePermitV1::elevated_for(
+        "principal:test",
+        "operator:aidens-cli-test",
+        "quarantine",
+        "missing-artifact",
+        "2999-01-01T00:00:00Z",
+    );
+    let permit_path = root.join("permit.json");
+    std::fs::write(&permit_path, serde_json::to_vec(&permit).unwrap()).unwrap();
+    let err = learn_lifecycle_command_with_store(
+        "quarantine",
+        "wrong-artifact",
+        permit_path.to_str(),
+        Some(root.to_str().unwrap()),
+    )
+    .unwrap_err()
+    .to_string();
+    assert!(
+        err.contains("canonical lifecycle owner rejected request"),
+        "{err}"
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn clap_exposes_quarantine_lifecycle_surface() {
+    let cli = Cli::try_parse_from([
+        "aidens",
+        "learn",
+        "quarantine",
+        "candidate-x",
+        "--permit",
+        "permit.json",
+        "--store",
+        "memory",
+        "--reason",
+        "unsafe",
+    ])
+    .unwrap();
+    assert!(
+        matches!(cli.command, Command::Learn { command: LearningCommand::Quarantine { candidate, reason, .. } } if candidate == "candidate-x" && reason == "unsafe")
+    );
 }
 
 #[test]
@@ -122,7 +212,7 @@ fn learning_compare_and_replay_are_explicitly_unavailable() {
 
 #[test]
 fn learning_mock_run_cannot_render_verified_success() {
-    let report = learn_run_command("mock", None, None).unwrap();
+    let report = learn_run_command_with_version("mock", None, None, "v2").unwrap();
     let value: Value = serde_json::from_str(&report).unwrap();
     assert_eq!(value["terminal"]["state"], "mock-only");
     assert_ne!(value["terminal"]["state"], "succeeded-verified");
@@ -135,6 +225,7 @@ fn real_sandbox_requires_typed_request_and_rejects_wrong_schema() {
     let error = learning_command(LearningCommand::Run {
         mode: "real-sandbox".into(),
         source: None,
+        corpus_version: "v2".into(),
         out: None,
         request: None,
     })
@@ -176,6 +267,7 @@ fn real_sandbox_requires_typed_request_and_rejects_wrong_schema() {
     let error = learning_command(LearningCommand::Run {
         mode: "real-sandbox".into(),
         source: None,
+        corpus_version: "v2".into(),
         out: None,
         request: Some(request.to_string_lossy().into()),
     })

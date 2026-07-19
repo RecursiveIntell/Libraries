@@ -1,0 +1,17 @@
+{
+  "schema": "learning-completion-claim-boundary-v1",
+  "projection_only": true,
+  "truth_authority": "canonical owner receipts and live execution",
+  "permitted_claims": [
+    "The ledger records a current source checkpoint and explicitly labelled historical receipts.",
+    "The bounded exact-source target and its remaining gaps are documented.",
+    "Historical test receipts are preserved as historical, not current execution evidence."
+  ],
+  "forbidden_claims": [
+    "current-HEAD live closure or replay passed",
+    "promotion-grade evidence exists",
+    "bounded MVP or production readiness",
+    "cross-task learning, generalization, online RL, or autonomous engineering"
+  ],
+  "owner_note": "AiDENs owns only this documentation/evidence projection; owner crates and live receipts remain authoritative."
+}

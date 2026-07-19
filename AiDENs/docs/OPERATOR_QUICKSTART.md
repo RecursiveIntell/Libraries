@@ -51,6 +51,22 @@ bash scripts/check_examples.sh
 - `examples/aidens.ollama.toml` is a local-provider diagnostic path. Ordinary chat can be executable when Ollama is reachable; native tool loop remains false.
 - `examples/aidens.openai-unavailable.toml` is an API-provider diagnostic fixture. It should report unavailable or blocked until real hosted-provider boundaries are implemented and tested.
 
+## Learning Corpus Qualification
+
+The committed v1 corpus is an inspection-only metadata surface. Inspect it without execution:
+
+```bash
+cargo run -p aidens-cli -- learn inspect
+```
+
+Executable qualification must cross the explicit v2 boundary; the CLI defaults executable runs to v2 and never falls back to v1:
+
+```bash
+cargo run -p aidens-cli -- learn run --mode fixture --corpus-version v2
+```
+
+An implicit or explicit v1 executable run fails closed with `metadata-only-corpus`. This phase does not implement promotion, statistics, or replay.
+
 ## Known Limits
 
 AiDENs is not production-cloud-ready, broadly autonomous, v11B active, v11C active, or a replacement for canonical memory/governance/kernel/runtime crates. `SUPPORT_PROFILE.md`, `docs/p28/P28_SUPPORT_TRACEABILITY.md`, and `docs/p28/P28_KNOWN_LIMITATIONS_REGISTER.md` are the active P28 support surfaces.

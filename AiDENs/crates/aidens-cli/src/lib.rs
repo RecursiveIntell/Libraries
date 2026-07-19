@@ -38,6 +38,7 @@ use aidens_receipts::{
     RunBundleStoreConfig,
 };
 use aidens_runner::learning_controller::{run_real_sandbox, RealSandboxLearningConfig};
+use aidens_runner::learning_corpus::validate_and_consume_v2;
 use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLifecycleAdapter};
 use aidens_runner::learning_publication::{
     publish_terminal_evidence, TerminalPublicationRequestV1,
@@ -232,6 +233,9 @@ pub enum LearningCommand {
         mode: String,
         #[arg(long)]
         source: Option<String>,
+        /// Corpus contract for executable qualification. v1 is inspection-only.
+        #[arg(long, default_value = "v2", value_parser = ["v1", "v2"])]
+        corpus_version: String,
         #[arg(long)]
         out: Option<String>,
         /// Typed real-sandbox request envelope. Required when mode=real-sandbox.
@@ -259,6 +263,15 @@ pub enum LearningCommand {
         permit: Option<String>,
         #[arg(long)]
         store: Option<String>,
+    },
+    Quarantine {
+        candidate: String,
+        #[arg(long)]
+        permit: Option<String>,
+        #[arg(long)]
+        store: Option<String>,
+        #[arg(long)]
+        reason: String,
     },
     Rollback {
         candidate: String,
@@ -801,6 +814,16 @@ fn learning_manifest_path(source: Option<&str>) -> PathBuf {
     })
 }
 
+fn learning_v2_root(source: Option<&str>) -> PathBuf {
+    source.map(PathBuf::from).unwrap_or_else(|| {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .ancestors()
+            .nth(2)
+            .unwrap()
+            .join("fixtures/learning-coding-agent/v2")
+    })
+}
+
 fn learning_manifest(source: Option<&str>) -> Result<Value> {
     let path = learning_manifest_path(source);
     let value: Value = serde_json::from_str(&std::fs::read_to_string(&path)?)?;
@@ -1072,14 +1095,30 @@ fn learn_publish_command(request: &str, out: Option<&str>) -> Result<String> {
 }
 
 pub fn learn_run_command(mode: &str, source: Option<&str>, out: Option<&str>) -> Result<String> {
+    learn_run_command_with_version(mode, source, out, "v1")
+}
+
+pub fn learn_run_command_with_version(
+    mode: &str,
+    source: Option<&str>,
+    out: Option<&str>,
+    corpus_version: &str,
+) -> Result<String> {
     if !matches!(mode, "fixture" | "mock") {
         bail!("unsupported learning run mode: {mode}");
     }
-    let manifest = learning_manifest(source)?;
+    if corpus_version == "v1" {
+        bail!("metadata-only-corpus: v1 is inspection-only; use --corpus-version v2");
+    }
+    if corpus_version != "v2" {
+        bail!("unsupported learning corpus version: {corpus_version}");
+    }
+    let corpus = validate_and_consume_v2(learning_v2_root(source))
+        .map_err(|error| anyhow::anyhow!("v2 executable corpus validation failed: {error}"))?;
     let report = serde_json::json!({
         "schema": "AiDENsLearningRunReportV1", "mode": mode,
-        "source": learning_manifest_path(source), "scope": "development-and-calibration-only",
-        "task_count": manifest["tasks"].as_array().map_or(0, Vec::len),
+        "corpus_version": "v2", "source": learning_v2_root(source), "scope": "development-and-calibration-only",
+        "task_count": corpus.tasks.len(),
         "terminal": learning_projection(mode), "candidate_state": "unpromoted",
         "confidence": "unverified", "evidence": [], "blocked_checks": ["canonical-runner-evidence-missing"],
         "receipt_ids": [], "replay": {"available": false},
@@ -1216,7 +1255,17 @@ pub fn learn_lifecycle_command_with_store(
     permit: Option<&str>,
     store: Option<&str>,
 ) -> Result<String> {
-    if !matches!(action, "promote" | "revoke" | "rollback") {
+    learn_lifecycle_command_with_store_reason(action, candidate, permit, store, None)
+}
+
+fn learn_lifecycle_command_with_store_reason(
+    action: &str,
+    candidate: &str,
+    permit: Option<&str>,
+    store: Option<&str>,
+    reason: Option<&str>,
+) -> Result<String> {
+    if !matches!(action, "promote" | "quarantine" | "revoke" | "rollback") {
         bail!("unsupported lifecycle operation: {action}");
     }
     let permit_path =
@@ -1242,6 +1291,15 @@ pub fn learn_lifecycle_command_with_store(
                         permit,
                         candidate,
                         format!("aidens-cli:{action}:{candidate}"),
+                    )
+                    .await
+            } else if action == "quarantine" {
+                adapter
+                    .quarantine(
+                        permit,
+                        candidate,
+                        format!("aidens-cli:{action}:{candidate}"),
+                        reason.unwrap_or("operator requested quarantine"),
                     )
                     .await
             } else if action == "revoke" {
@@ -1285,6 +1343,7 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             source,
             out,
             request,
+            corpus_version,
         } => {
             if mode == "real-sandbox" {
                 let request = request.as_deref().ok_or_else(|| {
@@ -1295,7 +1354,12 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
                 if request.is_some() {
                     bail!("--request is only valid when --mode real-sandbox");
                 }
-                learn_run_command(&mode, source.as_deref(), out.as_deref())
+                learn_run_command_with_version(
+                    &mode,
+                    source.as_deref(),
+                    out.as_deref(),
+                    &corpus_version,
+                )
             }
         }
         LearningCommand::Inspect { source } => learn_inspect_command(source.as_deref()),
@@ -1332,6 +1396,18 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             &candidate,
             permit.as_deref(),
             store.as_deref(),
+        ),
+        LearningCommand::Quarantine {
+            candidate,
+            permit,
+            store,
+            reason,
+        } => learn_lifecycle_command_with_store_reason(
+            "quarantine",
+            &candidate,
+            permit.as_deref(),
+            store.as_deref(),
+            Some(&reason),
         ),
         LearningCommand::Rollback {
             candidate,
