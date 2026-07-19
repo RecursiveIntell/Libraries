@@ -77,6 +77,8 @@ pub enum TerminalPublicationStateV1 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RealSandboxLearningOutcomeV1 {
     pub report: EffectfulEvaluationReportV1,
+    pub preflight_receipt_id: String,
+    pub preflight_receipt: LearningPreflightReceiptV2,
     pub terminal_event_receipt_id: String,
     pub terminal_event_log_verified: bool,
     pub terminal_publication: TerminalPublicationStateV1,
@@ -96,6 +98,7 @@ struct RegisteredCandidateV1 {
 struct EffectfulRunCoreV1 {
     report: EffectfulEvaluationReportV1,
     preflight_id: String,
+    preflight_receipt: LearningPreflightReceiptV2,
     terminal_id: String,
 }
 
@@ -120,6 +123,7 @@ pub async fn run_real_sandbox(
     let core = execute_effectful_run(&config).await?;
     let report = core.report;
     let preflight_id = core.preflight_id;
+    let preflight_receipt = core.preflight_receipt;
     let terminal_id = core.terminal_id;
 
     // The exact candidate's publication-complete execution is registered as its
@@ -132,6 +136,8 @@ pub async fn run_real_sandbox(
 
     Ok(RealSandboxLearningOutcomeV1 {
         report,
+        preflight_receipt_id: preflight_id,
+        preflight_receipt,
         terminal_event_receipt_id: terminal_id,
         terminal_event_log_verified: true,
         terminal_publication: TerminalPublicationStateV1::Pending,
@@ -220,6 +226,7 @@ async fn execute_effectful_run(
     Ok(EffectfulRunCoreV1 {
         report,
         preflight_id,
+        preflight_receipt: receipt,
         terminal_id,
     })
 }
@@ -1365,12 +1372,34 @@ mod tests {
             publication.disposition,
             crate::learning_publication::TerminalPublicationDispositionV1::Published
         );
+        let mut mismatched_owner_outcome = outcome.clone();
+        mismatched_owner_outcome.preflight_receipt.execution.run_id = "forged-run-id".into();
+        assert!(matches!(
+            crate::learning_terminal::close_real_sandbox_terminal(
+                &config,
+                &mismatched_owner_outcome,
+                &publication,
+                &promoted,
+                &replayed,
+                crate::learning_terminal::TerminalOwnerVerificationSealV1::verified(),
+            ),
+            Err(crate::learning_terminal::TerminalBundlePublicationError::Integration(_))
+        ));
+        let bundle_store = aidens_receipts::RunBundleStore::open(
+            aidens_receipts::RunBundleStoreConfig::for_receipt_root(&config.receipt_root),
+        )
+        .unwrap();
+        assert!(matches!(
+            bundle_store.inspect(&config.run_id),
+            Err(aidens_receipts::RunBundleStoreError::NotFound(_))
+        ));
         let terminal = crate::learning_terminal::close_real_sandbox_terminal(
             &config,
             &outcome,
             &publication,
             &promoted,
             &replayed,
+            crate::learning_terminal::TerminalOwnerVerificationSealV1::verified(),
         )
         .unwrap();
         assert_eq!(
@@ -1428,6 +1457,7 @@ mod tests {
             &recovered_publication,
             &promoted,
             &replayed,
+            crate::learning_terminal::TerminalOwnerVerificationSealV1::verified(),
         )
         .unwrap();
         assert_eq!(

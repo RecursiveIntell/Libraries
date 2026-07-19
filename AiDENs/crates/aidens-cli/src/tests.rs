@@ -374,9 +374,6 @@ fn learning_terminal_requires_fresh_bundle_index_and_projection_readback() {
         project_terminal_state, required_coding_learning_owner_roles, AiDENsRunChildReceiptV1,
         CanonicalBackpointerV1, CodingLearningEvidenceV1, CodingLearningTerminalStateV1,
     };
-    use aidens_runner::learning_terminal::{
-        publish_terminal_bundle, TerminalBundlePublicationRequestV1,
-    };
 
     let root = temp_root();
     std::fs::create_dir_all(&root).unwrap();
@@ -436,34 +433,34 @@ fn learning_terminal_requires_fresh_bundle_index_and_projection_readback() {
         .unwrap(),
     ];
     let run_id = fixture.run_id.clone();
-    let published = publish_terminal_bundle(TerminalBundlePublicationRequestV1 {
-        schema: TerminalBundlePublicationRequestV1::SCHEMA.into(),
-        store_root: root.clone(),
-        identity_material: "cli-terminal-material".into(),
-        run_id: run_id.clone(),
-        profile: fixture.profile,
-        canonical_execution_context: fixture.canonical_execution_context,
-        event_log: fixture.event_log,
-        budget: fixture.budget,
-        support: fixture.support,
-        support_labels: fixture.support_labels,
-        replay: fixture.replay,
-        failure: fixture.failure,
-        attempt_family_id: fixture.attempt_family_id,
-        attempt_id: fixture.attempt_id,
-        trial_id: fixture.trial_id,
-        agent_spec_digest: fixture.agent_spec_digest,
-        owner_backpointers: owner_backpointers.clone(),
-        child_receipts,
-    })
+    let published_bundle = AiDENsRunBundleV3::new_material_bound(
+        "cli-terminal-material",
+        run_id.clone(),
+        fixture.profile,
+        fixture.canonical_execution_context,
+        fixture.event_log,
+        fixture.budget,
+        fixture.support,
+        fixture.support_labels,
+        fixture.replay,
+        fixture.failure,
+        fixture.attempt_family_id,
+        fixture.attempt_id,
+        fixture.trial_id,
+        fixture.agent_spec_digest,
+        owner_backpointers.clone(),
+    )
+    .and_then(|bundle| bundle.with_coding_learning_child_closure(child_receipts))
     .unwrap();
+    let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+    store.write_bundle(&published_bundle).unwrap();
 
     let mut projection_backpointers = owner_backpointers;
     projection_backpointers.push(CanonicalBackpointerV1::external(
         "aidens-receipts",
         "AiDENsRunBundleV3",
         "published-run-bundle",
-        published.bundle.bundle_id.to_string(),
+        published_bundle.bundle_id.to_string(),
     ));
     let projection = project_terminal_state(&CodingLearningEvidenceV1 {
         execution_mode: "real_sandbox".into(),

@@ -26,7 +26,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TerminalBundlePublicationRequestV1 {
+pub(crate) struct TerminalBundlePublicationRequestV1 {
     pub schema: String,
     pub store_root: PathBuf,
     pub identity_material: String,
@@ -78,6 +78,22 @@ pub struct RealSandboxTerminalClosureOutcomeV1 {
     pub terminal_projection_readback_verified: bool,
 }
 
+/// Crate-minted capability proving the caller followed the owner-orchestrated path.
+pub struct TerminalOwnerVerificationSealV1 {
+    _owner_verified: (),
+}
+
+impl TerminalOwnerVerificationSealV1 {
+    // Minted only by the crate's owner-orchestrated terminal workflow; the
+    // current production surface is read-only while the live drill exercises closure.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub(crate) fn verified() -> Self {
+        Self {
+            _owner_verified: (),
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum TerminalBundlePublicationError {
     #[error("terminal bundle publication request schema is invalid")]
@@ -94,7 +110,7 @@ pub enum TerminalBundlePublicationError {
     Integration(String),
 }
 
-pub fn publish_terminal_bundle(
+pub(crate) fn publish_terminal_bundle(
     request: TerminalBundlePublicationRequestV1,
 ) -> Result<TerminalBundlePublicationOutcomeV1, TerminalBundlePublicationError> {
     if request.schema != TerminalBundlePublicationRequestV1::SCHEMA {
@@ -185,6 +201,7 @@ pub fn close_real_sandbox_terminal(
     publication: &TerminalPublicationOutcomeV1,
     promotion: &ProcedureLifecycleReceiptV1,
     replay: &PromotedProcedureReplayOutcomeV1,
+    _owner_verification_seal: TerminalOwnerVerificationSealV1,
 ) -> Result<RealSandboxTerminalClosureOutcomeV1, TerminalBundlePublicationError> {
     let tested = initial.terminal_lifecycle_receipt.as_ref().ok_or_else(|| {
         TerminalBundlePublicationError::Integration("tested lifecycle receipt missing".into())
@@ -335,25 +352,60 @@ pub fn close_real_sandbox_terminal(
         closed_child("owner:promoted-procedure-replay", replay)?,
     ];
 
-    let event_log_path = config.receipt_root.join("canonical-receipts.ndjson");
-    let event_log_text = std::fs::read_to_string(&event_log_path)
+    let canonical_log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(
+        config.receipt_root.clone(),
+    ))
+    .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
+    let all_records = canonical_log
+        .list_records()
         .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
-    let mut prepublication_events = Vec::new();
-    for line in event_log_text
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-    {
-        let value: serde_json::Value = serde_json::from_str(line)
-            .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
-        if value.get("schema_name").and_then(serde_json::Value::as_str)
-            != Some("coding-learning-terminal-projection-v1")
+    let mut previous_digest = None;
+    for (index, record) in all_records.iter().enumerate() {
+        if record.sequence_number != index as u64
+            || record.previous_record_digest != previous_digest
+            || !record.verify_digest()
+            || !record.verify_record_digest()
         {
-            prepublication_events.push(value);
+            return Err(TerminalBundlePublicationError::Integration(
+                "canonical event-log snapshot chain failed verification".into(),
+            ));
         }
+        previous_digest = record.record_digest.clone();
     }
+    let prepublication_events = all_records
+        .into_iter()
+        .filter(|record| record.schema_name != "coding-learning-terminal-projection-v1")
+        .collect::<Vec<_>>();
     let event_log_snapshot = serde_json::to_string(&prepublication_events)
         .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
     let event_count = prepublication_events.len();
+    let expected_preflight_body = serde_json::to_value(&initial.preflight_receipt)
+        .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
+    let preflight_record = prepublication_events.iter().find(|record| {
+        record.owner_crate == "aidens-runner"
+            && record.schema_name == "learning-preflight-v1"
+            && record.receipt_id == initial.preflight_receipt_id
+            && record.body == expected_preflight_body
+    });
+    let permits_valid = preflight_record.is_some()
+        && initial.preflight_receipt.execution.run_id == config.run_id
+        && initial.preflight_receipt.execution.permit_grant_id
+            == config.permit_grant.permit_id.as_str()
+        && initial.preflight_receipt.execution.permit_use_id
+            == config.permit_use.receipt_id.as_str();
+    let expected_effectful_body = serde_json::to_value(&initial.report)
+        .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
+    let effectful_record_persisted = prepublication_events.iter().any(|record| {
+        record.owner_crate == "aidens-runner"
+            && record.schema_name == "effectful-evaluation-report-v1"
+            && record.receipt_id == initial.terminal_event_receipt_id
+            && record.body == expected_effectful_body
+    });
+    if !permits_valid || !effectful_record_persisted {
+        return Err(TerminalBundlePublicationError::Integration(
+            "typed preflight or effectful owner record failed exact readback".into(),
+        ));
+    }
     let replay_material = serde_json::json!({
         "artifact_id": replay.artifact_id,
         "artifact_digest": replay.artifact_digest,
@@ -476,40 +528,6 @@ pub fn close_real_sandbox_terminal(
         child_receipts,
     })?;
 
-    let preflight_record = prepublication_events.iter().find(|entry| {
-        entry
-            .pointer("/owner_crate")
-            .and_then(serde_json::Value::as_str)
-            == Some("aidens-runner")
-            && entry
-                .pointer("/schema_name")
-                .and_then(serde_json::Value::as_str)
-                == Some("learning-preflight-v1")
-            && entry
-                .pointer("/body/execution/run_id")
-                .and_then(serde_json::Value::as_str)
-                == Some(config.run_id.as_str())
-    });
-    let permits_valid = preflight_record.is_some_and(|entry| {
-        entry
-            .pointer("/body/execution/permit_grant_id")
-            .and_then(serde_json::Value::as_str)
-            == Some(config.permit_grant.permit_id.as_str())
-            && entry
-                .pointer("/body/execution/permit_use_id")
-                .and_then(serde_json::Value::as_str)
-                == Some(config.permit_use.receipt_id.as_str())
-    });
-    let effectful_record_persisted = prepublication_events.iter().any(|entry| {
-        entry
-            .pointer("/receipt_id")
-            .and_then(serde_json::Value::as_str)
-            == Some(initial.terminal_event_receipt_id.as_str())
-            && entry
-                .pointer("/schema_name")
-                .and_then(serde_json::Value::as_str)
-                == Some("effectful-evaluation-report-v1")
-    });
     let required_checks_executed = initial.report.checks.fmt_executed
         && initial.report.checks.fmt_passed
         && initial.report.checks.clippy_executed
