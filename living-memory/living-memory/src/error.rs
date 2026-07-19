@@ -83,6 +83,12 @@ pub enum ForgeError {
     #[error("sealed bundle cannot be mutated")]
     SealedBundle,
 
+    #[error("evidence bundle identity conflict: {bundle_id}")]
+    EvidenceConflict { bundle_id: String },
+
+    #[error("export receipt identity conflict: {export_key}")]
+    ExportReceiptConflict { export_key: String },
+
     #[error("{0}")]
     Other(String),
 }
@@ -116,6 +122,8 @@ impl ForgeError {
             Self::WriteThroughBlocked => "write_through_blocked",
             Self::PairIncomparable { .. } => "pair_incomparable",
             Self::SealedBundle => "sealed_bundle",
+            Self::EvidenceConflict { .. } => "evidence_conflict",
+            Self::ExportReceiptConflict { .. } => "export_receipt_conflict",
             Self::Other(_) => "other",
         }
     }

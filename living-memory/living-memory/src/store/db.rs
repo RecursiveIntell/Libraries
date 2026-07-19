@@ -5,6 +5,7 @@ use std::time::Instant;
 use rusqlite::{Connection, OptionalExtension};
 
 use crate::error::{ForgeError, ForgeResult};
+use crate::experiment::ExperimentExportRecord;
 use crate::invariants;
 use crate::lab::evaluate::ScoreVector;
 use crate::lab::evidence::{
@@ -763,6 +764,93 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
 
     // ── Evidence Bundles (v2) ──
 
+    /// Persist the canonical evidence contract and its Forge authoring projection.
+    ///
+    /// Identical retries are no-ops. Reusing a durable bundle ID for different
+    /// canonical material fails closed rather than replacing evidence.
+    pub fn insert_canonical_evidence_bundle(
+        &self,
+        bundle: &ExperimentEvidenceBundle,
+    ) -> ForgeResult<()> {
+        let canonical_json = serde_json::to_string(&bundle.to_canonical_evidence_bundle())?;
+        let scores_json = serde_json::to_string(&bundle.scores)?;
+        let hypotheses_json = serde_json::to_string(&bundle.hypotheses)?;
+        let verification_plan_json = bundle
+            .verification
+            .as_ref()
+            .map(serde_json::to_string)
+            .transpose()?;
+        let diff_json = bundle
+            .experiment_diff
+            .as_ref()
+            .map(serde_json::to_string)
+            .transpose()?;
+        let assessment_json = bundle
+            .assessment
+            .as_ref()
+            .map(serde_json::to_string)
+            .transpose()?;
+        let warnings_json = serde_json::to_string(&bundle.warnings)?;
+        let trace_id = bundle.trace_id.as_deref().unwrap_or_default();
+        let conn = self.lock_conn()?;
+        let existing = conn
+            .query_row(
+                "SELECT canonical_bundle_json FROM evidence_bundles WHERE bundle_id = ?1",
+                [&bundle.bundle_id],
+                |row| row.get::<_, Option<String>>(0),
+            )
+            .optional()?;
+        if let Some(existing) = existing {
+            if existing.as_deref() == Some(canonical_json.as_str()) {
+                return Ok(());
+            }
+            return Err(ForgeError::EvidenceConflict {
+                bundle_id: bundle.bundle_id.clone(),
+            });
+        }
+        conn.execute(
+            "INSERT INTO evidence_bundles
+             (bundle_id, candidate_id, eval_id, version_id, trace_id,
+              canonical_bundle_json, scores_json, hypotheses_json,
+              verification_plan_json, diff_json, assessment_json, warnings_json, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+            rusqlite::params![
+                bundle.bundle_id,
+                bundle.candidate_id,
+                bundle.eval_id,
+                bundle.version_id,
+                trace_id,
+                canonical_json,
+                scores_json,
+                hypotheses_json,
+                verification_plan_json,
+                diff_json,
+                assessment_json,
+                warnings_json,
+                bundle.created_at,
+            ],
+        )?;
+        Ok(())
+    }
+
+    /// Read a typed canonical bundle, recovering Forge-only authoring fields
+    /// from canonical metadata. Legacy rows retain their compatibility path.
+    pub fn get_canonical_evidence_bundle(
+        &self,
+        bundle_id: &str,
+    ) -> ForgeResult<Option<ExperimentEvidenceBundle>> {
+        let Some(row) = self.get_evidence_bundle(bundle_id)? else {
+            return Ok(None);
+        };
+        match row.canonical_bundle_json.as_deref() {
+            Some(json) => {
+                let canonical: semantic_memory_forge::EvidenceBundle = serde_json::from_str(json)?;
+                ExperimentEvidenceBundle::from_canonical_evidence_bundle(&canonical).map(Some)
+            }
+            None => legacy_row_to_local_bundle(&row).map(Some),
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn insert_evidence_bundle(
         &self,
@@ -778,7 +866,18 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
         assessment_json: Option<&str>,
         warnings_json: &str,
     ) -> ForgeResult<()> {
-        let now = chrono::Utc::now().to_rfc3339();
+        let conn = self.lock_conn()?;
+        let existing = conn
+            .query_row(
+                "SELECT canonical_bundle_json, created_at FROM evidence_bundles WHERE bundle_id = ?1",
+                [bundle_id],
+                |row| Ok((row.get::<_, Option<String>>(0)?, row.get::<_, String>(1)?)),
+            )
+            .optional()?;
+        let created_at = existing
+            .as_ref()
+            .map(|(_, created_at)| created_at.clone())
+            .unwrap_or_else(|| chrono::Utc::now().to_rfc3339());
         let canonical_bundle_json = canonical_bundle_json_from_legacy_parts(
             bundle_id,
             candidate_id,
@@ -791,11 +890,19 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
             diff_json,
             assessment_json,
             warnings_json,
-            &now,
+            &created_at,
         )?;
-        self.lock_conn()?.execute(
-            "INSERT OR REPLACE INTO evidence_bundles (bundle_id, candidate_id, eval_id, version_id, trace_id, canonical_bundle_json, scores_json, hypotheses_json, verification_plan_json, diff_json, assessment_json, warnings_json, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
-            rusqlite::params![bundle_id, candidate_id, eval_id, version_id, trace_id, canonical_bundle_json, scores_json, hypotheses_json, verification_plan_json, diff_json, assessment_json, warnings_json, now],
+        if let Some((existing_json, _)) = existing {
+            if existing_json.as_deref() == Some(canonical_bundle_json.as_str()) {
+                return Ok(());
+            }
+            return Err(ForgeError::EvidenceConflict {
+                bundle_id: bundle_id.into(),
+            });
+        }
+        conn.execute(
+            "INSERT INTO evidence_bundles (bundle_id, candidate_id, eval_id, version_id, trace_id, canonical_bundle_json, scores_json, hypotheses_json, verification_plan_json, diff_json, assessment_json, warnings_json, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+            rusqlite::params![bundle_id, candidate_id, eval_id, version_id, trace_id, canonical_bundle_json, scores_json, hypotheses_json, verification_plan_json, diff_json, assessment_json, warnings_json, created_at],
         )?;
         Ok(())
     }
@@ -933,11 +1040,40 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
     ) -> ForgeResult<bool> {
         let now = chrono::Utc::now().to_rfc3339();
         let wt = write_through_ok.map(|b| if b { 1i64 } else { 0 });
-        let result = self.lock_conn()?.execute(
+        let conn = self.lock_conn()?;
+        let result = conn.execute(
             "INSERT OR IGNORE INTO export_receipts (export_key, bundle_id, rendering_version, namespace, write_through_ok, exported_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             rusqlite::params![export_key, bundle_id, rendering_version as i64, namespace, wt, now],
         )?;
-        Ok(result > 0)
+        if result > 0 {
+            return Ok(true);
+        }
+        let existing = conn.query_row(
+            "SELECT bundle_id, rendering_version, namespace, write_through_ok FROM export_receipts WHERE export_key = ?1",
+            [export_key],
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, Option<i64>>(3)?,
+                ))
+            },
+        )?;
+        if existing
+            == (
+                bundle_id.to_string(),
+                i64::from(rendering_version),
+                namespace.to_string(),
+                wt,
+            )
+        {
+            Ok(false)
+        } else {
+            Err(ForgeError::ExportReceiptConflict {
+                export_key: export_key.into(),
+            })
+        }
     }
 
     pub fn has_export_receipt(&self, export_key: &str) -> ForgeResult<bool> {
@@ -947,6 +1083,53 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
             |row| row.get(0),
         )?;
         Ok(count > 0)
+    }
+
+    /// Read back the canonical persisted export receipt for restart-safe closure.
+    pub fn get_export_receipt(
+        &self,
+        export_key: &str,
+    ) -> ForgeResult<Option<ExperimentExportRecord>> {
+        let row = self
+            .lock_conn()?
+            .query_row(
+                "SELECT export_key, bundle_id, rendering_version, namespace, exported_at, write_through_ok FROM export_receipts WHERE export_key = ?1",
+                [export_key],
+                |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, String>(1)?,
+                        row.get::<_, i64>(2)?,
+                        row.get::<_, String>(3)?,
+                        row.get::<_, String>(4)?,
+                        row.get::<_, Option<i64>>(5)?,
+                    ))
+                },
+            )
+            .optional()?;
+        row.map(
+            |(
+                export_key,
+                bundle_id,
+                rendering_version,
+                namespace,
+                exported_at,
+                write_through_ok,
+            )| {
+                let rendering_version = u32::try_from(rendering_version).map_err(|_| {
+                    ForgeError::Other("persisted export rendering version is out of range".into())
+                })?;
+                Ok(ExperimentExportRecord {
+                    export_key,
+                    bundle_id,
+                    rendering_version,
+                    namespace,
+                    exported_at,
+                    write_through_ok: write_through_ok.map(|value| value != 0),
+                })
+            },
+        )
+        .transpose()
     }
 
     // ── Run Failures (v2) ──

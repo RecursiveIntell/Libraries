@@ -20,10 +20,14 @@ const LOCAL_AUTHORING_METADATA_KEY: &str = "living_memory_authoring";
 
 /// How strong a causal claim this bundle makes.
 ///
-/// Phase 5 only supports `ProvisionalSinglePair`.
+/// The owner distinguishes comparative paired evidence from verified execution
+/// that makes no comparative effect claim.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ClaimStrength {
+    /// A local execution was verified, but no baseline comparison or
+    /// generalization estimator was run.
+    ExecutionVerifiedNoComparison,
     /// Provisional local attribution from one paired intervention on one fixed workload slice.
     #[default]
     ProvisionalSinglePair,
@@ -32,6 +36,12 @@ pub enum ClaimStrength {
 impl std::fmt::Display for ClaimStrength {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::ExecutionVerifiedNoComparison => {
+                write!(
+                    f,
+                    "verified local execution with no comparative effect claim"
+                )
+            }
             Self::ProvisionalSinglePair => {
                 write!(f, "provisional local attribution from one paired intervention on one fixed workload slice")
             }
@@ -1135,18 +1145,17 @@ impl ExperimentEvidenceBundle {
                 config_flags: snapshot.config_flags.clone(),
             });
 
-        let pair_comparability = authoring
-            .as_ref()
-            .and_then(|authoring| authoring.pair_comparability.clone())
-            .or_else(|| {
-                canonical
-                    .comparability_snapshot
-                    .as_ref()
-                    .map(|snapshot| PairComparability {
-                        valid: snapshot.comparable.unwrap_or(false),
-                        violations: snapshot.violations.clone(),
-                    })
-            });
+        let pair_comparability = if let Some(authoring) = authoring.as_ref() {
+            authoring.pair_comparability.clone()
+        } else {
+            canonical
+                .comparability_snapshot
+                .as_ref()
+                .map(|snapshot| PairComparability {
+                    valid: snapshot.comparable.unwrap_or(false),
+                    violations: snapshot.violations.clone(),
+                })
+        };
 
         let treatment = authoring
             .as_ref()

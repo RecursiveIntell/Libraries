@@ -21,6 +21,7 @@ impl ForgeToolReceiptSink {
 #[async_trait]
 impl ToolReceiptSink for ForgeToolReceiptSink {
     async fn persist(&self, receipt: &ToolReceipt) -> Result<(), ToolError> {
+        let forge_receipt = forge_tool_receipt(receipt)?;
         let row = ToolReceiptRow {
             receipt_id: receipt.receipt_id.clone(),
             tool_run_id: receipt.tool_run_id.clone(),
@@ -56,14 +57,12 @@ impl ToolReceiptSink for ForgeToolReceiptSink {
             retry_owner: format!("{:?}", receipt.retry_owner),
             replay_link: receipt.replay_link.clone(),
             provider_call_id: receipt.provider_call_id.clone(),
-            raw_payload_json: serde_json::to_string(&forge_tool_receipt(receipt)).map_err(
-                |err| {
-                    ToolError::new(
-                        ToolErrorClass::ReceiptPersistence,
-                        format!("failed to serialize Forge tool receipt payload: {}", err),
-                    )
-                },
-            )?,
+            raw_payload_json: serde_json::to_string(&forge_receipt).map_err(|err| {
+                ToolError::new(
+                    ToolErrorClass::ReceiptPersistence,
+                    format!("failed to serialize Forge tool receipt payload: {}", err),
+                )
+            })?,
             recorded_at: chrono::Utc::now().to_rfc3339(),
         };
         self.store.insert_tool_receipt(&row).map_err(|err| {
@@ -76,8 +75,8 @@ impl ToolReceiptSink for ForgeToolReceiptSink {
     }
 }
 
-fn forge_tool_receipt(receipt: &ToolReceipt) -> ForgeToolReceiptV2 {
-    ForgeToolReceiptV2 {
+fn forge_tool_receipt(receipt: &ToolReceipt) -> Result<ForgeToolReceiptV2, ToolError> {
+    Ok(ForgeToolReceiptV2 {
         schema_version: FORGE_TOOL_RECEIPT_V2_SCHEMA.into(),
         receipt_id: receipt.receipt_id.clone(),
         tool_run_id: receipt.tool_run_id.clone(),
@@ -116,6 +115,11 @@ fn forge_tool_receipt(receipt: &ToolReceipt) -> ForgeToolReceiptV2 {
         retry_owner: format!("{:?}", receipt.retry_owner),
         replay_link: receipt.replay_link.clone(),
         provider_call_id: receipt.provider_call_id.clone(),
-        raw_payload: serde_json::to_value(receipt).unwrap_or_else(|_| serde_json::json!({})),
-    }
+        raw_payload: serde_json::to_value(receipt).map_err(|err| {
+            ToolError::new(
+                ToolErrorClass::ReceiptPersistence,
+                format!("failed to serialize raw tool receipt payload: {err}"),
+            )
+        })?,
+    })
 }

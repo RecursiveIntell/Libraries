@@ -1,12 +1,13 @@
 use semantic_memory::{
-    AllowedProcedureToolV1, ApplicabilityPredicateV1, AuthorityScopeV1, AuthorityScopesV1,
-    CallerPrincipalV1, ElevationRequirementV1, GovernedAccessPurposeV1, MemoryConfig, MemoryStore,
-    MockEmbedder, NamespaceScopeV1, OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1,
-    ProceduralMemoryArtifactV1, ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1,
-    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEffectfulEvaluationReceiptV1,
-    ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1, ProcedureLifecycleDispositionV1,
-    ProcedureLifecyclePermitV1, ProcedurePreconditionV1, ProcedureRetrievalRequestV1,
-    ProcedureRiskV1, ProcedureStepV1, RevocationStatusV1, SubjectPrincipalV1,
+    verify_procedure_lifecycle_receipt_v1, AllowedProcedureToolV1, ApplicabilityPredicateV1,
+    AuthorityScopeV1, AuthorityScopesV1, CallerPrincipalV1, ElevationRequirementV1,
+    GovernedAccessPurposeV1, MemoryConfig, MemoryStore, MockEmbedder, NamespaceScopeV1,
+    OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1, ProceduralMemoryArtifactV1,
+    ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1, ProcedureCapabilityV1,
+    ProcedureEffectV1, ProcedureEffectfulEvaluationReceiptV1, ProcedureEvidenceTestEnvelopeV1,
+    ProcedureFixtureV1, ProcedureLifecycleDispositionV1, ProcedureLifecyclePermitV1,
+    ProcedurePreconditionV1, ProcedureRetrievalRequestV1, ProcedureRiskV1, ProcedureStepV1,
+    RevocationStatusV1, SubjectPrincipalV1,
 };
 use serde_json::json;
 use tempfile::TempDir;
@@ -550,7 +551,7 @@ async fn all_access_paths_reject_revoked_and_superseded_versions() {
         .record_effectful_procedure_evaluation(effectful_receipt(&second), "effectful:v2")
         .await
         .unwrap();
-    store
+    let promotion = store
         .promote_procedure(
             lifecycle_permit("promote", &second.artifact_id),
             &second.artifact_id,
@@ -558,6 +559,18 @@ async fn all_access_paths_reject_revoked_and_superseded_versions() {
         )
         .await
         .unwrap();
+
+    let current = store
+        .retrieve_procedure(request(ProcedureAccessPathV1::Replay))
+        .await
+        .unwrap();
+    let lifecycle = current.lifecycle_receipt.unwrap();
+    assert_eq!(lifecycle.receipt_id, promotion.receipt_id);
+    assert_eq!(
+        lifecycle.disposition,
+        ProcedureLifecycleDispositionV1::Promoted
+    );
+    assert!(verify_procedure_lifecycle_receipt_v1(&lifecycle));
 
     for path in [
         ProcedureAccessPathV1::DirectId,
@@ -583,12 +596,12 @@ async fn all_access_paths_reject_revoked_and_superseded_versions() {
         )
         .await
         .unwrap();
-    assert!(store
+    let revoked = store
         .retrieve_procedure(request(ProcedureAccessPathV1::Search))
         .await
-        .unwrap()
-        .candidate
-        .is_none());
+        .unwrap();
+    assert!(revoked.candidate.is_none());
+    assert!(revoked.lifecycle_receipt.is_none());
 }
 
 #[tokio::test]

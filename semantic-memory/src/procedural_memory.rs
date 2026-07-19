@@ -670,6 +670,8 @@ pub struct GovernedProcedureDecisionV1 {
 pub struct GovernedProcedureRetrievalV1 {
     pub schema_version: String,
     pub candidate: Option<ProceduralMemoryArtifactV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lifecycle_receipt: Option<ProcedureLifecycleReceiptV1>,
     pub decision: GovernedProcedureDecisionV1,
     pub receipt_digest: String,
 }
@@ -1190,14 +1192,40 @@ fn retrieve_governed(
         origin_decision,
         decision_digest,
     };
-    let receipt_digest =
-        digest_serializable(&("governed_procedure_retrieval_v1", &candidate, &decision));
+    let lifecycle_receipt = candidate
+        .as_ref()
+        .map(|artifact| latest_lifecycle_receipt(conn, &artifact.artifact_id))
+        .transpose()?
+        .flatten();
+    let receipt_digest = digest_serializable(&(
+        "governed_procedure_retrieval_v1",
+        &candidate,
+        &lifecycle_receipt,
+        &decision,
+    ));
     Ok(GovernedProcedureRetrievalV1 {
         schema_version: "governed_procedure_retrieval_v1".into(),
         candidate,
+        lifecycle_receipt,
         decision,
         receipt_digest,
     })
+}
+
+fn latest_lifecycle_receipt(
+    conn: &rusqlite::Connection,
+    artifact_id: &str,
+) -> Result<Option<ProcedureLifecycleReceiptV1>, MemoryError> {
+    let raw = conn
+        .query_row(
+            "SELECT receipt_json FROM procedural_memory_receipts
+             WHERE artifact_id = ?1 ORDER BY rowid DESC LIMIT 1",
+            params![artifact_id],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?;
+    raw.map(|json| serde_json::from_str(&json).map_err(rejected))
+        .transpose()
 }
 
 fn load_candidate(

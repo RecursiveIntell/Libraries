@@ -215,7 +215,7 @@ fn evidence_bundle_not_found() {
 }
 
 #[test]
-fn evidence_bundle_insert_or_replace() {
+fn evidence_bundle_retry_is_identical_or_conflict_without_mutation() {
     let dir = TempDir::new().unwrap();
     let db_path = dir.path().join("forge.db");
     let store = ForgeStore::open(&db_path).unwrap();
@@ -236,8 +236,25 @@ fn evidence_bundle_insert_or_replace() {
         )
         .unwrap();
 
-    // Insert again with updated scores — should replace
+    // An exact retry is an idempotent no-op.
     store
+        .insert_evidence_bundle(
+            "eb-dup",
+            "c-1",
+            "e-1",
+            "v0001",
+            "trace-1",
+            r#"{"correctness": 0.5}"#,
+            "[]",
+            None,
+            None,
+            None,
+            "[]",
+        )
+        .unwrap();
+
+    // Changed evidence under the same canonical ID is rejected.
+    let error = store
         .insert_evidence_bundle(
             "eb-dup",
             "c-1",
@@ -251,10 +268,12 @@ fn evidence_bundle_insert_or_replace() {
             None,
             "[]",
         )
-        .unwrap();
+        .unwrap_err();
+    assert_eq!(error.kind(), "evidence_conflict");
 
     let row = store.get_evidence_bundle("eb-dup").unwrap().unwrap();
-    assert!(row.scores_json.contains("0.95"));
+    assert!(row.scores_json.contains("0.5"));
+    assert!(!row.scores_json.contains("0.95"));
     assert_eq!(
         store.count_evidence_bundles_for_candidate("c-1").unwrap(),
         1
@@ -358,6 +377,16 @@ fn export_receipt_insert_and_check() {
         .insert_export_receipt("key-1", "b-1", 1, "default", Some(true))
         .unwrap();
     assert!(!dup);
+
+    let conflict = store
+        .insert_export_receipt("key-1", "b-2", 3, "other", Some(false))
+        .unwrap_err();
+    assert_eq!(conflict.kind(), "export_receipt_conflict");
+    let stored = store.get_export_receipt("key-1").unwrap().unwrap();
+    assert_eq!(stored.bundle_id, "b-1");
+    assert_eq!(stored.rendering_version, 1);
+    assert_eq!(stored.namespace, "default");
+    assert_eq!(stored.write_through_ok, Some(true));
 }
 
 // ── Run failure CRUD ──
