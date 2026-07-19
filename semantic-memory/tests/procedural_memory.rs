@@ -12,6 +12,12 @@ use semantic_memory::{
 use serde_json::json;
 use tempfile::TempDir;
 
+use semantic_memory::{
+    admit_procedure_replay, compare_replay, load_retained_replay_inputs,
+    procedure_replay_permit_ref, record_replay_result, ProcedureReplayInputsV1,
+    ProcedureReplayOutcomeV1, ProcedureReplayResultV1,
+};
+
 fn store() -> (MemoryStore, TempDir) {
     let tmp = TempDir::new().unwrap();
     let store = MemoryStore::open_with_embedder(
@@ -23,6 +29,110 @@ fn store() -> (MemoryStore, TempDir) {
     )
     .unwrap();
     (store, tmp)
+}
+
+fn replay_inputs(artifact: &ProceduralMemoryArtifactV1, id: &str) -> ProcedureReplayInputsV1 {
+    ProcedureReplayInputsV1 {
+        replay_id: id.into(),
+        original_artifact_id: artifact.artifact_id.clone(),
+        original_artifact_digest: artifact.artifact_digest.clone(),
+        patch_digest: "patch".into(),
+        source_tree_digest: "tree".into(),
+        verifier_digest: "verifier".into(),
+        check_policy_digest: "policy".into(),
+        environment_digest: "environment".into(),
+        image_digest: "image".into(),
+        store_identity_digest: "store".into(),
+        retained_input_digest: "placeholder".into(),
+        promotion_receipt_ref: "promotion".into(),
+        action_permit_ref: String::new(),
+    }
+}
+
+#[tokio::test]
+async fn v38_replay_owner_boundaries() {
+    let (store, temp) = store();
+    let artifact = promoted(&store, "procedure:v38-replay").await;
+    let scope = NamespaceScopeV1::exact("repo:alpha");
+    let permit =
+        ProcedureActionPermitV1::elevated("principal:alice", "operator:v38", scope.clone());
+    let mut inputs = replay_inputs(&artifact, "replay:v38");
+    inputs.action_permit_ref = procedure_replay_permit_ref(&permit, &inputs.replay_id).unwrap();
+    let admission = admit_procedure_replay(&store, inputs.clone(), permit.clone())
+        .await
+        .unwrap();
+    assert_eq!(
+        admit_procedure_replay(&store, inputs.clone(), permit.clone())
+            .await
+            .unwrap(),
+        admission
+    );
+    let mut conflict = inputs.clone();
+    conflict.patch_digest = "different".into();
+    assert!(matches!(
+        admit_procedure_replay(&store, conflict, permit.clone()).await,
+        Err(semantic_memory::MemoryError::ProceduralMemoryConflict { .. })
+    ));
+    let wrong = ProcedureActionPermitV1::elevated(
+        "principal:alice",
+        "operator:v38",
+        NamespaceScopeV1::exact("repo:other"),
+    );
+    let mut wrong_inputs = replay_inputs(&artifact, "replay:v38-wrong");
+    wrong_inputs.action_permit_ref =
+        procedure_replay_permit_ref(&wrong, &wrong_inputs.replay_id).unwrap();
+    assert!(admit_procedure_replay(&store, wrong_inputs, wrong)
+        .await
+        .is_err());
+    let mut expired = permit.clone();
+    expired.expires_at = "2000-01-01T00:00:00Z".into();
+    let mut expired_inputs = replay_inputs(&artifact, "replay:v38-expired");
+    expired_inputs.action_permit_ref =
+        procedure_replay_permit_ref(&expired, &expired_inputs.replay_id).unwrap();
+    assert!(admit_procedure_replay(&store, expired_inputs, expired)
+        .await
+        .is_err());
+    inputs = load_retained_replay_inputs(&store, &inputs.replay_id)
+        .await
+        .unwrap();
+    let db = rusqlite::Connection::open(temp.path().join("memory.db")).unwrap();
+    db.execute("DROP TRIGGER procedure_replay_inputs_no_update", [])
+        .unwrap();
+    db.execute(
+        "UPDATE procedure_replay_inputs SET payload_json='{}' WHERE replay_id=?1",
+        [&inputs.replay_id],
+    )
+    .unwrap();
+    assert!(matches!(
+        load_retained_replay_inputs(&store, &inputs.replay_id).await,
+        Err(semantic_memory::MemoryError::CorruptData { .. })
+    ));
+    let result = ProcedureReplayResultV1 {
+        replay_id: inputs.replay_id.clone(),
+        result_digest: "result".into(),
+        outcome: ProcedureReplayOutcomeV1::ExactMatch,
+        reason_codes: vec![],
+    };
+    assert_eq!(
+        record_replay_result(&store, result.clone()).await.unwrap(),
+        result
+    );
+    assert_eq!(
+        record_replay_result(&store, result.clone()).await.unwrap(),
+        result
+    );
+    let mut result_conflict = result.clone();
+    result_conflict.result_digest = "different".into();
+    assert!(matches!(
+        record_replay_result(&store, result_conflict).await,
+        Err(semantic_memory::MemoryError::ProceduralMemoryConflict { .. })
+    ));
+    let mut drift = inputs.clone();
+    drift.environment_digest = "changed".into();
+    assert_eq!(
+        compare_replay(&inputs, &drift).outcome,
+        ProcedureReplayOutcomeV1::Drift
+    );
 }
 
 fn origin(principal: &str) -> OriginAuthorityLabelV1 {

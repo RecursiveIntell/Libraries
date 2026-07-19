@@ -930,6 +930,45 @@ BEFORE DELETE ON procedural_lifecycle_permit_uses BEGIN
 END;
 "#;
 
+/// V38 migration: canonical, append-only coding-procedure replay retention.
+const MIGRATION_V38: &str = r#"
+CREATE TABLE IF NOT EXISTS procedure_replay_inputs (
+    replay_id TEXT PRIMARY KEY,
+    original_artifact_id TEXT NOT NULL,
+    original_artifact_digest TEXT NOT NULL,
+    patch_digest TEXT NOT NULL, source_tree_digest TEXT NOT NULL,
+    verifier_digest TEXT NOT NULL, check_policy_digest TEXT NOT NULL,
+    environment_digest TEXT NOT NULL, image_digest TEXT NOT NULL,
+    store_identity_digest TEXT NOT NULL, retained_input_digest TEXT NOT NULL,
+    promotion_receipt_ref TEXT NOT NULL, action_permit_ref TEXT NOT NULL,
+    request_digest TEXT NOT NULL UNIQUE, payload_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS procedure_replay_admissions (
+    replay_id TEXT PRIMARY KEY REFERENCES procedure_replay_inputs(replay_id),
+    admission_digest TEXT NOT NULL UNIQUE, receipt_json TEXT NOT NULL,
+    admitted_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS procedure_replay_results (
+    replay_id TEXT PRIMARY KEY REFERENCES procedure_replay_inputs(replay_id),
+    result_digest TEXT NOT NULL, outcome TEXT NOT NULL,
+    reason_codes_json TEXT NOT NULL, receipt_json TEXT NOT NULL,
+    recorded_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS procedure_replay_permit_uses (
+    permit_ref TEXT PRIMARY KEY, replay_id TEXT NOT NULL UNIQUE
+        REFERENCES procedure_replay_inputs(replay_id), used_at TEXT NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS procedure_replay_inputs_no_update BEFORE UPDATE ON procedure_replay_inputs BEGIN SELECT RAISE(ABORT, 'procedure replay inputs are immutable'); END;
+CREATE TRIGGER IF NOT EXISTS procedure_replay_inputs_no_delete BEFORE DELETE ON procedure_replay_inputs BEGIN SELECT RAISE(ABORT, 'procedure replay inputs are immutable'); END;
+CREATE TRIGGER IF NOT EXISTS procedure_replay_admissions_no_update BEFORE UPDATE ON procedure_replay_admissions BEGIN SELECT RAISE(ABORT, 'procedure replay admissions are immutable'); END;
+CREATE TRIGGER IF NOT EXISTS procedure_replay_admissions_no_delete BEFORE DELETE ON procedure_replay_admissions BEGIN SELECT RAISE(ABORT, 'procedure replay admissions are immutable'); END;
+CREATE TRIGGER IF NOT EXISTS procedure_replay_results_no_update BEFORE UPDATE ON procedure_replay_results BEGIN SELECT RAISE(ABORT, 'procedure replay results are immutable'); END;
+CREATE TRIGGER IF NOT EXISTS procedure_replay_results_no_delete BEFORE DELETE ON procedure_replay_results BEGIN SELECT RAISE(ABORT, 'procedure replay results are immutable'); END;
+CREATE TRIGGER IF NOT EXISTS procedure_replay_permit_uses_no_update BEFORE UPDATE ON procedure_replay_permit_uses BEGIN SELECT RAISE(ABORT, 'procedure replay permit uses are immutable'); END;
+CREATE TRIGGER IF NOT EXISTS procedure_replay_permit_uses_no_delete BEFORE DELETE ON procedure_replay_permit_uses BEGIN SELECT RAISE(ABORT, 'procedure replay permit uses are immutable'); END;
+"#;
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -970,10 +1009,11 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (35, MIGRATION_V35),
     (36, MIGRATION_V36),
     (37, MIGRATION_V37),
+    (38, MIGRATION_V38),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 37;
+pub const MAX_SCHEMA_VERSION: u32 = 38;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {

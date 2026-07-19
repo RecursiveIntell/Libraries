@@ -383,7 +383,7 @@ pub enum ProcedureLifecycleDispositionV1 {
 }
 
 impl ProcedureLifecycleDispositionV1 {
-    fn as_str(self) -> &'static str {
+    pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::Compiled => "compiled",
             Self::Tested => "tested",

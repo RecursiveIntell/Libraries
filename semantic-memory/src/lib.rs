@@ -93,6 +93,7 @@ pub(crate) mod db;
 pub mod evidence_gap;
 mod forgetting;
 mod procedural_memory;
+mod procedure_replay;
 pub mod transition_contracts;
 mod transition_verifier;
 pub use db::{bytes_to_embedding, decode_f32_le, embedding_to_bytes};
@@ -193,6 +194,12 @@ pub use procedural_memory::{
     ProcedureTestReceiptV1, ProcedureValidationV1, PROCEDURAL_MEMORY_ARTIFACT_V1,
     PROCEDURE_EFFECTFUL_EVALUATION_RECEIPT_V1, PROCEDURE_LIFECYCLE_RECEIPT_V1,
     PROCEDURE_TEST_RECEIPT_V1,
+};
+pub use procedure_replay::{
+    admit_procedure_replay, compare_replay, load_retained_replay_inputs,
+    procedure_replay_permit_ref, record_replay_result, ProcedureReplayAdmissionV1,
+    ProcedureReplayComparisonV1, ProcedureReplayInputsV1, ProcedureReplayOutcomeV1,
+    ProcedureReplayResultV1,
 };
 pub use shadow_policy::{
     compare_shadow_execution_v1, evaluate_shadow_policy_promotion_v1, shadow_policy_digest,
