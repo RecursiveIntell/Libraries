@@ -73,6 +73,7 @@ impl ForgeStore {
         Self::run_migration_v3(&conn)?;
         Self::run_migration_v4(&conn)?;
         Self::run_migration_v5(&conn)?;
+        Self::run_migration_v6(&conn)?;
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -229,6 +230,17 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
             conn.pragma_update(None, "user_version", schema::FORGE_V5_USER_VERSION)?;
         }
 
+        Ok(())
+    }
+
+    fn run_migration_v6(conn: &Connection) -> ForgeResult<()> {
+        for stmt in schema::MIGRATION_V6_STATEMENTS {
+            conn.execute(stmt, [])?;
+        }
+        let current: u32 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
+        if current < schema::FORGE_V6_USER_VERSION {
+            conn.pragma_update(None, "user_version", schema::FORGE_V6_USER_VERSION)?;
+        }
         Ok(())
     }
 

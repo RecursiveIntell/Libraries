@@ -12,6 +12,8 @@ use crate::origin_authority::{
 };
 use crate::{MemoryError, MemoryStore};
 use chrono::{DateTime, Utc};
+use forge_memory_bridge::AdjudicationDecisionV1;
+use forge_memory_bridge::{AdjudicationBindingV1, ForgeAdjudicationStore};
 use rusqlite::{params, OptionalExtension, Transaction};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -488,6 +490,10 @@ pub struct ProcedureLifecycleReceiptV1 {
     pub event_digest: String,
     pub receipt_digest: String,
     pub committed_at: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub adjudication_digest: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub permit_digest: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -677,6 +683,73 @@ pub struct GovernedProcedureRetrievalV1 {
 }
 
 impl MemoryStore {
+    /// Promote a procedure only after the Forge-owned adjudication and an independent,
+    /// single-use lifecycle permit have both passed this owner gate.
+    pub async fn promote_adjudicated_procedure(
+        &self,
+        forge: &dyn ForgeAdjudicationStore,
+        permit: ProcedureLifecyclePermitV1,
+        adjudication_id: &str,
+        candidate_id: &str,
+        candidate_digest: &str,
+        evidence_bundle_id: &str,
+        evidence_bundle_digest: &str,
+        caller_idempotency_key: impl Into<String>,
+    ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
+        let binding = AdjudicationBindingV1 {
+            candidate_id: candidate_id.into(),
+            candidate_digest: forge_memory_bridge::IdentityDigest::new(candidate_digest)
+                .map_err(rejected)?,
+            evidence_bundle_id: evidence_bundle_id.into(),
+            evidence_bundle_digest: forge_memory_bridge::IdentityDigest::new(
+                evidence_bundle_digest,
+            )
+            .map_err(rejected)?,
+        };
+        let _owner_receipt = forge
+            .verify_adjudication_binding(adjudication_id, &binding)
+            .map_err(|error| rejected(error.to_string()))?;
+        let adjudication = forge
+            .read_verified_adjudication(adjudication_id)
+            .map_err(|error| rejected(error.to_string()))?;
+        adjudication.validate().map_err(rejected)?;
+        if adjudication.decision != AdjudicationDecisionV1::EligibleForLifecycleConsideration
+            || adjudication.adjudication_id != adjudication_id
+            || adjudication.candidate_id != candidate_id
+            || adjudication.candidate_digest.as_str() != candidate_digest
+            || adjudication.evidence_bundle_id != evidence_bundle_id
+            || adjudication.evidence_bundle_digest.as_str() != evidence_bundle_digest
+            || permit.artifact_id != candidate_id
+            || permit.operation != "promote"
+        {
+            return Err(rejected(
+                "adjudication, candidate, evidence, or permit scope mismatch",
+            ));
+        }
+        let adjudication_digest = adjudication.adjudication_digest.as_str().to_owned();
+        let permit_digest = digest_serializable(&(
+            "procedure_lifecycle_permit_scope_v1",
+            &permit.permit_id,
+            &permit.principal,
+            &permit.caller_id,
+            &permit.capability,
+            &permit.artifact_id,
+            &permit.operation,
+            &permit.expires_at,
+        ));
+        lifecycle_control(
+            self,
+            permit,
+            candidate_id.to_owned(),
+            caller_idempotency_key.into(),
+            "promote",
+            ProcedureLifecycleDispositionV1::Promoted,
+            None,
+            Some((adjudication_digest, permit_digest)),
+        )
+        .await
+    }
+
     /// Compile and persist an immutable procedure version. Invalid input is durably quarantined.
     pub async fn compile_procedure(
         &self,
@@ -735,7 +808,7 @@ impl MemoryStore {
                     }
                 };
                 append_lifecycle(tx, &key, "compile", &payload_digest, &artifact,
-                    disposition, reasons, None)
+                    disposition, reasons, None, None)
             })
         }).await
     }
@@ -786,6 +859,7 @@ impl MemoryStore {
                     disposition,
                     reasons,
                     Some(test),
+                    None,
                 )
             })
         })
@@ -868,6 +942,7 @@ impl MemoryStore {
             "promote",
             ProcedureLifecycleDispositionV1::Promoted,
             None,
+            None,
         )
         .await
     }
@@ -887,6 +962,7 @@ impl MemoryStore {
             "quarantine",
             ProcedureLifecycleDispositionV1::Quarantined,
             Some(reason.into()),
+            None,
         )
         .await
     }
@@ -906,6 +982,7 @@ impl MemoryStore {
             "revoke",
             ProcedureLifecycleDispositionV1::Revoked,
             Some(reason.into()),
+            None,
         )
         .await
     }
@@ -926,6 +1003,7 @@ impl MemoryStore {
             "rollback",
             ProcedureLifecycleDispositionV1::RolledBack,
             Some(reason.into()),
+            None,
         )
         .await
     }
@@ -949,9 +1027,10 @@ async fn lifecycle_control(
     operation: &'static str,
     disposition: ProcedureLifecycleDispositionV1,
     reason: Option<String>,
+    links: Option<(String, String)>,
 ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
     validate_lifecycle_permit(&permit, operation, &artifact_id)?;
-    let payload_digest = digest_serializable(&(operation, &permit, &artifact_id, &reason));
+    let payload_digest = digest_serializable(&(operation, &permit, &artifact_id, &reason, &links));
     store
         .with_write_conn(move |conn| {
             // Safety: lifecycle transition and immutable receipt are committed atomically.
@@ -1056,6 +1135,7 @@ async fn lifecycle_control(
                         .map(|text| format!("reason:{}", digest_serializable(&text)))
                         .collect(),
                     None,
+                    links,
                 )?;
                 tx.execute(
                     "INSERT INTO procedural_lifecycle_permit_uses
@@ -1699,6 +1779,7 @@ fn append_lifecycle(
     disposition: ProcedureLifecycleDispositionV1,
     mut reasons: Vec<String>,
     test_receipt: Option<ProcedureTestReceiptV1>,
+    links: Option<(String, String)>,
 ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
     if key.trim().is_empty() {
         return Err(rejected("idempotency key is required"));
@@ -1756,6 +1837,8 @@ fn append_lifecycle(
         event_digest,
         receipt_digest: String::new(),
         committed_at,
+        adjudication_digest: links.as_ref().map(|value| value.0.clone()),
+        permit_digest: links.as_ref().map(|value| value.1.clone()),
     };
     receipt.receipt_digest = digest_serializable(&(
         &receipt.schema_version,
@@ -1772,6 +1855,8 @@ fn append_lifecycle(
         &receipt.event_id,
         &receipt.event_digest,
         &receipt.committed_at,
+        &receipt.adjudication_digest,
+        &receipt.permit_digest,
     ));
     tx.execute(
         "INSERT INTO procedural_memory_receipts
@@ -2096,6 +2181,8 @@ pub fn verify_procedure_lifecycle_receipt_v1(receipt: &ProcedureLifecycleReceipt
                 &receipt.event_id,
                 &receipt.event_digest,
                 &receipt.committed_at,
+                &receipt.adjudication_digest,
+                &receipt.permit_digest,
             ))
 }
 

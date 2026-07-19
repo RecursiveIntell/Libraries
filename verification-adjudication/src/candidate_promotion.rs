@@ -142,18 +142,19 @@ impl CandidatePromotionAdjudicationV1 {
         {
             return Err("invalid uncertainty bounds".into());
         }
-        if self.canonical_digest() != self.adjudication_digest {
+        if self.canonical_digest()? != self.adjudication_digest {
             return Err("adjudication digest does not bind material fields".into());
         }
         Ok(())
     }
 
-    pub fn canonical_digest(&self) -> IdentityDigest {
+    pub fn canonical_digest(&self) -> Result<IdentityDigest, String> {
         let mut copy = self.clone();
         copy.adjudication_digest = IdentityDigest::of([]);
         copy.created_at.clear();
-        let bytes = serde_json::to_vec(&copy).expect("contract serialization cannot fail");
-        IdentityDigest::of(bytes)
+        let bytes = serde_json::to_vec(&copy)
+            .map_err(|error| format!("failed to serialize canonical adjudication: {error}"))?;
+        Ok(IdentityDigest::of(bytes))
     }
 }
 
@@ -183,7 +184,9 @@ pub struct CandidatePromotionInput {
     pub created_at: String,
 }
 
-pub fn adjudicate_candidate(input: CandidatePromotionInput) -> CandidatePromotionAdjudicationV1 {
+pub fn adjudicate_candidate(
+    input: CandidatePromotionInput,
+) -> Result<CandidatePromotionAdjudicationV1, String> {
     let mut reasons = Vec::new();
     if input.paired_denominator == 0
         || input.admissible_pairs < input.thresholds.minimum_admissible_pairs
@@ -242,6 +245,6 @@ pub fn adjudicate_candidate(input: CandidatePromotionInput) -> CandidatePromotio
         source_receipt_refs: input.source_receipt_refs,
         created_at: input.created_at,
     };
-    output.adjudication_digest = output.canonical_digest();
-    output
+    output.adjudication_digest = output.canonical_digest()?;
+    Ok(output)
 }

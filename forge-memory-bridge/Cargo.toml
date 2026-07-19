@@ -16,6 +16,7 @@ thiserror = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 uuid = { workspace = true, features = ["v4"] }
 schemars = { workspace = true }
+verification-adjudication = { path = "../verification-adjudication" }
 
 [dev-dependencies]
 serde_json = { workspace = true }

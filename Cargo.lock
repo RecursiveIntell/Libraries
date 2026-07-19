@@ -2086,6 +2086,7 @@ dependencies = [
  "tracing",
  "typed-patch",
  "uuid",
+ "verification-adjudication",
  "walkdir",
 ]
 
@@ -2101,6 +2102,7 @@ dependencies = [
  "stack-ids",
  "thiserror 2.0.18",
  "uuid",
+ "verification-adjudication",
 ]
 
 [[package]]

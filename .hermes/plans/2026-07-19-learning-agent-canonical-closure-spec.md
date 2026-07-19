@@ -335,12 +335,26 @@ Still blocked by multi-family learner-generated generalization, hostile containm
 - Database rollback requires snapshot/forward-compatible binary; never drop V38 evidence tables.
 - Never reinterpret historical receipts as promotion-grade evidence.
 
-## 8. Current known blockers
+## 8. Corrected owner-boundary amendment (2026-07-19)
 
-1. Forge adjudication persistence/API does not yet exist.
-2. Semantic-memory lifecycle gate does not yet consume Forge adjudication.
+Live crate-graph inspection falsified the initial assumption that `semantic-memory-forge` itself can own persistence. It is currently a schema/export crate; `ForgeStore` is owned by `living-memory`/`forge-engine`, and `semantic-memory` already sits below that dependency direction. A direct semantic-memory -> ForgeStore dependency would create a cycle. `forge-memory-bridge` is currently transformation-only and cannot be promoted silently into a read authority.
+
+Therefore the implementation boundary is amended as follows:
+
+1. `verification-adjudication` owns `CandidatePromotionAdjudicationV1` and pure rules.
+2. `living-memory`/`forge-engine` owns durable persistence and migrations for the adjudication artifact because it owns `ForgeStore`.
+3. A narrow owner-facing `forge-adjudication-bridge` API/trait (placed in the existing bridge layer if dependency-safe, otherwise a new canonical bridge crate) exposes only `persist`, `read_verified`, and `verify_binding` for the typed artifact. It returns owner receipts and conflict errors; it does not duplicate storage or adjudication rules.
+4. `semantic-memory` depends on the bridge interface, never on `ForgeStore` or `forge-engine`, and remains the sole lifecycle/permit authority.
+5. AiDENs calls the bridge and semantic-memory adapters only; it owns no evidence or lifecycle persistence.
+
+The bridge must be dependency-acyclic, owner-issued, and tested for immutable persistence, identical retry idempotency, conflicting retry rejection, tampered readback, and exact identity binding before lifecycle integration begins. If the existing bridge crate cannot legally depend on both sides, the correct repair is a new narrowly scoped canonical bridge crate—not a dependency inversion, direct cycle, or AiDENs workaround.
+
+## 9. Current known blockers
+
+1. The corrected persistence bridge/API does not yet exist.
+2. Semantic-memory lifecycle gate does not yet consume the bridge-verified adjudication.
 3. V38 coding replay retention/admission/result owner APIs do not yet exist.
-4. Current completion ledger must be regenerated after this spec/HEAD update.
+4. Current completion ledger must be regenerated after source updates.
 5. Current live Podman closure/replay evidence remains unverified.
 
 These are implementation work items, not permission to weaken the claim boundary.

@@ -6,6 +6,18 @@ use thiserror::Error;
 /// Errors produced by the forge-memory-bridge.
 #[derive(Debug, Error)]
 pub enum BridgeError {
+    #[error("adjudication validation failed: {0}")]
+    AdjudicationValidation(String),
+    #[error("adjudication persistence failed: {0}")]
+    AdjudicationPersistence(String),
+    #[error("adjudication {adjudication_id} conflicts with an existing digest")]
+    AdjudicationConflict { adjudication_id: String },
+    #[error("adjudication not found: {0}")]
+    AdjudicationNotFound(String),
+    #[error("adjudication readback is tampered: expected {expected}, got {actual}")]
+    AdjudicationTampered { expected: String, actual: String },
+    #[error("adjudication binding mismatch: {0}")]
+    AdjudicationBindingMismatch(String),
     /// The export envelope is structurally invalid.
     #[error("invalid envelope: {reason}")]
     InvalidEnvelope { reason: String },
@@ -40,6 +52,12 @@ impl BridgeError {
     /// Stable error kind discriminant.
     pub fn kind(&self) -> &'static str {
         match self {
+            Self::AdjudicationValidation(_) => "adjudication_validation",
+            Self::AdjudicationPersistence(_) => "adjudication_persistence",
+            Self::AdjudicationConflict { .. } => "adjudication_conflict",
+            Self::AdjudicationNotFound(_) => "adjudication_not_found",
+            Self::AdjudicationTampered { .. } => "adjudication_tampered",
+            Self::AdjudicationBindingMismatch(_) => "adjudication_binding_mismatch",
             Self::InvalidEnvelope { .. } => "invalid_envelope",
             Self::IncompatibleVersion { .. } => "incompatible_version",
             Self::DigestMismatch { .. } => "digest_mismatch",

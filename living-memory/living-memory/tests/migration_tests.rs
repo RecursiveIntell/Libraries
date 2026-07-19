@@ -112,9 +112,9 @@ fn v1_db_upgraded_to_latest() {
     assert!(row.is_none());
 }
 
-/// User version gets bumped to the latest additive migration after open.
+/// User version gets bumped to the latest additive migration (v6) after open.
 #[test]
-fn user_version_is_v4_after_open() {
+fn user_version_is_v6_after_open() {
     let dir = TempDir::new().unwrap();
     let db_path = dir.path().join("forge.db");
 
@@ -124,7 +124,7 @@ fn user_version_is_v4_after_open() {
     let version: u32 = conn
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, schema::FORGE_V5_USER_VERSION);
+    assert_eq!(version, schema::FORGE_V6_USER_VERSION);
 }
 
 // ── Evidence bundle CRUD ──

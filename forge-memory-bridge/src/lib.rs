@@ -15,17 +15,21 @@
 //!
 //! ## Phase status: current / implemented now
 
+mod adjudication;
 mod batch;
 mod error;
 #[allow(deprecated)]
 mod legacy;
 mod transform;
 
+pub use adjudication::*;
 pub use batch::*;
 pub use error::{
     BridgeError, BridgeImportFailureArtifact, BRIDGE_IMPORT_FAILURE_ARTIFACT_V1_SCHEMA,
 };
 pub use transform::*;
+pub use verification_adjudication::AdjudicationDecisionV1;
+pub use verification_adjudication::IdentityDigest;
 
 /// Compatibility-only legacy bridge helpers.
 ///

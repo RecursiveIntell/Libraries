@@ -1,3 +1,4 @@
+mod adjudication;
 pub mod db;
 pub mod schema;
 

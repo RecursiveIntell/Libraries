@@ -53,8 +53,8 @@ fn input() -> CandidatePromotionInput {
 
 #[test]
 fn eligible_contract_is_valid_and_digest_is_deterministic() {
-    let first = adjudicate_candidate(input());
-    let second = adjudicate_candidate(input());
+    let first = adjudicate_candidate(input()).unwrap();
+    let second = adjudicate_candidate(input()).unwrap();
     assert_eq!(
         first.decision,
         AdjudicationDecisionV1::EligibleForLifecycleConsideration
@@ -68,13 +68,13 @@ fn failed_family_or_holdout_is_quarantined() {
     let mut value = input();
     value.family_results[0].passed = false;
     assert_eq!(
-        adjudicate_candidate(value).decision,
+        adjudicate_candidate(value).unwrap().decision,
         AdjudicationDecisionV1::Quarantined
     );
     let mut value = input();
     value.holdout_result.passed = false;
     assert_eq!(
-        adjudicate_candidate(value).decision,
+        adjudicate_candidate(value).unwrap().decision,
         AdjudicationDecisionV1::Quarantined
     );
 }
@@ -85,7 +85,7 @@ fn zero_denominator_is_inconclusive_and_invalid_artifacts_are_rejected() {
     value.paired_denominator = 0;
     value.admissible_pairs = 0;
     value.excluded_pairs = 0;
-    let artifact = adjudicate_candidate(value);
+    let artifact = adjudicate_candidate(value).unwrap();
     assert_eq!(artifact.decision, AdjudicationDecisionV1::Inconclusive);
     assert!(artifact.validate().is_err());
     assert!(IdentityDigest::new("not-a-digest").is_err());
@@ -93,7 +93,7 @@ fn zero_denominator_is_inconclusive_and_invalid_artifacts_are_rejected() {
 
 #[test]
 fn material_mutation_breaks_digest_binding() {
-    let mut artifact = adjudicate_candidate(input());
+    let mut artifact = adjudicate_candidate(input()).unwrap();
     artifact.candidate_id = "altered".into();
     assert!(artifact.validate().is_err());
 }

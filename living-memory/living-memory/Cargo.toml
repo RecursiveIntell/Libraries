@@ -25,6 +25,7 @@ forge-policy = { version = "0.1.0", path = "../../Primitives/forge-policy" }
 sandbox-workspace = { version = "0.1.0", path = "../../Primitives/sandbox-workspace" }
 typed-patch = { version = "0.1.0", path = "../../Primitives/typed-patch" }
 effect-signature = { version = "0.1.0", path = "../../Primitives/effect-signature" }
+verification-adjudication = { path = "../../verification-adjudication" }
 check-runner = { version = "0.1.0", path = "../../Primitives/check-runner", features = ["container"] }
 mindstate-core = { version = "0.1.0", path = "../../Primitives/mindstate-core" }
 stabilizer-core = { version = "0.1.0", path = "../../Primitives/stabilizer-core" }
