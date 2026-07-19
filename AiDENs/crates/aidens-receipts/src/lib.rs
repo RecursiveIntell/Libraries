@@ -979,6 +979,21 @@ impl CanonicalEventLog {
         read_records(&self.config.records_path)
     }
 
+    /// Reads the exact source log under its lock and fails on the first malformed line.
+    /// Terminal certification must use this path rather than the recovery-oriented
+    /// `list_records`, which quarantines corrupt lines and returns the readable projection.
+    pub fn list_records_strict(
+        &self,
+    ) -> Result<Vec<CanonicalEventLogEntry>, CanonicalEventLogError> {
+        let _lock = acquire_exclusive_lock(&self.config.records_path).map_err(|source| {
+            CanonicalEventLogError::Io {
+                path: lock_path_for(&self.config.records_path),
+                source,
+            }
+        })?;
+        read_records_strict(&self.config.records_path)
+    }
+
     pub fn inspect(
         &self,
         receipt_id: &str,
@@ -1355,6 +1370,32 @@ fn read_records(path: &Path) -> Result<Vec<CanonicalEventLogEntry>, CanonicalEve
     Ok(records)
 }
 
+fn read_records_strict(path: &Path) -> Result<Vec<CanonicalEventLogEntry>, CanonicalEventLogError> {
+    ensure_file(path)?;
+    let file = File::open(path).map_err(|source| CanonicalEventLogError::Io {
+        path: path.to_path_buf(),
+        source,
+    })?;
+    let reader = BufReader::new(file);
+    let mut records = Vec::new();
+    for line in reader.lines() {
+        let line = line.map_err(|source| CanonicalEventLogError::Io {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        if line.trim().is_empty() {
+            continue;
+        }
+        records.push(serde_json::from_str(&line).map_err(|source| {
+            CanonicalEventLogError::Json {
+                path: path.to_path_buf(),
+                source,
+            }
+        })?);
+    }
+    Ok(records)
+}
+
 fn receipt_store_segment(value: &str) -> String {
     let mut out = String::new();
     for ch in value.chars() {
@@ -1546,6 +1587,10 @@ mod tests {
         }
 
         let reopened = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();
+        assert!(matches!(
+            reopened.list_records_strict(),
+            Err(CanonicalEventLogError::Json { .. })
+        ));
         let records = reopened.list_records().unwrap();
         assert_eq!(records.len(), 1);
         assert!(reopened.verify_chain().unwrap());

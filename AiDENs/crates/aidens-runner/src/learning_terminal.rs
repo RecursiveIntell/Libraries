@@ -357,7 +357,7 @@ pub fn close_real_sandbox_terminal(
     ))
     .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
     let all_records = canonical_log
-        .list_records()
+        .list_records_strict()
         .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
     let mut previous_digest = None;
     for (index, record) in all_records.iter().enumerate() {
@@ -381,13 +381,16 @@ pub fn close_real_sandbox_terminal(
     let event_count = prepublication_events.len();
     let expected_preflight_body = serde_json::to_value(&initial.preflight_receipt)
         .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
-    let preflight_record = prepublication_events.iter().find(|record| {
-        record.owner_crate == "aidens-runner"
-            && record.schema_name == "learning-preflight-v1"
-            && record.receipt_id == initial.preflight_receipt_id
-            && record.body == expected_preflight_body
-    });
-    let permits_valid = preflight_record.is_some()
+    let preflight_record_count = prepublication_events
+        .iter()
+        .filter(|record| {
+            record.owner_crate == "aidens-runner"
+                && record.schema_name == "learning-preflight-v1"
+                && record.receipt_id == initial.preflight_receipt_id
+                && record.body == expected_preflight_body
+        })
+        .count();
+    let permits_valid = preflight_record_count == 1
         && initial.preflight_receipt.execution.run_id == config.run_id
         && initial.preflight_receipt.execution.permit_grant_id
             == config.permit_grant.permit_id.as_str()
@@ -395,12 +398,16 @@ pub fn close_real_sandbox_terminal(
             == config.permit_use.receipt_id.as_str();
     let expected_effectful_body = serde_json::to_value(&initial.report)
         .map_err(|error| TerminalBundlePublicationError::Integration(error.to_string()))?;
-    let effectful_record_persisted = prepublication_events.iter().any(|record| {
-        record.owner_crate == "aidens-runner"
-            && record.schema_name == "effectful-evaluation-report-v1"
-            && record.receipt_id == initial.terminal_event_receipt_id
-            && record.body == expected_effectful_body
-    });
+    let effectful_record_count = prepublication_events
+        .iter()
+        .filter(|record| {
+            record.owner_crate == "aidens-runner"
+                && record.schema_name == "effectful-evaluation-report-v1"
+                && record.receipt_id == initial.terminal_event_receipt_id
+                && record.body == expected_effectful_body
+        })
+        .count();
+    let effectful_record_persisted = effectful_record_count == 1;
     if !permits_valid || !effectful_record_persisted {
         return Err(TerminalBundlePublicationError::Integration(
             "typed preflight or effectful owner record failed exact readback".into(),
@@ -553,7 +560,7 @@ pub fn close_real_sandbox_terminal(
     ));
     let evidence = CodingLearningEvidenceV1 {
         execution_mode: initial.report.execution_mode.clone(),
-        preflight_persisted: preflight_record.is_some(),
+        preflight_persisted: preflight_record_count == 1,
         permits_valid,
         typed_patch_applied: initial.report.verified,
         required_checks_executed,
