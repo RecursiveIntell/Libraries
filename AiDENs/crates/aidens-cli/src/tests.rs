@@ -197,9 +197,11 @@ fn learning_compare_and_replay_are_explicitly_unavailable() {
         let command = match action {
             "compare" => LearningCommand::Compare {
                 source: Some(source.to_str().unwrap().into()),
+                request: None,
             },
             _ => LearningCommand::Replay {
                 source: Some(source.to_str().unwrap().into()),
+                request: None,
             },
         };
         let report = learning_command(command).unwrap();

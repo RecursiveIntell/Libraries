@@ -52,6 +52,9 @@ use aidens_tool_kit::{
 use anyhow::{bail, Context, Result};
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
+use semantic_memory::{
+    compare_replay as compare_owner_replay, ProcedureReplayComparisonV1, ProcedureReplayInputsV1,
+};
 use semantic_memory::{MemoryConfig, MemoryStore, ProcedureLifecyclePermitV1};
 use serde::Deserialize;
 use serde_json::Value;
@@ -249,6 +252,10 @@ pub enum LearningCommand {
     Compare {
         #[arg(long)]
         source: Option<String>,
+        /// Typed V38 owner-comparison request. The request contains owner receipt references,
+        /// not caller-supplied replacement identities.
+        #[arg(long)]
+        request: Option<String>,
     },
     Promote {
         candidate: String,
@@ -283,6 +290,10 @@ pub enum LearningCommand {
     Replay {
         #[arg(long)]
         source: Option<String>,
+        /// Typed V38 replay request. Sealed execution is selected only when all owner fields
+        /// and the existing runner path are available.
+        #[arg(long)]
+        request: Option<String>,
     },
     Publish {
         #[arg(long)]
@@ -306,6 +317,29 @@ pub enum LearningCommand {
         #[arg(long)]
         store: Option<String>,
     },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct OwnerReplayCompareRequestV38 {
+    schema: String,
+    original: ProcedureReplayInputsV1,
+    replay: ProcedureReplayInputsV1,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct OwnerReplayRequestV38 {
+    schema: String,
+    replay_id: String,
+}
+
+/// Compare owner-retained replay identities. AiDENs does not derive or override any digest.
+pub fn compare_owner_replay_inputs(
+    original: &ProcedureReplayInputsV1,
+    replay: &ProcedureReplayInputsV1,
+) -> ProcedureReplayComparisonV1 {
+    compare_owner_replay(original, replay)
 }
 
 #[derive(Debug, Deserialize)]
@@ -993,7 +1027,28 @@ pub fn learn_inspect_command(source: Option<&str>) -> Result<String> {
     }))?)
 }
 
-fn learn_compare_replay_command(action: &str, source: Option<&str>) -> Result<String> {
+fn learn_compare_replay_command(
+    action: &str,
+    source: Option<&str>,
+    request: Option<&str>,
+) -> Result<String> {
+    if let Some(request) = request {
+        let envelope: OwnerReplayCompareRequestV38 =
+            read_typed_json(Path::new(request), "V38 owner replay comparison request")?;
+        if envelope.schema != "AiDENsOwnerReplayCompareRequestV38" {
+            bail!("V38 owner replay comparison request schema is invalid");
+        }
+        let comparison = compare_owner_replay_inputs(&envelope.original, &envelope.replay);
+        return Ok(serde_json::to_string_pretty(&serde_json::json!({
+            "schema": "AiDENsOwnerReplayComparisonReportV38",
+            "operation": "compare",
+            "availability": "available",
+            "outcome": comparison.outcome,
+            "reason_codes": comparison.reason_codes,
+            "authority": "semantic-memory",
+            "terminal": {"state": "owner-compared"}
+        }))?);
+    }
     let _ = learning_manifest(source)?;
     Ok(serde_json::to_string_pretty(&serde_json::json!({
         "schema": if action == "compare" { "AiDENsLearningCompareReportV1" } else { "AiDENsLearningReplayReportV1" },
@@ -1363,11 +1418,24 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             }
         }
         LearningCommand::Inspect { source } => learn_inspect_command(source.as_deref()),
-        LearningCommand::Compare { source } => {
-            learn_compare_replay_command("compare", source.as_deref())
+        LearningCommand::Compare { source, request } => {
+            learn_compare_replay_command("compare", source.as_deref(), request.as_deref())
         }
-        LearningCommand::Replay { source } => {
-            learn_compare_replay_command("replay", source.as_deref())
+        LearningCommand::Replay { source, request } => {
+            // The request surface is deliberately additive, but replay execution is not
+            // synthesized here: only the existing sealed owner runner may produce a result.
+            // Until a complete owner-bound runner envelope is supplied, return typed
+            // NotAvailable and never persist a fabricated result.
+            if let Some(request) = request {
+                let envelope: OwnerReplayRequestV38 =
+                    read_typed_json(Path::new(&request), "V38 owner replay request")?;
+                if envelope.schema != "AiDENsOwnerReplayRequestV38"
+                    || envelope.replay_id.trim().is_empty()
+                {
+                    bail!("V38 owner replay request schema or replay_id is invalid");
+                }
+            }
+            learn_compare_replay_command("replay", source.as_deref(), None)
         }
         LearningCommand::Publish { request, out } => {
             learn_publish_command(&request, out.as_deref())
