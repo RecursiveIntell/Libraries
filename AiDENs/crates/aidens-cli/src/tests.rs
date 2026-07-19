@@ -162,6 +162,8 @@ fn real_sandbox_requires_typed_request_and_rejects_wrong_schema() {
             "cea_db": "cea.sqlite",
             "receipt_root": "receipts",
             "memory_store": "memory",
+            "forge_store": "forge.sqlite",
+            "publication_namespace": "aidens-learning",
             "run_id": "run:material",
             "attempt_id": "attempt:material",
             "trial_id": "trial:material",
@@ -179,7 +181,7 @@ fn real_sandbox_requires_typed_request_and_rejects_wrong_schema() {
     })
     .unwrap_err()
     .to_string();
-    assert!(error.contains("AiDENsRealSandboxRunRequestV1"));
+    assert!(error.contains("AiDENsRealSandboxRunRequestV2"));
     std::fs::remove_dir_all(root).unwrap();
 }
 
@@ -219,6 +221,26 @@ fn clap_exposes_real_sandbox_request_surface() {
                 ..
             }
         } if mode == "real-sandbox" && request == "request.json"
+    ));
+}
+
+#[test]
+fn clap_exposes_separate_terminal_publication_surface() {
+    let cli = Cli::try_parse_from([
+        "aidens",
+        "learn",
+        "publish",
+        "--request",
+        "publish.json",
+        "--out",
+        "receipt.json",
+    ])
+    .unwrap();
+    assert!(matches!(
+        cli.command,
+        Command::Learn {
+            command: LearningCommand::Publish { request, out }
+        } if request == "publish.json" && out.as_deref() == Some("receipt.json")
     ));
 }
 
@@ -281,7 +303,7 @@ fn real_sandbox_cli_runs_typed_controller_and_stays_terminally_blocked() {
     std::fs::write(
         &request_path,
         serde_json::to_vec(&serde_json::json!({
-            "schema": "AiDENsRealSandboxRunRequestV1",
+            "schema": "AiDENsRealSandboxRunRequestV2",
             "fixture": fixture,
             "patch": patch_path,
             "permit_grant": grant_path,
@@ -295,6 +317,8 @@ fn real_sandbox_cli_runs_typed_controller_and_stays_terminally_blocked() {
             "cea_db": root.join("cea.sqlite"),
             "receipt_root": root.join("receipts"),
             "memory_store": root.join("memory"),
+            "forge_store": root.join("forge.sqlite"),
+            "publication_namespace": "aidens-learning",
             "run_id": "run:cli-live-material",
             "attempt_id": "attempt:cli-live-material",
             "trial_id": "trial:cli-live-material",
@@ -311,6 +335,188 @@ fn real_sandbox_cli_runs_typed_controller_and_stays_terminally_blocked() {
     assert_eq!(value["terminal_publication"], "pending");
     assert_eq!(value["terminal"]["state"], "blocked-evidence-insufficient");
     assert_eq!(learning_run_exit_code(&report), 2);
+    let bundle_id = value["controller_outcome"]["terminal_evidence_bundle"]["bundle_id"]
+        .as_str()
+        .unwrap();
+    let publication_request = root.join("publication-request.json");
+    std::fs::write(
+        &publication_request,
+        serde_json::to_vec(&serde_json::json!({
+            "schema": "AiDENsTerminalPublicationRequestV1",
+            "forge_store": root.join("forge.sqlite"),
+            "memory_store": root.join("memory"),
+            "bundle_id": bundle_id,
+            "publication_namespace": "aidens-learning"
+        }))
+        .unwrap(),
+    )
+    .unwrap();
+    let published = learn_publish_command(publication_request.to_str().unwrap(), None).unwrap();
+    let published: Value = serde_json::from_str(&published).unwrap();
+    assert_eq!(published["terminal"]["state"], "published-verified");
+    assert_eq!(published["outcome"]["disposition"], "published");
+    assert_eq!(published["outcome"]["readback_verified"], true);
+
+    let recovered = learn_publish_command(publication_request.to_str().unwrap(), None).unwrap();
+    let recovered: Value = serde_json::from_str(&recovered).unwrap();
+    assert_eq!(
+        recovered["outcome"]["disposition"],
+        "recovered-idempotently"
+    );
+    assert_eq!(recovered["outcome"]["import_was_duplicate"], true);
+    assert_eq!(recovered["outcome"]["export_was_duplicate"], true);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn learning_terminal_requires_fresh_bundle_index_and_projection_readback() {
+    use aidens_contracts::{
+        project_terminal_state, required_coding_learning_owner_roles, AiDENsRunChildReceiptV1,
+        CanonicalBackpointerV1, CodingLearningEvidenceV1, CodingLearningTerminalStateV1,
+    };
+    use aidens_runner::learning_terminal::{
+        publish_terminal_bundle, TerminalBundlePublicationRequestV1,
+    };
+
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let fixture = include_str!("../../../tests/fixtures/p26/aidens_run_bundle_v3.json");
+    let fixture: AiDENsRunBundleV3 = serde_json::from_str(fixture).unwrap();
+    let owner_backpointers = required_coding_learning_owner_roles()
+        .iter()
+        .map(|role| {
+            CanonicalBackpointerV1::external(
+                format!("owner:{role}"),
+                "OwnerNativeReceiptV1",
+                *role,
+                format!("{role}:blake3:0123456789abcdef"),
+            )
+        })
+        .collect::<Vec<_>>();
+    let child_receipts = vec![
+        AiDENsRunChildReceiptV1::closed(
+            "owner:effectful-evaluation",
+            serde_json::json!({"schema": "AiDENsEffectfulEvaluationReportV1", "verified": true}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:procedure-lifecycle-tested",
+            serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "tested", "receipt_digest": "digest-tested", "operation": "test", "disposition": "tested"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:procedure-effectful-prerequisite",
+            serde_json::json!({"schema_version": "procedure_effectful_evaluation_receipt_v1", "receipt_id": "effectful", "receipt_digest": "digest-effectful", "verified": true}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:forge-evidence-bundle",
+            serde_json::json!({"version_id": "aidens-exact-source-execution-evidence-v1", "bundle_id": "evidence", "candidate_id": "candidate"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:forge-export-receipt",
+            serde_json::json!({"rendering_version": 3, "export_key": "export", "bundle_id": "evidence", "namespace": "aidens-learning"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:semantic-memory-projection-import",
+            serde_json::json!({"status": "complete", "direct_write": false, "source_envelope_id": "export", "content_digest": "digest-export"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:procedure-lifecycle-promoted",
+            serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:promoted-procedure-replay",
+            serde_json::json!({"schema": "AiDENsPromotedProcedureReplayOutcomeV1", "action_allowed": true, "retained_patch_exact": true, "report": {"verified": true}}),
+        )
+        .unwrap(),
+    ];
+    let run_id = fixture.run_id.clone();
+    let published = publish_terminal_bundle(TerminalBundlePublicationRequestV1 {
+        schema: TerminalBundlePublicationRequestV1::SCHEMA.into(),
+        store_root: root.clone(),
+        identity_material: "cli-terminal-material".into(),
+        run_id: run_id.clone(),
+        profile: fixture.profile,
+        canonical_execution_context: fixture.canonical_execution_context,
+        event_log: fixture.event_log,
+        budget: fixture.budget,
+        support: fixture.support,
+        support_labels: fixture.support_labels,
+        replay: fixture.replay,
+        failure: fixture.failure,
+        attempt_family_id: fixture.attempt_family_id,
+        attempt_id: fixture.attempt_id,
+        trial_id: fixture.trial_id,
+        agent_spec_digest: fixture.agent_spec_digest,
+        owner_backpointers: owner_backpointers.clone(),
+        child_receipts,
+    })
+    .unwrap();
+
+    let mut projection_backpointers = owner_backpointers;
+    projection_backpointers.push(CanonicalBackpointerV1::external(
+        "aidens-receipts",
+        "AiDENsRunBundleV3",
+        "published-run-bundle",
+        published.bundle.bundle_id.to_string(),
+    ));
+    let projection = project_terminal_state(&CodingLearningEvidenceV1 {
+        execution_mode: "real_sandbox".into(),
+        preflight_persisted: true,
+        permits_valid: true,
+        typed_patch_applied: true,
+        required_checks_executed: true,
+        verification_positive: true,
+        verification_degraded: false,
+        required_digests_present: true,
+        terminal_receipts_durable: true,
+        receipts_healthy: true,
+        publication_complete: true,
+        index_complete: true,
+        blocked: false,
+        revoked: false,
+        stale: false,
+        mock_only: false,
+        fixture_only: false,
+        indeterminate: false,
+        canonical_backpointers: projection_backpointers,
+        reason_codes: Vec::new(),
+    });
+    assert_eq!(
+        projection.state,
+        CodingLearningTerminalStateV1::SucceededVerified
+    );
+
+    let projection_receipt_id = "terminal-projection:cli-readback";
+    let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();
+    log.append_json(
+        "aidens-contracts",
+        "coding-learning-terminal-projection-v1",
+        projection_receipt_id,
+        serde_json::to_value(&projection).unwrap(),
+    )
+    .unwrap();
+
+    let report =
+        learn_terminal_command(root.to_str().unwrap(), &run_id, projection_receipt_id).unwrap();
+    let value: Value = serde_json::from_str(&report).unwrap();
+    assert_eq!(value["terminal"]["state"], "succeeded-verified");
+    assert_eq!(value["bundle_digest_verified"], true);
+    assert_eq!(value["index_record_digest_verified"], true);
+    assert_eq!(value["child_closure_verified"], true);
+    assert_eq!(value["projection_binds_bundle"], true);
+    assert_eq!(learning_run_exit_code(&report), 0);
+
+    let store_config = RunBundleStoreConfig::for_receipt_root(&root);
+    std::fs::remove_file(&store_config.index_path).unwrap();
+    let error =
+        learn_terminal_command(root.to_str().unwrap(), &run_id, projection_receipt_id).unwrap_err();
+    assert!(error.to_string().contains("inspect terminal run bundle"));
     std::fs::remove_dir_all(root).unwrap();
 }
 

@@ -57,3 +57,38 @@ impl LearningPreflightReceiptV1 {
         Ok(())
     }
 }
+
+/// Destination-bound preflight contract for terminal Forge V3 publication.
+///
+/// V1 remains readable for prior runs. V2 embeds it unchanged and adds the
+/// canonical Forge destination plus publication namespace required by the
+/// terminal lane.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LearningPreflightReceiptV2 {
+    pub schema: String,
+    pub execution: LearningPreflightReceiptV1,
+    pub forge_store_owner: String,
+    pub publication_namespace: String,
+}
+
+impl LearningPreflightReceiptV2 {
+    pub const SCHEMA: &'static str = "AiDENsLearningPreflightReceiptV2";
+
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self.schema != Self::SCHEMA {
+            return Err("learning preflight v2 schema mismatch");
+        }
+        self.execution.validate()?;
+        if [
+            self.execution.memory_store_owner.as_str(),
+            self.forge_store_owner.as_str(),
+            self.publication_namespace.as_str(),
+        ]
+        .iter()
+        .any(|value| value.trim().is_empty() || value.contains("local-process-seq"))
+        {
+            return Err("learning preflight v2 contains missing destination material");
+        }
+        Ok(())
+    }
+}

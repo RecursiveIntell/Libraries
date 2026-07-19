@@ -172,7 +172,7 @@ Refresh this checkpoint before implementation and before any local commit.
 
 ## Phase 3 — Real paired evaluation and promotion gate
 
-**Authority decision:** `living-memory::PairedExperimentRunner` and `living_memory::export_bundle` may be reused directly as canonical owners; the agent-graph advisory-pilot NO-GO is unrelated. Promotion still requires owner-native repeated-paired trials, statistics, replay, and an independent lifecycle permit.
+**Authority decision:** `living-memory::PairedExperimentRunner` and `living_memory::export_bundle` may be reused directly as canonical owners; the agent-graph advisory-pilot NO-GO is unrelated. There are two distinct evidence lanes that must not be merged: evaluator-oracle runs qualify the corpus, while one immutable source-bound procedure may be promoted only from evidence bound to that exact artifact plus replay and an independent lifecycle permit. Cross-task or cross-family promotion requires future learner-generated treatments from one stable learner/policy identity; per-task hidden oracles cannot supply it.
 
 ### Task 3.1: Replace metadata-only task descriptors with runnable immutable fixture packages — **IMPLEMENTED**
 
@@ -188,27 +188,27 @@ Refresh this checkpoint before implementation and before any local commit.
 
 **Claim:** immutable local benchmark corpus, not external generalization.
 
-### Task 3.2: Run at least 20 paired trials across five families — **RAW EXECUTION IMPLEMENTED; OWNER ADJUDICATION BLOCKED**
+### Task 3.2: Run at least 20 paired trials across five families — **IMPLEMENTED AS CORPUS QUALIFICATION; NON-PROMOTING**
 
-**Owner:** existing canonical experiment substrate if certified; otherwise blocked.
+**Owner:** canonical Forge repeated-paired execution plus the independent evaluation corpus.
 
-**RED:** changed verifier/environment/budget, duplicate trial, missing side, unrandomized order, incomplete denominator, or timing-inadmissible result cannot satisfy promotion.
+**RED:** changed verifier/environment/budget, duplicate trial, missing side, unrandomized order, incomplete denominator, or timing-inadmissible result invalidates the qualification run. No result in this lane can satisfy procedure promotion because treatment identity differs by task.
 
-**GREEN:** Freeze all material digests; run baseline/candidate in randomized paired order with a recorded seed; emit all failures; compute family-clustered outcome summary and conservative non-regression gate from owner receipts.
+**GREEN:** Freeze all material digests; run baseline/oracle-treatment sides in randomized paired order with a recorded seed; emit all failures; report task and family denominators without treating repeated executions as independent tasks.
 
-**Evidence:** immutable assignment, 40 side-execution receipts minimum, denominators, failure inventory, timing-admissibility state, analysis digest.
+**Evidence:** immutable assignment, 40 side-execution receipts minimum, denominators, failure inventory, timing-admissibility state, analysis digest, and explicit `corpus-qualification-only` disposition.
 
-**Observed adapter gate:** four predeclared pairs per each of 15 tasks produced 60 pairs and 120 fresh sealed-Podman sides through canonical Forge in 429.04 seconds. Every baseline failed at least one Forge check and every treatment passed fmt, strict Clippy, and tests. This is raw execution evidence, not promotion evidence: canonical `TrialRecord` still reports cache/network/timing placeholders, `ExperimentResult.diff` summarizes only the final pair, and no owner-side family aggregate or durable evidence bundle exists.
+**Observed adapter gate:** four predeclared pairs per each of 15 tasks produced 60 pairs and 120 fresh sealed-Podman sides through canonical Forge in 429.04 seconds. Every baseline failed at least one Forge check and every oracle treatment passed fmt, strict Clippy, and tests. Repeats measure execution repeatability, not additional independent task evidence. The task-level all-positive exact sign result is `1/16384` two-sided, but it describes 15 different oracle patches; the five-family two-sided result is `1/16`, and the three-task holdout two-sided result is `1/4`. None identifies the exact source-bound procedure candidate created by `run_real_sandbox`, so this remains corpus qualification rather than promotion evidence.
 
-### Task 3.3: Gate promotion on paired evidence and drill revocation/rollback
+### Task 3.3: Gate exact-source retained reuse and drill revocation/rollback
 
 **Owner:** semantic-memory lifecycle.
 
-**RED:** one-run, fewer than 20 pairs, fewer than five families, holdout regression, degraded verification, wrong/expired permit, or replay drift cannot promote.
+**RED:** missing artifact-bound real evaluation, degraded verification, source-tree mismatch, patch mismatch, missing governed retrieval, wrong/expired/reused permit, replay mismatch, or absent rollback evidence cannot promote or execute. Corpus-oracle receipts are inadmissible for this gate.
 
-**GREEN:** Only a predeclared passing experiment decision plus explicit lifecycle permit can call `promote_procedure`; then inject a distinct-family regression and prove revoke/rollback plus stale-selection denial.
+**GREEN:** Register the exact artifact's canonical effectful-evaluation receipt while leaving it `Tested`; require a separate single-use lifecycle permit for `promote_procedure`; retrieve only when the exact source-tree precondition and authority checks pass; replay the retained exact patch in a fresh sealed workspace with a separate execution permit; then prove rollback/revoke plus stale-selection denial.
 
-**Claim:** bounded promotion/revocation loop on frozen local fixtures.
+**Claim:** bounded retained reuse of one exact source-bound patch on its matching frozen source tree. No cross-task learning or generalization claim.
 
 ---
 
@@ -227,7 +227,7 @@ Refresh this checkpoint before implementation and before any local commit.
 ## Claim boundary
 
 - **After Phase 2:** bounded real-sandbox run with durable terminal V3 publication; candidate remains `Tested` and inactive until separate lifecycle authority is supplied.
-- **After Phase 3 only if every gate passes:** bounded closed-loop procedure promotion/revocation on a frozen local multi-family corpus.
+- **After Phase 3 only if every gate passes:** bounded closed-loop retained reuse, promotion, replay, and rollback for one exact source-bound procedure. The multi-family corpus remains qualification-only.
 - **Still forbidden:** production autonomous engineer, safe arbitrary untrusted-code sandbox, external benchmark superiority, online RL, unrestricted self-improvement.
 
 ## Council convergence

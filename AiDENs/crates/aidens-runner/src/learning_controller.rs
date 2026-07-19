@@ -8,19 +8,27 @@ use crate::learning_effectful::{
 };
 use crate::learning_lifecycle::ProcedureLifecycleAdapter;
 use aidens_contracts::{
-    generated_artifact_id_from_material, LearningPreflightReceiptV1, PermitGrantV1,
-    PermitUseReportV1,
+    generated_artifact_id_from_material, LearningPreflightReceiptV1, LearningPreflightReceiptV2,
+    PermitGrantV1, PermitUseReportV1,
 };
 use aidens_receipts::{CanonicalEventLog, CanonicalEventLogConfig};
 use cea_sqlite::SqliteCeaStore;
 use check_runner::{BackendConfig, ContainerBackend};
+use forge_engine::lab::evaluate::ScoreVector;
+use forge_engine::lab::evidence::{
+    BundleScope, Covariates, ReceiptKind, ReceiptRef, ReceiptStorage, Treatment,
+};
+use forge_engine::{ClaimStrength, ExperimentEvidenceBundle, ForgeStore};
 use semantic_memory::{
-    AllowedProcedureToolV1, ApplicabilityPredicateV1, AuthorityScopeV1, AuthorityScopesV1,
-    ElevationRequirementV1, MemoryConfig, MemoryStore, NamespaceScopeV1, OriginAuthorityLabelV1,
-    OriginClassV1, OriginRiskV1, ProceduralMemoryArtifactV1, ProcedureActionV1,
-    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1,
-    ProcedureLifecycleReceiptV1, ProcedurePreconditionV1, ProcedureRiskV1, ProcedureStepV1,
-    RevocationStatusV1, SubjectPrincipalV1,
+    verify_procedure_lifecycle_receipt_v1, AllowedProcedureToolV1, ApplicabilityPredicateV1,
+    AuthorityScopeV1, AuthorityScopesV1, CallerPrincipalV1, ElevationRequirementV1,
+    GovernedAccessPurposeV1, MemoryConfig, MemoryStore, NamespaceScopeV1, OriginAuthorityLabelV1,
+    OriginClassV1, OriginRiskV1, ProceduralMemoryArtifactV1, ProcedureAccessPathV1,
+    ProcedureActionPermitV1, ProcedureActionV1, ProcedureCapabilityV1, ProcedureEffectV1,
+    ProcedureEffectfulEvaluationReceiptV1, ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1,
+    ProcedureLifecycleDispositionV1, ProcedureLifecycleReceiptV1, ProcedurePreconditionV1,
+    ProcedureRetrievalRequestV1, ProcedureRiskV1, ProcedureStepV1, RevocationStatusV1,
+    SubjectPrincipalV1,
 };
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
@@ -41,6 +49,8 @@ pub struct RealSandboxLearningConfig {
     pub cea_db: PathBuf,
     pub receipt_root: PathBuf,
     pub memory_store: PathBuf,
+    pub forge_store: PathBuf,
+    pub publication_namespace: String,
     pub run_id: String,
     pub attempt_id: String,
     pub trial_id: String,
@@ -71,13 +81,76 @@ pub struct RealSandboxLearningOutcomeV1 {
     pub terminal_event_log_verified: bool,
     pub terminal_publication: TerminalPublicationStateV1,
     pub terminal_lifecycle_receipt: Option<ProcedureLifecycleReceiptV1>,
+    pub terminal_effectful_receipt: Option<ProcedureEffectfulEvaluationReceiptV1>,
+    pub terminal_evidence_bundle: Option<ExperimentEvidenceBundle>,
+    pub terminal_evidence_readback_verified: bool,
     pub reason_codes: Vec<String>,
+}
+
+struct RegisteredCandidateV1 {
+    artifact: ProceduralMemoryArtifactV1,
+    lifecycle: ProcedureLifecycleReceiptV1,
+    effectful: ProcedureEffectfulEvaluationReceiptV1,
+}
+
+struct EffectfulRunCoreV1 {
+    report: EffectfulEvaluationReportV1,
+    preflight_id: String,
+    terminal_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PromotedProcedureReplayOutcomeV1 {
+    pub schema: String,
+    pub artifact_id: String,
+    pub artifact_digest: String,
+    pub report: EffectfulEvaluationReportV1,
+    pub terminal_event_receipt_id: String,
+    pub terminal_event_log_verified: bool,
+    pub action_allowed: bool,
+    pub retained_patch_exact: bool,
+    pub governed_retrieval_receipt_digest: String,
+    pub promotion_receipt_id: String,
+    pub promotion_receipt_digest: String,
 }
 
 pub async fn run_real_sandbox(
     config: RealSandboxLearningConfig,
 ) -> Result<RealSandboxLearningOutcomeV1, RealSandboxLearningError> {
-    validate(&config)?;
+    let core = execute_effectful_run(&config).await?;
+    let report = core.report;
+    let preflight_id = core.preflight_id;
+    let terminal_id = core.terminal_id;
+
+    // The exact candidate's publication-complete execution is registered as its
+    // owner-native promotion prerequisite, but promotion remains separately permitted.
+    let registered =
+        register_single_run_candidate(&config, &report, &preflight_id, &terminal_id).await?;
+    let evidence_bundle =
+        build_terminal_evidence_bundle(&config, &report, &preflight_id, &terminal_id, &registered)?;
+    persist_and_verify_terminal_bundle(&config, &evidence_bundle)?;
+
+    Ok(RealSandboxLearningOutcomeV1 {
+        report,
+        terminal_event_receipt_id: terminal_id,
+        terminal_event_log_verified: true,
+        terminal_publication: TerminalPublicationStateV1::Pending,
+        terminal_lifecycle_receipt: Some(registered.lifecycle),
+        terminal_effectful_receipt: Some(registered.effectful),
+        terminal_evidence_bundle: Some(evidence_bundle),
+        terminal_evidence_readback_verified: true,
+        reason_codes: vec![
+            "terminal-v3-publication-pending".into(),
+            "procedure-lifecycle-owner-permit-required".into(),
+            "replay-retention-policy-owner-unavailable".into(),
+        ],
+    })
+}
+
+async fn execute_effectful_run(
+    config: &RealSandboxLearningConfig,
+) -> Result<EffectfulRunCoreV1, RealSandboxLearningError> {
+    validate(config)?;
     let patch_validation = validate_patch(&config.patch, &config.patch_policy);
     if !patch_validation.ok {
         return Err(RealSandboxLearningError::Invalid(
@@ -85,9 +158,9 @@ pub async fn run_real_sandbox(
         ));
     }
     let fixture_tree_digest = fixture_digest(&config.fixture)?;
-    let mut request = effectful_request(&config, false);
+    let mut request = effectful_request(config, false);
     validate_effect_permit(&request)?;
-    let (preflight_id, receipt) = preflight_receipt(&config, fixture_tree_digest)?;
+    let (preflight_id, receipt) = preflight_receipt(config, fixture_tree_digest)?;
     receipt
         .validate()
         .map_err(|reason| RealSandboxLearningError::Invalid(reason.into()))?;
@@ -144,23 +217,115 @@ pub async fn run_real_sandbox(
     .map_err(|e| RealSandboxLearningError::Receipt(e.to_string()))?;
     verify_persisted(&log, &terminal_id, &terminal_body)?;
 
-    // The raw effectful report is durable evidence, but a single run must not create
-    // semantic-memory's promotion prerequisite. Register only a Tested candidate.
-    let lifecycle =
-        register_single_run_candidate(&config, &report, &preflight_id, &terminal_id).await?;
-
-    Ok(RealSandboxLearningOutcomeV1 {
+    Ok(EffectfulRunCoreV1 {
         report,
-        terminal_event_receipt_id: terminal_id,
+        preflight_id,
+        terminal_id,
+    })
+}
+
+/// Retrieve and execute one promoted, exact source-bound procedure through the
+/// same preflighted sealed owner path without registering a new candidate.
+pub async fn replay_promoted_procedure(
+    mut config: RealSandboxLearningConfig,
+    artifact_id: &str,
+    expected_source_tree_digest: &str,
+    action_permit: ProcedureActionPermitV1,
+) -> Result<PromotedProcedureReplayOutcomeV1, RealSandboxLearningError> {
+    validate(&config)?;
+    let principal = config.permit_grant.granted_by.clone();
+    let memory = MemoryStore::open(MemoryConfig {
+        base_dir: config.memory_store.clone(),
+        ..MemoryConfig::default()
+    })
+    .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    let mut request = ProcedureRetrievalRequestV1::new(
+        ProcedureCapabilityV1::new("aidens-learning", "real-sandbox-evaluation"),
+        ProcedureActionV1::new(
+            "apply_typed_patch_and_run_sealed_checks",
+            "Apply the source-bound typed patch and run sealed cargo fmt/clippy/test",
+        ),
+        serde_json::json!({
+            "language": "rust",
+            "source_tree_digest": expected_source_tree_digest,
+        }),
+        CallerPrincipalV1::new(principal.clone())
+            .map_err(|reason| RealSandboxLearningError::Invalid(reason.to_string()))?,
+        SubjectPrincipalV1::new(principal.clone())
+            .map_err(|reason| RealSandboxLearningError::Invalid(reason.to_string()))?,
+        vec![principal],
+        NamespaceScopeV1::exact("aidens-learning"),
+        GovernedAccessPurposeV1::Action,
+        ProcedureAccessPathV1::DirectId,
+    );
+    request.artifact_id = Some(artifact_id.into());
+    request.action_permit = Some(action_permit);
+    let retrieved = memory
+        .retrieve_procedure(request)
+        .await
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    if !retrieved.decision.action_allowed {
+        return Err(RealSandboxLearningError::Invalid(format!(
+            "governed promoted-procedure retrieval denied action: {:?}",
+            retrieved.decision
+        )));
+    }
+    let lifecycle = retrieved.lifecycle_receipt.clone().ok_or_else(|| {
+        RealSandboxLearningError::Invalid(
+            "governed retrieval omitted the current lifecycle receipt".into(),
+        )
+    })?;
+    if lifecycle.disposition != ProcedureLifecycleDispositionV1::Promoted
+        || lifecycle.artifact_id != artifact_id
+        || !verify_procedure_lifecycle_receipt_v1(&lifecycle)
+    {
+        return Err(RealSandboxLearningError::Invalid(
+            "governed retrieval lifecycle receipt is not a valid current promotion".into(),
+        ));
+    }
+    let governed_retrieval_receipt_digest = retrieved.receipt_digest.clone();
+    let artifact = retrieved.candidate.ok_or_else(|| {
+        RealSandboxLearningError::Invalid("promoted procedure candidate not found".into())
+    })?;
+    if lifecycle.artifact_digest != artifact.artifact_digest {
+        return Err(RealSandboxLearningError::Invalid(
+            "promotion receipt artifact digest differs from the governed candidate".into(),
+        ));
+    }
+    let step = artifact.steps.first().ok_or_else(|| {
+        RealSandboxLearningError::Invalid("promoted procedure has no executable step".into())
+    })?;
+    if step.tool != "typed-patch:structured-apply:1" {
+        return Err(RealSandboxLearningError::Invalid(
+            "promoted procedure tool is not the canonical typed-patch owner".into(),
+        ));
+    }
+    let retained_patch: StructuredPatch = serde_json::from_value(step.arguments.clone())
+        .map_err(|error| RealSandboxLearningError::Invalid(error.to_string()))?;
+    if digest_value(&retained_patch)? != digest_value(&config.patch)? {
+        return Err(RealSandboxLearningError::Invalid(
+            "caller expected patch differs from retained promoted procedure".into(),
+        ));
+    }
+    config.patch = retained_patch;
+    let core = execute_effectful_run(&config).await?;
+    if core.report.before_tree_digest != expected_source_tree_digest {
+        return Err(RealSandboxLearningError::Invalid(
+            "replay source tree differs from the promoted procedure binding".into(),
+        ));
+    }
+    Ok(PromotedProcedureReplayOutcomeV1 {
+        schema: "AiDENsPromotedProcedureReplayOutcomeV1".into(),
+        artifact_id: artifact.artifact_id,
+        artifact_digest: artifact.artifact_digest,
+        report: core.report,
+        terminal_event_receipt_id: core.terminal_id,
         terminal_event_log_verified: true,
-        terminal_publication: TerminalPublicationStateV1::Pending,
-        terminal_lifecycle_receipt: lifecycle,
-        reason_codes: vec![
-            "terminal-v3-publication-pending".into(),
-            "procedure-lifecycle-owner-permit-required".into(),
-            "forge-export-owner-evidence-unavailable".into(),
-            "replay-retention-policy-owner-unavailable".into(),
-        ],
+        action_allowed: true,
+        retained_patch_exact: true,
+        governed_retrieval_receipt_digest,
+        promotion_receipt_id: lifecycle.receipt_id,
+        promotion_receipt_digest: lifecycle.receipt_digest,
     })
 }
 
@@ -191,9 +356,12 @@ fn validate(c: &RealSandboxLearningConfig) -> Result<(), RealSandboxLearningErro
     if c.cea_db.as_os_str().is_empty()
         || c.receipt_root.as_os_str().is_empty()
         || c.memory_store.as_os_str().is_empty()
+        || c.forge_store.as_os_str().is_empty()
+        || c.publication_namespace.trim().is_empty()
     {
         return Err(RealSandboxLearningError::Invalid(
-            "CEA, receipt, and canonical memory-store paths are required".into(),
+            "CEA, receipt, canonical memory/Forge stores, and publication namespace are required"
+                .into(),
         ));
     }
     Ok(())
@@ -224,7 +392,9 @@ fn effectful_request(
     }
 }
 
-fn patch_policy_material(policy: &PatchPolicy) -> (&[String], bool, usize, usize, usize) {
+pub(crate) fn patch_policy_material(
+    policy: &PatchPolicy,
+) -> (&[String], bool, usize, usize, usize) {
     (
         &policy.forbidden_paths,
         policy.allow_test_modifications,
@@ -237,7 +407,7 @@ fn patch_policy_material(policy: &PatchPolicy) -> (&[String], bool, usize, usize
 fn preflight_receipt(
     config: &RealSandboxLearningConfig,
     fixture_tree_digest: String,
-) -> Result<(String, LearningPreflightReceiptV1), RealSandboxLearningError> {
+) -> Result<(String, LearningPreflightReceiptV2), RealSandboxLearningError> {
     let patch_digest = digest_value(&config.patch)?;
     let patch_policy_digest = digest_value(&patch_policy_material(&config.patch_policy))?;
     let permit_scope_digest = digest_value(&config.permit_grant)?;
@@ -250,49 +420,64 @@ fn preflight_receipt(
         MEMORY_LIMIT,
         CPU_LIMIT,
     ))?;
-    let material = serde_json::to_string(&(
-        &fixture_tree_digest,
-        &patch_digest,
-        &patch_policy_digest,
-        config.permit_grant.permit_id.as_str(),
-        config.permit_use.receipt_id.as_str(),
-        &permit_scope_digest,
-        &config.image,
-        &backend_limits_digest,
-        &config.run_id,
-        &config.attempt_id,
-        &config.trial_id,
-        &config.trace_id,
-        &config.recorded_at,
-        &config.cea_db,
-        &config.receipt_root,
-        &config.memory_store,
-    ))
+    let cea_store_identity = owner_path_digest(&config.cea_db)?;
+    let receipt_root_owner = owner_path_digest(&config.receipt_root)?;
+    let memory_store_owner = owner_path_digest(&config.memory_store)?;
+    let forge_store_owner = owner_path_digest(&config.forge_store)?;
+    let material = serde_json::to_string(&serde_json::json!({
+        "fixture_tree_digest": fixture_tree_digest,
+        "patch_digest": patch_digest,
+        "patch_policy_digest": patch_policy_digest,
+        "permit_grant_id": config.permit_grant.permit_id.as_str(),
+        "permit_use_id": config.permit_use.receipt_id.as_str(),
+        "permit_scope_digest": permit_scope_digest,
+        "image": config.image,
+        "backend_limits_digest": backend_limits_digest,
+        "run_id": config.run_id,
+        "attempt_id": config.attempt_id,
+        "trial_id": config.trial_id,
+        "trace_id": config.trace_id,
+        "recorded_at": config.recorded_at,
+        "cea_store_identity": cea_store_identity,
+        "receipt_root_owner": receipt_root_owner,
+        "memory_store_owner": memory_store_owner,
+        "forge_store_owner": forge_store_owner,
+        "publication_namespace": config.publication_namespace,
+    }))
     .map_err(|error| RealSandboxLearningError::Invalid(error.to_string()))?;
     let material_id = generated_artifact_id_from_material("aidens-learning-preflight", &material)
         .as_str()
         .to_string();
-    let receipt = LearningPreflightReceiptV1 {
-        schema: LearningPreflightReceiptV1::SCHEMA.into(),
-        material_id: material_id.clone(),
-        fixture_tree_digest,
-        patch_digest,
-        patch_policy_digest,
-        permit_grant_id: config.permit_grant.permit_id.as_str().into(),
-        permit_use_id: config.permit_use.receipt_id.as_str().into(),
-        permit_scope_digest,
-        image: config.image.clone(),
-        backend_limits_digest,
-        run_id: config.run_id.clone(),
-        attempt_id: config.attempt_id.clone(),
-        trial_id: config.trial_id.clone(),
-        trace_id: config.trace_id.clone(),
-        requested_recorded_at: config.recorded_at.clone(),
-        cea_store_identity: config.cea_db.to_string_lossy().into(),
-        receipt_root_owner: config.receipt_root.to_string_lossy().into(),
-        memory_store_owner: config.memory_store.to_string_lossy().into(),
+    let receipt = LearningPreflightReceiptV2 {
+        schema: LearningPreflightReceiptV2::SCHEMA.into(),
+        execution: LearningPreflightReceiptV1 {
+            schema: LearningPreflightReceiptV1::SCHEMA.into(),
+            material_id: material_id.clone(),
+            fixture_tree_digest,
+            patch_digest,
+            patch_policy_digest,
+            permit_grant_id: config.permit_grant.permit_id.as_str().into(),
+            permit_use_id: config.permit_use.receipt_id.as_str().into(),
+            permit_scope_digest,
+            image: config.image.clone(),
+            backend_limits_digest,
+            run_id: config.run_id.clone(),
+            attempt_id: config.attempt_id.clone(),
+            trial_id: config.trial_id.clone(),
+            trace_id: config.trace_id.clone(),
+            requested_recorded_at: config.recorded_at.clone(),
+            cea_store_identity,
+            receipt_root_owner,
+            memory_store_owner,
+        },
+        forge_store_owner,
+        publication_namespace: config.publication_namespace.clone(),
     };
     Ok((material_id, receipt))
+}
+
+fn owner_path_digest(path: &Path) -> Result<String, RealSandboxLearningError> {
+    digest_value(&path.to_string_lossy()).map(|digest| format!("blake3:{digest}"))
 }
 
 /// Build the canonical procedure blueprint from a publication-complete real evaluation.
@@ -471,7 +656,7 @@ async fn register_single_run_candidate(
     report: &EffectfulEvaluationReportV1,
     preflight_receipt_id: &str,
     terminal_event_id: &str,
-) -> Result<Option<ProcedureLifecycleReceiptV1>, RealSandboxLearningError> {
+) -> Result<RegisteredCandidateV1, RealSandboxLearningError> {
     let blueprint =
         match procedure_blueprint(config, report, preflight_receipt_id, terminal_event_id) {
             Ok(blueprint) => blueprint,
@@ -508,7 +693,217 @@ async fn register_single_run_candidate(
         .test(&lifecycle_receipt.artifact_id, format!("test:{key}"))
         .await
         .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
-    Ok(Some(tested))
+    let effectful = adapter
+        .record_effectful_evaluation(
+            &artifact.artifact_id,
+            &artifact.artifact_digest,
+            report,
+            format!("effectful:{key}"),
+        )
+        .await
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    Ok(RegisteredCandidateV1 {
+        artifact,
+        lifecycle: tested,
+        effectful,
+    })
+}
+
+fn owner_receipt_ref(
+    receipt_id: &str,
+    kind: ReceiptKind,
+    table: &str,
+    content_hash: &str,
+    trace_id: &str,
+) -> ReceiptRef {
+    ReceiptRef {
+        receipt_id: receipt_id.into(),
+        kind,
+        storage: ReceiptStorage::StoreRow {
+            table: table.into(),
+            key: receipt_id.into(),
+        },
+        content_hash: content_hash.trim_start_matches("blake3:").into(),
+        trace_id: Some(trace_id.into()),
+        replay_handle: None,
+    }
+}
+
+fn build_terminal_evidence_bundle(
+    config: &RealSandboxLearningConfig,
+    report: &EffectfulEvaluationReportV1,
+    preflight_receipt_id: &str,
+    terminal_event_id: &str,
+    registered: &RegisteredCandidateV1,
+) -> Result<ExperimentEvidenceBundle, RealSandboxLearningError> {
+    let bundle_material = serde_json::to_string(&(
+        "aidens-exact-source-execution-evidence-v1",
+        &registered.artifact.artifact_id,
+        &registered.artifact.artifact_digest,
+        &registered.effectful.receipt_id,
+        preflight_receipt_id,
+        terminal_event_id,
+        &config.publication_namespace,
+    ))
+    .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    let bundle_id = generated_artifact_id_from_material(
+        "aidens-exact-source-execution-evidence",
+        &bundle_material,
+    )
+    .as_str()
+    .to_string();
+    let terminal_hash = digest_value(report)?;
+    let mut config_flags = report.sandbox_capability.mechanisms.clone();
+    config_flags.push(format!("image:{}", config.image));
+    config_flags.push(format!(
+        "publication_namespace:{}",
+        config.publication_namespace
+    ));
+    config_flags.push(format!(
+        "memory_store_owner_digest:{}",
+        digest_value(&config.memory_store.to_string_lossy().to_string())?
+    ));
+    config_flags.push(format!(
+        "forge_store_owner_digest:{}",
+        digest_value(&config.forge_store.to_string_lossy().to_string())?
+    ));
+    config_flags.sort();
+    let mut bundle = ExperimentEvidenceBundle {
+        bundle_id,
+        candidate_id: registered.artifact.artifact_id.clone(),
+        eval_id: registered.effectful.receipt_id.clone(),
+        version_id: "aidens-exact-source-execution-evidence-v1".into(),
+        supersedes_claim_version_id: None,
+        relation_lineage_hints: Default::default(),
+        scores: ScoreVector {
+            correctness: 1.0,
+            novelty: 0.0,
+            stability: 0.0,
+            weighted_total: 1.0,
+            cea_confidence: Some(1.0),
+            cea_predicted_correctness: None,
+        },
+        hypotheses: Vec::new(),
+        verification: None,
+        trace_id: Some(config.trace_id.clone()),
+        experiment_diff: None,
+        attribution_json: Some(
+            serde_json::to_string(&report.cea_backpointer)
+                .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?,
+        ),
+        assessment: None,
+        warnings: vec![
+            "single-arm execution; no comparative effect claim".into(),
+            "exact source-tree scope only".into(),
+            "v2 oracle corpus is qualification-only and not candidate evidence".into(),
+        ],
+        created_at: config.recorded_at.clone(),
+        run_id: Some(config.run_id.clone()),
+        attempt_id: Some(config.attempt_id.clone()),
+        causal_question: Some(
+            "Did the exact source-bound patch complete its declared sealed checks?".into(),
+        ),
+        unit_definition: Some("one exact patch execution on one frozen source tree".into()),
+        bundle_scope: Some(BundleScope {
+            workload_id: report.before_tree_digest.clone(),
+            backend_family: "sealed-container".into(),
+            selected_checks: vec!["fmt".into(), "clippy".into(), "test".into()],
+            timeout_class: format!("{COMMAND_TIMEOUT_SECS}s"),
+            config_flags: config_flags.clone(),
+        }),
+        pair_comparability: None,
+        claim_strength: ClaimStrength::ExecutionVerifiedNoComparison,
+        identification_rationale: Some(
+            "observed sealed execution only; no baseline or generalization estimator".into(),
+        ),
+        known_threats: vec![
+            "single source tree".into(),
+            "single effectful execution".into(),
+            "no cross-task learner treatment".into(),
+        ],
+        patch_hash: Some(report.patch_digest.clone()),
+        treatment: Some(Treatment {
+            kind: "exact_source_bound_patch".into(),
+            patch_hash: report.patch_digest.clone(),
+            patch_summary: config.patch.summary.clone(),
+        }),
+        outcome: Some("fmt, clippy, and tests passed in sealed execution".into()),
+        covariates: Some(Covariates {
+            env_fingerprint: report.sandbox_capability.content_digest.clone(),
+            dependency_fingerprint: Some(report.before_tree_digest.clone()),
+            config_flags,
+            workload_id: report.before_tree_digest.clone(),
+            selected_checks: vec!["fmt".into(), "clippy".into(), "test".into()],
+            adjacent_edits: false,
+            adjacent_edit_signatures: Vec::new(),
+        }),
+        promotion_state: Some(semantic_memory_forge::PromotionState::NotPromoted),
+        primary_effect: None,
+        all_effects: Vec::new(),
+        hypothesis_edges: Vec::new(),
+        receipts: vec![
+            owner_receipt_ref(
+                terminal_event_id,
+                ReceiptKind::TrialLog,
+                "aidens_canonical_event_log",
+                &terminal_hash,
+                &config.trace_id,
+            ),
+            owner_receipt_ref(
+                &registered.lifecycle.receipt_id,
+                ReceiptKind::PatchApplicationRecord,
+                "procedural_memory_receipts",
+                &registered.lifecycle.receipt_digest,
+                &config.trace_id,
+            ),
+            owner_receipt_ref(
+                &registered.effectful.receipt_id,
+                ReceiptKind::CheckResult,
+                "procedural_effectful_evaluations",
+                &registered.effectful.receipt_digest,
+                &config.trace_id,
+            ),
+        ],
+        verification_trials: Vec::new(),
+        refutation_artifacts: Vec::new(),
+        sealed: false,
+    };
+    bundle
+        .seal()
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    Ok(bundle)
+}
+
+fn persist_and_verify_terminal_bundle(
+    config: &RealSandboxLearningConfig,
+    bundle: &ExperimentEvidenceBundle,
+) -> Result<(), RealSandboxLearningError> {
+    let store = ForgeStore::open(&config.forge_store)
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    store
+        .insert_canonical_evidence_bundle(bundle)
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    drop(store);
+    let reopened = ForgeStore::open(&config.forge_store)
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    let loaded = reopened
+        .get_canonical_evidence_bundle(&bundle.bundle_id)
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?
+        .ok_or_else(|| {
+            RealSandboxLearningError::Receipt(
+                "canonical Forge evidence bundle missing after reopen".into(),
+            )
+        })?;
+    let expected = serde_json::to_value(bundle)
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    let observed = serde_json::to_value(loaded)
+        .map_err(|error| RealSandboxLearningError::Receipt(error.to_string()))?;
+    if expected != observed {
+        return Err(RealSandboxLearningError::Receipt(
+            "canonical Forge evidence bundle changed across reopen".into(),
+        ));
+    }
+    Ok(())
 }
 
 fn verify_persisted(
@@ -637,6 +1032,8 @@ mod tests {
             cea_db: owner_root.path().join("cea.sqlite"),
             receipt_root: owner_root.path().join("receipts"),
             memory_store: owner_root.path().join("memory"),
+            forge_store: owner_root.path().join("forge.sqlite"),
+            publication_namespace: "aidens-learning".into(),
             run_id: "run:controller-material".into(),
             attempt_id: "attempt:controller-material".into(),
             trial_id: "trial:controller-material".into(),
@@ -656,21 +1053,44 @@ mod tests {
         assert_eq!(first_id, same_id);
         assert_eq!(first, same);
         first.validate().unwrap();
+        let durable = serde_json::to_string(&(&first_id, &first)).unwrap();
+        for physical_path in [
+            &config.cea_db,
+            &config.receipt_root,
+            &config.memory_store,
+            &config.forge_store,
+        ] {
+            assert!(!durable.contains(&physical_path.to_string_lossy().to_string()));
+        }
+        assert!(first.execution.cea_store_identity.starts_with("blake3:"));
+        assert!(first.execution.receipt_root_owner.starts_with("blake3:"));
+        assert!(first.execution.memory_store_owner.starts_with("blake3:"));
+        assert!(first.forge_store_owner.starts_with("blake3:"));
 
         config.image = format!("localhost/other@sha256:{}", "1".repeat(64));
         let changed_digest = fixture_digest(&config.fixture).unwrap();
         let (changed_id, _) = preflight_receipt(&config, changed_digest).unwrap();
         assert_ne!(first_id, changed_id);
 
-        config.image = same.image.clone();
+        config.image = same.execution.image.clone();
         config.memory_store = config.memory_store.join("different-owner");
+        config.forge_store = config.forge_store.with_file_name("different-forge.sqlite");
+        config.publication_namespace = "aidens-learning-different".into();
         let changed_digest = fixture_digest(&config.fixture).unwrap();
         let (destination_changed_id, destination_changed) =
             preflight_receipt(&config, changed_digest).unwrap();
         assert_ne!(first_id, destination_changed_id);
         assert_ne!(
-            same.memory_store_owner,
-            destination_changed.memory_store_owner
+            same.execution.memory_store_owner,
+            destination_changed.execution.memory_store_owner
+        );
+        assert_ne!(
+            same.forge_store_owner,
+            destination_changed.forge_store_owner
+        );
+        assert_ne!(
+            same.publication_namespace,
+            destination_changed.publication_namespace
         );
 
         let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(
@@ -720,12 +1140,12 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "requires live rootless Podman and the digest-pinned AiDENs image"]
-    async fn live_controller_registers_exact_effectful_candidate_without_promotion() {
+    async fn live_controller_closes_terminal_v3_replay_and_lifecycle_drill() {
         let (_fixture, _owner_root, mut config) = config();
         config.image = std::env::var("AIDENS_LIVE_RUST_IMAGE").unwrap_or_else(|_| {
             "localhost/aidens-rust-checks@sha256:96f6610f945d10b523a303848610bd6fbef241762c59c0e44d47af9089cb6d6b".into()
         });
-        let outcome = run_real_sandbox(config).await.unwrap();
+        let outcome = run_real_sandbox(config.clone()).await.unwrap();
         assert!(
             outcome.report.verified,
             "live controller report remained nonverified: reasons={:?}, checks={:?}, adjudication={:?}",
@@ -741,6 +1161,22 @@ mod tests {
             .as_ref()
             .expect("procedure lifecycle receipt must be present after effectful evaluation");
         assert_eq!(receipt.disposition, ProcedureLifecycleDispositionV1::Tested);
+        let effectful = outcome
+            .terminal_effectful_receipt
+            .as_ref()
+            .expect("exact candidate effectful receipt must be registered");
+        assert_eq!(effectful.artifact_id, receipt.artifact_id);
+        assert!(semantic_memory::verify_procedure_effectful_evaluation_receipt_v1(effectful));
+        let bundle = outcome
+            .terminal_evidence_bundle
+            .as_ref()
+            .expect("typed Forge evidence bundle must be persisted");
+        assert_eq!(bundle.candidate_id, receipt.artifact_id);
+        assert_eq!(
+            bundle.claim_strength,
+            forge_engine::ClaimStrength::ExecutionVerifiedNoComparison
+        );
+        assert!(outcome.terminal_evidence_readback_verified);
         assert_eq!(
             outcome.terminal_publication,
             TerminalPublicationStateV1::Pending
@@ -750,9 +1186,312 @@ mod tests {
             vec![
                 String::from("terminal-v3-publication-pending"),
                 String::from("procedure-lifecycle-owner-permit-required"),
-                String::from("forge-export-owner-evidence-unavailable"),
                 String::from("replay-retention-policy-owner-unavailable"),
             ]
+        );
+
+        let memory = MemoryStore::open(MemoryConfig {
+            base_dir: config.memory_store.clone(),
+            ..MemoryConfig::default()
+        })
+        .unwrap();
+        let artifact_id = receipt.artifact_id.clone();
+        let principal = config.permit_grant.granted_by.clone();
+        let promote_permit = semantic_memory::ProcedureLifecyclePermitV1::elevated_for(
+            principal.clone(),
+            "operator:live-promote",
+            "promote",
+            artifact_id.clone(),
+            "2999-01-01T00:00:00Z",
+        );
+        let promoted = memory
+            .promote_procedure(
+                promote_permit.clone(),
+                &artifact_id,
+                "live:promote:exact-source",
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            promoted.disposition,
+            ProcedureLifecycleDispositionV1::Promoted
+        );
+        assert!(memory
+            .promote_procedure(promote_permit, &artifact_id, "live:promote:permit-reuse",)
+            .await
+            .is_err());
+
+        let retrieval_request = |source_tree_digest: String| {
+            let mut request = semantic_memory::ProcedureRetrievalRequestV1::new(
+                ProcedureCapabilityV1::new("aidens-learning", "real-sandbox-evaluation"),
+                ProcedureActionV1::new(
+                    "apply_typed_patch_and_run_sealed_checks",
+                    "Apply the source-bound typed patch and run sealed cargo fmt/clippy/test",
+                ),
+                serde_json::json!({
+                    "language": "rust",
+                    "source_tree_digest": source_tree_digest,
+                }),
+                semantic_memory::CallerPrincipalV1::new(principal.clone()).unwrap(),
+                SubjectPrincipalV1::new(principal.clone()).unwrap(),
+                vec![principal.clone()],
+                NamespaceScopeV1::exact("aidens-learning"),
+                semantic_memory::GovernedAccessPurposeV1::Action,
+                semantic_memory::ProcedureAccessPathV1::DirectId,
+            );
+            request.artifact_id = Some(artifact_id.clone());
+            request.action_permit = Some(semantic_memory::ProcedureActionPermitV1::elevated(
+                principal.clone(),
+                "operator:live-action",
+                NamespaceScopeV1::exact("aidens-learning"),
+            ));
+            request
+        };
+        let retrieved = memory
+            .retrieve_procedure(retrieval_request(outcome.report.before_tree_digest.clone()))
+            .await
+            .unwrap();
+        let selected = retrieved
+            .candidate
+            .expect("promoted exact-source candidate must be retrievable");
+        assert!(retrieved.decision.action_allowed);
+        assert_eq!(selected.artifact_id, artifact_id);
+        assert_eq!(
+            selected.steps[0].arguments,
+            serde_json::to_value(&config.patch).unwrap()
+        );
+
+        let replay_run_id = aidens_contracts::ArtifactId::new("run:live-replay-material");
+        let replay_attempt_id = aidens_contracts::ArtifactId::new("attempt:live-replay-material");
+        let replay_root = config.fixture.to_string_lossy().to_string();
+        let mut replay_grant = PermitGrantV1::scoped(
+            CanonicalToolSideEffectClass::Write,
+            "aidens:patch-apply:1",
+            replay_root.clone(),
+            principal.clone(),
+        );
+        replay_grant.permit_id = aidens_contracts::ArtifactId::new("permit:live-replay-material");
+        replay_grant.run_id = Some(replay_run_id.clone());
+        replay_grant.attempt_id = Some(replay_attempt_id.clone());
+        let mut replay_permit_use = PermitUseReportV1::allowed(
+            &replay_grant,
+            "aidens:patch-apply:1",
+            replay_root,
+            Some(replay_run_id),
+            Some(replay_attempt_id),
+        );
+        replay_permit_use.receipt_id =
+            aidens_contracts::ArtifactId::new("permit-use:live-replay-material");
+        let mut replay_config = config.clone();
+        replay_config.permit_grant = replay_grant;
+        replay_config.permit_use = replay_permit_use;
+        replay_config.run_id = "run:live-replay-material".into();
+        replay_config.attempt_id = "attempt:live-replay-material".into();
+        replay_config.trial_id = "trial:live-replay-material".into();
+        replay_config.receipt_root = config.receipt_root.join("replay");
+        replay_config.cea_db = config.cea_db.with_file_name("replay-cea.sqlite");
+        replay_config.forge_store = config.forge_store.with_file_name("replay-forge.sqlite");
+        replay_config.recorded_at = "2026-07-18T01:00:00Z".into();
+        let replayed = replay_promoted_procedure(
+            replay_config.clone(),
+            &artifact_id,
+            &outcome.report.before_tree_digest,
+            semantic_memory::ProcedureActionPermitV1::elevated(
+                principal.clone(),
+                "operator:live-replay-action",
+                NamespaceScopeV1::exact("aidens-learning"),
+            ),
+        )
+        .await
+        .unwrap();
+        assert!(replayed.report.verified);
+        assert!(replayed.action_allowed);
+        assert!(replayed.retained_patch_exact);
+        assert_eq!(replayed.artifact_id, artifact_id);
+        assert_eq!(replayed.report.patch_digest, outcome.report.patch_digest);
+        assert_eq!(
+            replayed.report.before_tree_digest,
+            outcome.report.before_tree_digest
+        );
+        assert_eq!(
+            replayed.report.after_tree_digest,
+            outcome.report.after_tree_digest
+        );
+        let replay_check_state = [
+            replayed.report.checks.fmt_executed,
+            replayed.report.checks.fmt_passed,
+            replayed.report.checks.clippy_executed,
+            replayed.report.checks.clippy_passed,
+            replayed.report.checks.test_executed,
+            replayed.report.checks.test_passed,
+        ];
+        let original_check_state = [
+            outcome.report.checks.fmt_executed,
+            outcome.report.checks.fmt_passed,
+            outcome.report.checks.clippy_executed,
+            outcome.report.checks.clippy_passed,
+            outcome.report.checks.test_executed,
+            outcome.report.checks.test_passed,
+        ];
+        assert_eq!(replay_check_state, original_check_state);
+        assert!(replay_check_state.into_iter().all(|state| state));
+
+        let mut altered_replay = replay_config;
+        altered_replay.patch.summary = "caller attempted different retained patch".into();
+        assert!(replay_promoted_procedure(
+            altered_replay,
+            &artifact_id,
+            &outcome.report.before_tree_digest,
+            semantic_memory::ProcedureActionPermitV1::elevated(
+                principal.clone(),
+                "operator:live-replay-mismatch",
+                NamespaceScopeV1::exact("aidens-learning"),
+            ),
+        )
+        .await
+        .is_err());
+
+        let publication_request = crate::learning_publication::TerminalPublicationRequestV1 {
+            forge_store: config.forge_store.clone(),
+            memory_store: config.memory_store.clone(),
+            bundle_id: bundle.bundle_id.clone(),
+            publication_namespace: config.publication_namespace.clone(),
+        };
+        let publication =
+            crate::learning_publication::publish_terminal_evidence(publication_request.clone())
+                .await
+                .unwrap();
+        assert_eq!(
+            publication.disposition,
+            crate::learning_publication::TerminalPublicationDispositionV1::Published
+        );
+        let terminal = crate::learning_terminal::close_real_sandbox_terminal(
+            &config,
+            &outcome,
+            &publication,
+            &promoted,
+            &replayed,
+        )
+        .unwrap();
+        assert_eq!(
+            terminal.terminal_projection.state,
+            aidens_contracts::CodingLearningTerminalStateV1::SucceededVerified
+        );
+        assert!(terminal.terminal_projection_readback_verified);
+        assert!(terminal.terminal_bundle.digest_verified);
+        assert!(terminal.terminal_bundle.index_verified);
+        assert!(terminal.terminal_bundle.recovery_verified);
+        assert_eq!(terminal.terminal_bundle.bundle.child_receipts.len(), 8);
+        assert_eq!(
+            terminal.terminal_bundle.bundle.event_log.event_log_path,
+            "canonical-receipts.ndjson"
+        );
+        assert!(terminal
+            .terminal_projection
+            .canonical_backpointers
+            .iter()
+            .any(|pointer| {
+                pointer.role == "published-run-bundle"
+                    && pointer.external_id.as_deref()
+                        == Some(terminal.terminal_bundle.bundle.bundle_id.as_str())
+            }));
+
+        let recovered_publication =
+            crate::learning_publication::publish_terminal_evidence(publication_request)
+                .await
+                .unwrap();
+        assert_eq!(
+            recovered_publication.disposition,
+            crate::learning_publication::TerminalPublicationDispositionV1::RecoveredIdempotently
+        );
+        assert_eq!(
+            aidens_contracts::StackContentDigest::compute_json(&publication.export_receipt)
+                .unwrap(),
+            aidens_contracts::StackContentDigest::compute_json(
+                &recovered_publication.export_receipt,
+            )
+            .unwrap(),
+            "persisted Forge export receipt changed on idempotent export"
+        );
+        assert_eq!(
+            aidens_contracts::StackContentDigest::compute_json(&publication.import_readback)
+                .unwrap(),
+            aidens_contracts::StackContentDigest::compute_json(
+                &recovered_publication.import_readback,
+            )
+            .unwrap(),
+            "semantic-memory import readback changed on idempotent import"
+        );
+        let recovered_terminal = crate::learning_terminal::close_real_sandbox_terminal(
+            &config,
+            &outcome,
+            &recovered_publication,
+            &promoted,
+            &replayed,
+        )
+        .unwrap();
+        assert_eq!(
+            recovered_terminal.terminal_bundle.disposition,
+            crate::learning_terminal::TerminalBundlePublicationDispositionV1::RecoveredIdempotently
+        );
+        assert_eq!(
+            recovered_terminal.terminal_bundle.bundle.bundle_id,
+            terminal.terminal_bundle.bundle.bundle_id
+        );
+        assert_eq!(
+            recovered_terminal.terminal_projection_receipt_id,
+            terminal.terminal_projection_receipt_id
+        );
+        let wrong_source = memory
+            .retrieve_procedure(retrieval_request("blake3:wrong-source-tree".into()))
+            .await
+            .unwrap();
+        assert!(wrong_source.candidate.is_none());
+
+        let rolled_back = memory
+            .rollback_procedure(
+                semantic_memory::ProcedureLifecyclePermitV1::elevated_for(
+                    principal.clone(),
+                    "operator:live-rollback",
+                    "rollback",
+                    artifact_id.clone(),
+                    "2999-01-01T00:00:00Z",
+                ),
+                &artifact_id,
+                "live:rollback:exact-source",
+                "bounded rollback drill",
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            rolled_back.disposition,
+            ProcedureLifecycleDispositionV1::RolledBack
+        );
+        assert!(memory
+            .retrieve_procedure(retrieval_request(outcome.report.before_tree_digest.clone()))
+            .await
+            .unwrap()
+            .candidate
+            .is_none());
+
+        let revoked = memory
+            .revoke_procedure(
+                semantic_memory::ProcedureLifecyclePermitV1::elevated_for(
+                    principal,
+                    "operator:live-revoke",
+                    "revoke",
+                    artifact_id.clone(),
+                    "2999-01-01T00:00:00Z",
+                ),
+                &artifact_id,
+                "live:revoke:exact-source",
+                "bounded revoke drill",
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            revoked.disposition,
+            ProcedureLifecycleDispositionV1::Revoked
         );
     }
 

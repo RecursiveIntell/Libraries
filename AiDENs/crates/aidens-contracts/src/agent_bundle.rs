@@ -633,6 +633,19 @@ impl AiDENsRunBundleV3 {
         Ok(self)
     }
 
+    /// Attach the exact canonical child-owner set required by coding-learning.
+    pub fn with_coding_learning_child_closure(
+        self,
+        child_receipts: Vec<AiDENsRunChildReceiptV1>,
+    ) -> Result<Self, Vec<String>> {
+        validate_required_coding_learning_children(&child_receipts)?;
+        let required_children = child_receipts
+            .iter()
+            .map(AiDENsRunChildReceiptV1::required)
+            .collect();
+        self.with_child_closure(child_receipts, required_children)
+    }
+
     pub fn validate_child_closure(&self) -> Result<(), Vec<String>> {
         let mut reasons = Vec::new();
         let mut observed = BTreeSet::new();

@@ -12,6 +12,7 @@ fn main() -> Result<()> {
                 | LearningCommand::Revoke { .. }
                 | LearningCommand::Compare { .. }
                 | LearningCommand::Replay { .. }
+                | LearningCommand::Terminal { .. }
                 | LearningCommand::Stop { .. }
         }
     );

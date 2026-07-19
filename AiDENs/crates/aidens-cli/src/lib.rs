@@ -34,10 +34,14 @@ use aidens_provider_kit::{
     provider_backend_matrix, provider_readiness_for_spec, route_receipt_for_spec, ProviderSpecV1,
 };
 use aidens_receipts::{
-    CanonicalEventLog, CanonicalEventLogConfig, RunBundleStore, RunBundleStoreConfig,
+    CanonicalEventLog, CanonicalEventLogConfig, RunBundleRecoveryState, RunBundleStore,
+    RunBundleStoreConfig,
 };
 use aidens_runner::learning_controller::{run_real_sandbox, RealSandboxLearningConfig};
 use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLifecycleAdapter};
+use aidens_runner::learning_publication::{
+    publish_terminal_evidence, TerminalPublicationRequestV1,
+};
 use aidens_runner::{PlanActVerifyLoopV1, PlanActVerifyLoopV1Output, PlanActVerifyOutcomeV1};
 use aidens_tool_kit::{
     registry_from_enabled_bundles, safe_coding_registry_for_current_dir,
@@ -256,9 +260,31 @@ pub enum LearningCommand {
         #[arg(long)]
         store: Option<String>,
     },
+    Rollback {
+        candidate: String,
+        #[arg(long)]
+        permit: Option<String>,
+        #[arg(long)]
+        store: Option<String>,
+    },
     Replay {
         #[arg(long)]
         source: Option<String>,
+    },
+    Publish {
+        #[arg(long)]
+        request: String,
+        #[arg(long)]
+        out: Option<String>,
+    },
+    /// Verify a closed learning run from fresh bundle, index, and projection readback.
+    Terminal {
+        #[arg(long)]
+        store: String,
+        #[arg(long)]
+        run_id: String,
+        #[arg(long)]
+        projection_receipt_id: String,
     },
     Stop {
         candidate: String,
@@ -271,7 +297,7 @@ pub enum LearningCommand {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct RealSandboxRunRequestV1 {
+struct RealSandboxRunRequestV2 {
     schema: String,
     fixture: PathBuf,
     patch: PathBuf,
@@ -286,11 +312,23 @@ struct RealSandboxRunRequestV1 {
     cea_db: PathBuf,
     receipt_root: PathBuf,
     memory_store: PathBuf,
+    forge_store: PathBuf,
+    publication_namespace: String,
     run_id: String,
     attempt_id: String,
     trial_id: String,
     trace_id: String,
     recorded_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TerminalPublicationRequestEnvelopeV1 {
+    schema: String,
+    forge_store: PathBuf,
+    memory_store: PathBuf,
+    bundle_id: String,
+    publication_namespace: String,
 }
 
 #[derive(Debug, Subcommand)]
@@ -954,9 +992,9 @@ where
 
 fn learn_real_sandbox_command(request: &str, out: Option<&str>) -> Result<String> {
     let request_path = Path::new(request);
-    let envelope: RealSandboxRunRequestV1 = read_typed_json(request_path, "real-sandbox request")?;
-    if envelope.schema != "AiDENsRealSandboxRunRequestV1" {
-        bail!("real-sandbox request schema must be AiDENsRealSandboxRunRequestV1");
+    let envelope: RealSandboxRunRequestV2 = read_typed_json(request_path, "real-sandbox request")?;
+    if envelope.schema != "AiDENsRealSandboxRunRequestV2" {
+        bail!("real-sandbox request schema must be AiDENsRealSandboxRunRequestV2");
     }
     let patch: StructuredPatch = read_typed_json(&envelope.patch, "structured patch")?;
     let permit_grant: PermitGrantV1 = read_typed_json(&envelope.permit_grant, "permit grant")?;
@@ -978,6 +1016,8 @@ fn learn_real_sandbox_command(request: &str, out: Option<&str>) -> Result<String
         cea_db: envelope.cea_db,
         receipt_root: envelope.receipt_root,
         memory_store: envelope.memory_store,
+        forge_store: envelope.forge_store,
+        publication_namespace: envelope.publication_namespace,
         run_id: envelope.run_id,
         attempt_id: envelope.attempt_id,
         trial_id: envelope.trial_id,
@@ -998,6 +1038,32 @@ fn learn_real_sandbox_command(request: &str, out: Option<&str>) -> Result<String
         "verified_execution": outcome.report.verified,
         "terminal_publication": outcome.terminal_publication,
         "controller_outcome": outcome,
+    });
+    if let Some(path) = out {
+        write_json_file(Path::new(path), &report)?;
+    }
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
+fn learn_publish_command(request: &str, out: Option<&str>) -> Result<String> {
+    let envelope: TerminalPublicationRequestEnvelopeV1 =
+        read_typed_json(Path::new(request), "terminal publication request")?;
+    if envelope.schema != "AiDENsTerminalPublicationRequestV1" {
+        bail!("terminal publication request schema must be AiDENsTerminalPublicationRequestV1");
+    }
+    let runtime = tokio::runtime::Runtime::new().context("create terminal publication runtime")?;
+    let outcome = runtime
+        .block_on(publish_terminal_evidence(TerminalPublicationRequestV1 {
+            forge_store: envelope.forge_store,
+            memory_store: envelope.memory_store,
+            bundle_id: envelope.bundle_id,
+            publication_namespace: envelope.publication_namespace,
+        }))
+        .context("canonical terminal publication failed")?;
+    let report = serde_json::json!({
+        "schema": "AiDENsLearningPublicationReportV1",
+        "terminal": {"state": "published-verified"},
+        "outcome": outcome,
     });
     if let Some(path) = out {
         write_json_file(Path::new(path), &report)?;
@@ -1038,6 +1104,100 @@ pub fn learning_run_exit_code(report: &str) -> i32 {
     }
 }
 
+pub fn learn_terminal_command(
+    store_root: &str,
+    run_id: &str,
+    projection_receipt_id: &str,
+) -> Result<String> {
+    if store_root.trim().is_empty()
+        || run_id.trim().is_empty()
+        || projection_receipt_id.trim().is_empty()
+    {
+        bail!("terminal store, run ID, and projection receipt ID are required");
+    }
+    let receipt_root = PathBuf::from(store_root);
+    let bundle_store =
+        RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(receipt_root.clone()))
+            .context("open terminal run-bundle store")?;
+    let inspection = bundle_store
+        .inspect(run_id)
+        .with_context(|| format!("inspect terminal run bundle for {run_id}"))?;
+    let bundle: AiDENsRunBundleV3 = serde_json::from_value(inspection.bundle.clone())
+        .context("decode terminal AiDENsRunBundleV3")?;
+    bundle
+        .validate_durable_identity()
+        .map_err(|reasons| anyhow::anyhow!("terminal bundle identity invalid: {reasons:?}"))?;
+    bundle
+        .validate_child_closure()
+        .map_err(|reasons| anyhow::anyhow!("terminal child closure invalid: {reasons:?}"))?;
+    if !inspection.digest_verified || !inspection.record.verify_record_digest() {
+        bail!("terminal bundle or index-record digest verification failed");
+    }
+    let recovery = bundle_store
+        .reconcile()
+        .context("reconcile terminal run-bundle store")?;
+    let recovery_entry = recovery
+        .entries
+        .iter()
+        .find(|entry| entry.run_id == run_id)
+        .ok_or_else(|| anyhow::anyhow!("terminal bundle recovery entry missing"))?;
+    if recovery_entry.state != RunBundleRecoveryState::Published {
+        bail!(
+            "terminal bundle recovery is not published: {:?}: {}",
+            recovery_entry.state,
+            recovery_entry.reason
+        );
+    }
+
+    let event_log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&receipt_root))
+        .context("open terminal canonical event log")?;
+    if !event_log
+        .verify_chain()
+        .context("verify terminal canonical event-log chain")?
+    {
+        bail!("terminal canonical event-log chain verification failed");
+    }
+    let projection_record = event_log
+        .inspect(projection_receipt_id)
+        .with_context(|| format!("inspect terminal projection receipt {projection_receipt_id}"))?;
+    if projection_record.owner_crate != "aidens-contracts"
+        || projection_record.schema_name != "coding-learning-terminal-projection-v1"
+        || !projection_record.verify_digest()
+        || !projection_record.verify_record_digest()
+    {
+        bail!("terminal projection receipt owner or digest verification failed");
+    }
+    let projection: aidens_contracts::CodingLearningTerminalProjectionV1 =
+        serde_json::from_value(projection_record.body.clone())
+            .context("decode coding-learning terminal projection")?;
+    let bundle_id = bundle.bundle_id.to_string();
+    let projection_binds_bundle = projection.canonical_backpointers.iter().any(|pointer| {
+        pointer.role == "published-run-bundle"
+            && pointer.external_id.as_deref() == Some(bundle_id.as_str())
+    });
+    if projection.state != aidens_contracts::CodingLearningTerminalStateV1::SucceededVerified
+        || !projection_binds_bundle
+    {
+        bail!("terminal projection is not verified or does not bind the inspected bundle");
+    }
+
+    Ok(serde_json::to_string_pretty(&serde_json::json!({
+        "schema": "AiDENsLearningTerminalInspectionV1",
+        "terminal": projection,
+        "run_id": run_id,
+        "bundle_id": bundle_id,
+        "projection_receipt_id": projection_receipt_id,
+        "bundle_digest_verified": inspection.digest_verified,
+        "index_record_digest_verified": inspection.record.verify_record_digest(),
+        "child_closure_verified": true,
+        "recovery_state": recovery_entry.state,
+        "canonical_event_log_chain_verified": true,
+        "projection_receipt_verified": true,
+        "projection_binds_bundle": projection_binds_bundle,
+        "store_record": inspection.record,
+    }))?)
+}
+
 pub fn learn_promote_command(candidate: &str, permit: Option<&str>) -> Result<String> {
     learn_lifecycle_command("promote", candidate, permit)
 }
@@ -1056,7 +1216,7 @@ pub fn learn_lifecycle_command_with_store(
     permit: Option<&str>,
     store: Option<&str>,
 ) -> Result<String> {
-    if !matches!(action, "promote" | "revoke") {
+    if !matches!(action, "promote" | "revoke" | "rollback") {
         bail!("unsupported lifecycle operation: {action}");
     }
     let permit_path =
@@ -1084,13 +1244,22 @@ pub fn learn_lifecycle_command_with_store(
                         format!("aidens-cli:{action}:{candidate}"),
                     )
                     .await
-            } else {
+            } else if action == "revoke" {
                 adapter
                     .revoke(
                         permit,
                         candidate,
                         format!("aidens-cli:{action}:{candidate}"),
                         "operator requested revoke",
+                    )
+                    .await
+            } else {
+                adapter
+                    .rollback(
+                        permit,
+                        candidate,
+                        format!("aidens-cli:{action}:{candidate}"),
+                        "operator requested rollback",
                     )
                     .await
             }
@@ -1136,6 +1305,14 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
         LearningCommand::Replay { source } => {
             learn_compare_replay_command("replay", source.as_deref())
         }
+        LearningCommand::Publish { request, out } => {
+            learn_publish_command(&request, out.as_deref())
+        }
+        LearningCommand::Terminal {
+            store,
+            run_id,
+            projection_receipt_id,
+        } => learn_terminal_command(&store, &run_id, &projection_receipt_id),
         LearningCommand::Promote {
             candidate,
             permit,
@@ -1152,6 +1329,16 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             store,
         } => learn_lifecycle_command_with_store(
             "revoke",
+            &candidate,
+            permit.as_deref(),
+            store.as_deref(),
+        ),
+        LearningCommand::Rollback {
+            candidate,
+            permit,
+            store,
+        } => learn_lifecycle_command_with_store(
+            "rollback",
             &candidate,
             permit.as_deref(),
             store.as_deref(),

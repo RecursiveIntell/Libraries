@@ -14,6 +14,22 @@ fn task2_owner_backpointers() -> Vec<CanonicalBackpointerV1> {
         .collect()
 }
 
+fn coding_learning_child_receipts() -> Vec<AiDENsRunChildReceiptV1> {
+    [
+        ("owner:effectful-evaluation", serde_json::json!({"schema": "AiDENsEffectfulEvaluationReportV1", "verified": true})),
+        ("owner:procedure-lifecycle-tested", serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "tested", "receipt_digest": "digest-tested", "operation": "test", "disposition": "tested"})),
+        ("owner:procedure-effectful-prerequisite", serde_json::json!({"schema_version": "procedure_effectful_evaluation_receipt_v1", "receipt_id": "effectful", "receipt_digest": "digest-effectful", "verified": true})),
+        ("owner:forge-evidence-bundle", serde_json::json!({"version_id": "aidens-exact-source-execution-evidence-v1", "bundle_id": "evidence", "candidate_id": "candidate"})),
+        ("owner:forge-export-receipt", serde_json::json!({"rendering_version": 3, "export_key": "export", "bundle_id": "evidence", "namespace": "aidens-learning"})),
+        ("owner:semantic-memory-projection-import", serde_json::json!({"status": "complete", "direct_write": false, "source_envelope_id": "export", "content_digest": "digest-export"})),
+        ("owner:procedure-lifecycle-promoted", serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted"})),
+        ("owner:promoted-procedure-replay", serde_json::json!({"schema": "AiDENsPromotedProcedureReplayOutcomeV1", "action_allowed": true, "retained_patch_exact": true, "report": {"verified": true}})),
+    ]
+    .into_iter()
+    .map(|(owner, receipt)| AiDENsRunChildReceiptV1::closed(owner, receipt).unwrap())
+    .collect()
+}
+
 fn task2_material_bundle(material: &str) -> AiDENsRunBundleV3 {
     task2_material_bundle_with_backpointers(material, task2_owner_backpointers())
 }
@@ -115,6 +131,37 @@ fn task2_typed_child_closure_rejects_missing_tampered_and_open_children() {
     assert!(open_error
         .iter()
         .any(|reason| reason == "child-not-closed:owner:preflight"));
+}
+
+#[test]
+fn coding_learning_child_closure_rejects_missing_owner_and_forged_schema() {
+    let base = task2_material_bundle("coding-learning-child-contract");
+    let valid = coding_learning_child_receipts();
+    assert!(base
+        .clone()
+        .with_coding_learning_child_closure(valid.clone())
+        .is_ok());
+
+    let mut missing = valid.clone();
+    missing.pop();
+    let reasons = base
+        .clone()
+        .with_coding_learning_child_closure(missing)
+        .unwrap_err();
+    assert!(reasons
+        .iter()
+        .any(|reason| reason == "coding-learning-required-child-owner-set-mismatch"));
+
+    let mut forged = valid;
+    forged[0] = AiDENsRunChildReceiptV1::closed(
+        "owner:effectful-evaluation",
+        serde_json::json!({"schema": "ForgedReportV1", "verified": true}),
+    )
+    .unwrap();
+    let reasons = base.with_coding_learning_child_closure(forged).unwrap_err();
+    assert!(reasons.iter().any(|reason| {
+        reason == "coding-learning-child-signature-invalid:owner:effectful-evaluation"
+    }));
 }
 
 #[test]
@@ -326,7 +373,37 @@ fn task2_success_projection_is_fail_closed_for_incomplete_or_degraded_evidence()
     assert!(!projection.reason_codes.is_empty());
     assert!(!projection.canonical_backpointers.is_empty());
 
-    let mut evidence = CodingLearningEvidenceV1::verified_candidate(task2_owner_backpointers());
+    let mut evidence = CodingLearningEvidenceV1 {
+        execution_mode: "real_sandbox".into(),
+        preflight_persisted: true,
+        permits_valid: true,
+        typed_patch_applied: true,
+        required_checks_executed: true,
+        verification_positive: true,
+        verification_degraded: false,
+        required_digests_present: true,
+        terminal_receipts_durable: true,
+        receipts_healthy: true,
+        publication_complete: true,
+        index_complete: true,
+        blocked: false,
+        revoked: false,
+        stale: false,
+        mock_only: false,
+        fixture_only: false,
+        indeterminate: false,
+        canonical_backpointers: {
+            let mut pointers = task2_owner_backpointers();
+            pointers.push(CanonicalBackpointerV1::external(
+                "aidens-receipts",
+                "AiDENsRunBundleV3",
+                "published-run-bundle",
+                "bundle:blake3:0123456789abcdef",
+            ));
+            pointers
+        },
+        reason_codes: Vec::new(),
+    };
     assert!(succeeded_verified(&evidence));
     assert_eq!(
         project_terminal_state(&evidence).state,

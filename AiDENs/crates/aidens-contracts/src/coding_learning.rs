@@ -5,7 +5,7 @@
 
 use super::*;
 
-const REQUIRED_CODING_LEARNING_OWNER_ROLES: [&str; 12] = [
+const REQUIRED_CODING_LEARNING_OWNER_ROLES: [&str; 11] = [
     "task",
     "source-tree",
     "policy",
@@ -17,11 +17,183 @@ const REQUIRED_CODING_LEARNING_OWNER_ROLES: [&str; 12] = [
     "procedure-lifecycle",
     "forge-export-envelope-v3",
     "replay",
-    "terminal-projection",
+];
+
+const REQUIRED_CODING_LEARNING_TERMINAL_ROLES: [&str; 12] = [
+    "task",
+    "source-tree",
+    "policy",
+    "sandbox",
+    "patch",
+    "checks",
+    "verification",
+    "cea",
+    "procedure-lifecycle",
+    "forge-export-envelope-v3",
+    "replay",
+    "published-run-bundle",
+];
+
+const REQUIRED_CODING_LEARNING_CHILD_OWNERS: [&str; 8] = [
+    "owner:effectful-evaluation",
+    "owner:procedure-lifecycle-tested",
+    "owner:procedure-effectful-prerequisite",
+    "owner:forge-evidence-bundle",
+    "owner:forge-export-receipt",
+    "owner:semantic-memory-projection-import",
+    "owner:procedure-lifecycle-promoted",
+    "owner:promoted-procedure-replay",
 ];
 
 pub fn required_coding_learning_owner_roles() -> &'static [&'static str] {
     &REQUIRED_CODING_LEARNING_OWNER_ROLES
+}
+
+pub fn required_coding_learning_terminal_roles() -> &'static [&'static str] {
+    &REQUIRED_CODING_LEARNING_TERMINAL_ROLES
+}
+
+pub fn required_coding_learning_child_owners() -> &'static [&'static str] {
+    &REQUIRED_CODING_LEARNING_CHILD_OWNERS
+}
+
+pub fn validate_required_coding_learning_children(
+    children: &[AiDENsRunChildReceiptV1],
+) -> Result<(), Vec<String>> {
+    let mut reasons = Vec::new();
+    let observed = children
+        .iter()
+        .map(|child| child.owner_id.as_str())
+        .collect::<std::collections::BTreeSet<_>>();
+    let required = required_coding_learning_child_owners()
+        .iter()
+        .copied()
+        .collect::<std::collections::BTreeSet<_>>();
+    if children.len() != required.len() || observed != required {
+        reasons.push("coding-learning-required-child-owner-set-mismatch".into());
+    }
+    for child in children {
+        let receipt = &child.receipt;
+        let valid = match child.owner_id.as_str() {
+            "owner:effectful-evaluation" => {
+                receipt
+                    .pointer("/schema")
+                    .and_then(serde_json::Value::as_str)
+                    == Some("AiDENsEffectfulEvaluationReportV1")
+                    && receipt
+                        .pointer("/verified")
+                        .and_then(serde_json::Value::as_bool)
+                        == Some(true)
+            }
+            "owner:procedure-lifecycle-tested" => {
+                lifecycle_receipt_matches(receipt, "tested", "test")
+            }
+            "owner:procedure-effectful-prerequisite" => {
+                receipt
+                    .pointer("/schema_version")
+                    .and_then(serde_json::Value::as_str)
+                    == Some("procedure_effectful_evaluation_receipt_v1")
+                    && receipt
+                        .pointer("/verified")
+                        .and_then(serde_json::Value::as_bool)
+                        == Some(true)
+                    && nonempty_json_string(receipt, "/receipt_id")
+                    && nonempty_json_string(receipt, "/receipt_digest")
+            }
+            "owner:forge-evidence-bundle" => {
+                receipt
+                    .pointer("/version_id")
+                    .and_then(serde_json::Value::as_str)
+                    == Some("aidens-exact-source-execution-evidence-v1")
+                    && nonempty_json_string(receipt, "/bundle_id")
+                    && nonempty_json_string(receipt, "/candidate_id")
+            }
+            "owner:forge-export-receipt" => {
+                receipt
+                    .pointer("/rendering_version")
+                    .and_then(serde_json::Value::as_u64)
+                    == Some(3)
+                    && nonempty_json_string(receipt, "/export_key")
+                    && nonempty_json_string(receipt, "/bundle_id")
+                    && nonempty_json_string(receipt, "/namespace")
+            }
+            "owner:semantic-memory-projection-import" => {
+                receipt
+                    .pointer("/status")
+                    .and_then(serde_json::Value::as_str)
+                    == Some("complete")
+                    && receipt
+                        .pointer("/direct_write")
+                        .and_then(serde_json::Value::as_bool)
+                        == Some(false)
+                    && nonempty_json_string(receipt, "/source_envelope_id")
+                    && nonempty_json_string(receipt, "/content_digest")
+            }
+            "owner:procedure-lifecycle-promoted" => {
+                lifecycle_receipt_matches(receipt, "promoted", "promote")
+            }
+            "owner:promoted-procedure-replay" => {
+                receipt
+                    .pointer("/schema")
+                    .and_then(serde_json::Value::as_str)
+                    == Some("AiDENsPromotedProcedureReplayOutcomeV1")
+                    && receipt
+                        .pointer("/action_allowed")
+                        .and_then(serde_json::Value::as_bool)
+                        == Some(true)
+                    && receipt
+                        .pointer("/retained_patch_exact")
+                        .and_then(serde_json::Value::as_bool)
+                        == Some(true)
+                    && receipt
+                        .pointer("/report/verified")
+                        .and_then(serde_json::Value::as_bool)
+                        == Some(true)
+            }
+            _ => false,
+        };
+        if !valid {
+            reasons.push(format!(
+                "coding-learning-child-signature-invalid:{}",
+                child.owner_id
+            ));
+        }
+    }
+    reasons.sort();
+    reasons.dedup();
+    if reasons.is_empty() {
+        Ok(())
+    } else {
+        Err(reasons)
+    }
+}
+
+fn lifecycle_receipt_matches(
+    receipt: &serde_json::Value,
+    disposition: &str,
+    operation: &str,
+) -> bool {
+    receipt
+        .pointer("/schema_version")
+        .and_then(serde_json::Value::as_str)
+        == Some("procedure_lifecycle_receipt_v1")
+        && receipt
+            .pointer("/disposition")
+            .and_then(serde_json::Value::as_str)
+            == Some(disposition)
+        && receipt
+            .pointer("/operation")
+            .and_then(serde_json::Value::as_str)
+            == Some(operation)
+        && nonempty_json_string(receipt, "/receipt_id")
+        && nonempty_json_string(receipt, "/receipt_digest")
+}
+
+fn nonempty_json_string(receipt: &serde_json::Value, pointer: &str) -> bool {
+    receipt
+        .pointer(pointer)
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|value| !value.trim().is_empty())
 }
 
 pub fn validate_durable_v3_identity(id: &ArtifactId) -> Result<(), String> {
@@ -50,8 +222,24 @@ fn backpointer_has_durable_owner_identity(backpointer: &CanonicalBackpointerV1) 
 pub fn validate_required_coding_learning_backpointers(
     backpointers: &[CanonicalBackpointerV1],
 ) -> Result<(), Vec<String>> {
+    validate_coding_learning_backpointer_roles(backpointers, required_coding_learning_owner_roles())
+}
+
+pub fn validate_required_coding_learning_terminal_backpointers(
+    backpointers: &[CanonicalBackpointerV1],
+) -> Result<(), Vec<String>> {
+    validate_coding_learning_backpointer_roles(
+        backpointers,
+        required_coding_learning_terminal_roles(),
+    )
+}
+
+fn validate_coding_learning_backpointer_roles(
+    backpointers: &[CanonicalBackpointerV1],
+    required_roles: &[&str],
+) -> Result<(), Vec<String>> {
     let mut reasons = Vec::new();
-    for role in required_coding_learning_owner_roles() {
+    for role in required_roles {
         let matching = backpointers
             .iter()
             .filter(|backpointer| backpointer.role == *role)
@@ -162,33 +350,6 @@ impl Default for CodingLearningEvidenceV1 {
     }
 }
 
-impl CodingLearningEvidenceV1 {
-    pub fn verified_candidate(canonical_backpointers: Vec<CanonicalBackpointerV1>) -> Self {
-        Self {
-            execution_mode: "real_sandbox".into(),
-            preflight_persisted: true,
-            permits_valid: true,
-            typed_patch_applied: true,
-            required_checks_executed: true,
-            verification_positive: true,
-            verification_degraded: false,
-            required_digests_present: true,
-            terminal_receipts_durable: true,
-            receipts_healthy: true,
-            publication_complete: true,
-            index_complete: true,
-            blocked: false,
-            revoked: false,
-            stale: false,
-            mock_only: false,
-            fixture_only: false,
-            indeterminate: false,
-            canonical_backpointers,
-            reason_codes: Vec::new(),
-        }
-    }
-}
-
 pub fn succeeded_verified(evidence: &CodingLearningEvidenceV1) -> bool {
     evidence.execution_mode == "real_sandbox"
         && evidence.preflight_persisted
@@ -208,7 +369,8 @@ pub fn succeeded_verified(evidence: &CodingLearningEvidenceV1) -> bool {
         && !evidence.mock_only
         && !evidence.fixture_only
         && !evidence.indeterminate
-        && validate_required_coding_learning_backpointers(&evidence.canonical_backpointers).is_ok()
+        && validate_required_coding_learning_terminal_backpointers(&evidence.canonical_backpointers)
+            .is_ok()
 }
 
 fn missing_success_evidence(evidence: &CodingLearningEvidenceV1) -> Vec<String> {
@@ -249,7 +411,7 @@ fn missing_success_evidence(evidence: &CodingLearningEvidenceV1) -> Vec<String> 
         reasons.push("execution-mode-not-real-sandbox".into());
     }
     if let Err(owner_reasons) =
-        validate_required_coding_learning_backpointers(&evidence.canonical_backpointers)
+        validate_required_coding_learning_terminal_backpointers(&evidence.canonical_backpointers)
     {
         reasons.extend(owner_reasons);
     }
