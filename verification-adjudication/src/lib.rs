@@ -13,6 +13,9 @@ use verification_control::{
 };
 use verification_policy::{PolicyDecision, V25CitationContext};
 
+pub mod candidate_promotion;
+pub use candidate_promotion::*;
+
 pub mod v14;
 pub use v14::{
     RollbackDecisionV1, RolloutDecisionV1, ROLLBACK_DECISION_V1_SCHEMA, ROLLOUT_DECISION_V1_SCHEMA,
