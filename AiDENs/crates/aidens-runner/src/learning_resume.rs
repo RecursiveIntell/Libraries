@@ -4,7 +4,8 @@ use crate::learning_coordinator::{
     reduce_learning_coordinator_projection, LearningOwnerSnapshotV1,
 };
 use aidens_contracts::{
-    AiDENsRunBundleV3, AiDENsRunChildReceiptV1, ArtifactKindV1, LearningCoordinatorProjectionV1,
+    AiDENsRunBundleV3, AiDENsRunChildReceiptV1, ArtifactKindV1, LearningCoordinatorDispositionV1,
+    LearningCoordinatorProjectionV1, LearningCoordinatorStageV1, NextLearningActionV1,
     OwnerBindingDigestsV1, OwnerReceiptPointerV1,
 };
 use aidens_receipts::{
@@ -17,8 +18,9 @@ use forge_memory_bridge::{
 use semantic_memory::{
     load_procedure_lifecycle_receipt, load_procedure_owner_snapshot,
     load_procedure_replay_snapshot, verify_procedure_lifecycle_receipt_v1, MemoryConfig,
-    MemoryStore, ProcedureLifecycleDispositionV1, ProcedureLifecycleReceiptV1,
-    ProcedureOwnerSnapshotV1, ProcedureReplaySnapshotV1,
+    MemoryStore, ProcedureActionPermitV1, ProcedureLifecycleDispositionV1,
+    ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1, ProcedureOwnerSnapshotV1,
+    ProcedureReplaySnapshotV1,
 };
 use serde_json::Value;
 use std::path::PathBuf;
@@ -204,6 +206,115 @@ pub async fn rebuild_learning_owner_snapshot(
         owner_snapshot_rebuilt: reconstructed,
         coordinator_projection,
     })
+}
+
+/// Authority supplied for a resume transition. Only populated fields are used;
+/// missing entries produce `Pending`, not a widened request.
+#[derive(Debug, Clone, Default)]
+pub struct LearningResumeAuthorityV1 {
+    pub lifecycle_permit: Option<ProcedureLifecyclePermitV1>,
+    pub action_permit: Option<ProcedureActionPermitV1>,
+    pub idempotency_key: Option<String>,
+}
+
+/// Report from a single resume invocation.
+#[derive(Debug, Clone)]
+pub struct LearningResumeReportV1 {
+    pub before: LearningCoordinatorProjectionV1,
+    pub after: LearningCoordinatorProjectionV1,
+    pub transition_performed: Option<String>,
+    pub owner_receipt_id: Option<String>,
+    pub owner_receipt_digest: Option<String>,
+}
+
+/// Rebuild from owner stores, perform at most one authorized transition, rebuild again.
+/// Missing authority returns pending without mutation.
+pub async fn resume_learning_once(
+    locator: &LearningOwnerLocatorV1,
+    authority: &LearningResumeAuthorityV1,
+) -> Result<LearningResumeReportV1, LearningResumeError> {
+    let before_readback = rebuild_learning_owner_snapshot(locator).await?;
+    let before = before_readback.coordinator_projection.clone();
+
+    if before.disposition != LearningCoordinatorDispositionV1::Pending {
+        return Ok(LearningResumeReportV1 {
+            before: before.clone(),
+            after: before,
+            transition_performed: None,
+            owner_receipt_id: None,
+            owner_receipt_digest: None,
+        });
+    }
+
+    let result = match before.next_action {
+        NextLearningActionV1::PromoteProcedure => {
+            let permit = authority.lifecycle_permit.as_ref().ok_or_else(|| {
+                LearningResumeError::OwnerRead("lifecycle permit required for promotion".into())
+            })?;
+            let adjudication = before_readback.adjudication.as_ref().ok_or_else(|| {
+                LearningResumeError::OwnerRead(
+                    "verified adjudication required for promotion".into(),
+                )
+            })?;
+            let memory = MemoryStore::open(MemoryConfig {
+                base_dir: locator.memory_store_root.clone(),
+                ..Default::default()
+            })
+            .map_err(|e| LearningResumeError::OwnerRead(e.to_string()))?;
+            let adapter = crate::learning_lifecycle::ProcedureLifecycleAdapter::new(&memory);
+            let key = authority
+                .idempotency_key
+                .clone()
+                .unwrap_or_else(|| format!("resume:promote:{}", locator.run_id));
+            let receipt = adapter
+                .promote_adjudicated(permit.clone(), adjudication.clone(), key)
+                .await
+                .map_err(|e| LearningResumeError::OwnerRead(e.to_string()))?;
+            Some((
+                "promote".to_string(),
+                receipt.receipt_id,
+                receipt.receipt_digest,
+            ))
+        }
+        NextLearningActionV1::PublishTerminalEvidence => {
+            return Err(LearningResumeError::OwnerRead(
+                "terminal publication requires learn close with the original run config".into(),
+            ));
+        }
+        _ => None,
+    };
+
+    let after_readback = rebuild_learning_owner_snapshot(locator).await?;
+    Ok(LearningResumeReportV1 {
+        before,
+        after: after_readback.coordinator_projection,
+        transition_performed: result.as_ref().map(|(t, _, _)| t.clone()),
+        owner_receipt_id: result.as_ref().map(|(_, id, _)| id.clone()),
+        owner_receipt_digest: result.as_ref().map(|(_, _, digest)| digest.clone()),
+    })
+}
+
+/// Validate that all owner receipts needed for terminal closure exist.
+/// Returns the coordinator projection showing whether closure is ready.
+/// Actual closure requires the original runtime config and outcome objects
+/// from the initial `learn run` — this function does not synthesize them.
+pub async fn close_learning_from_owners(
+    locator: &LearningOwnerLocatorV1,
+) -> Result<LearningCoordinatorProjectionV1, LearningResumeError> {
+    let readback = rebuild_learning_owner_snapshot(locator).await?;
+    let projection = readback.coordinator_projection;
+
+    if projection.stage != LearningCoordinatorStageV1::TerminalPublished
+        && projection.next_action != NextLearningActionV1::PublishTerminalEvidence
+        && projection.next_action != NextLearningActionV1::Completed
+    {
+        return Err(LearningResumeError::OwnerRead(format!(
+            "not ready for closure: stage={:?} next_action={:?}",
+            projection.stage, projection.next_action
+        )));
+    }
+
+    Ok(projection)
 }
 
 async fn load_run_bundle_inspection(

@@ -25,7 +25,9 @@ use aidens_contracts::{
     SchemaCompatibilityModeV1, SchemaCompatibilityReportV1, SchemaPathCollisionFindingV1,
     StackAttemptId, StackContentDigest, StackTrialId, ToolExposureSetV1,
 };
-use aidens_contracts::{LearningCoordinatorDispositionV1, LearningCoordinatorStageV1};
+use aidens_contracts::{
+    LearningCoordinatorDispositionV1, LearningCoordinatorStageV1, NextLearningActionV1,
+};
 use aidens_daemon_kit::DaemonControllerV1;
 use aidens_memory_kit::{
     memory_config_for_root, runtime_config_for_namespace, CanonicalMemoryAdapter,
@@ -45,7 +47,10 @@ use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLife
 use aidens_runner::learning_publication::{
     publish_terminal_evidence, TerminalPublicationRequestV1,
 };
-use aidens_runner::learning_resume::{rebuild_learning_owner_snapshot, LearningOwnerLocatorV1};
+use aidens_runner::learning_resume::{
+    close_learning_from_owners, rebuild_learning_owner_snapshot, resume_learning_once,
+    LearningOwnerLocatorV1, LearningResumeAuthorityV1,
+};
 use aidens_runner::learning_sealed_replay::{
     execute_owner_admitted_sealed_replay, prepare_owner_admitted_sealed_replay_material,
     OwnerAdmittedSealedReplayMaterialV1, OwnerAdmittedSealedReplayRequestV1,
@@ -1165,6 +1170,9 @@ struct LearningResumeRequestEnvelopeV1 {
     bundle_run_id: Option<String>,
     adjudication_id: Option<String>,
     replay_id: Option<String>,
+    lifecycle_permit: Option<ProcedureLifecyclePermitV1>,
+    action_permit: Option<ProcedureActionPermitV1>,
+    idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -1202,29 +1210,40 @@ fn learn_resume_command(request: &str, out: Option<&str>) -> Result<String> {
         adjudication_id: envelope.adjudication_id,
         replay_id: envelope.replay_id,
     };
+    let authority = LearningResumeAuthorityV1 {
+        lifecycle_permit: envelope.lifecycle_permit,
+        action_permit: envelope.action_permit,
+        idempotency_key: envelope.idempotency_key,
+    };
     let runtime = tokio::runtime::Runtime::new().context("create resume runtime")?;
-    let readback = runtime
-        .block_on(rebuild_learning_owner_snapshot(&locator))
-        .context("learning resume rebuild failed")?;
-    let report = serde_json::json!({
+    let report = runtime
+        .block_on(resume_learning_once(&locator, &authority))
+        .context("learning resume failed")?;
+    let terminal_state = if report.transition_performed.is_some() {
+        "transition-performed"
+    } else if report.after.disposition == LearningCoordinatorDispositionV1::Pending {
+        "pending"
+    } else {
+        "blocked-evidence-insufficient"
+    };
+    let report_json = serde_json::json!({
         "schema": "AiDENsLearningResumeReportV1",
         "operation": "resume",
-        "stage": readback.coordinator_projection.stage,
-        "disposition": readback.coordinator_projection.disposition,
-        "next_action": readback.coordinator_projection.next_action,
-        "owner_receipts": readback.coordinator_projection.owner_receipts,
+        "before_stage": report.before.stage,
+        "after_stage": report.after.stage,
+        "disposition": report.after.disposition,
+        "next_action": report.after.next_action,
+        "transition_performed": report.transition_performed,
+        "owner_receipt_id": report.owner_receipt_id,
+        "owner_receipt_digest": report.owner_receipt_digest,
         "terminal": {
-            "state": if readback.coordinator_projection.disposition == LearningCoordinatorDispositionV1::Pending {
-                "pending"
-            } else {
-                "blocked-evidence-insufficient"
-            },
+            "state": terminal_state,
         },
     });
     if let Some(path) = out {
-        write_json_file(Path::new(path), &report)?;
+        write_json_file(Path::new(path), &report_json)?;
     }
-    Ok(serde_json::to_string_pretty(&report)?)
+    Ok(serde_json::to_string_pretty(&report_json)?)
 }
 
 fn learn_close_command(request: &str, out: Option<&str>) -> Result<String> {
@@ -1248,18 +1267,20 @@ fn learn_close_command(request: &str, out: Option<&str>) -> Result<String> {
         replay_id: envelope.replay_id,
     };
     let runtime = tokio::runtime::Runtime::new().context("create close runtime")?;
-    let readback = runtime
-        .block_on(rebuild_learning_owner_snapshot(&locator))
-        .context("learning close rebuild failed")?;
+    let projection = runtime
+        .block_on(close_learning_from_owners(&locator))
+        .context("learning close validation failed")?;
     let report = serde_json::json!({
         "schema": "AiDENsLearningCloseReportV1",
         "operation": "close",
-        "stage": readback.coordinator_projection.stage,
-        "disposition": readback.coordinator_projection.disposition,
-        "owner_receipts": readback.coordinator_projection.owner_receipts,
+        "stage": projection.stage,
+        "disposition": projection.disposition,
+        "owner_receipts": projection.owner_receipts,
         "terminal": {
-            "state": if readback.coordinator_projection.stage == LearningCoordinatorStageV1::TerminalPublished {
+            "state": if projection.stage == LearningCoordinatorStageV1::TerminalPublished {
                 "succeeded-verified"
+            } else if projection.next_action == NextLearningActionV1::PublishTerminalEvidence {
+                "ready-for-closure"
             } else {
                 "blocked-evidence-insufficient"
             },
