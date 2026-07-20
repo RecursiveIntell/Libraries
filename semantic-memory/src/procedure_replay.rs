@@ -1,10 +1,16 @@
 //! Canonical owner for exact coding-procedure replay retention (V38).
-use crate::procedural_memory::ProcedureLifecycleDispositionV1;
+use crate::procedural_memory::{
+    verify_procedure_effectful_evaluation_receipt_v1, verify_procedure_lifecycle_receipt_v1,
+    ProceduralMemoryArtifactV1, ProcedureEffectfulEvaluationReceiptV1,
+    ProcedureLifecycleDispositionV1, ProcedureLifecycleReceiptV1,
+};
 use crate::{MemoryError, MemoryStore, ProcedureActionPermitV1};
 use blake3::Hasher;
 use chrono::{DateTime, Utc};
+use forge_memory_bridge::{AdjudicationBindingV1, ForgeAdjudicationStore};
 use rusqlite::{params, OptionalExtension};
 use serde::{Deserialize, Serialize};
+use verification_adjudication::{AdjudicationDecisionV1, CandidatePromotionAdjudicationV1};
 
 const SCHEMA: &str = "procedure_replay_v1";
 
@@ -57,6 +63,20 @@ pub struct ProcedureReplayComparisonV1 {
     pub reason_codes: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ProcedureOwnerSnapshotV1 {
+    pub artifact: ProceduralMemoryArtifactV1,
+    pub lifecycle_receipt: Option<ProcedureLifecycleReceiptV1>,
+    pub effectful_receipt: Option<ProcedureEffectfulEvaluationReceiptV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ProcedureReplaySnapshotV1 {
+    pub inputs: ProcedureReplayInputsV1,
+    pub admission: ProcedureReplayAdmissionV1,
+    pub result: Option<ProcedureReplayResultV1>,
+}
+
 fn digest<T: Serialize>(v: &T) -> Result<String, MemoryError> {
     let bytes = serde_json::to_vec(v).map_err(|error| MemoryError::Other(error.to_string()))?;
     let mut h = Hasher::new();
@@ -99,6 +119,278 @@ pub fn procedure_replay_permit_ref(
 }
 
 impl MemoryStore {
+    pub async fn admit_adjudicated_procedure_replay(
+        &self,
+        forge: &dyn ForgeAdjudicationStore,
+        replay_id: impl Into<String>,
+        adjudication_id: &str,
+        permit: ProcedureActionPermitV1,
+    ) -> Result<ProcedureReplayAdmissionV1, MemoryError> {
+        let replay_id = replay_id.into();
+        let adjudication: CandidatePromotionAdjudicationV1 = forge
+            .read_verified_adjudication(adjudication_id)
+            .map_err(|error| rejected(error.to_string()))?;
+        adjudication
+            .validate()
+            .map_err(|error| rejected(error.to_string()))?;
+        if adjudication.decision != AdjudicationDecisionV1::EligibleForLifecycleConsideration {
+            return Err(rejected("adjudication is not lifecycle-eligible"));
+        }
+        forge
+            .verify_adjudication_binding(
+                adjudication_id,
+                &AdjudicationBindingV1 {
+                    candidate_id: adjudication.candidate_id.clone(),
+                    candidate_digest: adjudication.candidate_digest.clone(),
+                    evidence_bundle_id: adjudication.evidence_bundle_id.clone(),
+                    evidence_bundle_digest: adjudication.evidence_bundle_digest.clone(),
+                },
+            )
+            .map_err(|error| rejected(error.to_string()))?;
+        let snapshot = self
+            .load_procedure_owner_snapshot(&adjudication.candidate_id)
+            .await?;
+        if snapshot.artifact.artifact_id != adjudication.candidate_id {
+            return Err(rejected(
+                "adjudication candidate id does not match owner snapshot",
+            ));
+        }
+        if strip_blake3_prefix(&snapshot.artifact.artifact_digest)
+            != adjudication.candidate_digest.as_str()
+        {
+            return Err(rejected(
+                "adjudication candidate digest does not match owner artifact",
+            ));
+        }
+        let lifecycle_receipt = snapshot
+            .lifecycle_receipt
+            .as_ref()
+            .ok_or_else(|| rejected("owner candidate has no lifecycle receipt"))?;
+        let action_permit_ref = permit_ref(&permit, &replay_id)?;
+        let store_identity_digest = derive_store_identity(
+            &snapshot.artifact,
+            snapshot.lifecycle_receipt.as_ref(),
+            snapshot.effectful_receipt.as_ref(),
+        )?;
+        let retained_input_digest = digest(&(
+            &replay_id,
+            &snapshot.artifact.artifact_id,
+            &snapshot.artifact.artifact_digest,
+            adjudication.patch_digest.as_str(),
+            adjudication.source_tree_digest.as_str(),
+            adjudication.verifier_digest.as_str(),
+            adjudication.check_policy_digest.as_str(),
+            adjudication.environment_digest.as_str(),
+            adjudication.image_digest.as_str(),
+            &store_identity_digest,
+        ))?;
+        let inputs = ProcedureReplayInputsV1 {
+            replay_id,
+            original_artifact_id: snapshot.artifact.artifact_id.clone(),
+            original_artifact_digest: snapshot.artifact.artifact_digest.clone(),
+            patch_digest: adjudication.patch_digest.as_str().to_owned(),
+            source_tree_digest: adjudication.source_tree_digest.as_str().to_owned(),
+            verifier_digest: adjudication.verifier_digest.as_str().to_owned(),
+            check_policy_digest: adjudication.check_policy_digest.as_str().to_owned(),
+            environment_digest: adjudication.environment_digest.as_str().to_owned(),
+            image_digest: adjudication.image_digest.as_str().to_owned(),
+            store_identity_digest,
+            retained_input_digest,
+            promotion_receipt_ref: lifecycle_receipt.receipt_id.clone(),
+            action_permit_ref,
+        };
+        self.admit_procedure_replay(inputs, permit).await
+    }
+
+    pub async fn load_procedure_owner_snapshot(
+        &self,
+        artifact_id: impl Into<String>,
+    ) -> Result<ProcedureOwnerSnapshotV1, MemoryError> {
+        let artifact_id = artifact_id.into();
+        self.with_read_conn(move |conn| {
+            let artifact_json: String = conn
+                .query_row(
+                    "SELECT artifact_json FROM procedural_memory_artifacts WHERE artifact_id=?1",
+                    params![artifact_id],
+                    |row| row.get(0),
+                )
+                .optional()?
+                .ok_or_else(|| MemoryError::ProceduralMemoryNotFound {
+                    artifact_id: artifact_id.clone(),
+                })?;
+            let artifact: ProceduralMemoryArtifactV1 =
+                serde_json::from_str(&artifact_json).map_err(|error| MemoryError::CorruptData {
+                    table: "procedural_memory_artifacts",
+                    row_id: artifact_id.clone(),
+                    detail: error.to_string(),
+                })?;
+            if artifact.artifact_id != artifact_id || artifact.artifact_digest != artifact.compute_digest() {
+                return Err(MemoryError::CorruptData {
+                    table: "procedural_memory_artifacts",
+                    row_id: artifact_id.clone(),
+                    detail: "artifact identity mismatch".into(),
+                });
+            }
+            let lifecycle_receipt = conn
+                .query_row(
+                    "SELECT receipt_json FROM procedural_memory_receipts WHERE artifact_id = ?1 ORDER BY rowid DESC LIMIT 1",
+                    params![artifact.artifact_id],
+                    |row| row.get::<_, String>(0),
+                )
+                .optional()?
+                .map(|raw| {
+                    serde_json::from_str::<ProcedureLifecycleReceiptV1>(&raw).map_err(|error| {
+                        MemoryError::CorruptData {
+                            table: "procedural_memory_receipts",
+                            row_id: artifact.artifact_id.clone(),
+                            detail: error.to_string(),
+                        }
+                    })
+                })
+                .transpose()?
+                .map(|receipt| {
+                    if !verify_procedure_lifecycle_receipt_v1(&receipt)
+                        || receipt.artifact_id != artifact.artifact_id
+                        || receipt.artifact_digest != artifact.artifact_digest
+                    {
+                        Err(MemoryError::CorruptData {
+                            table: "procedural_memory_receipts",
+                            row_id: artifact.artifact_id.clone(),
+                            detail:
+                                "stored lifecycle receipt failed verification against owner".into(),
+                        })
+                    } else {
+                        Ok(receipt)
+                    }
+                })
+                .transpose()?;
+            let effectful_receipt = conn
+                .query_row(
+                    "SELECT receipt_json FROM procedural_effectful_evaluations WHERE artifact_id = ?1 AND artifact_digest = ?2 ORDER BY rowid DESC LIMIT 1",
+                    params![artifact.artifact_id, artifact.artifact_digest],
+                    |row| row.get::<_, String>(0),
+                )
+                .optional()?
+                .map(|raw| {
+                    serde_json::from_str::<ProcedureEffectfulEvaluationReceiptV1>(&raw).map_err(
+                        |error| MemoryError::CorruptData {
+                            table: "procedural_effectful_evaluations",
+                            row_id: artifact.artifact_id.clone(),
+                            detail: error.to_string(),
+                        },
+                    )
+                })
+                .transpose()?
+                .map(|receipt| {
+                    if !verify_procedure_effectful_evaluation_receipt_v1(&receipt) {
+                        Err(MemoryError::CorruptData {
+                            table: "procedural_effectful_evaluations",
+                            row_id: artifact.artifact_id.clone(),
+                            detail:
+                                "stored effectful evaluation receipt failed verification".into(),
+                        })
+                    } else {
+                        Ok(receipt)
+                    }
+                })
+                .transpose()?;
+            Ok(ProcedureOwnerSnapshotV1 {
+                artifact,
+                lifecycle_receipt,
+                effectful_receipt,
+            })
+        })
+        .await
+    }
+
+    pub async fn load_procedure_replay_snapshot(
+        &self,
+        replay_id: impl Into<String>,
+    ) -> Result<ProcedureReplaySnapshotV1, MemoryError> {
+        let replay_id = replay_id.into();
+        self.with_read_conn(move |conn| {
+            let parsed = conn
+                .query_row(
+                    "SELECT payload_json FROM procedure_replay_inputs WHERE replay_id=?1",
+                    params![replay_id],
+                    |row| row.get::<_, String>(0),
+                )
+                .optional()?
+                .ok_or_else(|| MemoryError::ProceduralMemoryNotFound {
+                    artifact_id: replay_id.clone(),
+                })?;
+            let inputs: ProcedureReplayInputsV1 =
+                serde_json::from_str(&parsed).map_err(|error| MemoryError::CorruptData {
+                    table: "procedure_replay_inputs",
+                    row_id: replay_id.clone(),
+                    detail: error.to_string(),
+                })?;
+            let request_digest: String = conn
+                .query_row(
+                    "SELECT request_digest FROM procedure_replay_inputs WHERE replay_id=?1",
+                    params![inputs.replay_id],
+                    |row| row.get(0),
+                )?;
+            let expected = digest(&inputs)?;
+            if expected != request_digest {
+                return Err(MemoryError::CorruptData {
+                    table: "procedure_replay_inputs",
+                    row_id: inputs.replay_id.clone(),
+                    detail: "request digest mismatch".into(),
+                });
+            }
+            let (admission_digest, admission_raw) = conn
+                .query_row(
+                    "SELECT admission_digest, receipt_json FROM procedure_replay_admissions WHERE replay_id=?1",
+                    params![inputs.replay_id],
+                    |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+                )
+                .optional()?
+                .ok_or_else(|| MemoryError::ProceduralMemoryNotFound {
+                    artifact_id: inputs.replay_id.clone(),
+                })?;
+            let admission: ProcedureReplayAdmissionV1 =
+                serde_json::from_str(&admission_raw).map_err(|error| MemoryError::CorruptData {
+                    table: "procedure_replay_admissions",
+                    row_id: inputs.replay_id.clone(),
+                    detail: error.to_string(),
+                })?;
+            let expected_admission = digest(&(SCHEMA, &inputs.replay_id, &request_digest))?;
+            if admission.admission_digest != admission_digest
+                || admission.admission_digest != expected_admission
+            {
+                return Err(MemoryError::CorruptData {
+                    table: "procedure_replay_admissions",
+                    row_id: inputs.replay_id.clone(),
+                    detail: "admission digest mismatch".into(),
+                });
+            }
+            let result: Option<ProcedureReplayResultV1> = conn
+                .query_row(
+                    "SELECT receipt_json FROM procedure_replay_results WHERE replay_id=?1",
+                    params![inputs.replay_id],
+                    |row| row.get::<_, String>(0),
+                )
+                .optional()?
+                .map(|raw| {
+                    serde_json::from_str::<ProcedureReplayResultV1>(&raw).map_err(|error| {
+                        MemoryError::CorruptData {
+                            table: "procedure_replay_results",
+                            row_id: inputs.replay_id.clone(),
+                            detail: error.to_string(),
+                        }
+                    })
+                })
+                .transpose()?;
+            Ok(ProcedureReplaySnapshotV1 {
+                inputs,
+                admission,
+                result,
+            })
+        })
+        .await
+    }
+
     pub async fn admit_procedure_replay(
         &self,
         mut inputs: ProcedureReplayInputsV1,
@@ -262,6 +554,29 @@ pub async fn admit_procedure_replay(
 ) -> Result<ProcedureReplayAdmissionV1, MemoryError> {
     store.admit_procedure_replay(inputs, permit).await
 }
+pub async fn admit_adjudicated_procedure_replay(
+    store: &MemoryStore,
+    forge: &dyn ForgeAdjudicationStore,
+    replay_id: impl Into<String>,
+    adjudication_id: &str,
+    permit: ProcedureActionPermitV1,
+) -> Result<ProcedureReplayAdmissionV1, MemoryError> {
+    store
+        .admit_adjudicated_procedure_replay(forge, replay_id, adjudication_id, permit)
+        .await
+}
+pub async fn load_procedure_owner_snapshot(
+    store: &MemoryStore,
+    artifact_id: impl Into<String>,
+) -> Result<ProcedureOwnerSnapshotV1, MemoryError> {
+    store.load_procedure_owner_snapshot(artifact_id).await
+}
+pub async fn load_procedure_replay_snapshot(
+    store: &MemoryStore,
+    replay_id: impl Into<String>,
+) -> Result<ProcedureReplaySnapshotV1, MemoryError> {
+    store.load_procedure_replay_snapshot(replay_id).await
+}
 pub async fn load_retained_replay_inputs(
     store: &MemoryStore,
     id: impl Into<String>,
@@ -325,6 +640,30 @@ pub fn compare_replay(
         },
         reason_codes: reasons,
     }
+}
+
+fn rejected(error: impl ToString) -> MemoryError {
+    MemoryError::ProceduralMemoryRejected {
+        reason: error.to_string(),
+    }
+}
+
+fn strip_blake3_prefix(value: &str) -> &str {
+    value.strip_prefix("blake3:").unwrap_or(value)
+}
+
+fn derive_store_identity(
+    artifact: &ProceduralMemoryArtifactV1,
+    lifecycle_receipt: Option<&ProcedureLifecycleReceiptV1>,
+    effectful_receipt: Option<&ProcedureEffectfulEvaluationReceiptV1>,
+) -> Result<String, MemoryError> {
+    digest(&(
+        "procedure_replay_store_identity_v1",
+        &artifact.artifact_id,
+        &artifact.artifact_digest,
+        lifecycle_receipt.map(|value| (&value.receipt_id, &value.receipt_digest)),
+        effectful_receipt.map(|value| (&value.receipt_id, &value.receipt_digest)),
+    ))
 }
 
 #[cfg(test)]

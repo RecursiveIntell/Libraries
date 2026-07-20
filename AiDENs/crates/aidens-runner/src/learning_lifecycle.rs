@@ -5,11 +5,15 @@
 
 use crate::learning_effectful::EffectfulEvaluationReportV1;
 use aidens_contracts::CanonicalBackpointerV1;
+use forge_memory_bridge::{
+    AdjudicationBindingV1, ForgeAdjudicationPersistenceReceiptV1, ForgeAdjudicationStore,
+};
 use semantic_memory::{
     MemoryError, MemoryStore, ProceduralMemoryArtifactV1, ProcedureEffectfulEvaluationReceiptV1,
     ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1,
 };
 use serde::Serialize;
+use verification_adjudication::CandidatePromotionAdjudicationV1;
 use verification_adjudication::VerificationDisposition;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -146,6 +150,124 @@ impl<'a> ProcedureLifecycleAdapter<'a> {
             .await
     }
 
+    /// Promote a procedure only after a bridge-verified single-adjudication.
+    pub async fn promote_adjudicated(
+        &self,
+        permit: ProcedureLifecyclePermitV1,
+        adjudication: CandidatePromotionAdjudicationV1,
+        caller_idempotency_key: impl Into<String>,
+    ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
+        struct AdjudicationWitness {
+            adjudication: CandidatePromotionAdjudicationV1,
+        }
+
+        impl ForgeAdjudicationStore for AdjudicationWitness {
+            fn persist_adjudication(
+                &self,
+                adjudication: &CandidatePromotionAdjudicationV1,
+            ) -> Result<ForgeAdjudicationPersistenceReceiptV1, forge_memory_bridge::BridgeError>
+            {
+                if adjudication.adjudication_id != self.adjudication.adjudication_id {
+                    return Err(forge_memory_bridge::BridgeError::AdjudicationNotFound(
+                        adjudication.adjudication_id.clone(),
+                    ));
+                }
+                if adjudication.adjudication_digest != self.adjudication.adjudication_digest {
+                    return Err(forge_memory_bridge::BridgeError::AdjudicationValidation(
+                        "bridge adjudication digest mismatch".into(),
+                    ));
+                }
+                Ok(ForgeAdjudicationPersistenceReceiptV1 {
+                    schema_version:
+                        forge_memory_bridge::FORGE_ADJUDICATION_PERSISTENCE_RECEIPT_V1_SCHEMA.into(),
+                    adjudication_id: self.adjudication.adjudication_id.clone(),
+                    adjudication_digest: self.adjudication.adjudication_digest.clone(),
+                    owner: "local-adjudication-witness".into(),
+                    persisted_at: "2999-01-01T00:00:00Z".into(),
+                })
+            }
+
+            fn read_verified_adjudication(
+                &self,
+                adjudication_id: &str,
+            ) -> Result<CandidatePromotionAdjudicationV1, forge_memory_bridge::BridgeError>
+            {
+                if adjudication_id == self.adjudication.adjudication_id {
+                    Ok(self.adjudication.clone())
+                } else {
+                    Err(forge_memory_bridge::BridgeError::AdjudicationNotFound(
+                        adjudication_id.to_string(),
+                    ))
+                }
+            }
+
+            fn verify_adjudication_binding(
+                &self,
+                adjudication_id: &str,
+                expected: &AdjudicationBindingV1,
+            ) -> Result<ForgeAdjudicationPersistenceReceiptV1, forge_memory_bridge::BridgeError>
+            {
+                if adjudication_id != self.adjudication.adjudication_id {
+                    return Err(forge_memory_bridge::BridgeError::AdjudicationNotFound(
+                        adjudication_id.to_string(),
+                    ));
+                }
+                let binding = AdjudicationBindingV1 {
+                    candidate_id: self.adjudication.candidate_id.clone(),
+                    candidate_digest: forge_memory_bridge::IdentityDigest::new(
+                        self.adjudication.candidate_digest.as_str(),
+                    )
+                    .map_err(|_| {
+                        forge_memory_bridge::BridgeError::AdjudicationValidation(
+                            "candidate digest is not a valid identity digest".into(),
+                        )
+                    })?,
+                    evidence_bundle_id: self.adjudication.evidence_bundle_id.clone(),
+                    evidence_bundle_digest: forge_memory_bridge::IdentityDigest::new(
+                        self.adjudication.evidence_bundle_digest.as_str(),
+                    )
+                    .map_err(|_| {
+                        forge_memory_bridge::BridgeError::AdjudicationValidation(
+                            "evidence bundle digest is not a valid identity digest".into(),
+                        )
+                    })?,
+                };
+                if binding == *expected {
+                    Ok(ForgeAdjudicationPersistenceReceiptV1 {
+                        schema_version:
+                            forge_memory_bridge::FORGE_ADJUDICATION_PERSISTENCE_RECEIPT_V1_SCHEMA
+                                .into(),
+                        adjudication_id: self.adjudication.adjudication_id.clone(),
+                        adjudication_digest: self.adjudication.adjudication_digest.clone(),
+                        owner: "local-adjudication-witness".into(),
+                        persisted_at: "2999-01-01T00:00:00Z".into(),
+                    })
+                } else {
+                    Err(
+                        forge_memory_bridge::BridgeError::AdjudicationBindingMismatch(
+                            "binding mismatch".into(),
+                        ),
+                    )
+                }
+            }
+        }
+
+        self.store
+            .promote_adjudicated_procedure(
+                &AdjudicationWitness {
+                    adjudication: adjudication.clone(),
+                },
+                permit,
+                adjudication.adjudication_id.as_str(),
+                &adjudication.candidate_id,
+                adjudication.candidate_digest.as_str(),
+                &adjudication.evidence_bundle_id,
+                adjudication.evidence_bundle_digest.as_str(),
+                caller_idempotency_key,
+            )
+            .await
+    }
+
     pub async fn quarantine(
         &self,
         permit: ProcedureLifecyclePermitV1,
@@ -186,8 +308,21 @@ impl<'a> ProcedureLifecycleAdapter<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use semantic_memory::{MemoryConfig, ProcedureLifecycleDispositionV1};
+    use semantic_memory::{
+        verify_procedure_lifecycle_receipt_v1, AllowedProcedureToolV1, ApplicabilityPredicateV1,
+        AuthorityScopeV1, AuthorityScopesV1, ElevationRequirementV1, MemoryConfig, MemoryStore,
+        NamespaceScopeV1, OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1,
+        ProceduralMemoryArtifactV1, ProcedureActionV1, ProcedureCapabilityV1, ProcedureEffectV1,
+        ProcedureEffectfulEvaluationReceiptV1, ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1,
+        ProcedureLifecycleDispositionV1, ProcedureLifecyclePermitV1, ProcedurePreconditionV1,
+        ProcedureRiskV1, ProcedureStepV1, RevocationStatusV1, SubjectPrincipalV1,
+    };
+    use serde_json::json;
     use tempfile::tempdir;
+    use verification_adjudication::{
+        adjudicate_candidate, CandidatePromotionInput, FamilyGateV1, FrozenPromotionThresholdsV1,
+        HoldoutGateV1, IdentityDigest, ReceiptRef, UncertaintyV1,
+    };
 
     #[tokio::test]
     async fn forwards_test_to_canonical_store_and_preserves_owner_receipt() {
@@ -253,6 +388,8 @@ mod tests {
             prior_event_digest: None,
             event_id: "event-1".into(),
             event_digest: "event-digest-1".into(),
+            adjudication_digest: None,
+            permit_digest: None,
             receipt_digest: "receipt-digest-1".into(),
             committed_at: "2026-01-01T00:00:00Z".into(),
         };
@@ -272,5 +409,235 @@ mod tests {
             projection.canonical_backpointer.external_id.as_deref(),
             Some(receipt.receipt_id.as_str())
         );
+    }
+
+    #[tokio::test]
+    async fn promote_adjudicated_receipt_is_linked_to_adjudication() {
+        let dir = tempdir().expect("temporary canonical memory directory");
+        let config = MemoryConfig {
+            base_dir: dir.path().to_path_buf(),
+            ..MemoryConfig::default()
+        };
+        let store = MemoryStore::open(config).expect("canonical store");
+        let adapter = ProcedureLifecycleAdapter::new(&store);
+        let artifact = artifact("procedure:adjudicated", 1, None);
+        let permit = lifecycle_permit("promote", &artifact.artifact_id);
+        let adjudication = adjudication_for(&artifact).unwrap();
+
+        store
+            .compile_procedure(artifact.clone(), "compile:adjudicated")
+            .await
+            .unwrap();
+        store
+            .test_procedure(&artifact.artifact_id, "test:adjudicated")
+            .await
+            .unwrap();
+        store
+            .record_effectful_procedure_evaluation(
+                effectful_receipt(&artifact),
+                "effectful:adjudicated",
+            )
+            .await
+            .unwrap();
+        let receipt = adapter
+            .promote_adjudicated(permit, adjudication.clone(), "promote:adjudicated")
+            .await
+            .unwrap();
+
+        assert_eq!(
+            receipt.disposition,
+            ProcedureLifecycleDispositionV1::Promoted
+        );
+        assert!(verify_procedure_lifecycle_receipt_v1(&receipt));
+        assert_eq!(
+            receipt.adjudication_digest.as_deref(),
+            Some(adjudication.adjudication_digest.as_str())
+        );
+    }
+
+    fn lifecycle_permit(operation: &str, artifact_id: &str) -> ProcedureLifecyclePermitV1 {
+        ProcedureLifecyclePermitV1::elevated_for(
+            "principal:alice",
+            "operator:test",
+            operation,
+            artifact_id,
+            "2999-01-01T00:00:00Z",
+        )
+    }
+
+    fn artifact(key: &str, version: u64, supersedes: Option<String>) -> ProceduralMemoryArtifactV1 {
+        ProceduralMemoryArtifactV1::new(
+            key,
+            ProcedureCapabilityV1::new("repository", "format"),
+            ProcedureActionV1::new(
+                "format_rust",
+                "format Rust sources with the approved formatter",
+            ),
+            vec![ApplicabilityPredicateV1::equals("language", json!("rust"))],
+            vec![ProcedurePreconditionV1::equals(
+                "working_tree",
+                json!("available"),
+            )],
+            vec![ProcedureStepV1::tool(
+                "format",
+                "rustfmt",
+                json!({"check": true}),
+                Some("no_write".into()),
+            )],
+            vec![AllowedProcedureToolV1::new(
+                "rustfmt",
+                json!({
+                    "type": "object",
+                    "properties": {"check": {"type": "boolean"}},
+                    "required": ["check"],
+                    "additionalProperties": false
+                }),
+            )],
+            vec![ProcedureEffectV1::new("format_checked", json!(true))],
+            vec![ProcedureEffectV1::new("network_access", json!(true))],
+            ProcedureRiskV1::Low,
+            origin("principal:alice"),
+            "principal:alice",
+            vec!["principal:alice".into()],
+            NamespaceScopeV1::exact("repo:alpha"),
+            version,
+            supersedes,
+            ProcedureEvidenceTestEnvelopeV1::new(
+                "sandbox-v1",
+                vec![ProcedureFixtureV1::new(
+                    "rust-project",
+                    json!({"language": "rust", "working_tree": "available"}),
+                    vec!["rustfmt".into()],
+                    vec![ProcedureEffectV1::new("format_checked", json!(true))],
+                    vec![],
+                )],
+                vec![],
+            ),
+            Some("2999-01-01T00:00:00Z".into()),
+        )
+        .unwrap()
+    }
+
+    fn origin(principal: &str) -> OriginAuthorityLabelV1 {
+        OriginAuthorityLabelV1::new(
+            OriginClassV1::OperatorSystem,
+            principal,
+            "procedure-compiler",
+            "blake3:procedure-source",
+            OriginRiskV1::Low,
+            AuthorityScopesV1 {
+                recall: AuthorityScopeV1::Audience,
+                assertion: AuthorityScopeV1::Denied,
+                action: AuthorityScopeV1::Audience,
+            },
+            ElevationRequirementV1::ExplicitOperatorApproval,
+            None,
+            RevocationStatusV1::Active,
+            vec![principal.into()],
+        )
+        .unwrap()
+        .with_subject_principal(SubjectPrincipalV1::new(principal).unwrap())
+        .with_resource_scope(NamespaceScopeV1::exact("repo:alpha"))
+    }
+
+    fn effectful_receipt(
+        artifact: &ProceduralMemoryArtifactV1,
+    ) -> ProcedureEffectfulEvaluationReceiptV1 {
+        ProcedureEffectfulEvaluationReceiptV1::verified(
+            artifact.artifact_id.clone(),
+            artifact.artifact_digest.clone(),
+            "sandbox-capability:owner-receipt",
+            vec![
+                "check:fmt".into(),
+                "check:clippy".into(),
+                "check:test".into(),
+            ],
+            "verification:owner-receipt",
+            "cea:owner-receipt",
+            "tree:before",
+            "tree:after",
+        )
+        .unwrap()
+    }
+
+    fn adjudication_for(
+        artifact: &ProceduralMemoryArtifactV1,
+    ) -> Result<verification_adjudication::CandidatePromotionAdjudicationV1, &'static str> {
+        adjudicate_candidate(CandidatePromotionInput {
+            adjudication_id: "adjudication:procedure-adjudicated".into(),
+            candidate_id: artifact.artifact_id.clone(),
+            candidate_digest: IdentityDigest::new(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            )
+            .map_err(|_| "candidate digest must be valid blake3 hex")?,
+            patch_digest: IdentityDigest::new(
+                "1111111111111111111111111111111111111111111111111111111111111111",
+            )
+            .map_err(|_| "patch digest must be valid")?,
+            source_tree_digest: IdentityDigest::new(
+                "2222222222222222222222222222222222222222222222222222222222222222",
+            )
+            .map_err(|_| "source tree digest must be valid")?,
+            verifier_digest: IdentityDigest::new(
+                "3333333333333333333333333333333333333333333333333333333333333333",
+            )
+            .map_err(|_| "verifier digest must be valid")?,
+            check_policy_digest: IdentityDigest::new(
+                "4444444444444444444444444444444444444444444444444444444444444444",
+            )
+            .map_err(|_| "check policy digest must be valid")?,
+            environment_digest: IdentityDigest::new(
+                "5555555555555555555555555555555555555555555555555555555555555555",
+            )
+            .map_err(|_| "environment digest must be valid")?,
+            image_digest: IdentityDigest::new(
+                "6666666666666666666666666666666666666666666666666666666666666666",
+            )
+            .map_err(|_| "image digest must be valid")?,
+            experiment_id: "experiment:procedure-adjudicated".into(),
+            evidence_bundle_id: "evidence:bundle".into(),
+            evidence_bundle_digest: IdentityDigest::new(
+                "7777777777777777777777777777777777777777777777777777777777777777",
+            )
+            .map_err(|_| "evidence digest must be valid")?,
+            assignment_digest: IdentityDigest::new(
+                "8888888888888888888888888888888888888888888888888888888888888888",
+            )
+            .map_err(|_| "assignment digest must be valid")?,
+            paired_denominator: 5,
+            admissible_pairs: 5,
+            excluded_pairs: 0,
+            uncertainty: UncertaintyV1 {
+                estimate: 0.02,
+                lower_bound: 0.01,
+                upper_bound: 0.03,
+            },
+            family_results: vec![FamilyGateV1 {
+                family: "format".into(),
+                score: 0.98,
+                passed: true,
+                admissible_pairs: 5,
+            }],
+            holdout_result: HoldoutGateV1 {
+                score: 0.99,
+                passed: true,
+                admissible_pairs: 1,
+            },
+            thresholds: FrozenPromotionThresholdsV1 {
+                minimum_admissible_pairs: 1,
+                minimum_family_score: 0.8,
+                minimum_holdout_score: 0.8,
+                maximum_uncertainty: 0.25,
+            },
+            source_receipt_refs: vec![ReceiptRef {
+                receipt_id: "source:receipt".into(),
+                receipt_digest: IdentityDigest::new(
+                    "9999999999999999999999999999999999999999999999999999999999999999",
+                )
+                .map_err(|_| "source receipt digest must be valid")?,
+            }],
+            created_at: "2026-01-01T00:00:00Z".into(),
+        })
+        .map_err(|_| "failed to build adjudication")
     }
 }

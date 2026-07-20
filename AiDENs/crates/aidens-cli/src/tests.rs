@@ -3,6 +3,10 @@ use crate::package::P24_REQUIRED_GATE_COMMANDS;
 use aidens_contracts::{MemoryModeV1, ReportLevelV1};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
+use verification_adjudication::{
+    adjudicate_candidate, CandidatePromotionInput, FamilyGateV1, FrozenPromotionThresholdsV1,
+    HoldoutGateV1, IdentityDigest, ReceiptRef, UncertaintyV1,
+};
 
 #[test]
 fn learning_inspect_consumes_manifest_without_holdout_oracles() {
@@ -44,6 +48,44 @@ fn learning_lifecycle_requires_explicit_permit() {
         .unwrap_err()
         .to_string();
     assert!(err.contains("explicit lifecycle permit"));
+}
+
+#[test]
+fn learning_promote_with_mismatched_adjudication_candidate_cannot_reach_legacy_adapter() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let permit = ProcedureLifecyclePermitV1::elevated_for(
+        "principal:test",
+        "operator:aidens-cli-test",
+        "promote",
+        "candidate-x",
+        "2999-01-01T00:00:00Z",
+    );
+    let permit_path = root.join("permit.json");
+    std::fs::write(&permit_path, serde_json::to_vec(&permit).unwrap()).unwrap();
+    let adjudication = adjudication_for("candidate-y");
+    let adjudication_path = root.join("adjudication.json");
+    std::fs::write(
+        &adjudication_path,
+        serde_json::to_vec(&adjudication).unwrap(),
+    )
+    .unwrap();
+    let err = learn_lifecycle_command_with_store_adjudication(
+        "candidate-x",
+        Some(permit_path.to_str().unwrap()),
+        Some(adjudication_path.to_str().unwrap()),
+        Some(root.to_str().unwrap()),
+    )
+    .unwrap_err()
+    .to_string();
+    let error = err.to_lowercase();
+    assert!(
+        error.contains("mismatch") || error.contains("canonical lifecycle owner"),
+        "{error}"
+    );
+    assert!(!error.contains("typed bridge adjudication"));
+    assert!(!error.contains("legacy"));
+    let _ = std::fs::remove_dir_all(root);
 }
 
 #[test]
@@ -121,13 +163,36 @@ fn clap_exposes_quarantine_lifecycle_surface() {
 }
 
 #[test]
+fn clap_exposes_promote_lifecycle_surface_with_adjudication() {
+    let cli = Cli::try_parse_from([
+        "aidens",
+        "learn",
+        "promote",
+        "candidate-x",
+        "--permit",
+        "permit.json",
+        "--store",
+        "memory",
+        "--adjudication",
+        "adjudication.json",
+    ])
+    .unwrap();
+    assert!(matches!(
+        cli.command,
+        Command::Learn { command: LearningCommand::Promote { candidate, adjudication: Some(adjudication), .. } } if candidate == "candidate-x" && adjudication == "adjudication.json"
+    ));
+}
+
+#[test]
 fn learning_lifecycle_does_not_claim_owner_transition_without_owner_evidence() {
     let root = temp_root();
     std::fs::create_dir_all(&root).unwrap();
     let permit = root.join("permit.json");
     std::fs::write(&permit, "{}").unwrap();
 
-    let err = learn_lifecycle_command("promote", "candidate-x", permit.to_str()).unwrap_err();
+    let err =
+        learn_promote_command_with_adjudication("candidate-x", permit.to_str(), permit.to_str())
+            .unwrap_err();
     assert!(err.to_string().contains("typed") || err.to_string().contains("store"));
 
     std::fs::remove_dir_all(root).unwrap();
@@ -142,7 +207,7 @@ fn learning_lifecycle_rejects_arbitrary_readable_json_and_missing_store() {
     let err = learn_lifecycle_command_with_store("promote", "candidate-x", permit.to_str(), None)
         .unwrap_err()
         .to_string();
-    assert!(err.contains("typed") || err.contains("permit"));
+    assert!(err.contains("unsupported lifecycle operation"));
     let typed_permit = ProcedureLifecyclePermitV1::elevated_for(
         "principal:test",
         "operator:aidens-cli-test",
@@ -154,8 +219,89 @@ fn learning_lifecycle_rejects_arbitrary_readable_json_and_missing_store() {
     let err = learn_lifecycle_command_with_store("promote", "candidate-x", permit.to_str(), None)
         .unwrap_err()
         .to_string();
-    assert!(err.contains("memory store"));
+    assert!(err.contains("unsupported lifecycle operation"));
     std::fs::remove_dir_all(root).unwrap();
+}
+
+fn adjudication_for(
+    candidate_id: &str,
+) -> verification_adjudication::CandidatePromotionAdjudicationV1 {
+    adjudicate_candidate(CandidatePromotionInput {
+        adjudication_id: format!("adjudication:{candidate_id}"),
+        candidate_id: candidate_id.into(),
+        candidate_digest: IdentityDigest::new(
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        )
+        .unwrap(),
+        patch_digest: IdentityDigest::new(
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        )
+        .unwrap(),
+        source_tree_digest: IdentityDigest::new(
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        )
+        .unwrap(),
+        verifier_digest: IdentityDigest::new(
+            "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        )
+        .unwrap(),
+        check_policy_digest: IdentityDigest::new(
+            "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        )
+        .unwrap(),
+        environment_digest: IdentityDigest::new(
+            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        )
+        .unwrap(),
+        image_digest: IdentityDigest::new(
+            "1111111111111111111111111111111111111111111111111111111111111111",
+        )
+        .unwrap(),
+        experiment_id: "experiment:1".into(),
+        evidence_bundle_id: "evidence-bundle:1".into(),
+        evidence_bundle_digest: IdentityDigest::new(
+            "2222222222222222222222222222222222222222222222222222222222222222",
+        )
+        .unwrap(),
+        assignment_digest: IdentityDigest::new(
+            "3333333333333333333333333333333333333333333333333333333333333333",
+        )
+        .unwrap(),
+        paired_denominator: 1,
+        admissible_pairs: 1,
+        excluded_pairs: 0,
+        uncertainty: UncertaintyV1 {
+            estimate: 0.01,
+            lower_bound: 0.0,
+            upper_bound: 0.1,
+        },
+        family_results: vec![FamilyGateV1 {
+            family: "format".into(),
+            score: 0.99,
+            passed: true,
+            admissible_pairs: 1,
+        }],
+        holdout_result: HoldoutGateV1 {
+            score: 0.95,
+            passed: true,
+            admissible_pairs: 1,
+        },
+        thresholds: FrozenPromotionThresholdsV1 {
+            minimum_admissible_pairs: 1,
+            minimum_family_score: 0.8,
+            minimum_holdout_score: 0.8,
+            maximum_uncertainty: 0.2,
+        },
+        source_receipt_refs: vec![ReceiptRef {
+            receipt_id: "source:receipt".into(),
+            receipt_digest: IdentityDigest::new(
+                "4444444444444444444444444444444444444444444444444444444444444444",
+            )
+            .unwrap(),
+        }],
+        created_at: "2026-01-01T00:00:00Z".into(),
+    })
+    .expect("build test adjudication")
 }
 
 #[test]

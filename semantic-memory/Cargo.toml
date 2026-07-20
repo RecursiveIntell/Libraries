@@ -117,6 +117,7 @@ forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
 schemars = { workspace = true }
 boundary-compiler = { version = "0.1.0", path = "../boundary-compiler" }
 bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime" }
+verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
 
 # Vector search backends may be compiled together intentionally. Runtime dispatch has explicit,
 # tested precedence (`hnsw` before `usearch-backend`) when both are enabled.

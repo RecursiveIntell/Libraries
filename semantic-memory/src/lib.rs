@@ -196,10 +196,11 @@ pub use procedural_memory::{
     PROCEDURE_TEST_RECEIPT_V1,
 };
 pub use procedure_replay::{
-    admit_procedure_replay, compare_replay, load_retained_replay_inputs,
-    procedure_replay_permit_ref, record_replay_result, ProcedureReplayAdmissionV1,
-    ProcedureReplayComparisonV1, ProcedureReplayInputsV1, ProcedureReplayOutcomeV1,
-    ProcedureReplayResultV1,
+    admit_adjudicated_procedure_replay, admit_procedure_replay, compare_replay,
+    load_procedure_owner_snapshot, load_procedure_replay_snapshot, load_retained_replay_inputs,
+    procedure_replay_permit_ref, record_replay_result, ProcedureOwnerSnapshotV1,
+    ProcedureReplayAdmissionV1, ProcedureReplayComparisonV1, ProcedureReplayInputsV1,
+    ProcedureReplayOutcomeV1, ProcedureReplayResultV1, ProcedureReplaySnapshotV1,
 };
 pub use shadow_policy::{
     compare_shadow_execution_v1, evaluate_shadow_policy_promotion_v1, shadow_policy_digest,

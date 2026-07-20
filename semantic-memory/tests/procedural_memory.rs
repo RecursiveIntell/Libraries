@@ -1,21 +1,26 @@
+use forge_memory_bridge::{AdjudicationBindingV1, BridgeError, ForgeAdjudicationStore};
+use rusqlite::Connection;
 use semantic_memory::{
-    verify_procedure_lifecycle_receipt_v1, AllowedProcedureToolV1, ApplicabilityPredicateV1,
-    AuthorityScopeV1, AuthorityScopesV1, CallerPrincipalV1, ElevationRequirementV1,
-    GovernedAccessPurposeV1, MemoryConfig, MemoryStore, MockEmbedder, NamespaceScopeV1,
-    OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1, ProceduralMemoryArtifactV1,
-    ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1, ProcedureCapabilityV1,
-    ProcedureEffectV1, ProcedureEffectfulEvaluationReceiptV1, ProcedureEvidenceTestEnvelopeV1,
-    ProcedureFixtureV1, ProcedureLifecycleDispositionV1, ProcedureLifecyclePermitV1,
-    ProcedurePreconditionV1, ProcedureRetrievalRequestV1, ProcedureRiskV1, ProcedureStepV1,
-    RevocationStatusV1, SubjectPrincipalV1,
+    admit_adjudicated_procedure_replay, admit_procedure_replay, compare_replay,
+    load_procedure_owner_snapshot, load_procedure_replay_snapshot, load_retained_replay_inputs,
+    procedure_replay_permit_ref, record_replay_result, verify_procedure_lifecycle_receipt_v1,
+    AllowedProcedureToolV1, ApplicabilityPredicateV1, AuthorityScopeV1, AuthorityScopesV1,
+    CallerPrincipalV1, ElevationRequirementV1, GovernedAccessPurposeV1, MemoryConfig, MemoryStore,
+    MockEmbedder, NamespaceScopeV1, OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1,
+    ProceduralMemoryArtifactV1, ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1,
+    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEffectfulEvaluationReceiptV1,
+    ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1, ProcedureLifecycleDispositionV1,
+    ProcedureLifecyclePermitV1, ProcedurePreconditionV1, ProcedureReplayInputsV1,
+    ProcedureReplayOutcomeV1, ProcedureReplayResultV1, ProcedureRetrievalRequestV1,
+    ProcedureRiskV1, ProcedureStepV1, RevocationStatusV1, SubjectPrincipalV1,
 };
 use serde_json::json;
+use std::collections::HashMap;
 use tempfile::TempDir;
-
-use semantic_memory::{
-    admit_procedure_replay, compare_replay, load_retained_replay_inputs,
-    procedure_replay_permit_ref, record_replay_result, ProcedureReplayInputsV1,
-    ProcedureReplayOutcomeV1, ProcedureReplayResultV1,
+use verification_adjudication::{
+    adjudicate_candidate, AdjudicationDecisionV1, CandidatePromotionAdjudicationV1,
+    CandidatePromotionInput, FamilyGateV1, HoldoutGateV1, IdentityDigest, ReceiptRef,
+    UncertaintyV1,
 };
 
 fn store() -> (MemoryStore, TempDir) {
@@ -46,6 +51,124 @@ fn replay_inputs(artifact: &ProceduralMemoryArtifactV1, id: &str) -> ProcedureRe
         retained_input_digest: "placeholder".into(),
         promotion_receipt_ref: "promotion".into(),
         action_permit_ref: String::new(),
+    }
+}
+
+fn owner_digest_without_prefix(value: &str) -> String {
+    value
+        .strip_prefix("blake3:")
+        .map_or_else(|| value.to_owned(), ToOwned::to_owned)
+}
+
+fn sample_adjudication(
+    artifact: &ProceduralMemoryArtifactV1,
+    adjudication_id: &str,
+) -> Result<CandidatePromotionAdjudicationV1, String> {
+    let candidate_digest =
+        IdentityDigest::new(owner_digest_without_prefix(&artifact.artifact_digest))?;
+    adjudicate_candidate(CandidatePromotionInput {
+        adjudication_id: adjudication_id.into(),
+        candidate_id: artifact.artifact_id.clone(),
+        candidate_digest,
+        patch_digest: IdentityDigest::of("patch"),
+        source_tree_digest: IdentityDigest::of("tree"),
+        verifier_digest: IdentityDigest::of("verifier"),
+        check_policy_digest: IdentityDigest::of("policy"),
+        environment_digest: IdentityDigest::of("environment"),
+        image_digest: IdentityDigest::of("image"),
+        experiment_id: "experiment-1".into(),
+        evidence_bundle_id: "bundle-1".into(),
+        evidence_bundle_digest: IdentityDigest::of("bundle"),
+        assignment_digest: IdentityDigest::of("assignment"),
+        paired_denominator: 2,
+        admissible_pairs: 2,
+        excluded_pairs: 0,
+        uncertainty: UncertaintyV1 {
+            estimate: 0.99,
+            lower_bound: 0.98,
+            upper_bound: 1.0,
+        },
+        family_results: vec![FamilyGateV1 {
+            family: "family".into(),
+            score: 0.99,
+            passed: true,
+            admissible_pairs: 2,
+        }],
+        holdout_result: HoldoutGateV1 {
+            score: 0.99,
+            passed: true,
+            admissible_pairs: 2,
+        },
+        thresholds: verification_adjudication::FrozenPromotionThresholdsV1 {
+            minimum_admissible_pairs: 1,
+            minimum_family_score: 0.5,
+            minimum_holdout_score: 0.5,
+            maximum_uncertainty: 0.5,
+        },
+        source_receipt_refs: vec![ReceiptRef {
+            receipt_id: "source-receipt".into(),
+            receipt_digest: IdentityDigest::of("source"),
+        }],
+        created_at: "2026-07-19T00:00:00Z".into(),
+    })
+}
+
+#[derive(Default)]
+struct FakeForge {
+    adjudications: HashMap<String, CandidatePromotionAdjudicationV1>,
+}
+
+impl FakeForge {
+    fn insert(&mut self, adjudication: CandidatePromotionAdjudicationV1) {
+        self.adjudications
+            .insert(adjudication.adjudication_id.clone(), adjudication);
+    }
+}
+
+impl ForgeAdjudicationStore for FakeForge {
+    fn persist_adjudication(
+        &self,
+        adjudication: &CandidatePromotionAdjudicationV1,
+    ) -> Result<forge_memory_bridge::ForgeAdjudicationPersistenceReceiptV1, BridgeError> {
+        adjudication
+            .validate()
+            .map_err(forge_memory_bridge::BridgeError::AdjudicationValidation)?;
+        Ok(forge_memory_bridge::ForgeAdjudicationPersistenceReceiptV1 {
+            schema_version: forge_memory_bridge::FORGE_ADJUDICATION_PERSISTENCE_RECEIPT_V1_SCHEMA
+                .into(),
+            adjudication_id: adjudication.adjudication_id.clone(),
+            adjudication_digest: adjudication.adjudication_digest.clone(),
+            owner: "test-suite/fake".into(),
+            persisted_at: "2026-07-19T00:00:00Z".into(),
+        })
+    }
+
+    fn read_verified_adjudication(
+        &self,
+        adjudication_id: &str,
+    ) -> Result<CandidatePromotionAdjudicationV1, BridgeError> {
+        self.adjudications
+            .get(adjudication_id)
+            .cloned()
+            .ok_or_else(|| BridgeError::AdjudicationNotFound(adjudication_id.into()))
+    }
+
+    fn verify_adjudication_binding(
+        &self,
+        adjudication_id: &str,
+        expected: &AdjudicationBindingV1,
+    ) -> Result<forge_memory_bridge::ForgeAdjudicationPersistenceReceiptV1, BridgeError> {
+        let adjudication = self.read_verified_adjudication(adjudication_id)?;
+        if adjudication.candidate_id != expected.candidate_id
+            || adjudication.candidate_digest != expected.candidate_digest
+            || adjudication.evidence_bundle_id != expected.evidence_bundle_id
+            || adjudication.evidence_bundle_digest != expected.evidence_bundle_digest
+        {
+            return Err(BridgeError::AdjudicationBindingMismatch(
+                adjudication_id.into(),
+            ));
+        }
+        self.persist_adjudication(&adjudication)
     }
 }
 
@@ -133,6 +256,172 @@ async fn v38_replay_owner_boundaries() {
         compare_replay(&inputs, &drift).outcome,
         ProcedureReplayOutcomeV1::Drift
     );
+}
+
+#[tokio::test]
+async fn procedure_owner_snapshot_roundtrip_and_corruption() {
+    let (store, temp) = store();
+    let artifact = promoted(&store, "procedure:owner-snapshot").await;
+    let snapshot = load_procedure_owner_snapshot(&store, &artifact.artifact_id)
+        .await
+        .unwrap();
+    assert_eq!(snapshot.artifact.artifact_id, artifact.artifact_id);
+    assert!(snapshot.lifecycle_receipt.is_some());
+    assert!(snapshot.effectful_receipt.is_some());
+    let db = Connection::open(temp.path().join("memory.db")).unwrap();
+    db.execute("DROP TRIGGER procedural_memory_receipts_no_update", [])
+        .unwrap();
+    db.execute(
+        "UPDATE procedural_memory_receipts SET receipt_json='{}' WHERE receipt_id=(SELECT receipt_id FROM procedural_memory_receipts WHERE artifact_id=?1 ORDER BY rowid DESC LIMIT 1)",
+        [&artifact.artifact_id],
+    )
+    .unwrap();
+    assert!(matches!(
+        load_procedure_owner_snapshot(&store, &artifact.artifact_id).await,
+        Err(semantic_memory::MemoryError::CorruptData { .. })
+    ));
+    assert!(matches!(
+        load_procedure_owner_snapshot(&store, "missing-artifact").await,
+        Err(semantic_memory::MemoryError::ProceduralMemoryNotFound { .. })
+    ));
+}
+
+#[tokio::test]
+async fn procedure_replay_snapshot_roundtrip_and_corruption() {
+    let (store, temp) = store();
+    let artifact = promoted(&store, "procedure:replay-snapshot").await;
+    let permit = ProcedureActionPermitV1::elevated(
+        "principal:alice",
+        "operator:v38",
+        NamespaceScopeV1::exact("repo:alpha"),
+    );
+    let mut inputs = replay_inputs(&artifact, "replay:snapshot");
+    inputs.action_permit_ref = procedure_replay_permit_ref(&permit, &inputs.replay_id).unwrap();
+    let admission = admit_procedure_replay(&store, inputs.clone(), permit.clone())
+        .await
+        .unwrap();
+    let snapshot = load_procedure_replay_snapshot(&store, &inputs.replay_id)
+        .await
+        .unwrap();
+    let persisted_inputs = load_retained_replay_inputs(&store, &inputs.replay_id)
+        .await
+        .unwrap();
+    assert_eq!(snapshot.inputs, persisted_inputs);
+    assert_eq!(snapshot.admission, admission);
+    let result = ProcedureReplayResultV1 {
+        replay_id: inputs.replay_id.clone(),
+        result_digest: "result".into(),
+        outcome: ProcedureReplayOutcomeV1::ExactMatch,
+        reason_codes: vec![],
+    };
+    let with_result = record_replay_result(&store, result.clone()).await.unwrap();
+    assert_eq!(snapshot.admission.replay_id, with_result.replay_id);
+    let loaded = load_procedure_replay_snapshot(&store, &inputs.replay_id)
+        .await
+        .unwrap();
+    assert_eq!(loaded.result, Some(result.clone()));
+    let db = Connection::open(temp.path().join("memory.db")).unwrap();
+    db.execute("DROP TRIGGER procedure_replay_inputs_no_update", [])
+        .unwrap();
+    db.execute(
+        "UPDATE procedure_replay_inputs SET payload_json='{}' WHERE replay_id=?1",
+        [&inputs.replay_id],
+    )
+    .unwrap();
+    assert!(matches!(
+        load_procedure_replay_snapshot(&store, &inputs.replay_id).await,
+        Err(semantic_memory::MemoryError::CorruptData { .. })
+    ));
+    assert!(matches!(
+        load_procedure_replay_snapshot(&store, "missing-replay").await,
+        Err(semantic_memory::MemoryError::ProceduralMemoryNotFound { .. })
+    ));
+}
+
+#[tokio::test]
+async fn adjudicated_procedure_replay_admission_is_owner_derived(
+) -> Result<(), semantic_memory::MemoryError> {
+    let (store, _tmp) = store();
+    let artifact = promoted(&store, "procedure:owner-derived").await;
+    let mut forge = FakeForge::default();
+    let adjudication = sample_adjudication(&artifact, "adj-1").unwrap();
+    assert_eq!(
+        adjudication.decision,
+        AdjudicationDecisionV1::EligibleForLifecycleConsideration
+    );
+    forge.insert(adjudication.clone());
+    let permit = ProcedureActionPermitV1::elevated(
+        "principal:alice",
+        "operator:v38",
+        NamespaceScopeV1::exact("repo:alpha"),
+    );
+    let first = admit_adjudicated_procedure_replay(
+        &store,
+        &forge,
+        "replay:owner-derived",
+        "adj-1",
+        permit.clone(),
+    )
+    .await?;
+    let snapshot = load_procedure_replay_snapshot(&store, "replay:owner-derived").await?;
+    assert_eq!(snapshot.admission, first);
+    let owner = load_procedure_owner_snapshot(&store, &artifact.artifact_id).await?;
+    assert_eq!(
+        snapshot.inputs.action_permit_ref,
+        procedure_replay_permit_ref(&permit, &snapshot.inputs.replay_id).unwrap()
+    );
+    assert_eq!(
+        snapshot.inputs.original_artifact_id,
+        owner.artifact.artifact_id
+    );
+    assert_eq!(
+        snapshot.inputs.original_artifact_digest,
+        owner.artifact.artifact_digest
+    );
+    assert_eq!(
+        snapshot.inputs.promotion_receipt_ref,
+        owner.lifecycle_receipt.as_ref().unwrap().receipt_id
+    );
+    assert_eq!(
+        snapshot.inputs.patch_digest,
+        adjudication.patch_digest.as_str().to_owned(),
+    );
+    assert!(!snapshot.inputs.store_identity_digest.is_empty());
+    let same = admit_adjudicated_procedure_replay(
+        &store,
+        &forge,
+        "replay:owner-derived",
+        "adj-1",
+        permit.clone(),
+    )
+    .await?;
+    assert_eq!(same, first);
+    let mismatched = ProcedureActionPermitV1::elevated(
+        "principal:alice",
+        "operator:v38",
+        NamespaceScopeV1::exact("repo:beta"),
+    );
+    assert!(matches!(
+        admit_adjudicated_procedure_replay(&store, &forge, "replay:mismatch", "adj-1", mismatched)
+            .await,
+        Err(semantic_memory::MemoryError::ProceduralMemoryRejected { .. })
+    ));
+    let reused = ProcedureActionPermitV1::elevated(
+        "principal:alice",
+        "operator:v38",
+        NamespaceScopeV1::exact("repo:alpha"),
+    );
+    let reused_admission = admit_adjudicated_procedure_replay(
+        &store,
+        &forge,
+        "replay:owner-derived-2",
+        "adj-1",
+        reused,
+    )
+    .await
+    .unwrap();
+    assert_ne!(reused_admission, first);
+    Ok(())
 }
 
 fn origin(principal: &str) -> OriginAuthorityLabelV1 {

@@ -127,6 +127,7 @@ dependencies = [
  "tokio",
  "toml",
  "typed-patch",
+ "verification-adjudication",
 ]
 
 [[package]]
@@ -1215,6 +1216,7 @@ dependencies = [
  "tracing",
  "typed-patch",
  "uuid",
+ "verification-adjudication",
  "walkdir",
 ]
 
@@ -1230,6 +1232,7 @@ dependencies = [
  "stack-ids",
  "thiserror",
  "uuid",
+ "verification-adjudication",
 ]
 
 [[package]]
@@ -2386,6 +2389,7 @@ dependencies = [
  "tracing",
  "usearch",
  "uuid",
+ "verification-adjudication",
 ]
 
 [[package]]
@@ -2974,8 +2978,10 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 name = "verification-adjudication"
 version = "0.1.0"
 dependencies = [
+ "blake3",
  "schemars",
  "serde",
+ "serde_json",
  "stack-ids",
  "verification-calibration",
  "verification-control",
