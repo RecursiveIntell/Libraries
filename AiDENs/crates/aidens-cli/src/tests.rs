@@ -1,6 +1,7 @@
 use super::*;
 use crate::package::P24_REQUIRED_GATE_COMMANDS;
 use aidens_contracts::{MemoryModeV1, ReportLevelV1};
+use clap::CommandFactory;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use verification_adjudication::{
@@ -305,11 +306,71 @@ fn adjudication_for(
 }
 
 #[test]
-fn learning_stop_remains_explicitly_unsupported() {
-    let err = learn_lifecycle_command_with_store("stop", "candidate-x", None, None)
-        .unwrap_err()
-        .to_string();
-    assert!(err.contains("unsupported"));
+fn learning_stop_is_not_in_supported_cli_surface() {
+    let mut cmd = Cli::command();
+    let mut output = Vec::new();
+    cmd.write_long_help(&mut output).unwrap();
+    let help = String::from_utf8(output).unwrap();
+    assert!(!help.contains("learn stop"));
+    let err = Cli::try_parse_from(["aidens", "learn", "stop", "candidate-x"]).unwrap_err();
+    assert_eq!(err.kind(), clap::error::ErrorKind::InvalidSubcommand);
+}
+
+#[test]
+fn queue_cancel_is_queue_state_cancellation_not_execution_cancellation() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let root_arg = root.display().to_string();
+    let due_at = "2026-04-27T00:00:00Z".parse().unwrap();
+
+    let scheduled = daemon_command(DaemonCommand::Schedule {
+        root: root_arg.clone(),
+        name: "cli-p11-cancel-boundary".into(),
+        owner: "daemon-a".into(),
+        schedule_id: "once".into(),
+        occurrence_key: "boundary-cancel".into(),
+        due_at,
+        payload: r#"{"task":"work"}"#.into(),
+        risk: "read-only".into(),
+    })
+    .unwrap();
+    let scheduled: serde_json::Value = serde_json::from_str(&scheduled).unwrap();
+    let job_id = scheduled["job"]["job_id"].as_str().unwrap().to_string();
+
+    let lease = daemon_command(DaemonCommand::Lease {
+        root: root_arg.clone(),
+        name: "cli-p11-cancel-boundary".into(),
+        owner: "daemon-a".into(),
+        ttl_seconds: 300,
+    })
+    .unwrap();
+    assert!(lease.contains("job"));
+
+    let cancel = daemon_command(DaemonCommand::Cancel {
+        root: root_arg.clone(),
+        name: "cli-p11-cancel-boundary".into(),
+        owner: "daemon-a".into(),
+        job_id: job_id.clone(),
+        reason: "operator-cancelled".into(),
+    })
+    .unwrap();
+    let cancel: serde_json::Value = serde_json::from_str(&cancel).unwrap();
+    assert_eq!(cancel["to_state"], "cancelled");
+    assert_eq!(cancel["hop"], "cancelled");
+
+    let snapshot = daemon_command(DaemonCommand::List {
+        root: root_arg,
+        name: "cli-p11-cancel-boundary".into(),
+        owner: "daemon-a".into(),
+    })
+    .unwrap();
+    let snapshot: serde_json::Value = serde_json::from_str(&snapshot).unwrap();
+    assert_eq!(snapshot["jobs"][0]["state"], "cancelled");
+    assert!(snapshot["jobs"][0]["lease_id"].is_null());
+    assert!(snapshot["leases"][0]["active"].as_bool().unwrap());
+
+    assert_eq!(snapshot["jobs"][0]["job_id"], job_id);
+    std::fs::remove_dir_all(root).unwrap();
 }
 
 #[test]

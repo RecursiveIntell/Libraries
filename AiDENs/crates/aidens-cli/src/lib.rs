@@ -313,13 +313,6 @@ pub enum LearningCommand {
         #[arg(long)]
         projection_receipt_id: String,
     },
-    Stop {
-        candidate: String,
-        #[arg(long)]
-        permit: Option<String>,
-        #[arg(long)]
-        store: Option<String>,
-    },
 }
 
 #[derive(Debug, Deserialize)]
@@ -1539,16 +1532,6 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             store,
         } => learn_lifecycle_command_with_store(
             "rollback",
-            &candidate,
-            permit.as_deref(),
-            store.as_deref(),
-        ),
-        LearningCommand::Stop {
-            candidate,
-            permit,
-            store,
-        } => learn_lifecycle_command_with_store(
-            "stop",
             &candidate,
             permit.as_deref(),
             store.as_deref(),

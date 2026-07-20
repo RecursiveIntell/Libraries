@@ -81,6 +81,9 @@ cargo run -p aidens-cli -- learn revoke CANDIDATE --permit PERMIT.json
 cargo run -p aidens-cli -- learn rollback CANDIDATE --permit PERMIT.json
 ```
 
+`learn stop` is intentionally unsupported; use lifecycle `quarantine`,
+`revoke`, `rollback`, or `promote` actions with explicit owner evidence instead.
+
 Revoke or rollback is append-plus-supersession. It must preserve owner
 evidence and emit the corresponding owner receipt; it is not deletion or an
 overwrite of history. If the permit, candidate, predecessor, digest, or owner

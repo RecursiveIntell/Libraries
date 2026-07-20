@@ -13,7 +13,6 @@ fn main() -> Result<()> {
                 | LearningCommand::Compare { .. }
                 | LearningCommand::Replay { .. }
                 | LearningCommand::Terminal { .. }
-                | LearningCommand::Stop { .. }
         }
     );
     let output = run(cli)?;

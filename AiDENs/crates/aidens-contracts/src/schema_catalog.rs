@@ -1697,6 +1697,15 @@ fn generated_schema_documents_inner() -> Vec<GeneratedSchemaDocumentV1> {
             "closed-terminal-state-major-immutable"
         ),
         schema_document!(
+            "learning-coordinator-projection",
+            1,
+            LearningCoordinatorProjectionV1,
+            "LearningCoordinatorProjectionV1",
+            "MEDUSA",
+            None,
+            "non-authoritative-orchestration-projection-immutable"
+        ),
+        schema_document!(
             "scaffold-surface-report",
             1,
             ScaffoldSurfaceReportV1,
