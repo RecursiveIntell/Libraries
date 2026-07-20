@@ -1,0 +1,22 @@
+# SOL Council Final Task Sequence (2026-07-20)
+
+18 tasks for gpt-5.3-codex-spark, ordered by dependency.
+
+1. Define canonical fresh-replay observation comparison (semantic-memory)
+2. Add verified historical lifecycle-receipt readback (semantic-memory)
+3. Prepare owner-admitted sealed replay material (aidens-runner)
+4. Execute, persist, and resume sealed replay (aidens-runner)
+5. Replace CLI replay NotAvailable branch (aidens-cli)
+6. Add ignored owner-admitted Podman replay smoke (aidens-runner)
+7. Harden terminal child contract and fresh inspector (aidens-contracts, aidens-cli)
+8. Harden typed runner closure linkage (aidens-runner)
+9. Reconstruct coordinator state from owner stores (aidens-runner)
+10. Implement one-transition-at-a-time resume (aidens-runner)
+11. Expose learn resume (aidens-cli)
+12. Compose restart-safe terminal closure from owners (aidens-runner)
+13. Expose learn close (aidens-cli)
+14. Expand learning release gate (scripts)
+15. Integrate learning gate into final gate (scripts)
+16. Regenerate completion ledger (docs, tests)
+17. Refresh operator and claim documentation (docs)
+18. Final six-axis hostile review (read-only)

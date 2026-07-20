@@ -32,6 +32,18 @@ pub struct ProcedureReplayInputsV1 {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProcedureReplayObservedIdentityV1 {
+    pub patch_digest: String,
+    pub source_tree_digest: String,
+    pub verifier_digest: String,
+    pub check_policy_digest: String,
+    pub environment_digest: String,
+    pub image_digest: String,
+    pub store_identity_digest: String,
+    pub retained_input_digest: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProcedureReplayAdmissionV1 {
     pub schema_version: String,
     pub replay_id: String,
@@ -593,38 +605,63 @@ pub fn compare_replay(
     original: &ProcedureReplayInputsV1,
     replay: &ProcedureReplayInputsV1,
 ) -> ProcedureReplayComparisonV1 {
+    compare_replay_observation(original, replay)
+}
+
+pub fn compare_replay_observation(
+    original: &ProcedureReplayInputsV1,
+    replay: &ProcedureReplayInputsV1,
+) -> ProcedureReplayComparisonV1 {
+    let original_material = observe_replay_material(original);
+    let replay_material = observe_replay_material(replay);
+    if original_material.is_none() || replay_material.is_none() {
+        return ProcedureReplayComparisonV1 {
+            outcome: ProcedureReplayOutcomeV1::Inconclusive,
+            reason_codes: vec!["inconclusive_missing_replay_material".into()],
+        };
+    }
+    let original_material = original_material.unwrap();
+    let replay_material = replay_material.unwrap();
     let ids = [
-        ("patch_digest", &original.patch_digest, &replay.patch_digest),
+        (
+            "patch_digest",
+            &original_material.patch_digest,
+            &replay_material.patch_digest,
+        ),
         (
             "source_tree_digest",
-            &original.source_tree_digest,
-            &replay.source_tree_digest,
+            &original_material.source_tree_digest,
+            &replay_material.source_tree_digest,
         ),
         (
             "verifier_digest",
-            &original.verifier_digest,
-            &replay.verifier_digest,
+            &original_material.verifier_digest,
+            &replay_material.verifier_digest,
         ),
         (
             "check_policy_digest",
-            &original.check_policy_digest,
-            &replay.check_policy_digest,
+            &original_material.check_policy_digest,
+            &replay_material.check_policy_digest,
         ),
         (
             "environment_digest",
-            &original.environment_digest,
-            &replay.environment_digest,
+            &original_material.environment_digest,
+            &replay_material.environment_digest,
         ),
-        ("image_digest", &original.image_digest, &replay.image_digest),
+        (
+            "image_digest",
+            &original_material.image_digest,
+            &replay_material.image_digest,
+        ),
         (
             "store_identity_digest",
-            &original.store_identity_digest,
-            &replay.store_identity_digest,
+            &original_material.store_identity_digest,
+            &replay_material.store_identity_digest,
         ),
         (
             "retained_input_digest",
-            &original.retained_input_digest,
-            &replay.retained_input_digest,
+            &original_material.retained_input_digest,
+            &replay_material.retained_input_digest,
         ),
     ];
     let reasons = ids
@@ -640,6 +677,33 @@ pub fn compare_replay(
         },
         reason_codes: reasons,
     }
+}
+
+fn observe_replay_material(
+    inputs: &ProcedureReplayInputsV1,
+) -> Option<ProcedureReplayObservedIdentityV1> {
+    Some(ProcedureReplayObservedIdentityV1 {
+        patch_digest: canonicalize_replay_material(&inputs.patch_digest)?,
+        source_tree_digest: canonicalize_replay_material(&inputs.source_tree_digest)?,
+        verifier_digest: canonicalize_replay_material(&inputs.verifier_digest)?,
+        check_policy_digest: canonicalize_replay_material(&inputs.check_policy_digest)?,
+        environment_digest: canonicalize_replay_material(&inputs.environment_digest)?,
+        image_digest: canonicalize_replay_material(&inputs.image_digest)?,
+        store_identity_digest: canonicalize_replay_material(&inputs.store_identity_digest)?,
+        retained_input_digest: canonicalize_replay_material(&inputs.retained_input_digest)?,
+    })
+}
+
+fn canonicalize_replay_material(value: &str) -> Option<String> {
+    if value.trim().is_empty() {
+        return None;
+    }
+    Some(
+        value
+            .trim()
+            .trim_start_matches("blake3:")
+            .to_ascii_lowercase(),
+    )
 }
 
 fn rejected(error: impl ToString) -> MemoryError {
@@ -712,5 +776,24 @@ mod tests {
         let comparison = compare_replay(&original, &replay);
         assert_eq!(comparison.outcome, ProcedureReplayOutcomeV1::Drift);
         assert_eq!(comparison.reason_codes, vec!["drift_environment_digest"]);
+    }
+
+    #[test]
+    fn comparison_is_canonical_and_inconclusive_when_material_missing() {
+        let mut original = inputs();
+        original.verifier_digest = "blake3:ABCDEF".into();
+        original.environment_digest = "blake3:123456".into();
+        let mut replay = original.clone();
+        replay.verifier_digest = "ABCDEF".into();
+        replay.environment_digest = "123456".into();
+        assert_eq!(
+            compare_replay_observation(&original, &replay).outcome,
+            ProcedureReplayOutcomeV1::ExactMatch
+        );
+
+        let mut missing = original;
+        missing.verifier_digest = "".into();
+        let comparison = compare_replay_observation(&missing, &replay);
+        assert_eq!(comparison.outcome, ProcedureReplayOutcomeV1::Inconclusive);
     }
 }

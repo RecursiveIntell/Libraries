@@ -2,11 +2,12 @@ use forge_memory_bridge::{AdjudicationBindingV1, BridgeError, ForgeAdjudicationS
 use rusqlite::Connection;
 use semantic_memory::{
     admit_adjudicated_procedure_replay, admit_procedure_replay, compare_replay,
-    load_procedure_owner_snapshot, load_procedure_replay_snapshot, load_retained_replay_inputs,
-    procedure_replay_permit_ref, record_replay_result, verify_procedure_lifecycle_receipt_v1,
-    AllowedProcedureToolV1, ApplicabilityPredicateV1, AuthorityScopeV1, AuthorityScopesV1,
-    CallerPrincipalV1, ElevationRequirementV1, GovernedAccessPurposeV1, MemoryConfig, MemoryStore,
-    MockEmbedder, NamespaceScopeV1, OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1,
+    load_procedure_lifecycle_receipt, load_procedure_owner_snapshot,
+    load_procedure_replay_snapshot, load_retained_replay_inputs, procedure_replay_permit_ref,
+    record_replay_result, verify_procedure_lifecycle_receipt_v1, AllowedProcedureToolV1,
+    ApplicabilityPredicateV1, AuthorityScopeV1, AuthorityScopesV1, CallerPrincipalV1,
+    ElevationRequirementV1, GovernedAccessPurposeV1, MemoryConfig, MemoryStore, MockEmbedder,
+    NamespaceScopeV1, OriginAuthorityLabelV1, OriginClassV1, OriginRiskV1,
     ProceduralMemoryArtifactV1, ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1,
     ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEffectfulEvaluationReceiptV1,
     ProcedureEvidenceTestEnvelopeV1, ProcedureFixtureV1, ProcedureLifecycleDispositionV1,
@@ -283,6 +284,71 @@ async fn procedure_owner_snapshot_roundtrip_and_corruption() {
     assert!(matches!(
         load_procedure_owner_snapshot(&store, "missing-artifact").await,
         Err(semantic_memory::MemoryError::ProceduralMemoryNotFound { .. })
+    ));
+}
+
+#[tokio::test]
+async fn procedure_lifecycle_receipt_roundtrip_and_lookup() {
+    let (store, temp) = store();
+    let artifact = artifact("procedure:lifecycle-receipt-lookup", 1, None);
+    let compile = store
+        .compile_procedure(artifact.clone(), "compile:lifecycle-receipt-lookup")
+        .await
+        .unwrap();
+    assert_eq!(
+        compile.disposition,
+        ProcedureLifecycleDispositionV1::Compiled
+    );
+    let tested = store
+        .test_procedure(&artifact.artifact_id, "test:lifecycle-receipt-lookup")
+        .await
+        .unwrap();
+    assert_eq!(tested.disposition, ProcedureLifecycleDispositionV1::Tested);
+    store
+        .record_effectful_procedure_evaluation(
+            effectful_receipt(&artifact),
+            "effectful:lifecycle-receipt-lookup",
+        )
+        .await
+        .unwrap();
+    let promoted = store
+        .promote_procedure(
+            lifecycle_permit("promote", &artifact.artifact_id),
+            &artifact.artifact_id,
+            "promote:lifecycle-receipt-lookup",
+        )
+        .await
+        .unwrap();
+    let loaded = load_procedure_lifecycle_receipt(&store, &promoted.receipt_id)
+        .await
+        .unwrap();
+    assert_eq!(loaded, promoted);
+    assert!(verify_procedure_lifecycle_receipt_v1(&loaded));
+
+    let missing =
+        load_procedure_lifecycle_receipt(&store, "procedure:missing-lifecycle-receipt").await;
+    assert!(matches!(
+        missing,
+        Err(semantic_memory::MemoryError::ProceduralMemoryNotFound { .. })
+    ));
+
+    let mut broken = promoted.clone();
+    let original_receipt_id = promoted.receipt_id.clone();
+    let db = Connection::open(temp.path().join("memory.db")).unwrap();
+    db.execute("DROP TRIGGER procedural_memory_receipts_no_update", [])
+        .unwrap();
+    broken.receipt_id = "procedure:tampered".into();
+    db.execute(
+        "UPDATE procedural_memory_receipts SET receipt_json = ?1 WHERE receipt_id = ?2",
+        (
+            serde_json::to_string(&broken).unwrap(),
+            &original_receipt_id,
+        ),
+    )
+    .unwrap();
+    assert!(matches!(
+        load_procedure_lifecycle_receipt(&store, &original_receipt_id).await,
+        Err(semantic_memory::MemoryError::CorruptData { .. })
     ));
 }
 

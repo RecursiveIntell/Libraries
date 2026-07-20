@@ -1008,6 +1008,47 @@ impl MemoryStore {
         .await
     }
 
+    /// Load a verified lifecycle receipt by receipt identifier.
+    pub async fn load_procedure_lifecycle_receipt(
+        &self,
+        receipt_id: impl Into<String>,
+    ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
+        let receipt_id = receipt_id.into();
+        self.with_read_conn(move |conn| {
+            let stored: Option<(String, String)> = conn
+                .query_row(
+                    "SELECT receipt_digest, receipt_json FROM procedural_memory_receipts WHERE receipt_id = ?1",
+                    params![receipt_id],
+                    |row| Ok((row.get(0)?, row.get(1)?)),
+                )
+                .optional()?;
+            let Some((stored_receipt_digest, json)) = stored else {
+                return Err(MemoryError::ProceduralMemoryNotFound {
+                    artifact_id: receipt_id.clone(),
+                });
+            };
+            let receipt: ProcedureLifecycleReceiptV1 =
+                serde_json::from_str(&json).map_err(|error| MemoryError::CorruptData {
+                    table: "procedural_memory_receipts",
+                    row_id: receipt_id.clone(),
+                    detail: error.to_string(),
+                })?;
+            if receipt.receipt_id != receipt_id
+                || receipt.receipt_digest != stored_receipt_digest
+                || !verify_procedure_lifecycle_receipt_v1(&receipt)
+            {
+                return Err(MemoryError::CorruptData {
+                    table: "procedural_memory_receipts",
+                    row_id: receipt_id,
+                    detail: "stored lifecycle receipt is malformed or not self-authenticating"
+                        .into(),
+                });
+            }
+            Ok(receipt)
+        })
+        .await
+    }
+
     /// Return at most one procedure candidate plus a witnessed fit/authority decision.
     /// This function never invokes the procedure or any tool named by it.
     pub async fn retrieve_procedure(
@@ -1306,6 +1347,14 @@ fn latest_lifecycle_receipt(
         .optional()?;
     raw.map(|json| serde_json::from_str(&json).map_err(rejected))
         .transpose()
+}
+
+/// Load a verified procedure lifecycle receipt by receipt identifier.
+pub async fn load_procedure_lifecycle_receipt(
+    store: &MemoryStore,
+    receipt_id: impl Into<String>,
+) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
+    store.load_procedure_lifecycle_receipt(receipt_id).await
 }
 
 fn load_candidate(
