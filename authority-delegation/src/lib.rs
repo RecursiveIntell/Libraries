@@ -33,11 +33,13 @@
 pub mod capability;
 pub mod emergency;
 pub mod error;
+pub mod learning;
 pub mod profile_p3_roles;
 pub mod sod;
 
 pub use capability::*;
 pub use emergency::*;
 pub use error::*;
+pub use learning::*;
 pub use profile_p3_roles::*;
 pub use sod::*;

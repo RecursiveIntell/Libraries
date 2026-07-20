@@ -64,6 +64,7 @@ use aidens_tool_kit::{
 use anyhow::{bail, Context, Result};
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
+use forge_engine::ForgeStore;
 use semantic_memory::{
     compare_replay as compare_owner_replay, ProcedureActionPermitV1, ProcedureReplayComparisonV1,
     ProcedureReplayInputsV1, ProcedureReplayOutcomeV1,
@@ -84,7 +85,6 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use typed_patch::{PatchPolicy, StructuredPatch};
-use verification_adjudication::CandidatePromotionAdjudicationV1;
 
 mod agent;
 mod package;
@@ -277,6 +277,8 @@ pub enum LearningCommand {
         permit: Option<String>,
         #[arg(long)]
         store: Option<String>,
+        #[arg(long)]
+        forge_store: Option<String>,
         #[arg(long)]
         adjudication: Option<String>,
     },
@@ -1624,7 +1626,7 @@ pub fn learn_promote_command_with_adjudication(
     permit: Option<&str>,
     adjudication: Option<&str>,
 ) -> Result<String> {
-    learn_lifecycle_command_with_store_adjudication(candidate, permit, adjudication, None)
+    learn_lifecycle_command_with_store_adjudication(candidate, permit, adjudication, None, None)
 }
 
 fn learn_lifecycle_command_with_store_adjudication(
@@ -1632,6 +1634,7 @@ fn learn_lifecycle_command_with_store_adjudication(
     permit: Option<&str>,
     adjudication: Option<&str>,
     store: Option<&str>,
+    forge_store: Option<&str>,
 ) -> Result<String> {
     let permit_path =
         permit.ok_or_else(|| anyhow::anyhow!("explicit lifecycle permit is required"))?;
@@ -1639,13 +1642,8 @@ fn learn_lifecycle_command_with_store_adjudication(
         .context("explicit lifecycle permit must be readable")?;
     let permit: ProcedureLifecyclePermitV1 = serde_json::from_str(&permit_text)
         .context("explicit lifecycle permit must be typed canonical JSON")?;
-    let adjudication =
-        adjudication.ok_or_else(|| anyhow::anyhow!("explicit bridge adjudication is required"))?;
-    let adjudication_text = std::fs::read_to_string(adjudication)
-        .context("explicit bridge adjudication must be readable")?;
-    let adjudication: CandidatePromotionAdjudicationV1 =
-        serde_json::from_str(&adjudication_text)
-            .context("explicit bridge adjudication must be typed canonical JSON")?;
+    let adjudication_id =
+        adjudication.ok_or_else(|| anyhow::anyhow!("explicit adjudication ID is required"))?;
     let store_path = store
         .ok_or_else(|| anyhow::anyhow!("explicit semantic memory store directory is required"))?;
     let memory = MemoryStore::open(MemoryConfig {
@@ -1653,14 +1651,18 @@ fn learn_lifecycle_command_with_store_adjudication(
         ..MemoryConfig::default()
     })
     .context("open canonical semantic memory store")?;
+    let forge_store =
+        forge_store.ok_or_else(|| anyhow::anyhow!("explicit Forge store path is required"))?;
+    let forge = ForgeStore::open(Path::new(forge_store)).context("open Forge store")?;
     let runtime = tokio::runtime::Runtime::new().context("create lifecycle runtime")?;
     let receipt = runtime
         .block_on(async {
             let adapter = ProcedureLifecycleAdapter::new(&memory);
             adapter
                 .promote_adjudicated(
+                    &forge,
                     permit,
-                    adjudication,
+                    adjudication_id,
                     format!("aidens-cli:promote:{candidate}"),
                 )
                 .await
@@ -1727,12 +1729,14 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             candidate,
             permit,
             store,
+            forge_store,
             adjudication,
         } => learn_lifecycle_command_with_store_adjudication(
             &candidate,
             permit.as_deref(),
             adjudication.as_deref(),
             store.as_deref(),
+            forge_store.as_deref(),
         ),
         LearningCommand::Revoke {
             candidate,

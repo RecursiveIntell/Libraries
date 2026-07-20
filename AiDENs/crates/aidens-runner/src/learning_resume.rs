@@ -261,13 +261,15 @@ pub async fn resume_learning_once(
                 ..Default::default()
             })
             .map_err(|e| LearningResumeError::OwnerRead(e.to_string()))?;
+            let forge = ForgeStore::open(&locator.forge_store_root)
+                .map_err(|e| LearningResumeError::ForgeRead(e.to_string()))?;
             let adapter = crate::learning_lifecycle::ProcedureLifecycleAdapter::new(&memory);
             let key = authority
                 .idempotency_key
                 .clone()
                 .unwrap_or_else(|| format!("resume:promote:{}", locator.run_id));
             let receipt = adapter
-                .promote_adjudicated(permit.clone(), adjudication.clone(), key)
+                .promote_adjudicated(&forge, permit.clone(), &adjudication.adjudication_id, key)
                 .await
                 .map_err(|e| LearningResumeError::OwnerRead(e.to_string()))?;
             Some((

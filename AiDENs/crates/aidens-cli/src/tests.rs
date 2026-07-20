@@ -2,6 +2,7 @@ use super::*;
 use crate::package::P24_REQUIRED_GATE_COMMANDS;
 use aidens_contracts::{MemoryModeV1, ReportLevelV1};
 use clap::CommandFactory;
+use forge_memory_bridge::ForgeAdjudicationStore;
 use semantic_memory::NamespaceScopeV1;
 use semantic_memory::ProcedureActionPermitV1;
 use std::path::Path;
@@ -67,17 +68,15 @@ fn learning_promote_with_mismatched_adjudication_candidate_cannot_reach_legacy_a
     let permit_path = root.join("permit.json");
     std::fs::write(&permit_path, serde_json::to_vec(&permit).unwrap()).unwrap();
     let adjudication = adjudication_for("candidate-y");
-    let adjudication_path = root.join("adjudication.json");
-    std::fs::write(
-        &adjudication_path,
-        serde_json::to_vec(&adjudication).unwrap(),
-    )
-    .unwrap();
+    let forge_path = root.join("forge.sqlite");
+    let forge = forge_engine::ForgeStore::open(&forge_path).unwrap();
+    forge.persist_adjudication(&adjudication).unwrap();
     let err = learn_lifecycle_command_with_store_adjudication(
         "candidate-x",
         Some(permit_path.to_str().unwrap()),
-        Some(adjudication_path.to_str().unwrap()),
+        Some(adjudication.adjudication_id.as_str()),
         Some(root.to_str().unwrap()),
+        Some(forge_path.to_str().unwrap()),
     )
     .unwrap_err()
     .to_string();

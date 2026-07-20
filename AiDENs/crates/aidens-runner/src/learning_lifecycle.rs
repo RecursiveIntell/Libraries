@@ -5,15 +5,12 @@
 
 use crate::learning_effectful::EffectfulEvaluationReportV1;
 use aidens_contracts::CanonicalBackpointerV1;
-use forge_memory_bridge::{
-    AdjudicationBindingV1, ForgeAdjudicationPersistenceReceiptV1, ForgeAdjudicationStore,
-};
+use forge_memory_bridge::ForgeAdjudicationStore;
 use semantic_memory::{
     MemoryError, MemoryStore, ProceduralMemoryArtifactV1, ProcedureEffectfulEvaluationReceiptV1,
     ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1,
 };
 use serde::Serialize;
-use verification_adjudication::CandidatePromotionAdjudicationV1;
 use verification_adjudication::VerificationDisposition;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -153,112 +150,21 @@ impl<'a> ProcedureLifecycleAdapter<'a> {
     /// Promote a procedure only after a bridge-verified single-adjudication.
     pub async fn promote_adjudicated(
         &self,
+        forge: &dyn ForgeAdjudicationStore,
         permit: ProcedureLifecyclePermitV1,
-        adjudication: CandidatePromotionAdjudicationV1,
+        adjudication_id: &str,
         caller_idempotency_key: impl Into<String>,
     ) -> Result<ProcedureLifecycleReceiptV1, MemoryError> {
-        struct AdjudicationWitness {
-            adjudication: CandidatePromotionAdjudicationV1,
-        }
-
-        impl ForgeAdjudicationStore for AdjudicationWitness {
-            fn persist_adjudication(
-                &self,
-                adjudication: &CandidatePromotionAdjudicationV1,
-            ) -> Result<ForgeAdjudicationPersistenceReceiptV1, forge_memory_bridge::BridgeError>
-            {
-                if adjudication.adjudication_id != self.adjudication.adjudication_id {
-                    return Err(forge_memory_bridge::BridgeError::AdjudicationNotFound(
-                        adjudication.adjudication_id.clone(),
-                    ));
-                }
-                if adjudication.adjudication_digest != self.adjudication.adjudication_digest {
-                    return Err(forge_memory_bridge::BridgeError::AdjudicationValidation(
-                        "bridge adjudication digest mismatch".into(),
-                    ));
-                }
-                Ok(ForgeAdjudicationPersistenceReceiptV1 {
-                    schema_version:
-                        forge_memory_bridge::FORGE_ADJUDICATION_PERSISTENCE_RECEIPT_V1_SCHEMA.into(),
-                    adjudication_id: self.adjudication.adjudication_id.clone(),
-                    adjudication_digest: self.adjudication.adjudication_digest.clone(),
-                    owner: "local-adjudication-witness".into(),
-                    persisted_at: "2999-01-01T00:00:00Z".into(),
-                })
-            }
-
-            fn read_verified_adjudication(
-                &self,
-                adjudication_id: &str,
-            ) -> Result<CandidatePromotionAdjudicationV1, forge_memory_bridge::BridgeError>
-            {
-                if adjudication_id == self.adjudication.adjudication_id {
-                    Ok(self.adjudication.clone())
-                } else {
-                    Err(forge_memory_bridge::BridgeError::AdjudicationNotFound(
-                        adjudication_id.to_string(),
-                    ))
-                }
-            }
-
-            fn verify_adjudication_binding(
-                &self,
-                adjudication_id: &str,
-                expected: &AdjudicationBindingV1,
-            ) -> Result<ForgeAdjudicationPersistenceReceiptV1, forge_memory_bridge::BridgeError>
-            {
-                if adjudication_id != self.adjudication.adjudication_id {
-                    return Err(forge_memory_bridge::BridgeError::AdjudicationNotFound(
-                        adjudication_id.to_string(),
-                    ));
-                }
-                let binding = AdjudicationBindingV1 {
-                    candidate_id: self.adjudication.candidate_id.clone(),
-                    candidate_digest: forge_memory_bridge::IdentityDigest::new(
-                        self.adjudication.candidate_digest.as_str(),
-                    )
-                    .map_err(|_| {
-                        forge_memory_bridge::BridgeError::AdjudicationValidation(
-                            "candidate digest is not a valid identity digest".into(),
-                        )
-                    })?,
-                    evidence_bundle_id: self.adjudication.evidence_bundle_id.clone(),
-                    evidence_bundle_digest: forge_memory_bridge::IdentityDigest::new(
-                        self.adjudication.evidence_bundle_digest.as_str(),
-                    )
-                    .map_err(|_| {
-                        forge_memory_bridge::BridgeError::AdjudicationValidation(
-                            "evidence bundle digest is not a valid identity digest".into(),
-                        )
-                    })?,
-                };
-                if binding == *expected {
-                    Ok(ForgeAdjudicationPersistenceReceiptV1 {
-                        schema_version:
-                            forge_memory_bridge::FORGE_ADJUDICATION_PERSISTENCE_RECEIPT_V1_SCHEMA
-                                .into(),
-                        adjudication_id: self.adjudication.adjudication_id.clone(),
-                        adjudication_digest: self.adjudication.adjudication_digest.clone(),
-                        owner: "local-adjudication-witness".into(),
-                        persisted_at: "2999-01-01T00:00:00Z".into(),
-                    })
-                } else {
-                    Err(
-                        forge_memory_bridge::BridgeError::AdjudicationBindingMismatch(
-                            "binding mismatch".into(),
-                        ),
-                    )
-                }
-            }
-        }
-
+        let adjudication = forge
+            .read_verified_adjudication(adjudication_id)
+            .map_err(|error| MemoryError::ProceduralMemoryRejected {
+                reason: error.to_string(),
+            })?;
         self.store
             .promote_adjudicated_procedure(
-                &AdjudicationWitness {
-                    adjudication: adjudication.clone(),
-                },
+                forge,
                 permit,
-                adjudication.adjudication_id.as_str(),
+                adjudication_id,
                 &adjudication.candidate_id,
                 adjudication.candidate_digest.as_str(),
                 &adjudication.evidence_bundle_id,
@@ -308,6 +214,7 @@ impl<'a> ProcedureLifecycleAdapter<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use forge_engine::ForgeStore;
     use semantic_memory::{
         verify_procedure_lifecycle_receipt_v1, AllowedProcedureToolV1, ApplicabilityPredicateV1,
         AuthorityScopeV1, AuthorityScopesV1, ElevationRequirementV1, MemoryConfig, MemoryStore,
@@ -423,6 +330,8 @@ mod tests {
         let artifact = artifact("procedure:adjudicated", 1, None);
         let permit = lifecycle_permit("promote", &artifact.artifact_id);
         let adjudication = adjudication_for(&artifact).unwrap();
+        let forge = ForgeStore::open(&dir.path().join("forge.sqlite")).unwrap();
+        forge.persist_adjudication(&adjudication).unwrap();
 
         store
             .compile_procedure(artifact.clone(), "compile:adjudicated")
@@ -440,7 +349,12 @@ mod tests {
             .await
             .unwrap();
         let receipt = adapter
-            .promote_adjudicated(permit, adjudication.clone(), "promote:adjudicated")
+            .promote_adjudicated(
+                &forge,
+                permit,
+                adjudication.adjudication_id.as_str(),
+                "promote:adjudicated",
+            )
             .await
             .unwrap();
 
