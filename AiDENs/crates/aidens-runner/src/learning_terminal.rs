@@ -728,7 +728,7 @@ mod tests {
             .unwrap(),
             AiDENsRunChildReceiptV1::closed(
                 "owner:procedure-lifecycle-promoted",
-                serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted"}),
+                serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted", "adjudication_digest": "adjudication:runner:0123456789abcdef", "permit_digest": "permit:runner:0123456789abcdef"}),
             )
             .unwrap(),
             AiDENsRunChildReceiptV1::closed(

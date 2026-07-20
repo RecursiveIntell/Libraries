@@ -5,20 +5,21 @@ use aidens_config::{load_config_file, AiDENsConfigV1, ProviderConfigV1};
 use aidens_contracts::{
     current_artifact_family_registry, generated_artifact_id_from_material,
     generated_schema_documents, generated_schema_manifest, generated_schema_manifest_pretty_json,
-    non_authoritative_text_display_digest, AgentPermitRuleV1, AgentSpecV1, AiDENsAppPlanV1,
-    AiDENsCompiledPlanV1, AiDENsDoctorReportV1, AiDENsRunBudgetDeadlineV1, AiDENsRunBundleV2,
-    AiDENsRunBundleV3, AiDENsRunEventLogDigestV1, AiDENsRunFailureClassV1,
-    AiDENsRunFailureTaxonomyV1, AiDENsRunReplayNormalizationV1, AiDENsRunSupportTierEvidenceV1,
-    ApprovalDecisionV1, ApprovalRequestV1, ArtifactId, BoundaryCompileRequestV1,
-    CanonicalBackpointerV1, CanonicalToolSideEffectClass, CapabilityStateV1, CodexPacketInputV1,
-    CodexPacketV1, CommandRunReportV1, CompletionAuditReportV1, ConfigApplyReportDraftV1,
-    ConfigApplyReportV1, CrossPassTraceabilityMatrixV1, CrossPassTraceabilityRowV1,
-    DisplayDigestV1, ExampleAppEntryV1, ExampleAppManifestV1, GateCommandResultV1,
-    InstallSmokeReportV1, InstallSmokeStepV1, KnownLimitationV1, KnownLimitationsRegisterV1,
-    MemoryModeV1, OperatorStatusReportV1, PassCompletionStateV1, PermitGrantV1, PermitUseReportV1,
-    PlanRuntimeParityCheckKindV1, PlanRuntimeParityCheckV1, PlanRuntimeParityReportV1,
-    ProviderBackendStatusV1, ProviderRouteKindV1, ProviderRouteReportV1, PublicDocFindingV1,
-    RegressionDebtItemV1, RegressionDebtLedgerV1, ReleaseArtifactEntryV1, ReleaseArtifactKindV1,
+    non_authoritative_text_display_digest, validate_required_coding_learning_children,
+    AgentPermitRuleV1, AgentSpecV1, AiDENsAppPlanV1, AiDENsCompiledPlanV1, AiDENsDoctorReportV1,
+    AiDENsRunBudgetDeadlineV1, AiDENsRunBundleV2, AiDENsRunBundleV3, AiDENsRunEventLogDigestV1,
+    AiDENsRunFailureClassV1, AiDENsRunFailureTaxonomyV1, AiDENsRunReplayNormalizationV1,
+    AiDENsRunSupportTierEvidenceV1, ApprovalDecisionV1, ApprovalRequestV1, ArtifactId,
+    BoundaryCompileRequestV1, CanonicalBackpointerV1, CanonicalToolSideEffectClass,
+    CapabilityStateV1, CodexPacketInputV1, CodexPacketV1, CommandRunReportV1,
+    CompletionAuditReportV1, ConfigApplyReportDraftV1, ConfigApplyReportV1,
+    CrossPassTraceabilityMatrixV1, CrossPassTraceabilityRowV1, DisplayDigestV1, ExampleAppEntryV1,
+    ExampleAppManifestV1, GateCommandResultV1, InstallSmokeReportV1, InstallSmokeStepV1,
+    KnownLimitationV1, KnownLimitationsRegisterV1, MemoryModeV1, OperatorStatusReportV1,
+    PassCompletionStateV1, PermitGrantV1, PermitUseReportV1, PlanRuntimeParityCheckKindV1,
+    PlanRuntimeParityCheckV1, PlanRuntimeParityReportV1, ProviderBackendStatusV1,
+    ProviderRouteKindV1, ProviderRouteReportV1, PublicDocFindingV1, RegressionDebtItemV1,
+    RegressionDebtLedgerV1, ReleaseArtifactEntryV1, ReleaseArtifactKindV1,
     ReleaseArtifactManifestV1, ReleaseReadinessReportV1, ReleaseSurfaceStateV1, ReleaseSurfaceV1,
     ReportLevelV1, RuntimeCapabilityTruthV1, SandboxCapabilityTruthV1, SchemaCompatibilityCheckV1,
     SchemaCompatibilityModeV1, SchemaCompatibilityReportV1, SchemaPathCollisionFindingV1,
@@ -1220,6 +1221,9 @@ pub fn learn_terminal_command(
     bundle
         .validate_child_closure()
         .map_err(|reasons| anyhow::anyhow!("terminal child closure invalid: {reasons:?}"))?;
+    validate_required_coding_learning_children(&bundle.child_receipts).map_err(|reasons| {
+        anyhow::anyhow!("terminal coding-learning child contract invalid: {reasons:?}")
+    })?;
     if !inspection.digest_verified || !inspection.record.verify_record_digest() {
         bail!("terminal bundle or index-record digest verification failed");
     }

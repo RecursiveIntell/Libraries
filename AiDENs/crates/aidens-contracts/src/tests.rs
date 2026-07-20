@@ -22,7 +22,7 @@ fn coding_learning_child_receipts() -> Vec<AiDENsRunChildReceiptV1> {
         ("owner:forge-evidence-bundle", serde_json::json!({"version_id": "aidens-exact-source-execution-evidence-v1", "bundle_id": "evidence", "candidate_id": "candidate"})),
         ("owner:forge-export-receipt", serde_json::json!({"rendering_version": 3, "export_key": "export", "bundle_id": "evidence", "namespace": "aidens-learning"})),
         ("owner:semantic-memory-projection-import", serde_json::json!({"status": "complete", "direct_write": false, "source_envelope_id": "export", "content_digest": "digest-export"})),
-        ("owner:procedure-lifecycle-promoted", serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted"})),
+        ("owner:procedure-lifecycle-promoted", serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted", "adjudication_digest": "adjudication:blake3:012345", "permit_digest": "permit:blake3:012345"})),
         ("owner:promoted-procedure-replay", serde_json::json!({"schema": "AiDENsPromotedProcedureReplayOutcomeV1", "action_allowed": true, "retained_patch_exact": true, "report": {"verified": true}})),
     ]
     .into_iter()
@@ -161,6 +161,41 @@ fn coding_learning_child_closure_rejects_missing_owner_and_forged_schema() {
     let reasons = base.with_coding_learning_child_closure(forged).unwrap_err();
     assert!(reasons.iter().any(|reason| {
         reason == "coding-learning-child-signature-invalid:owner:effectful-evaluation"
+    }));
+}
+
+#[test]
+fn coding_learning_child_closure_rejects_promoted_without_adjudication_digest_or_permit_digest() {
+    let base = task2_material_bundle("coding-learning-child-contract");
+    let mut valid = coding_learning_child_receipts();
+    let index = valid
+        .iter()
+        .position(|receipt| receipt.owner_id == "owner:procedure-lifecycle-promoted")
+        .expect("promoted child exists");
+    valid[index]
+        .receipt
+        .as_object_mut()
+        .unwrap()
+        .remove("adjudication_digest");
+    let missing_adjudication_reasons = base
+        .clone()
+        .with_coding_learning_child_closure(valid.clone())
+        .unwrap_err();
+    assert!(missing_adjudication_reasons.iter().any(|reason| reason
+        == "coding-learning-child-signature-invalid:owner:procedure-lifecycle-promoted"));
+
+    valid[index].receipt.as_object_mut().unwrap().insert(
+        "adjudication_digest".into(),
+        serde_json::json!("adjudication:blake3:012345"),
+    );
+    valid[index]
+        .receipt
+        .as_object_mut()
+        .unwrap()
+        .remove("permit_digest");
+    let missing_permit_reasons = base.with_coding_learning_child_closure(valid).unwrap_err();
+    assert!(missing_permit_reasons.iter().any(|reason| {
+        reason == "coding-learning-child-signature-invalid:owner:procedure-lifecycle-promoted"
     }));
 }
 

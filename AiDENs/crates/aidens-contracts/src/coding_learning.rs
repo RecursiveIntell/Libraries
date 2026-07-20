@@ -131,6 +131,8 @@ pub fn validate_required_coding_learning_children(
             }
             "owner:procedure-lifecycle-promoted" => {
                 lifecycle_receipt_matches(receipt, "promoted", "promote")
+                    && nonempty_json_string(receipt, "/adjudication_digest")
+                    && nonempty_json_string(receipt, "/permit_digest")
             }
             "owner:promoted-procedure-replay" => {
                 receipt

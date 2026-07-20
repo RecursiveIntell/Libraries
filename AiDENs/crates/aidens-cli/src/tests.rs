@@ -724,7 +724,7 @@ fn learning_terminal_requires_fresh_bundle_index_and_projection_readback() {
         .unwrap(),
         AiDENsRunChildReceiptV1::closed(
             "owner:procedure-lifecycle-promoted",
-            serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted"}),
+            serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted", "adjudication_digest": "adjudication:cli:0123456789abcdef", "permit_digest": "permit:cli:0123456789abcdef"}),
         )
         .unwrap(),
         AiDENsRunChildReceiptV1::closed(
@@ -815,6 +815,102 @@ fn learning_terminal_requires_fresh_bundle_index_and_projection_readback() {
     let error =
         learn_terminal_command(root.to_str().unwrap(), &run_id, projection_receipt_id).unwrap_err();
     assert!(error.to_string().contains("inspect terminal run bundle"));
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn learning_terminal_rejects_fresh_bundle_with_invalid_promoted_lifecycle_child() {
+    use aidens_contracts::{required_coding_learning_owner_roles, AiDENsRunChildReceiptV1};
+
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let fixture = include_str!("../../../tests/fixtures/p26/aidens_run_bundle_v3.json");
+    let fixture: AiDENsRunBundleV3 = serde_json::from_str(fixture).unwrap();
+    let owner_backpointers = required_coding_learning_owner_roles()
+        .iter()
+        .map(|role| {
+            CanonicalBackpointerV1::external(
+                format!("owner-{role}"),
+                "OwnerNativeReceiptV1",
+                *role,
+                format!("{role}:blake3:0123456789abcdef"),
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut child_receipts = vec![
+        AiDENsRunChildReceiptV1::closed(
+            "owner:effectful-evaluation",
+            serde_json::json!({"schema": "AiDENsEffectfulEvaluationReportV1", "verified": true}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:procedure-lifecycle-tested",
+            serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "tested", "receipt_digest": "digest-tested", "operation": "test", "disposition": "tested"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:procedure-effectful-prerequisite",
+            serde_json::json!({"schema_version": "procedure_effectful_evaluation_receipt_v1", "receipt_id": "effectful", "receipt_digest": "digest-effectful", "verified": true}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:forge-evidence-bundle",
+            serde_json::json!({"version_id": "aidens-exact-source-execution-evidence-v1", "bundle_id": "evidence", "candidate_id": "candidate"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:forge-export-receipt",
+            serde_json::json!({"rendering_version": 3, "export_key": "export", "bundle_id": "evidence", "namespace": "aidens-learning"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:semantic-memory-projection-import",
+            serde_json::json!({"status": "complete", "direct_write": false, "source_envelope_id": "export", "content_digest": "digest-export"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:procedure-lifecycle-promoted",
+            serde_json::json!({"schema_version": "procedure_lifecycle_receipt_v1", "receipt_id": "promoted", "receipt_digest": "digest-promoted", "operation": "promote", "disposition": "promoted", "adjudication_digest": "adjudication:cli:0123456789abcdef", "permit_digest": "permit:cli:0123456789abcdef"}),
+        )
+        .unwrap(),
+        AiDENsRunChildReceiptV1::closed(
+            "owner:promoted-procedure-replay",
+            serde_json::json!({"schema": "AiDENsPromotedProcedureReplayOutcomeV1", "action_allowed": true, "retained_patch_exact": true, "report": {"verified": true}}),
+        )
+        .unwrap(),
+    ];
+    let index = child_receipts
+        .iter()
+        .position(|receipt| receipt.owner_id == "owner:procedure-lifecycle-promoted")
+        .expect("promoted child exists");
+    child_receipts[index]
+        .receipt
+        .as_object_mut()
+        .unwrap()
+        .remove("permit_digest");
+    let run_id = fixture.run_id.clone();
+    let publish_error = AiDENsRunBundleV3::new_material_bound(
+        "cli-terminal-material-invalid-promoted-child",
+        run_id.clone(),
+        fixture.profile,
+        fixture.canonical_execution_context,
+        fixture.event_log,
+        fixture.budget,
+        fixture.support,
+        fixture.support_labels,
+        fixture.replay,
+        fixture.failure,
+        fixture.attempt_family_id,
+        fixture.attempt_id,
+        fixture.trial_id,
+        fixture.agent_spec_digest,
+        owner_backpointers,
+    )
+    .and_then(|bundle| bundle.with_coding_learning_child_closure(child_receipts))
+    .expect_err("promoted child without permit digest must fail contract");
+    assert!(publish_error.iter().any(|error| {
+        error.contains("coding-learning-child-signature-invalid:owner:procedure-lifecycle-promoted")
+    }));
     std::fs::remove_dir_all(root).unwrap();
 }
 
