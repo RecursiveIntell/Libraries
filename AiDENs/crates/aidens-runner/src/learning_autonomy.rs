@@ -14,7 +14,8 @@ use crate::learning_resume::{
     LearningResumeAuthorityV1, LearningResumeError,
 };
 use crate::learning_sealed_replay::{
-    execute_owner_admitted_sealed_replay, OwnerAdmittedSealedReplayMaterialV1,
+    execute_owner_admitted_sealed_replay, prepare_owner_admitted_sealed_replay_material,
+    OwnerAdmittedSealedReplayMaterialV1, OwnerAdmittedSealedReplayRequestV1,
 };
 use aidens_contracts::{
     LearningCoordinatorDispositionV1, LearningCoordinatorProjectionV1, NextLearningActionV1,
@@ -87,6 +88,29 @@ pub struct LearningDriveReportV1 {
     pub boundary: LearningAutonomyBoundaryV1,
     pub transitions_used: u64,
     pub executions_used: u64,
+}
+
+/// Admit replay through the semantic-memory owner and return the exact
+/// material that the sealed replay executor is allowed to consume.  This is
+/// an adapter only: admission, lifecycle state, and permit binding remain
+/// owned by semantic-memory.
+pub async fn admit_replay_from_adjudication(
+    request: OwnerAdmittedSealedReplayRequestV1,
+) -> Result<OwnerAdmittedSealedReplayMaterialV1, LearningAutonomyError> {
+    prepare_owner_admitted_sealed_replay_material(request)
+        .await
+        .map_err(|error| LearningAutonomyError::Action(error.to_string()))
+}
+
+/// Execute previously admitted replay material through the sealed owner path.
+/// Material cannot be widened or converted to a host/fixture execution here.
+pub async fn replay_admitted_candidate(
+    material: OwnerAdmittedSealedReplayMaterialV1,
+) -> Result<crate::learning_sealed_replay::OwnerAdmittedSealedReplayReportV1, LearningAutonomyError>
+{
+    execute_owner_admitted_sealed_replay(material)
+        .await
+        .map_err(|error| LearningAutonomyError::Action(error.to_string()))
 }
 
 /// Rebuild, reduce, checkpoint, verify authority/budgets, and dispatch at most
@@ -189,7 +213,7 @@ pub async fn execute_learning_transition_once(
                 LearningAutonomyError::Invalid("sealed replay material is required".into())
             });
             match material {
-                Ok(material) => execute_owner_admitted_sealed_replay(material)
+                Ok(material) => replay_admitted_candidate(material)
                     .await
                     .map(|_| "replay-procedure".to_string())
                     .map_err(|error| LearningAutonomyError::Action(error.to_string())),

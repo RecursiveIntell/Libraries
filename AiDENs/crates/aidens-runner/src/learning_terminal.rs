@@ -78,6 +78,61 @@ pub struct RealSandboxTerminalClosureOutcomeV1 {
     pub terminal_projection_readback_verified: bool,
 }
 
+/// All owner-verified inputs required to close a real-sandbox run.  Keeping
+/// this as a material object makes reconstruction explicit and prevents a
+/// caller from supplying a controller projection as terminal truth.
+#[derive(Debug, Clone)]
+pub struct RealSandboxTerminalClosureMaterialV1 {
+    pub config: RealSandboxLearningConfig,
+    pub initial: RealSandboxLearningOutcomeV1,
+    pub publication: TerminalPublicationOutcomeV1,
+    pub promotion: ProcedureLifecycleReceiptV1,
+    pub replay: PromotedProcedureReplayOutcomeV1,
+}
+
+pub fn rebuild_real_sandbox_terminal_material(
+    config: RealSandboxLearningConfig,
+    initial: RealSandboxLearningOutcomeV1,
+    publication: TerminalPublicationOutcomeV1,
+    promotion: ProcedureLifecycleReceiptV1,
+    replay: PromotedProcedureReplayOutcomeV1,
+) -> Result<RealSandboxTerminalClosureMaterialV1, TerminalBundlePublicationError> {
+    if initial.report.execution_mode != "real_sandbox" {
+        return Err(TerminalBundlePublicationError::Integration(
+            "terminal material is not real-sandbox evidence".into(),
+        ));
+    }
+    if !initial.terminal_event_log_verified
+        || !initial.terminal_evidence_readback_verified
+        || !publication.readback_verified
+        || !replay.terminal_event_log_verified
+    {
+        return Err(TerminalBundlePublicationError::Integration(
+            "terminal material contains unverified owner evidence".into(),
+        ));
+    }
+    Ok(RealSandboxTerminalClosureMaterialV1 {
+        config,
+        initial,
+        publication,
+        promotion,
+        replay,
+    })
+}
+
+pub fn close_real_sandbox_terminal_from_material(
+    material: RealSandboxTerminalClosureMaterialV1,
+) -> Result<RealSandboxTerminalClosureOutcomeV1, TerminalBundlePublicationError> {
+    close_real_sandbox_terminal(
+        &material.config,
+        &material.initial,
+        &material.publication,
+        &material.promotion,
+        &material.replay,
+        TerminalOwnerVerificationSealV1::verified(),
+    )
+}
+
 /// Crate-minted capability proving the caller followed the owner-orchestrated path.
 pub struct TerminalOwnerVerificationSealV1 {
     _owner_verified: (),

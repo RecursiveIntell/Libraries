@@ -49,7 +49,7 @@ use aidens_runner::learning_publication::{
 };
 use aidens_runner::learning_resume::{
     close_learning_from_owners, rebuild_learning_owner_snapshot, resume_learning_once,
-    LearningOwnerLocatorV1, LearningResumeAuthorityV1,
+    LearningOwnerLocatorV1, LearningResumeAuthorityV1, LearningRunHandleV1,
 };
 use aidens_runner::learning_sealed_replay::{
     execute_owner_admitted_sealed_replay, prepare_owner_admitted_sealed_replay_material,
@@ -241,6 +241,10 @@ pub enum Command {
 
 #[derive(Debug, Subcommand)]
 pub enum LearningCommand {
+    Auto {
+        #[command(subcommand)]
+        command: LearningAutoCommand,
+    },
     Run {
         #[arg(
             long,
@@ -340,10 +344,43 @@ pub enum LearningCommand {
     },
     /// Validate all owner receipts exist and invoke terminal closure from owner stores.
     Close {
-        #[arg(long)]
+        /// A typed close request, or a LearningRunHandleV1 when --run-handle is used.
+        #[arg(long, alias = "run-handle")]
         request: String,
         #[arg(long)]
         out: Option<String>,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum LearningAutoCommand {
+    Plan {
+        #[arg(long)]
+        request: String,
+        #[arg(long)]
+        policy: String,
+        #[arg(long)]
+        out: Option<String>,
+    },
+    Inspect {
+        #[arg(long)]
+        plan: String,
+    },
+    Run {
+        #[arg(long)]
+        plan: String,
+        #[arg(long)]
+        lease_id: String,
+    },
+    Resume {
+        #[arg(long)]
+        run_handle: String,
+        #[arg(long)]
+        lease_id: String,
+    },
+    Status {
+        #[arg(long)]
+        run_handle: String,
     },
 }
 
@@ -1249,8 +1286,48 @@ fn learn_resume_command(request: &str, out: Option<&str>) -> Result<String> {
 }
 
 fn learn_close_command(request: &str, out: Option<&str>) -> Result<String> {
-    let envelope: LearningCloseRequestEnvelopeV1 =
-        read_typed_json(Path::new(request), "learning close request")?;
+    let envelope: LearningCloseRequestEnvelopeV1 = match read_typed_json(
+        Path::new(request),
+        "learning close request",
+    ) {
+        Ok(envelope) => envelope,
+        Err(request_error) => {
+            let handle: LearningRunHandleV1 =
+                read_typed_json(Path::new(request), "learning run handle")
+                    .with_context(|| request_error.to_string())?;
+            handle
+                .validate_digest()
+                .map_err(|error| anyhow::anyhow!(error))?;
+            let locator = LearningOwnerLocatorV1 {
+                memory_store_root: handle.memory_store_root,
+                run_bundle_store_root: handle.receipt_root,
+                forge_store_root: handle.forge_store_root,
+                run_id: handle.run_id.clone(),
+                candidate_artifact_id: handle.candidate_artifact_id,
+                tested_receipt_id: handle.tested_receipt_id,
+                bundle_run_id: None,
+                adjudication_id: None,
+                replay_id: None,
+            };
+            let runtime = tokio::runtime::Runtime::new().context("create close runtime")?;
+            let projection = runtime
+                .block_on(close_learning_from_owners(&locator))
+                .context("learning close validation failed")?;
+            let report = serde_json::json!({
+                "schema": "AiDENsLearningCloseReportV1",
+                "operation": "close",
+                "run_handle": request,
+                "stage": projection.stage,
+                "disposition": projection.disposition,
+                "owner_receipts": projection.owner_receipts,
+                "terminal": {"state": if projection.stage == LearningCoordinatorStageV1::TerminalPublished { "succeeded-verified" } else { "blocked-evidence-insufficient" }},
+            });
+            if let Some(path) = out {
+                write_json_file(Path::new(path), &report)?;
+            }
+            return Ok(serde_json::to_string_pretty(&report)?);
+        }
+    };
     if envelope.schema != "AiDENsLearningCloseRequestV1" {
         bail!("learning close request schema must be AiDENsLearningCloseRequestV1");
     }
@@ -1292,6 +1369,109 @@ fn learn_close_command(request: &str, out: Option<&str>) -> Result<String> {
         write_json_file(Path::new(path), &report)?;
     }
     Ok(serde_json::to_string_pretty(&report)?)
+}
+
+fn learn_auto_command(command: LearningAutoCommand) -> Result<String> {
+    match command {
+        LearningAutoCommand::Plan {
+            request,
+            policy,
+            out,
+        } => {
+            let plan = serde_json::json!({
+                "schema": "AiDENsLearningAutonomousPlanV1",
+                "request": request,
+                "policy": policy,
+                "authority": "operator-approved-lease-required",
+                "execution": "real-sandbox-only",
+                "disposition": "awaiting-authority",
+            });
+            if let Some(path) = out {
+                write_json_file(Path::new(&path), &plan)?;
+            }
+            Ok(serde_json::to_string_pretty(&plan)?)
+        }
+        LearningAutoCommand::Inspect { plan } => {
+            let value: Value = read_typed_json(Path::new(&plan), "autonomous learning plan")?;
+            if value["schema"] != "AiDENsLearningAutonomousPlanV1" {
+                bail!("autonomous learning plan schema is invalid");
+            }
+            let request_path = value["request"].as_str().unwrap_or_default();
+            let readiness = if request_path.is_empty() {
+                serde_json::json!({
+                    "schema": "AiDENsRealSandboxReadinessV1",
+                    "disposition": "invalid",
+                    "reason_codes": ["plan-request-missing"],
+                })
+            } else {
+                let request: RealSandboxRunRequestV2 =
+                    read_typed_json(Path::new(request_path), "real-sandbox request")?;
+                serde_json::json!({
+                    "schema": "AiDENsLearningAutonomousInspectReportV1",
+                    "disposition": "awaiting-capability",
+                    "request_schema": request.schema,
+                    "reason_codes": ["readiness-requires-owner-permit-and-live-capability"],
+                })
+            };
+            Ok(serde_json::to_string_pretty(&readiness)?)
+        }
+        LearningAutoCommand::Run { plan, lease_id } => {
+            let _: Value = read_typed_json(Path::new(&plan), "autonomous learning plan")?;
+            Ok(serde_json::to_string_pretty(&serde_json::json!({
+                "schema": "AiDENsLearningAutonomousRunReportV1",
+                "operation": "run",
+                "lease_id": lease_id,
+                "disposition": "awaiting-authority",
+                "reason_codes": ["operator-approved-autonomy-lease-must-be-reopened-by-owner"],
+            }))?)
+        }
+        LearningAutoCommand::Resume {
+            run_handle,
+            lease_id,
+        } => {
+            let handle: LearningRunHandleV1 =
+                read_typed_json(Path::new(&run_handle), "learning run handle")?;
+            handle
+                .validate_digest()
+                .map_err(|error| anyhow::anyhow!(error))?;
+            let locator = LearningOwnerLocatorV1 {
+                memory_store_root: handle.memory_store_root,
+                run_bundle_store_root: handle.receipt_root,
+                forge_store_root: handle.forge_store_root,
+                run_id: handle.run_id.clone(),
+                candidate_artifact_id: handle.candidate_artifact_id,
+                tested_receipt_id: handle.tested_receipt_id,
+                bundle_run_id: Some(handle.run_id.clone()),
+                adjudication_id: None,
+                replay_id: None,
+            };
+            let runtime =
+                tokio::runtime::Runtime::new().context("create autonomous resume runtime")?;
+            let readback = runtime.block_on(rebuild_learning_owner_snapshot(&locator))?;
+            Ok(serde_json::to_string_pretty(&serde_json::json!({
+                "schema": "AiDENsLearningAutonomousResumeReportV1",
+                "operation": "resume",
+                "lease_id": lease_id,
+                "stage": readback.coordinator_projection.stage,
+                "disposition": if readback.coordinator_projection.disposition == LearningCoordinatorDispositionV1::Pending { "awaiting-authority" } else { "completed" },
+                "next_action": readback.coordinator_projection.next_action,
+            }))?)
+        }
+        LearningAutoCommand::Status { run_handle } => {
+            let handle: LearningRunHandleV1 =
+                read_typed_json(Path::new(&run_handle), "learning run handle")?;
+            handle
+                .validate_digest()
+                .map_err(|error| anyhow::anyhow!(error))?;
+            Ok(serde_json::to_string_pretty(&serde_json::json!({
+                "schema": "AiDENsLearningAutonomousStatusReportV1",
+                "operation": "status",
+                "run_id": handle.run_id,
+                "handle_digest": handle.handle_digest,
+                "disposition": "owner-readback-required",
+            }))?)
+        }
+    }
 }
 
 fn read_typed_json<T>(path: &Path, label: &str) -> Result<T>
@@ -1707,6 +1887,7 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
                 )
             }
         }
+        LearningCommand::Auto { command } => learn_auto_command(command),
         LearningCommand::Inspect { source } => learn_inspect_command(source.as_deref()),
         LearningCommand::Compare { source, request } => {
             learn_compare_replay_command("compare", source.as_deref(), request.as_deref())

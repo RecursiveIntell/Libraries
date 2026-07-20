@@ -32,6 +32,7 @@ use semantic_memory::{
 };
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use typed_patch::{validate_patch, PatchPolicy, StructuredPatch};
 
 const COMMAND_TIMEOUT_SECS: u64 = 900;
@@ -56,6 +57,79 @@ pub struct RealSandboxLearningConfig {
     pub trial_id: String,
     pub trace_id: String,
     pub recorded_at: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum RealSandboxReadinessDispositionV1 {
+    Ready,
+    AwaitingCapability,
+    Invalid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RealSandboxReadinessV1 {
+    pub schema: String,
+    pub disposition: RealSandboxReadinessDispositionV1,
+    pub rootless_podman: bool,
+    pub digest_pinned_image: bool,
+    pub namespace_roots_present: bool,
+    pub store_roots_present: bool,
+    pub reason_codes: Vec<String>,
+}
+
+/// Inspect capability and configuration without opening or consuming any
+/// permit.  In particular, Podman failure is reported as capability wait and
+/// never converted into host execution.
+pub fn inspect_real_sandbox_readiness(
+    config: &RealSandboxLearningConfig,
+) -> RealSandboxReadinessV1 {
+    let digest_pinned_image =
+        config.image.contains("@sha256:") && !config.image.contains(":latest");
+    let namespace_roots_present = config.fixture.is_dir();
+    let store_roots_present = config.cea_db.parent().is_some_and(Path::exists)
+        && config.receipt_root.is_dir()
+        && config.memory_store.is_dir()
+        && config.forge_store.parent().is_some_and(Path::exists);
+    let rootless_podman = Command::new("podman")
+        .args(["info", "--format", "{{.Host.Security.Rootless}}"])
+        .output()
+        .map(|output| {
+            output.status.success()
+                && String::from_utf8_lossy(&output.stdout)
+                    .trim()
+                    .eq_ignore_ascii_case("true")
+        })
+        .unwrap_or(false);
+    let mut reason_codes = Vec::new();
+    if !rootless_podman {
+        reason_codes.push("rootless-podman-unavailable".into());
+    }
+    if !digest_pinned_image {
+        reason_codes.push("image-not-digest-pinned".into());
+    }
+    if !namespace_roots_present {
+        reason_codes.push("fixture-root-missing".into());
+    }
+    if !store_roots_present {
+        reason_codes.push("owner-store-root-missing".into());
+    }
+    let disposition = if !digest_pinned_image || !namespace_roots_present || !store_roots_present {
+        RealSandboxReadinessDispositionV1::Invalid
+    } else if !rootless_podman {
+        RealSandboxReadinessDispositionV1::AwaitingCapability
+    } else {
+        RealSandboxReadinessDispositionV1::Ready
+    };
+    RealSandboxReadinessV1 {
+        schema: "AiDENsRealSandboxReadinessV1".into(),
+        disposition,
+        rootless_podman,
+        digest_pinned_image,
+        namespace_roots_present,
+        store_roots_present,
+        reason_codes,
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
