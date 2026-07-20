@@ -9,7 +9,7 @@ The snapshot below was generated from live repository state at the stated HEAD. 
   "schema": "learning-completion-ledger-v1",
   "projection_only": true,
   "branch": "feat/medusa",
-  "head": "PLACEHOLDER_UPDATE_AFTER_COMMIT",
+  "head": "7ba2f22a4dd6170268ad37af84e0af169ae1bcc5",
   "implemented_components": [
     "verification-adjudication: CandidatePromotionAdjudicationV1 contract, pure rules, deterministic digest, validation",
     "forge-engine: Forge v6 adjudication persistence with idempotency and conflict rejection",
