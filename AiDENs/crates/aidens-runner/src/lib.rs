@@ -43,6 +43,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 mod execution;
 mod finalization;
 pub mod learning;
+pub mod learning_adjudication;
+pub mod learning_autonomy;
 pub mod learning_candidate;
 pub mod learning_controller;
 pub mod learning_coordinator;

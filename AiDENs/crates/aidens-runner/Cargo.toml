@@ -18,6 +18,7 @@ aidens-contracts = { path = "../aidens-contracts" }
 aidens-tool-kit = { path = "../aidens-tool-kit" }
 aidens-permit-kit = { path = "../aidens-permit-kit" }
 aidens-budget-kit = { path = "../aidens-budget-kit" }
+authority-delegation.workspace = true
 aidens-boundary-kit = { path = "../aidens-boundary-kit" }
 boundary-compiler-core = { path = "../boundary-compiler-core" }
 check-runner.workspace = true

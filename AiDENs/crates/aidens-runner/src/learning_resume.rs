@@ -3,6 +3,7 @@
 use crate::learning_coordinator::{
     reduce_learning_coordinator_projection, LearningOwnerSnapshotV1,
 };
+use aidens_contracts::canonical_stack;
 use aidens_contracts::{
     AiDENsRunBundleV3, AiDENsRunChildReceiptV1, ArtifactKindV1, LearningCoordinatorDispositionV1,
     LearningCoordinatorProjectionV1, LearningCoordinatorStageV1, NextLearningActionV1,
@@ -22,6 +23,7 @@ use semantic_memory::{
     ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1, ProcedureOwnerSnapshotV1,
     ProcedureReplaySnapshotV1,
 };
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -38,6 +40,86 @@ pub struct LearningOwnerLocatorV1 {
     pub bundle_run_id: Option<String>,
     pub adjudication_id: Option<String>,
     pub replay_id: Option<String>,
+}
+
+/// A digest-bound locator and identity manifest for a learning run.
+///
+/// This handle identifies the owner stores and their expected artifacts. It is
+/// not workflow truth; reconstruction must still read and verify every owner.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LearningRunHandleV1 {
+    pub run_id: String,
+    pub candidate_artifact_id: String,
+    pub tested_receipt_id: String,
+    pub effectful_receipt_id: String,
+    pub preflight_receipt_id: String,
+    pub execution_receipt_id: String,
+    pub evidence_bundle_id: String,
+    pub receipt_root: PathBuf,
+    pub memory_store_root: PathBuf,
+    pub forge_store_root: PathBuf,
+    pub publication_namespace: String,
+    pub handle_digest: String,
+}
+
+impl LearningRunHandleV1 {
+    pub fn expected_handle_digest(&self) -> Result<String, String> {
+        let material = serde_json::json!({
+            "run_id": self.run_id,
+            "candidate_artifact_id": self.candidate_artifact_id,
+            "tested_receipt_id": self.tested_receipt_id,
+            "effectful_receipt_id": self.effectful_receipt_id,
+            "preflight_receipt_id": self.preflight_receipt_id,
+            "execution_receipt_id": self.execution_receipt_id,
+            "evidence_bundle_id": self.evidence_bundle_id,
+            "receipt_root": self.receipt_root,
+            "memory_store_root": self.memory_store_root,
+            "forge_store_root": self.forge_store_root,
+            "publication_namespace": self.publication_namespace,
+        });
+        canonical_stack::digest_json(&material)
+            .map(|digest| format!("blake3:{}", digest.hex()))
+            .map_err(|error| error.to_string())
+    }
+
+    pub fn validate_digest(&self) -> Result<(), String> {
+        if self.handle_digest != self.expected_handle_digest()? {
+            return Err("handle_digest does not bind handle material".into());
+        }
+        Ok(())
+    }
+
+    fn to_locator(&self) -> Result<LearningOwnerLocatorV1, LearningResumeError> {
+        self.validate_digest()
+            .map_err(LearningResumeError::InvalidLocator)?;
+        Ok(LearningOwnerLocatorV1 {
+            memory_store_root: self.memory_store_root.clone(),
+            run_bundle_store_root: self.receipt_root.clone(),
+            forge_store_root: self.forge_store_root.clone(),
+            run_id: self.run_id.clone(),
+            candidate_artifact_id: self.candidate_artifact_id.clone(),
+            tested_receipt_id: self.tested_receipt_id.clone(),
+            bundle_run_id: Some(self.run_id.clone()),
+            adjudication_id: None,
+            replay_id: None,
+        })
+    }
+}
+
+pub trait LearningResumeLocator {
+    fn to_owner_locator(&self) -> Result<LearningOwnerLocatorV1, LearningResumeError>;
+}
+
+impl LearningResumeLocator for LearningOwnerLocatorV1 {
+    fn to_owner_locator(&self) -> Result<LearningOwnerLocatorV1, LearningResumeError> {
+        Ok(self.clone())
+    }
+}
+
+impl LearningResumeLocator for LearningRunHandleV1 {
+    fn to_owner_locator(&self) -> Result<LearningOwnerLocatorV1, LearningResumeError> {
+        self.to_locator()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -70,10 +152,11 @@ pub enum LearningResumeError {
     ReplayConflict,
 }
 
-pub async fn rebuild_learning_owner_snapshot(
-    locator: &LearningOwnerLocatorV1,
+pub async fn rebuild_learning_owner_snapshot<L: LearningResumeLocator + ?Sized>(
+    locator: &L,
 ) -> Result<LearningResumeReadbackV1, LearningResumeError> {
-    validate_locator(locator)?;
+    let locator = locator.to_owner_locator()?;
+    validate_locator(&locator)?;
 
     let memory = MemoryStore::open(MemoryConfig {
         base_dir: locator.memory_store_root.clone(),
@@ -131,7 +214,7 @@ pub async fn rebuild_learning_owner_snapshot(
     let mut run_bundle = None;
     let mut bundle_children: Vec<AiDENsRunChildReceiptV1> = Vec::new();
 
-    if let Some(inspection) = load_run_bundle_inspection(locator).await? {
+    if let Some(inspection) = load_run_bundle_inspection(&locator).await? {
         let children = decode_bundle_children(&inspection)?;
         run_bundle = Some(inspection);
         bundle_children = children;
@@ -178,8 +261,8 @@ pub async fn rebuild_learning_owner_snapshot(
                         owner_snapshot.artifact.artifact_digest.clone(),
                     )
                     .map_err(|error| LearningResumeError::ForgeRead(error.to_string()))?,
-                    evidence_bundle_id,
-                    evidence_bundle_digest: IdentityDigest::new(evidence_bundle_digest)
+                    evidence_bundle_id: evidence_bundle_id.clone(),
+                    evidence_bundle_digest: IdentityDigest::new(evidence_bundle_digest.clone())
                         .map_err(|error| LearningResumeError::ForgeRead(error.to_string()))?,
                 },
             )
@@ -190,6 +273,8 @@ pub async fn rebuild_learning_owner_snapshot(
             &loaded,
             locator.run_id.clone(),
             &tested_lifecycle_receipt,
+            &owner_snapshot,
+            Some(&(evidence_bundle_id, evidence_bundle_digest)),
         )?;
         adjudication = Some(loaded);
     }
@@ -322,6 +407,13 @@ pub async fn close_learning_from_owners(
 async fn load_run_bundle_inspection(
     locator: &LearningOwnerLocatorV1,
 ) -> Result<Option<RunBundleStoreInspection>, LearningResumeError> {
+    if let Some(bundle_run_id) = locator.bundle_run_id.as_deref() {
+        if bundle_run_id != locator.run_id {
+            return Err(LearningResumeError::RunBundleRead(
+                "run-bundle locator has a mixed run id".into(),
+            ));
+        }
+    }
     let run_id = locator
         .bundle_run_id
         .as_deref()
@@ -332,7 +424,15 @@ async fn load_run_bundle_inspection(
     .map_err(|error| LearningResumeError::RunBundleRead(error.to_string()))?;
 
     match store.inspect(run_id) {
-        Ok(inspection) => Ok(Some(inspection)),
+        Ok(inspection) => {
+            let stored_run_id = inspection.bundle.pointer("/run_id").and_then(Value::as_str);
+            if stored_run_id != Some(locator.run_id.as_str()) {
+                return Err(LearningResumeError::RunBundleRead(
+                    "run bundle contains a mixed run id".into(),
+                ));
+            }
+            Ok(Some(inspection))
+        }
         Err(RunBundleStoreError::NotFound(_)) => Ok(None),
         Err(error) => Err(LearningResumeError::RunBundleRead(error.to_string())),
     }
@@ -556,17 +656,68 @@ fn apply_adjudication(
     adjudication: &CandidatePromotionAdjudicationV1,
     run_id: String,
     tested_lifecycle_receipt: &ProcedureLifecycleReceiptV1,
+    owner_snapshot: &ProcedureOwnerSnapshotV1,
+    evidence_bundle_binding: Option<&(String, String)>,
 ) -> Result<(), LearningResumeError> {
-    if tested_lifecycle_receipt.disposition != ProcedureLifecycleDispositionV1::Promoted
-        && tested_lifecycle_receipt.disposition != ProcedureLifecycleDispositionV1::Quarantined
-        && tested_lifecycle_receipt.disposition != ProcedureLifecycleDispositionV1::RolledBack
-        && tested_lifecycle_receipt.disposition != ProcedureLifecycleDispositionV1::Revoked
-    {
+    if !matches!(
+        tested_lifecycle_receipt.disposition,
+        ProcedureLifecycleDispositionV1::Tested
+            | ProcedureLifecycleDispositionV1::Promoted
+            | ProcedureLifecycleDispositionV1::Quarantined
+            | ProcedureLifecycleDispositionV1::RolledBack
+            | ProcedureLifecycleDispositionV1::Revoked
+    ) {
         return Err(LearningResumeError::OwnerRead(
             "lifecycle stage not eligible for adjudication binding".into(),
         ));
     }
 
+    let candidate_digest = IdentityDigest::new(owner_snapshot.artifact.artifact_digest.clone())
+        .map_err(|error| LearningResumeError::ForgeRead(error.to_string()))?;
+    if adjudication.candidate_id != owner_snapshot.artifact.artifact_id
+        || adjudication.candidate_id != tested_lifecycle_receipt.artifact_id
+        || adjudication.candidate_digest != candidate_digest
+    {
+        return Err(LearningResumeError::ForgeRead(
+            "candidate binding does not close across owner receipts".into(),
+        ));
+    }
+
+    let effectful = owner_snapshot
+        .effectful_receipt
+        .as_ref()
+        .ok_or_else(|| LearningResumeError::ForgeRead("missing effectful owner receipt".into()))?;
+    let effectful_digest = IdentityDigest::new(effectful.artifact_digest.clone())
+        .map_err(|error| LearningResumeError::ForgeRead(error.to_string()))?;
+    if effectful.artifact_id != owner_snapshot.artifact.artifact_id
+        || effectful_digest != adjudication.candidate_digest
+        || snapshot.owner_binding_digests.effectful_evidence.as_deref()
+            != Some(effectful.receipt_digest.as_str())
+    {
+        return Err(LearningResumeError::ForgeRead(
+            "effectful binding does not close across owner receipts".into(),
+        ));
+    }
+
+    if let Some((bundle_id, bundle_digest)) = evidence_bundle_binding {
+        let expected_bundle_digest = IdentityDigest::new(bundle_digest.clone())
+            .map_err(|error| LearningResumeError::ForgeRead(error.to_string()))?;
+        if adjudication.evidence_bundle_id != *bundle_id
+            || adjudication.evidence_bundle_digest != expected_bundle_digest
+        {
+            return Err(LearningResumeError::ForgeRead(
+                "evidence bundle binding does not close with adjudication".into(),
+            ));
+        }
+    } else {
+        return Err(LearningResumeError::ForgeRead(
+            "missing evidence bundle binding".into(),
+        ));
+    }
+
+    /* The candidate may still be Tested here: adjudication closes the
+     * candidate/effectful/bundle identities; it does not itself mutate the
+     * lifecycle owner or assert promotion. */
     snapshot.adjudicated = Some(pointer(
         "verification-adjudication",
         &adjudication.adjudication_id,
