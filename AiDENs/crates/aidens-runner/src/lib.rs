@@ -52,6 +52,7 @@ pub mod learning_experiment;
 pub mod learning_lifecycle;
 pub mod learning_publication;
 pub mod learning_replay;
+pub mod learning_resume;
 pub mod learning_sealed_replay;
 pub mod learning_terminal;
 mod provider_tool;

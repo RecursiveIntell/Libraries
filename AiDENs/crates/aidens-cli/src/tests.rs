@@ -2,6 +2,8 @@ use super::*;
 use crate::package::P24_REQUIRED_GATE_COMMANDS;
 use aidens_contracts::{MemoryModeV1, ReportLevelV1};
 use clap::CommandFactory;
+use semantic_memory::NamespaceScopeV1;
+use semantic_memory::ProcedureActionPermitV1;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use verification_adjudication::{
@@ -398,25 +400,59 @@ fn learning_corpus_rejects_tampered_fixture() {
 }
 
 #[test]
-fn learning_compare_and_replay_are_explicitly_unavailable() {
+fn learning_compare_without_owner_request_is_explicitly_unavailable() {
     let source = workspace_root().join("fixtures/learning-coding-agent/v1/manifest.json");
-    for action in ["compare", "replay"] {
-        let command = match action {
-            "compare" => LearningCommand::Compare {
-                source: Some(source.to_str().unwrap().into()),
-                request: None,
-            },
-            _ => LearningCommand::Replay {
-                source: Some(source.to_str().unwrap().into()),
-                request: None,
-            },
-        };
-        let report = learning_command(command).unwrap();
-        let value: Value = serde_json::from_str(&report).unwrap();
-        assert_eq!(value["terminal"]["state"], "blocked-evidence-insufficient");
-        assert_eq!(value["availability"], "unavailable");
-        assert_ne!(learning_run_exit_code(&report), 0);
-    }
+    let report = learning_command(LearningCommand::Compare {
+        source: Some(source.to_str().unwrap().into()),
+        request: None,
+    })
+    .unwrap();
+    let value: Value = serde_json::from_str(&report).unwrap();
+    assert_eq!(value["terminal"]["state"], "blocked-evidence-insufficient");
+    assert_eq!(value["availability"], "unavailable");
+    assert_ne!(learning_run_exit_code(&report), 0);
+}
+
+#[test]
+fn learning_replay_real_dispatch() {
+    let source = workspace_root().join("fixtures/learning-coding-agent/v1/manifest.json");
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::create_dir_all(root.join("operational-store")).unwrap();
+
+    let request_path = root.join("replay_request.json");
+    let permit = ProcedureActionPermitV1::elevated(
+        "principal:cli-replay",
+        "caller:cli-replay",
+        NamespaceScopeV1::exact("aidens"),
+    );
+    let out = root.join("replay_report.json");
+    std::fs::write(
+        &request_path,
+        serde_json::to_vec(&serde_json::json!({
+            "schema": "AiDENsOwnerReplayRequestV38",
+            "replay_id": "replay:cli-replay-missing-snapshot",
+            "operational_store": root.join("operational-store"),
+            "fixture": root,
+            "execution_permits": [permit],
+            "run_id": "run:cli-replay",
+            "attempt_id": "attempt:cli-replay",
+            "trial_id": "trial:cli-replay",
+            "trace_id": "trial-trace",
+        }))
+        .unwrap(),
+    )
+    .unwrap();
+    let error = learning_command(LearningCommand::Replay {
+        source: Some(source.to_str().unwrap().into()),
+        request: Some(request_path.to_str().unwrap().into()),
+        out: Some(out.to_str().unwrap().into()),
+    })
+    .unwrap_err()
+    .to_string();
+    assert!(!error.contains("unsupported-without-canonical-runner"));
+    assert!(!out.exists());
+    std::fs::remove_dir_all(root).unwrap();
 }
 
 #[test]
@@ -523,6 +559,40 @@ fn clap_exposes_real_sandbox_request_surface() {
             }
         } if mode == "real-sandbox" && request == "request.json"
     ));
+}
+
+#[test]
+fn clap_exposes_replay_out_option() {
+    let cli = Cli::try_parse_from([
+        "aidens",
+        "learn",
+        "replay",
+        "--request",
+        "request.json",
+        "--out",
+        "report.json",
+    ])
+    .unwrap();
+    assert!(matches!(
+        cli.command,
+        Command::Learn {
+            command: LearningCommand::Replay {
+                request: Some(_),
+                out: Some(_),
+                ..
+            }
+        }
+    ));
+    match cli.command {
+        Command::Learn {
+            command: LearningCommand::Replay { request, out, .. },
+            ..
+        } => {
+            assert_eq!(request.as_deref(), Some("request.json"));
+            assert_eq!(out.as_deref(), Some("report.json"));
+        }
+        _ => unreachable!("expected replay command"),
+    }
 }
 
 #[test]

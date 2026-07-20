@@ -44,6 +44,10 @@ use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLife
 use aidens_runner::learning_publication::{
     publish_terminal_evidence, TerminalPublicationRequestV1,
 };
+use aidens_runner::learning_sealed_replay::{
+    execute_owner_admitted_sealed_replay, prepare_owner_admitted_sealed_replay_material,
+    OwnerAdmittedSealedReplayMaterialV1, OwnerAdmittedSealedReplayRequestV1,
+};
 use aidens_runner::{PlanActVerifyLoopV1, PlanActVerifyLoopV1Output, PlanActVerifyOutcomeV1};
 use aidens_tool_kit::{
     registry_from_enabled_bundles, safe_coding_registry_for_current_dir,
@@ -54,7 +58,8 @@ use anyhow::{bail, Context, Result};
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
 use semantic_memory::{
-    compare_replay as compare_owner_replay, ProcedureReplayComparisonV1, ProcedureReplayInputsV1,
+    compare_replay as compare_owner_replay, ProcedureActionPermitV1, ProcedureReplayComparisonV1,
+    ProcedureReplayInputsV1, ProcedureReplayOutcomeV1,
 };
 use semantic_memory::{MemoryConfig, MemoryStore, ProcedureLifecyclePermitV1};
 use serde::Deserialize;
@@ -298,6 +303,8 @@ pub enum LearningCommand {
         /// and the existing runner path are available.
         #[arg(long)]
         request: Option<String>,
+        #[arg(long)]
+        out: Option<String>,
     },
     Publish {
         #[arg(long)]
@@ -329,6 +336,13 @@ struct OwnerReplayCompareRequestV38 {
 struct OwnerReplayRequestV38 {
     schema: String,
     replay_id: String,
+    operational_store: PathBuf,
+    fixture: PathBuf,
+    execution_permits: Vec<ProcedureActionPermitV1>,
+    run_id: String,
+    attempt_id: String,
+    trial_id: String,
+    trace_id: String,
 }
 
 /// Compare owner-retained replay identities. AiDENs does not derive or override any digest.
@@ -1056,6 +1070,71 @@ fn learn_compare_replay_command(
     }))?)
 }
 
+fn learn_replay_command(request: &str, out: Option<&str>) -> Result<String> {
+    let envelope: OwnerReplayRequestV38 =
+        read_typed_json(Path::new(request), "V38 owner replay request")?;
+    if envelope.schema != "AiDENsOwnerReplayRequestV38" {
+        bail!("V38 owner replay request schema is invalid");
+    }
+    if envelope.replay_id.trim().is_empty()
+        || envelope.run_id.trim().is_empty()
+        || envelope.attempt_id.trim().is_empty()
+        || envelope.trial_id.trim().is_empty()
+        || envelope.trace_id.trim().is_empty()
+    {
+        bail!("V38 owner replay request has missing required fields");
+    }
+    if !envelope.operational_store.exists() {
+        bail!("V38 owner replay request operational_store must exist");
+    }
+
+    let request = OwnerAdmittedSealedReplayRequestV1 {
+        replay_id: envelope.replay_id,
+        operational_store: envelope.operational_store,
+        fixture: envelope.fixture,
+        execution_permits: envelope.execution_permits,
+        run_id: envelope.run_id,
+        attempt_id: envelope.attempt_id,
+        trial_id: envelope.trial_id,
+        trace_id: envelope.trace_id,
+    };
+    let runtime = tokio::runtime::Runtime::new().context("create owner replay runtime")?;
+    let material: OwnerAdmittedSealedReplayMaterialV1 = runtime
+        .block_on(prepare_owner_admitted_sealed_replay_material(request))
+        .context("owner-admitted sealed replay materialization failed")?;
+    let outcome = runtime
+        .block_on(execute_owner_admitted_sealed_replay(material))
+        .context("owner-admitted sealed replay execution failed")?;
+    let terminal_state = if outcome.execution_report.verified
+        && outcome.replay_result.outcome == ProcedureReplayOutcomeV1::ExactMatch
+    {
+        "owner-replay-recorded"
+    } else {
+        "blocked-evidence-insufficient"
+    };
+    let report = serde_json::json!({
+        "schema": "AiDENsLearningReplayReportV1",
+        "operation": "replay",
+        "availability": "available",
+        "requested_action": "replay",
+        "outcome": outcome.replay_result.outcome,
+        "reason_codes": outcome.replay_result.reason_codes,
+        "execution": {
+            "receipt_id": outcome.execution_receipt_id,
+            "preflight_receipt_id": outcome.execution_preflight_receipt_id,
+            "terminal_receipt_id": outcome.execution_terminal_receipt_id,
+            "report": outcome.execution_report,
+        },
+        "terminal": {
+            "state": terminal_state,
+        },
+    });
+    if let Some(path) = out {
+        write_json_file(Path::new(path), &report)?;
+    }
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
 fn read_typed_json<T>(path: &Path, label: &str) -> Result<T>
 where
     T: for<'de> Deserialize<'de>,
@@ -1473,21 +1552,11 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
         LearningCommand::Compare { source, request } => {
             learn_compare_replay_command("compare", source.as_deref(), request.as_deref())
         }
-        LearningCommand::Replay { source, request } => {
-            // The request surface is deliberately additive, but replay execution is not
-            // synthesized here: only the existing sealed owner runner may produce a result.
-            // Until a complete owner-bound runner envelope is supplied, return typed
-            // NotAvailable and never persist a fabricated result.
-            if let Some(request) = request {
-                let envelope: OwnerReplayRequestV38 =
-                    read_typed_json(Path::new(&request), "V38 owner replay request")?;
-                if envelope.schema != "AiDENsOwnerReplayRequestV38"
-                    || envelope.replay_id.trim().is_empty()
-                {
-                    bail!("V38 owner replay request schema or replay_id is invalid");
-                }
-            }
-            learn_compare_replay_command("replay", source.as_deref(), None)
+        LearningCommand::Replay { request, out, .. } => {
+            let request = request
+                .as_deref()
+                .ok_or_else(|| anyhow::anyhow!("--request is required for replay"))?;
+            learn_replay_command(request, out.as_deref())
         }
         LearningCommand::Publish { request, out } => {
             learn_publish_command(&request, out.as_deref())

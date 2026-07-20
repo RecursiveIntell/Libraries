@@ -57,5 +57,6 @@ run cargo_fmt cargo fmt --all --check
 run cargo_check cargo check --workspace --locked --all-targets
 run cargo_test cargo test --workspace --locked --all-targets
 run cargo_clippy cargo clippy --workspace --locked --all-targets -- -D warnings
+run learning_agent_release_gate bash scripts/verify_learning_agent.sh .
 
 echo "[verify-current] PASS: release truth, classification, invariants, and build gates passed"
