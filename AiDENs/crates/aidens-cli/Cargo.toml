@@ -28,6 +28,7 @@ semantic-memory.workspace = true
 verification-adjudication.workspace = true
 typed-patch.workspace = true
 aidens-tool-kit = { path = "../aidens-tool-kit" }
+authority-delegation.workspace = true
 anyhow.workspace = true
 chrono.workspace = true
 clap.workspace = true

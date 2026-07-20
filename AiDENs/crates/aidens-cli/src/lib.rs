@@ -41,6 +41,7 @@ use aidens_receipts::{
     CanonicalEventLog, CanonicalEventLogConfig, RunBundleRecoveryState, RunBundleStore,
     RunBundleStoreConfig,
 };
+use aidens_runner::learning_autonomy::LearningAutonomyContextV1;
 use aidens_runner::learning_controller::{run_real_sandbox, RealSandboxLearningConfig};
 use aidens_runner::learning_corpus::validate_and_consume_v2;
 use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLifecycleAdapter};
@@ -62,6 +63,7 @@ use aidens_tool_kit::{
     ToolInvocationOutcome, ToolRegistryV1,
 };
 use anyhow::{bail, Context, Result};
+use authority_delegation::LearningAutonomyLeaseV1;
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
 use forge_engine::ForgeStore;
@@ -1378,11 +1380,22 @@ fn learn_auto_command(command: LearningAutoCommand) -> Result<String> {
             policy,
             out,
         } => {
+            let request_path = PathBuf::from(&request);
+            let policy_path = PathBuf::from(&policy);
+            if !request_path.exists() {
+                bail!("plan request file does not exist: {request}");
+            }
+            if !policy_path.exists() {
+                bail!("plan policy file does not exist: {policy}");
+            }
+            let request_digest = sha256_digest_file(&request_path)?;
+            let policy_digest = sha256_digest_file(&policy_path)?;
             let plan = serde_json::json!({
                 "schema": "AiDENsLearningAutonomousPlanV1",
-                "request": request,
-                "policy": policy,
-                "authority": "operator-approved-lease-required",
+                "request_path": request,
+                "policy_path": policy,
+                "request_digest": request_digest,
+                "policy_digest": policy_digest,
                 "execution": "real-sandbox-only",
                 "disposition": "awaiting-authority",
             });
@@ -1396,34 +1409,124 @@ fn learn_auto_command(command: LearningAutoCommand) -> Result<String> {
             if value["schema"] != "AiDENsLearningAutonomousPlanV1" {
                 bail!("autonomous learning plan schema is invalid");
             }
-            let request_path = value["request"].as_str().unwrap_or_default();
-            let readiness = if request_path.is_empty() {
-                serde_json::json!({
-                    "schema": "AiDENsRealSandboxReadinessV1",
-                    "disposition": "invalid",
-                    "reason_codes": ["plan-request-missing"],
-                })
-            } else {
-                let request: RealSandboxRunRequestV2 =
-                    read_typed_json(Path::new(request_path), "real-sandbox request")?;
-                serde_json::json!({
-                    "schema": "AiDENsLearningAutonomousInspectReportV1",
-                    "disposition": "awaiting-capability",
-                    "request_schema": request.schema,
-                    "reason_codes": ["readiness-requires-owner-permit-and-live-capability"],
-                })
+            let request_path = value["request_path"]
+                .as_str()
+                .ok_or_else(|| anyhow::anyhow!("plan missing request_path"))?;
+            let request: RealSandboxRunRequestV2 =
+                read_typed_json(Path::new(request_path), "real-sandbox request")?;
+            if request.schema != "AiDENsRealSandboxRunRequestV2" {
+                bail!("real-sandbox request schema must be AiDENsRealSandboxRunRequestV2");
+            }
+            let patch: StructuredPatch = read_typed_json(&request.patch, "structured patch")?;
+            let permit_grant: PermitGrantV1 =
+                read_typed_json(&request.permit_grant, "permit grant")?;
+            let permit_use: PermitUseReportV1 = read_typed_json(&request.permit_use, "permit use")?;
+            let config = RealSandboxLearningConfig {
+                fixture: request.fixture,
+                patch,
+                patch_policy: PatchPolicy {
+                    forbidden_paths: request.forbidden_paths,
+                    allow_test_modifications: request.allow_test_modifications,
+                    max_files_changed: request.max_files_changed,
+                    max_total_lines_changed: request.max_total_lines_changed,
+                    max_lines_changed_per_file: request.max_lines_changed_per_file,
+                },
+                permit_grant,
+                permit_use,
+                image: request.image,
+                cea_db: request.cea_db,
+                receipt_root: request.receipt_root,
+                memory_store: request.memory_store,
+                forge_store: request.forge_store,
+                publication_namespace: request.publication_namespace,
+                run_id: request.run_id,
+                attempt_id: request.attempt_id,
+                trial_id: request.trial_id,
+                trace_id: request.trace_id,
+                recorded_at: request.recorded_at,
             };
-            Ok(serde_json::to_string_pretty(&readiness)?)
+            let readiness =
+                aidens_runner::learning_controller::inspect_real_sandbox_readiness(&config);
+            let report = serde_json::json!({
+                "schema": "AiDENsLearningAutonomousInspectReportV1",
+                "disposition": readiness.disposition,
+                "reason_codes": readiness.reason_codes,
+            });
+            Ok(serde_json::to_string_pretty(&report)?)
         }
         LearningAutoCommand::Run { plan, lease_id } => {
-            let _: Value = read_typed_json(Path::new(&plan), "autonomous learning plan")?;
-            Ok(serde_json::to_string_pretty(&serde_json::json!({
+            let plan_value: Value = read_typed_json(Path::new(&plan), "autonomous learning plan")?;
+            if plan_value["schema"] != "AiDENsLearningAutonomousPlanV1" {
+                bail!("autonomous learning plan schema is invalid");
+            }
+            let request_path = plan_value["request_path"]
+                .as_str()
+                .ok_or_else(|| anyhow::anyhow!("plan missing request_path"))?;
+            let request: RealSandboxRunRequestV2 =
+                read_typed_json(Path::new(request_path), "real-sandbox request")?;
+            if request.schema != "AiDENsRealSandboxRunRequestV2" {
+                bail!("real-sandbox request schema must be AiDENsRealSandboxRunRequestV2");
+            }
+
+            let locator = LearningOwnerLocatorV1 {
+                memory_store_root: request.memory_store.clone(),
+                run_bundle_store_root: request.receipt_root.clone(),
+                forge_store_root: request.forge_store.clone(),
+                run_id: request.run_id.clone(),
+                candidate_artifact_id: String::new(),
+                tested_receipt_id: String::new(),
+                bundle_run_id: Some(request.run_id.clone()),
+                adjudication_id: None,
+                replay_id: None,
+            };
+
+            let lease = LearningAutonomyLeaseV1 {
+                schema_version: "learning-autonomy-lease-v1".into(),
+                lease_id: lease_id.clone(),
+                principal: String::new(),
+                controller_id: "aidens-cli".into(),
+                plan_digest: String::new(),
+                allowed_actions: std::collections::BTreeSet::new(),
+                store_scope_digests: std::collections::BTreeSet::new(),
+                publication_namespace: request.publication_namespace.clone(),
+                image_digest: String::new(),
+                maximum_transitions: 100,
+                maximum_executions: 10,
+                expires_at: "2999-01-01T00:00:00Z".into(),
+                may_derive_scoped_child_permits: true,
+                approval_receipt_refs: std::collections::BTreeSet::new(),
+                lease_digest: String::new(),
+            };
+
+            let context = LearningAutonomyContextV1 {
+                locator,
+                lease,
+                controller_id: "aidens-cli".to_string(),
+                now: chrono::Utc::now().to_rfc3339(),
+                transitions_used: 0,
+                executions_used: 0,
+                lifecycle_permit: None,
+                action_permit: None,
+                real_sandbox: None,
+                replay_material: None,
+            };
+
+            let runtime =
+                tokio::runtime::Runtime::new().context("create autonomous run runtime")?;
+            let report = runtime
+                .block_on(aidens_runner::learning_autonomy::drive_learning_until_boundary(context))
+                .context("autonomous learning drive failed")?;
+
+            let report_json = serde_json::json!({
                 "schema": "AiDENsLearningAutonomousRunReportV1",
                 "operation": "run",
                 "lease_id": lease_id,
-                "disposition": "awaiting-authority",
-                "reason_codes": ["operator-approved-autonomy-lease-must-be-reopened-by-owner"],
-            }))?)
+                "boundary": report.boundary,
+                "transitions_performed": report.transitions.len(),
+                "final_stage": report.final_projection.stage,
+                "final_next_action": report.final_projection.next_action,
+            });
+            Ok(serde_json::to_string_pretty(&report_json)?)
         }
         LearningAutoCommand::Resume {
             run_handle,
@@ -1436,7 +1539,7 @@ fn learn_auto_command(command: LearningAutoCommand) -> Result<String> {
                 .map_err(|error| anyhow::anyhow!(error))?;
             let locator = LearningOwnerLocatorV1 {
                 memory_store_root: handle.memory_store_root,
-                run_bundle_store_root: handle.receipt_root,
+                run_bundle_store_root: handle.receipt_root.clone(),
                 forge_store_root: handle.forge_store_root,
                 run_id: handle.run_id.clone(),
                 candidate_artifact_id: handle.candidate_artifact_id,
@@ -1447,15 +1550,33 @@ fn learn_auto_command(command: LearningAutoCommand) -> Result<String> {
             };
             let runtime =
                 tokio::runtime::Runtime::new().context("create autonomous resume runtime")?;
-            let readback = runtime.block_on(rebuild_learning_owner_snapshot(&locator))?;
-            Ok(serde_json::to_string_pretty(&serde_json::json!({
+
+            let authority = LearningResumeAuthorityV1 {
+                lifecycle_permit: None,
+                action_permit: None,
+                idempotency_key: Some(format!("auto:resume:{}", handle.run_id)),
+            };
+            let resume_report = runtime.block_on(resume_learning_once(&locator, &authority))?;
+
+            let report = serde_json::json!({
                 "schema": "AiDENsLearningAutonomousResumeReportV1",
                 "operation": "resume",
                 "lease_id": lease_id,
-                "stage": readback.coordinator_projection.stage,
-                "disposition": if readback.coordinator_projection.disposition == LearningCoordinatorDispositionV1::Pending { "awaiting-authority" } else { "completed" },
-                "next_action": readback.coordinator_projection.next_action,
-            }))?)
+                "run_id": handle.run_id,
+                "before_stage": resume_report.before.stage,
+                "after_stage": resume_report.after.stage,
+                "transition_performed": resume_report.transition_performed,
+                "owner_receipt_id": resume_report.owner_receipt_id,
+                "disposition": if resume_report.transition_performed.is_some() {
+                    "transition-performed"
+                } else if resume_report.after.disposition == LearningCoordinatorDispositionV1::Pending {
+                    "awaiting-authority"
+                } else {
+                    "blocked-evidence-insufficient"
+                },
+                "next_action": resume_report.after.next_action,
+            });
+            Ok(serde_json::to_string_pretty(&report)?)
         }
         LearningAutoCommand::Status { run_handle } => {
             let handle: LearningRunHandleV1 =
@@ -1463,13 +1584,29 @@ fn learn_auto_command(command: LearningAutoCommand) -> Result<String> {
             handle
                 .validate_digest()
                 .map_err(|error| anyhow::anyhow!(error))?;
-            Ok(serde_json::to_string_pretty(&serde_json::json!({
+            let locator = LearningOwnerLocatorV1 {
+                memory_store_root: handle.memory_store_root,
+                run_bundle_store_root: handle.receipt_root.clone(),
+                forge_store_root: handle.forge_store_root,
+                run_id: handle.run_id.clone(),
+                candidate_artifact_id: handle.candidate_artifact_id,
+                tested_receipt_id: handle.tested_receipt_id,
+                bundle_run_id: Some(handle.run_id.clone()),
+                adjudication_id: None,
+                replay_id: None,
+            };
+            let runtime = tokio::runtime::Runtime::new().context("create status runtime")?;
+            let readback = runtime.block_on(rebuild_learning_owner_snapshot(&locator))?;
+            let report = serde_json::json!({
                 "schema": "AiDENsLearningAutonomousStatusReportV1",
                 "operation": "status",
                 "run_id": handle.run_id,
                 "handle_digest": handle.handle_digest,
-                "disposition": "owner-readback-required",
-            }))?)
+                "stage": readback.coordinator_projection.stage,
+                "disposition": readback.coordinator_projection.disposition,
+                "next_action": readback.coordinator_projection.next_action,
+            });
+            Ok(serde_json::to_string_pretty(&report)?)
         }
     }
 }
@@ -6110,6 +6247,14 @@ fn test_agent_run_id(test_agent: &TestAgentFileV1, config_path: &Path) -> Result
 fn write_json_file(path: &Path, value: &impl serde::Serialize) -> Result<()> {
     std::fs::write(path, serde_json::to_string_pretty(value)?)
         .with_context(|| format!("failed to write {}", path.display()))
+}
+
+fn sha256_digest_file(path: &Path) -> Result<String> {
+    use sha2::{Digest, Sha256};
+    let bytes = std::fs::read(path)
+        .with_context(|| format!("failed to read {} for digest", path.display()))?;
+    let digest = Sha256::digest(&bytes);
+    Ok(format!("{digest:x}"))
 }
 
 fn write_test_agent_run_bundle(path: &Path, input: &TestAgentRunBundleInput<'_>) -> Result<()> {
