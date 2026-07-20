@@ -95,11 +95,11 @@ struct RegisteredCandidateV1 {
     effectful: ProcedureEffectfulEvaluationReceiptV1,
 }
 
-struct EffectfulRunCoreV1 {
-    report: EffectfulEvaluationReportV1,
-    preflight_id: String,
+pub(crate) struct EffectfulRunCoreV1 {
+    pub report: EffectfulEvaluationReportV1,
+    pub preflight_id: String,
     preflight_receipt: LearningPreflightReceiptV2,
-    terminal_id: String,
+    pub terminal_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -153,7 +153,7 @@ pub async fn run_real_sandbox(
     })
 }
 
-async fn execute_effectful_run(
+pub(crate) async fn execute_effectful_run(
     config: &RealSandboxLearningConfig,
 ) -> Result<EffectfulRunCoreV1, RealSandboxLearningError> {
     validate(config)?;

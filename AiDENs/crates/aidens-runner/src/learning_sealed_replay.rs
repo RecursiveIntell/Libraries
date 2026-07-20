@@ -1,20 +1,29 @@
 //! Prepare owner-admitted sealed replay material for replay execution.
 
-use semantic_memory::{
-    load_procedure_owner_snapshot, load_procedure_replay_snapshot,
-    verify_procedure_lifecycle_receipt_v1, MemoryConfig, MemoryError, MemoryStore,
-    ProcedureActionPermitV1, ProcedureLifecycleDispositionV1, ProcedureOwnerSnapshotV1,
-    ProcedureReplayInputsV1, ProcedureReplaySnapshotV1,
+use crate::learning_controller::{execute_effectful_run, RealSandboxLearningConfig};
+use aidens_contracts::{
+    ArtifactId, CanonicalToolSideEffectClass, PermitGrantV1, PermitUseReportV1,
 };
-use serde::Serialize;
+use aidens_receipts::{CanonicalEventLog, CanonicalEventLogConfig};
+use semantic_memory::{
+    compare_replay_observation, load_procedure_owner_snapshot, load_procedure_replay_snapshot,
+    procedure_replay_permit_ref, record_replay_result, verify_procedure_lifecycle_receipt_v1,
+    MemoryConfig, MemoryError, MemoryStore, ProcedureActionPermitV1,
+    ProcedureLifecycleDispositionV1, ProcedureOwnerSnapshotV1, ProcedureReplayInputsV1,
+    ProcedureReplayOutcomeV1, ProcedureReplayResultV1, ProcedureReplaySnapshotV1,
+};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeSet;
+use std::future::Future;
 use std::path::{Path, PathBuf};
 use typed_patch::{validate_patch, PatchPolicy, StructuredPatch};
 use walkdir::WalkDir;
 
 const PROCEDURE_REPLAY_ADMISSION_SCHEMA: &str = "procedure_replay_v1";
 const PATCH_TOOL: &str = "typed-patch:structured-apply:1";
+const OWNER_ADMITTED_SEALED_REPLAY_EXECUTION_SCHEMA: &str =
+    "owner-admitted-sealed-replay-execution-v1";
 
 #[derive(Debug, Clone)]
 pub struct OwnerAdmittedSealedReplayRequestV1 {
@@ -47,12 +56,178 @@ pub struct OwnerAdmittedSealedReplayMaterialV1 {
     pub admission_digest: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct OwnerAdmittedSealedReplayReportV1 {
+    pub replay_id: String,
+    pub execution_receipt_id: String,
+    pub execution_preflight_receipt_id: String,
+    pub execution_terminal_receipt_id: String,
+    pub execution_report: crate::learning_effectful::EffectfulEvaluationReportV1,
+    pub replay_result: ProcedureReplayResultV1,
+    pub replay_snapshot: ProcedureReplaySnapshotV1,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct OwnerAdmittedSealedReplayExecutionV1 {
+    pub report: crate::learning_effectful::EffectfulEvaluationReportV1,
+    pub preflight_receipt_id: String,
+    pub terminal_receipt_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct OwnerAdmittedSealedReplayExecutionReceiptV1 {
+    pub schema: String,
+    pub replay_id: String,
+    pub preflight_receipt_id: String,
+    pub terminal_receipt_id: String,
+    pub execution_report: crate::learning_effectful::EffectfulEvaluationReportV1,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum OwnerAdmittedSealedReplayError {
     #[error("invalid owner-admitted replay request: {0}")]
     Invalid(String),
     #[error("store operation failed: {0}")]
     Store(#[from] MemoryError),
+    #[error("execution failed: {0}")]
+    Execution(String),
+}
+
+pub async fn execute_owner_admitted_sealed_replay(
+    material: OwnerAdmittedSealedReplayMaterialV1,
+) -> Result<OwnerAdmittedSealedReplayReportV1, OwnerAdmittedSealedReplayError> {
+    execute_owner_admitted_sealed_replay_with_executor(
+        material,
+        |config: RealSandboxLearningConfig| async move {
+            let core = execute_effectful_run(&config)
+                .await
+                .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+            Ok(OwnerAdmittedSealedReplayExecutionV1 {
+                report: core.report,
+                preflight_receipt_id: core.preflight_id,
+                terminal_receipt_id: core.terminal_id,
+            })
+        },
+    )
+    .await
+}
+
+pub(crate) async fn execute_owner_admitted_sealed_replay_with_executor<F, Fut>(
+    material: OwnerAdmittedSealedReplayMaterialV1,
+    mut executor: F,
+) -> Result<OwnerAdmittedSealedReplayReportV1, OwnerAdmittedSealedReplayError>
+where
+    F: FnMut(RealSandboxLearningConfig) -> Fut,
+    Fut: Future<
+        Output = Result<OwnerAdmittedSealedReplayExecutionV1, OwnerAdmittedSealedReplayError>,
+    >,
+{
+    let memory = MemoryStore::open(MemoryConfig {
+        base_dir: material.operational_store.clone(),
+        ..MemoryConfig::default()
+    })?;
+    let snapshot = load_procedure_replay_snapshot(&memory, material.replay_id.clone()).await?;
+    validate_admission(&snapshot)?;
+
+    let permit = locate_matching_permit(&snapshot, &material.execution_permits)?;
+    let config = build_execution_config(&material, permit)?;
+
+    let execution_receipt_id = execution_receipt_id(&material);
+    let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(
+        config.receipt_root.clone(),
+    ))
+    .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+
+    let execution = match log.inspect(&execution_receipt_id) {
+        Ok(record) => {
+            let stored = verify_log_record(&log, &execution_receipt_id, &record.body)?;
+            let receipt: OwnerAdmittedSealedReplayExecutionReceiptV1 =
+                serde_json::from_value(stored).map_err(|error| {
+                    OwnerAdmittedSealedReplayError::Execution(format!(
+                        "existing execution receipt is not schema-compatible: {error}"
+                    ))
+                })?;
+            if receipt.replay_id != material.replay_id {
+                return Err(OwnerAdmittedSealedReplayError::Execution(
+                    "existing execution receipt belongs to a different replay id".into(),
+                ));
+            }
+            Ok::<OwnerAdmittedSealedReplayExecutionV1, OwnerAdmittedSealedReplayError>(
+                OwnerAdmittedSealedReplayExecutionV1 {
+                    report: receipt.execution_report,
+                    preflight_receipt_id: receipt.preflight_receipt_id,
+                    terminal_receipt_id: receipt.terminal_receipt_id,
+                },
+            )
+        }
+        Err(canonical_error) => {
+            if !matches!(
+                canonical_error,
+                aidens_receipts::CanonicalEventLogError::NotFound(_)
+            ) {
+                return Err(OwnerAdmittedSealedReplayError::Execution(
+                    canonical_error.to_string(),
+                ));
+            }
+
+            let execution = executor(config.clone()).await?;
+            let receipt = OwnerAdmittedSealedReplayExecutionReceiptV1 {
+                schema: OWNER_ADMITTED_SEALED_REPLAY_EXECUTION_SCHEMA.into(),
+                replay_id: material.replay_id.clone(),
+                preflight_receipt_id: execution.preflight_receipt_id.clone(),
+                terminal_receipt_id: execution.terminal_receipt_id.clone(),
+                execution_report: execution.report.clone(),
+            };
+
+            let body = serde_json::to_value(&receipt)
+                .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+            log.append_json(
+                "aidens-runner",
+                OWNER_ADMITTED_SEALED_REPLAY_EXECUTION_SCHEMA,
+                execution_receipt_id.clone(),
+                body.clone(),
+            )
+            .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+            let stored = verify_log_record(
+                &log,
+                &execution_receipt_id,
+                &log.inspect(&execution_receipt_id)
+                    .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?
+                    .body,
+            )?;
+            let _: Value = serde_json::from_value(stored)
+                .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+            Ok::<OwnerAdmittedSealedReplayExecutionV1, OwnerAdmittedSealedReplayError>(execution)
+        }
+    }?;
+
+    let observed_inputs = observed_inputs(&snapshot.inputs, &execution, &material.patch)?;
+    let mut comparison = compare_replay_observation(&snapshot.inputs, &observed_inputs);
+    if !execution.report.verified {
+        comparison.outcome = ProcedureReplayOutcomeV1::Failed;
+        comparison
+            .reason_codes
+            .push("execution-not-verified".into());
+    }
+    let result = ProcedureReplayResultV1 {
+        replay_id: material.replay_id.clone(),
+        result_digest: replay_result_digest(&snapshot.inputs, &observed_inputs, &comparison)?,
+        outcome: comparison.outcome,
+        reason_codes: comparison.reason_codes,
+    };
+    record_replay_result(&memory, result.clone()).await?;
+
+    let snapshot = load_procedure_replay_snapshot(&memory, material.replay_id).await?;
+
+    Ok(OwnerAdmittedSealedReplayReportV1 {
+        replay_id: snapshot.inputs.replay_id.clone(),
+        execution_receipt_id,
+        execution_preflight_receipt_id: execution.preflight_receipt_id,
+        execution_terminal_receipt_id: execution.terminal_receipt_id,
+        execution_report: execution.report,
+        replay_result: result,
+        replay_snapshot: snapshot,
+    })
 }
 
 pub async fn prepare_owner_admitted_sealed_replay_material(
@@ -120,6 +295,147 @@ pub async fn prepare_owner_admitted_sealed_replay_material(
         promotion_receipt_digest: lifecycle.receipt_digest.clone(),
         admission_digest: replay.admission.admission_digest,
     })
+}
+
+fn locate_matching_permit(
+    snapshot: &ProcedureReplaySnapshotV1,
+    permits: &[ProcedureActionPermitV1],
+) -> Result<ProcedureActionPermitV1, OwnerAdmittedSealedReplayError> {
+    let expected = normalize_digest(&snapshot.inputs.action_permit_ref);
+    for permit in permits {
+        let binding =
+            procedure_replay_permit_ref(permit, &snapshot.inputs.replay_id).map_err(|error| {
+                OwnerAdmittedSealedReplayError::Invalid(format!(
+                    "execution permit binding is not verifiable: {error}",
+                ))
+            })?;
+        if normalize_digest(&binding) == expected {
+            return Ok(permit.clone());
+        }
+    }
+    Err(OwnerAdmittedSealedReplayError::Invalid(
+        "no execution permit matched replay action permit binding".into(),
+    ))
+}
+
+fn build_execution_config(
+    material: &OwnerAdmittedSealedReplayMaterialV1,
+    permit: ProcedureActionPermitV1,
+) -> Result<RealSandboxLearningConfig, OwnerAdmittedSealedReplayError> {
+    let replay_root = material.operational_store.join("sealed-replay");
+    std::fs::create_dir_all(&replay_root)
+        .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+
+    let receipt_root = replay_root.join("receipts");
+    std::fs::create_dir_all(&receipt_root)
+        .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+
+    let run_id = ArtifactId::new(material.run_id.clone());
+    let attempt_id = ArtifactId::new(material.attempt_id.clone());
+    let fixture_root = material.fixture_path.to_string_lossy().to_string();
+    let mut permit_grant = PermitGrantV1::scoped(
+        CanonicalToolSideEffectClass::Write,
+        "aidens:patch-apply:1",
+        fixture_root.as_str(),
+        permit.principal,
+    );
+    permit_grant.run_id = Some(run_id.clone());
+    permit_grant.attempt_id = Some(attempt_id.clone());
+    let permit_use = PermitUseReportV1::allowed(
+        &permit_grant,
+        "aidens:patch-apply:1",
+        fixture_root,
+        Some(run_id),
+        Some(attempt_id),
+    );
+
+    Ok(RealSandboxLearningConfig {
+        fixture: material.fixture_path.clone(),
+        patch: material.patch.clone(),
+        patch_policy: material.patch_policy.clone(),
+        permit_grant,
+        permit_use,
+        image: material.image.clone(),
+        cea_db: replay_root.join("cea.sqlite"),
+        receipt_root,
+        memory_store: material.operational_store.clone(),
+        forge_store: replay_root.join("forge.sqlite"),
+        publication_namespace: "aidens-learning-sealed-replay".into(),
+        run_id: material.run_id.clone(),
+        attempt_id: material.attempt_id.clone(),
+        trial_id: material.trial_id.clone(),
+        trace_id: material.trace_id.clone(),
+        recorded_at: "2026-07-19T00:00:00Z".into(),
+    })
+}
+
+fn execution_receipt_id(material: &OwnerAdmittedSealedReplayMaterialV1) -> String {
+    format!(
+        "owner-admitted-sealed-replay-execution:{}:{}:{}",
+        normalize_digest(&material.replay_id),
+        normalize_digest(&material.run_id),
+        normalize_digest(&material.attempt_id)
+    )
+}
+
+fn verify_log_record(
+    log: &CanonicalEventLog,
+    receipt_id: &str,
+    stored: &Value,
+) -> Result<Value, OwnerAdmittedSealedReplayError> {
+    if stored == &Value::Null {
+        return Err(OwnerAdmittedSealedReplayError::Execution(
+            "execution receipt body is empty".into(),
+        ));
+    }
+    let reopened = CanonicalEventLog::open(log.config().clone())
+        .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+    let record = reopened
+        .inspect(receipt_id)
+        .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?;
+    if record.body != *stored
+        || !record.verify_digest()
+        || !record.verify_record_digest()
+        || !reopened
+            .verify_chain()
+            .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))?
+    {
+        return Err(OwnerAdmittedSealedReplayError::Execution(
+            "execution receipt failed canonical verification".into(),
+        ));
+    }
+    Ok(record.body)
+}
+
+fn observed_inputs(
+    snapshot_inputs: &ProcedureReplayInputsV1,
+    execution: &OwnerAdmittedSealedReplayExecutionV1,
+    patch: &StructuredPatch,
+) -> Result<ProcedureReplayInputsV1, OwnerAdmittedSealedReplayError> {
+    Ok(ProcedureReplayInputsV1 {
+        replay_id: snapshot_inputs.replay_id.clone(),
+        original_artifact_id: snapshot_inputs.original_artifact_id.clone(),
+        original_artifact_digest: snapshot_inputs.original_artifact_digest.clone(),
+        patch_digest: digest_value(patch)?,
+        source_tree_digest: execution.report.before_tree_digest.clone(),
+        verifier_digest: snapshot_inputs.verifier_digest.clone(),
+        check_policy_digest: snapshot_inputs.check_policy_digest.clone(),
+        environment_digest: snapshot_inputs.environment_digest.clone(),
+        image_digest: snapshot_inputs.image_digest.clone(),
+        store_identity_digest: snapshot_inputs.store_identity_digest.clone(),
+        retained_input_digest: snapshot_inputs.retained_input_digest.clone(),
+        promotion_receipt_ref: snapshot_inputs.promotion_receipt_ref.clone(),
+        action_permit_ref: snapshot_inputs.action_permit_ref.clone(),
+    })
+}
+
+fn replay_result_digest(
+    snapshot: &ProcedureReplayInputsV1,
+    observed: &ProcedureReplayInputsV1,
+    comparison: &semantic_memory::ProcedureReplayComparisonV1,
+) -> Result<String, OwnerAdmittedSealedReplayError> {
+    digest_value(&(snapshot.replay_id.clone(), observed.clone(), comparison))
+        .map_err(|error| OwnerAdmittedSealedReplayError::Execution(error.to_string()))
 }
 
 fn validate_request(
