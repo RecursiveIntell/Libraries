@@ -319,6 +319,59 @@ fn learning_stop_is_not_in_supported_cli_surface() {
 }
 
 #[test]
+fn clap_exposes_resume_and_close_commands() {
+    let cli =
+        Cli::try_parse_from(["aidens", "learn", "resume", "--request", "resume.json"]).unwrap();
+    assert!(matches!(
+        cli.command,
+        Command::Learn {
+            command: LearningCommand::Resume { request, out: None },
+            ..
+        } if request == "resume.json"
+    ));
+
+    let cli = Cli::try_parse_from([
+        "aidens",
+        "learn",
+        "close",
+        "--request",
+        "close.json",
+        "--out",
+        "report.json",
+    ])
+    .unwrap();
+    assert!(matches!(
+        cli.command,
+        Command::Learn {
+            command: LearningCommand::Close { request, out },
+            ..
+        } if request == "close.json" && out.as_deref() == Some("report.json")
+    ));
+}
+
+#[test]
+fn learn_resume_rejects_missing_request_file() {
+    let err = learning_command(LearningCommand::Resume {
+        request: "/nonexistent/resume.json".into(),
+        out: None,
+    })
+    .unwrap_err()
+    .to_string();
+    assert!(err.contains("read typed") || err.contains("No such file"));
+}
+
+#[test]
+fn learn_close_rejects_missing_request_file() {
+    let err = learning_command(LearningCommand::Close {
+        request: "/nonexistent/close.json".into(),
+        out: None,
+    })
+    .unwrap_err()
+    .to_string();
+    assert!(err.contains("read typed") || err.contains("No such file"));
+}
+
+#[test]
 fn queue_cancel_is_queue_state_cancellation_not_execution_cancellation() {
     let root = temp_root();
     std::fs::create_dir_all(&root).unwrap();

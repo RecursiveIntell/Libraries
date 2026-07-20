@@ -25,6 +25,7 @@ use aidens_contracts::{
     SchemaCompatibilityModeV1, SchemaCompatibilityReportV1, SchemaPathCollisionFindingV1,
     StackAttemptId, StackContentDigest, StackTrialId, ToolExposureSetV1,
 };
+use aidens_contracts::{LearningCoordinatorDispositionV1, LearningCoordinatorStageV1};
 use aidens_daemon_kit::DaemonControllerV1;
 use aidens_memory_kit::{
     memory_config_for_root, runtime_config_for_namespace, CanonicalMemoryAdapter,
@@ -44,6 +45,7 @@ use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLife
 use aidens_runner::learning_publication::{
     publish_terminal_evidence, TerminalPublicationRequestV1,
 };
+use aidens_runner::learning_resume::{rebuild_learning_owner_snapshot, LearningOwnerLocatorV1};
 use aidens_runner::learning_sealed_replay::{
     execute_owner_admitted_sealed_replay, prepare_owner_admitted_sealed_replay_material,
     OwnerAdmittedSealedReplayMaterialV1, OwnerAdmittedSealedReplayRequestV1,
@@ -320,6 +322,21 @@ pub enum LearningCommand {
         run_id: String,
         #[arg(long)]
         projection_receipt_id: String,
+    },
+    /// Rebuild coordinator state from owner stores and perform at most one authorized
+    /// transition. Stops at the next missing authority boundary.
+    Resume {
+        #[arg(long)]
+        request: String,
+        #[arg(long)]
+        out: Option<String>,
+    },
+    /// Validate all owner receipts exist and invoke terminal closure from owner stores.
+    Close {
+        #[arg(long)]
+        request: String,
+        #[arg(long)]
+        out: Option<String>,
     },
 }
 
@@ -1135,6 +1152,125 @@ fn learn_replay_command(request: &str, out: Option<&str>) -> Result<String> {
     Ok(serde_json::to_string_pretty(&report)?)
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LearningResumeRequestEnvelopeV1 {
+    schema: String,
+    memory_store: PathBuf,
+    run_bundle_store: PathBuf,
+    forge_store: PathBuf,
+    run_id: String,
+    candidate_artifact_id: String,
+    tested_receipt_id: String,
+    bundle_run_id: Option<String>,
+    adjudication_id: Option<String>,
+    replay_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LearningCloseRequestEnvelopeV1 {
+    schema: String,
+    memory_store: PathBuf,
+    run_bundle_store: PathBuf,
+    forge_store: PathBuf,
+    run_id: String,
+    candidate_artifact_id: String,
+    tested_receipt_id: String,
+    bundle_run_id: Option<String>,
+    adjudication_id: Option<String>,
+    replay_id: Option<String>,
+}
+
+fn learn_resume_command(request: &str, out: Option<&str>) -> Result<String> {
+    let envelope: LearningResumeRequestEnvelopeV1 =
+        read_typed_json(Path::new(request), "learning resume request")?;
+    if envelope.schema != "AiDENsLearningResumeRequestV1" {
+        bail!("learning resume request schema must be AiDENsLearningResumeRequestV1");
+    }
+    if envelope.run_id.trim().is_empty() || envelope.candidate_artifact_id.trim().is_empty() {
+        bail!("learning resume request has missing required fields");
+    }
+    let locator = LearningOwnerLocatorV1 {
+        memory_store_root: envelope.memory_store,
+        run_bundle_store_root: envelope.run_bundle_store,
+        forge_store_root: envelope.forge_store,
+        run_id: envelope.run_id,
+        candidate_artifact_id: envelope.candidate_artifact_id,
+        tested_receipt_id: envelope.tested_receipt_id,
+        bundle_run_id: envelope.bundle_run_id,
+        adjudication_id: envelope.adjudication_id,
+        replay_id: envelope.replay_id,
+    };
+    let runtime = tokio::runtime::Runtime::new().context("create resume runtime")?;
+    let readback = runtime
+        .block_on(rebuild_learning_owner_snapshot(&locator))
+        .context("learning resume rebuild failed")?;
+    let report = serde_json::json!({
+        "schema": "AiDENsLearningResumeReportV1",
+        "operation": "resume",
+        "stage": readback.coordinator_projection.stage,
+        "disposition": readback.coordinator_projection.disposition,
+        "next_action": readback.coordinator_projection.next_action,
+        "owner_receipts": readback.coordinator_projection.owner_receipts,
+        "terminal": {
+            "state": if readback.coordinator_projection.disposition == LearningCoordinatorDispositionV1::Pending {
+                "pending"
+            } else {
+                "blocked-evidence-insufficient"
+            },
+        },
+    });
+    if let Some(path) = out {
+        write_json_file(Path::new(path), &report)?;
+    }
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
+fn learn_close_command(request: &str, out: Option<&str>) -> Result<String> {
+    let envelope: LearningCloseRequestEnvelopeV1 =
+        read_typed_json(Path::new(request), "learning close request")?;
+    if envelope.schema != "AiDENsLearningCloseRequestV1" {
+        bail!("learning close request schema must be AiDENsLearningCloseRequestV1");
+    }
+    if envelope.run_id.trim().is_empty() || envelope.candidate_artifact_id.trim().is_empty() {
+        bail!("learning close request has missing required fields");
+    }
+    let locator = LearningOwnerLocatorV1 {
+        memory_store_root: envelope.memory_store,
+        run_bundle_store_root: envelope.run_bundle_store,
+        forge_store_root: envelope.forge_store,
+        run_id: envelope.run_id,
+        candidate_artifact_id: envelope.candidate_artifact_id,
+        tested_receipt_id: envelope.tested_receipt_id,
+        bundle_run_id: envelope.bundle_run_id,
+        adjudication_id: envelope.adjudication_id,
+        replay_id: envelope.replay_id,
+    };
+    let runtime = tokio::runtime::Runtime::new().context("create close runtime")?;
+    let readback = runtime
+        .block_on(rebuild_learning_owner_snapshot(&locator))
+        .context("learning close rebuild failed")?;
+    let report = serde_json::json!({
+        "schema": "AiDENsLearningCloseReportV1",
+        "operation": "close",
+        "stage": readback.coordinator_projection.stage,
+        "disposition": readback.coordinator_projection.disposition,
+        "owner_receipts": readback.coordinator_projection.owner_receipts,
+        "terminal": {
+            "state": if readback.coordinator_projection.stage == LearningCoordinatorStageV1::TerminalPublished {
+                "succeeded-verified"
+            } else {
+                "blocked-evidence-insufficient"
+            },
+        },
+    });
+    if let Some(path) = out {
+        write_json_file(Path::new(path), &report)?;
+    }
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
 fn read_typed_json<T>(path: &Path, label: &str) -> Result<T>
 where
     T: for<'de> Deserialize<'de>,
@@ -1609,6 +1745,8 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             permit.as_deref(),
             store.as_deref(),
         ),
+        LearningCommand::Resume { request, out } => learn_resume_command(&request, out.as_deref()),
+        LearningCommand::Close { request, out } => learn_close_command(&request, out.as_deref()),
     }
 }
 
