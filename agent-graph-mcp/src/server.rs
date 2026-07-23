@@ -213,9 +213,13 @@ impl AgentGraphServer {
         base_url: String,
         default_model: String,
         data_dir: Option<PathBuf>,
+        integrity_key_path: Option<PathBuf>,
     ) -> Result<Self, String> {
         let store = match data_dir {
-            Some(ref dir) => Some(PersistentStore::open(dir)?),
+            Some(ref dir) => Some(PersistentStore::open_with_integrity_key(
+                dir,
+                integrity_key_path.as_deref(),
+            )?),
             None => None,
         };
         if let Some(ref store) = store {
@@ -541,6 +545,7 @@ mod tests {
             "http://localhost".into(),
             "test-model".into(),
             Some(temp.path().to_owned()),
+            None,
         )
         .expect("server");
         server

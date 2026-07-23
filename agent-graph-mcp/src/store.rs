@@ -452,6 +452,16 @@ impl Clone for PersistentStore {
 impl PersistentStore {
     /// Open (or create) the SQLite database at `{data_dir}/agent-graph.db`.
     pub fn open(data_dir: &Path) -> Result<Self, String> {
+        Self::open_with_integrity_key(data_dir, None)
+    }
+
+    /// Open (or create) the SQLite database with an explicit integrity key path.
+    /// If `integrity_key_path` is None, falls back to the
+    /// `AGENT_GRAPH_INTEGRITY_KEY_PATH` environment variable.
+    pub fn open_with_integrity_key(
+        data_dir: &Path,
+        integrity_key_path: Option<&Path>,
+    ) -> Result<Self, String> {
         std::fs::create_dir_all(data_dir).map_err(|e| format!("failed to create data dir: {e}"))?;
         let db_path = data_dir.join("agent-graph.db");
         let conn =
@@ -466,7 +476,7 @@ impl PersistentStore {
 
         let store = Self {
             conn: std::sync::Arc::new(Mutex::new(conn)),
-            integrity_key: Self::load_integrity_key(),
+            integrity_key: Self::load_integrity_key_from(integrity_key_path),
             #[cfg(test)]
             terminal_projection_fault: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(
                 false,
@@ -482,8 +492,19 @@ impl PersistentStore {
         Ok(store)
     }
 
+    #[allow(dead_code)]
     fn load_integrity_key() -> Option<std::sync::Arc<[u8]>> {
-        let path = std::env::var_os("AGENT_GRAPH_INTEGRITY_KEY_PATH")?;
+        Self::load_integrity_key_from(None)
+    }
+
+    /// Load the integrity key from an explicit path, or fall back to the
+    /// `AGENT_GRAPH_INTEGRITY_KEY_PATH` environment variable.
+    fn load_integrity_key_from(explicit: Option<&Path>) -> Option<std::sync::Arc<[u8]>> {
+        let path = if let Some(p) = explicit {
+            std::ffi::OsStr::new(p).to_owned()
+        } else {
+            std::env::var_os("AGENT_GRAPH_INTEGRITY_KEY_PATH")?
+        };
         let key = std::fs::read(path).ok()?;
         (key.len() >= 32).then(|| std::sync::Arc::from(key))
     }
