@@ -1,6 +1,38 @@
 use agent_graph::prelude::*;
 
 #[tokio::test]
+async fn test_parallel_failure_cancels_delayed_side_effect_branch() {
+    let graph = AgentGraph::builder()
+        .add_node("start", node!(|_state| async move { Ok(()) }))
+        .add_node(
+            "fail",
+            node!(|_state| async move {
+                tokio::task::yield_now().await;
+                Err::<(), _>(AgentGraphError::ExecutionError("first failure".into()))
+            }),
+        )
+        .add_node(
+            "delayed",
+            node!(|state| async move {
+                tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                state.set("post_failure_effect", true).await?;
+                Ok(())
+            }),
+        )
+        .add_edge("start", "fail")
+        .add_edge("start", "delayed")
+        .build()
+        .unwrap();
+
+    let started = std::time::Instant::now();
+    let result = graph.execute("start", AgentState::new()).await;
+    assert!(
+        matches!(result, Err(AgentGraphError::ExecutionError(message)) if message == "first failure")
+    );
+    assert!(started.elapsed() < std::time::Duration::from_secs(1));
+}
+
+#[tokio::test]
 async fn test_fan_out_parallel_execution() {
     // A -> B, A -> C (fan-out), both B and C should execute
     let graph = AgentGraph::builder()

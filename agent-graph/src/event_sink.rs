@@ -182,6 +182,16 @@ pub enum GraphEvent {
         trace_ctx: Option<stack_ids::TraceCtx>,
         step: usize,
     },
+    /// Remaining parallel branches were cancelled after a sibling failed.
+    ParallelCancellation {
+        run_id: String,
+        #[deprecated(note = "Use trace_ctx instead.")]
+        trace_id: String,
+        #[serde(skip_serializing_if = "Option::is_none", default)]
+        trace_ctx: Option<stack_ids::TraceCtx>,
+        /// Cancellation cannot undo effects already handed to external systems.
+        external_effects_may_have_escaped: bool,
+    },
 }
 
 /// Summary of a node's outcome (for event reporting).
@@ -256,6 +266,7 @@ impl EventSink for ChannelEventSink {
                 StreamEvent::SuperstepStart { step, nodes }
             }
             GraphEvent::SuperstepEnd { step, .. } => StreamEvent::SuperstepEnd { step },
+            GraphEvent::ParallelCancellation { .. } => return,
             GraphEvent::CheckpointWritten { .. } => return, // no legacy equivalent
         };
         // try_send: non-blocking, drops if channel full

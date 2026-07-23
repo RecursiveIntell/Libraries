@@ -460,22 +460,72 @@ impl<'a> GraphExecutor<'a> {
                 }
 
                 let mut branch_results = Vec::new();
+                let mut active_branches: std::collections::HashSet<String> = current_superstep
+                    .iter()
+                    .take(max_parallelism)
+                    .cloned()
+                    .collect();
                 while let Some(result) = join_set.join_next().await {
                     let inner = result.map_err(|e| AgentGraphError::ExecutionError(e.to_string()));
                     let branch = match inner {
-                        Ok(Ok(branch)) => branch,
+                        Ok(Ok(branch)) => {
+                            active_branches.remove(&branch.0);
+                            branch
+                        }
                         Ok(Err(error)) => {
                             self.failed_attempts += 1;
+                            // A branch failure is terminal for this superstep. Abort every
+                            // still-running sibling and drain the JoinSet before returning so
+                            // no task can continue producing effects after the parent fails.
+                            join_set.abort_all();
+                            while join_set.join_next().await.is_some() {}
+                            for node_id in active_branches {
+                                self.event_sink.emit(GraphEvent::NodeEnd {
+                                    run_id: self.run_id.clone(),
+                                    trace_id: self.legacy_trace_id(),
+                                    trace_ctx: Some(self.trace_ctx.clone()),
+                                    node_id,
+                                    outcome: NodeOutcomeKind::Interrupted,
+                                    attempt_id: None,
+                                    trial_id: None,
+                                });
+                            }
+                            self.event_sink.emit(GraphEvent::ParallelCancellation {
+                                run_id: self.run_id.clone(),
+                                trace_id: self.legacy_trace_id(),
+                                trace_ctx: Some(self.trace_ctx.clone()),
+                                external_effects_may_have_escaped: true,
+                            });
                             return Err(error);
                         }
                         Err(error) => {
                             self.failed_attempts += 1;
+                            join_set.abort_all();
+                            while join_set.join_next().await.is_some() {}
+                            for node_id in active_branches {
+                                self.event_sink.emit(GraphEvent::NodeEnd {
+                                    run_id: self.run_id.clone(),
+                                    trace_id: self.legacy_trace_id(),
+                                    trace_ctx: Some(self.trace_ctx.clone()),
+                                    node_id,
+                                    outcome: NodeOutcomeKind::Interrupted,
+                                    attempt_id: None,
+                                    trial_id: None,
+                                });
+                            }
+                            self.event_sink.emit(GraphEvent::ParallelCancellation {
+                                run_id: self.run_id.clone(),
+                                trace_id: self.legacy_trace_id(),
+                                trace_ctx: Some(self.trace_ctx.clone()),
+                                external_effects_may_have_escaped: true,
+                            });
                             return Err(error);
                         }
                     };
                     branch_results.push(branch);
 
                     if let Some(node_name) = pending.next() {
+                        active_branches.insert(node_name.to_string());
                         self.spawn_parallel_branch(&mut join_set, node_name).await?;
                     }
                 }
