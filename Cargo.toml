@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "agent-graph",
+    "agent-graph-mcp",
     "agent-guard",
     "ai-batch-queue",
     "assurance-runtime",
