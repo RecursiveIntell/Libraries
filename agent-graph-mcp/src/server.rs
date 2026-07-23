@@ -630,7 +630,10 @@ mod tests {
                 claimed_actor_label: "operator".into(),
             }))
             .expect("approval response");
-        assert_eq!(decided.0.error_code.as_deref(), Some("RUN_CAPACITY"));
+        assert_eq!(
+            decided.0.error_code.as_deref(),
+            Some("AUTHENTICATED_OPERATOR_REQUIRED")
+        );
         assert_eq!(
             store
                 .get_checkpoint_approval(&approval_id)
@@ -1353,7 +1356,6 @@ impl AgentGraphServer {
 
     // ── graph_delete (NEW) ────────────────────────────────────────────
 
-    #[tool(description = "Delete a registered graph by name.")]
     fn graph_delete(
         &self,
         Parameters(GraphDeleteParams { graph_id }): Parameters<GraphDeleteParams>,
@@ -1703,9 +1705,6 @@ impl AgentGraphServer {
         }
     }
 
-    #[tool(
-        description = "Decide one durable checkpoint-bound approval exactly once; approve resumes only its immutable deterministic-local checkpoint."
-    )]
     fn graph_approval_decide(
         &self,
         Parameters(ApprovalDecideParams {
@@ -1714,92 +1713,10 @@ impl AgentGraphServer {
             claimed_actor_label,
         }): Parameters<ApprovalDecideParams>,
     ) -> Result<Json<StructuredOutput>, ErrorData> {
-        let Some(store) = self.store.as_ref() else {
-            return Ok(error_output(
-                "SQLite persistence is required for durable approvals",
-                "APPROVAL_STORE_REQUIRED",
-            ));
-        };
-        if !matches!(decision.as_str(), "approve" | "reject") {
-            return Ok(error_output(
-                "decision must be approve or reject",
-                "INVALID_PARAMS",
-            ));
-        }
-        if claimed_actor_label.trim().is_empty() || claimed_actor_label.len() > 256 {
-            return Ok(error_output(
-                "actor must be non-empty and at most 256 bytes",
-                "APPROVAL_INVALID_ACTOR",
-            ));
-        }
-        let existing = match store
-            .get_checkpoint_approval(&approval_id)
-            .map_err(|error| internal_error(error.message()))?
-        {
-            Some(approval) => approval,
-            None => return Ok(approval_error_output(ApprovalError::NotFound)),
-        };
-        let checkpoint = match store.load_resume_checkpoint(Some(&existing.checkpoint_id), None) {
-            Ok(Some(checkpoint)) => checkpoint,
-            Ok(None) => return Ok(checkpoint_error_output(CheckpointError::NotFound)),
-            Err(error) => return Ok(checkpoint_error_output(error)),
-        };
-        if decision == "approve" {
-            if let Err((message, code)) = self.validate_resume_checkpoint(store, &checkpoint) {
-                return Ok(error_output(message, code));
-            }
-        }
-        let reserved_runs = self
-            .runs
-            .lock()
-            .map_err(|e| internal_error(e.to_string()))?;
-        if let Err(error) = reserved_runs.reserve_async_slot() {
-            return Ok(error_output(error, "RUN_CAPACITY"));
-        }
-        drop(reserved_runs);
-        let decided = match store.decide_checkpoint_approval(
-            &approval_id,
-            &decision,
-            &claimed_actor_label,
-            Utc::now(),
-        ) {
-            Ok(value) => value,
-            Err(error) => {
-                if let Ok(runs) = self.runs.lock() {
-                    runs.release_async_slot();
-                }
-                return Ok(approval_error_output(error));
-            }
-        };
-        if decision == "reject" {
-            if let Ok(runs) = self.runs.lock() {
-                runs.release_async_slot();
-            }
-            return Ok(output_with_meta(
-                serde_json::json!({"approval": approval_value(&decided.approval), "status":"rejected"}),
-                Some(&decided.approval.graph_id),
-                Some(&decided.approval.graph_version),
-                Some(&decided.approval.run_id),
-            ));
-        }
-        let (contract, graph, budgets) =
-            match self.validate_resume_checkpoint(store, &decided.checkpoint) {
-                Ok(value) => value,
-                Err((message, code)) => {
-                    if let Ok(runs) = self.runs.lock() {
-                        runs.release_async_slot();
-                    }
-                    return Ok(error_output(message, code));
-                }
-            };
-        let receipt_approval = PersistentStore::approval_receipt_value(&decided.approval);
-        self.launch_resumed(
-            decided.checkpoint,
-            contract,
-            graph,
-            budgets,
-            Some(receipt_approval),
-        )
+        return Ok(error_output(
+            "approval decisions require authenticated operator transport",
+            "AUTHENTICATED_OPERATOR_REQUIRED",
+        ));
     }
 
     // ── Async run lifecycle ───────────────────────────────────────────

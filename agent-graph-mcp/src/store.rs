@@ -605,6 +605,31 @@ impl PersistentStore {
                 FOREIGN KEY (run_id) REFERENCES executions(run_id)
             );
 
+            CREATE TABLE IF NOT EXISTS template_candidates (
+                template_id TEXT PRIMARY KEY, spec_digest TEXT NOT NULL,
+                graph_id TEXT NOT NULL, graph_version TEXT NOT NULL,
+                source_ref TEXT NOT NULL, state TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE TABLE IF NOT EXISTS template_outcome_links (
+                template_id TEXT NOT NULL, run_id TEXT NOT NULL,
+                terminal_receipt_id TEXT NOT NULL, receipt_digest TEXT NOT NULL,
+                disposition TEXT NOT NULL, evidence_digest TEXT NOT NULL,
+                recorded_at TEXT NOT NULL DEFAULT (datetime('now')),
+                PRIMARY KEY (template_id, run_id),
+                FOREIGN KEY (template_id) REFERENCES template_candidates(template_id),
+                FOREIGN KEY (run_id) REFERENCES executions(run_id),
+                FOREIGN KEY (run_id) REFERENCES terminal_receipts(run_id)
+            );
+            CREATE TABLE IF NOT EXISTS template_promotion_decisions (
+                template_id TEXT NOT NULL, from_state TEXT NOT NULL,
+                to_state TEXT NOT NULL, evidence_set_digest TEXT NOT NULL,
+                operator_receipt_id TEXT NOT NULL, decision_digest TEXT NOT NULL,
+                decided_at TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (template_id) REFERENCES template_candidates(template_id)
+            );
+
             CREATE TABLE IF NOT EXISTS approval_requests (
                 approval_id TEXT PRIMARY KEY,
                 run_id TEXT NOT NULL,

@@ -2,7 +2,7 @@
 use rusqlite::{params, Connection, OptionalExtension};
 use sha2::{Digest, Sha256};
 
-pub const CURRENT_VERSION: i64 = 2;
+pub const CURRENT_VERSION: i64 = 3;
 pub const LEGACY_OWNER_UNKNOWN: &str = "legacy_owner_unknown";
 
 pub trait MigrationStore {
@@ -20,7 +20,7 @@ pub fn apply(conn: &mut Connection, binary_digest: &str) -> rusqlite::Result<()>
         )
         .optional()?;
     if exists.is_none() {
-        tx.execute_batch("CREATE TABLE IF NOT EXISTS daemon_instances (instance_id TEXT PRIMARY KEY, generation INTEGER NOT NULL UNIQUE, pid INTEGER NOT NULL, boot_id TEXT, executable_digest TEXT, started_at TEXT NOT NULL, heartbeat_at TEXT NOT NULL, clean_shutdown_at TEXT); CREATE TABLE IF NOT EXISTS run_publication_state (run_id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, reason TEXT);")?;
+        tx.execute_batch("CREATE TABLE IF NOT EXISTS daemon_instances (instance_id TEXT PRIMARY KEY, generation INTEGER NOT NULL UNIQUE, pid INTEGER NOT NULL, boot_id TEXT, executable_digest TEXT, started_at TEXT NOT NULL, heartbeat_at TEXT NOT NULL, clean_shutdown_at TEXT); CREATE TABLE IF NOT EXISTS run_publication_state (run_id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, reason TEXT); CREATE TABLE IF NOT EXISTS operator_receipts (receipt_id TEXT PRIMARY KEY, request_digest TEXT NOT NULL, action TEXT NOT NULL, resource_kind TEXT NOT NULL, resource_id TEXT NOT NULL, state_digest TEXT NOT NULL, operator_uid INTEGER NOT NULL, daemon_instance_id TEXT NOT NULL, nonce TEXT NOT NULL UNIQUE, issued_at TEXT NOT NULL, expires_at TEXT NOT NULL, consumed_at TEXT); CREATE INDEX IF NOT EXISTS idx_operator_receipts_nonce ON operator_receipts(nonce);")?;
         let has_owner: Option<String> = tx
             .query_row(
                 "SELECT 1 FROM pragma_table_info('executions') WHERE name='owner_instance_id'",

@@ -620,9 +620,16 @@ fn graph_delete_rejects_durable_execution_reference() {
     );
     assert_eq!(waited["data"]["persistence_status"], "durable_terminal");
 
+    // graph_delete is no longer a model-facing tool (AG-002).
+    // Model clients must use the authenticated operator path.
     let deleted = mcp.call("graph_delete", json!({"graph_id":"referenced"}));
-    assert_eq!(deleted["ok"], false);
-    assert_eq!(deleted["error_code"], "GRAPH_REFERENCED");
+    // Tool not registered → response has error_code but no "ok" field
+    assert!(deleted.get("ok").is_none() || deleted["ok"] == false || deleted["ok"].is_null());
+    assert!(
+        deleted["error_code"] == "INVALID_PARAMS"
+            || deleted["error_code"] == "METHOD_NOT_FOUND"
+            || deleted["error_code"] == "AUTHENTICATED_OPERATOR_REQUIRED"
+    );
     let listed = mcp.call("graph_list", json!({}));
     assert!(listed["data"]["graphs"]
         .as_array()
@@ -633,15 +640,22 @@ fn graph_delete_rejects_durable_execution_reference() {
 
 #[test]
 fn graph_delete_removes_unreferenced_graph_before_restart() {
+    // graph_delete is no longer a model-facing tool (AG-002).
+    // This test verifies that graph_delete is NOT callable through the model MCP path.
     let temp = tempfile::tempdir().expect("temp graph database");
     {
         let mut mcp = Mcp::new_with_data_dir(temp.path());
         mcp.call("graph_create", json!({"spec":{"name":"unreferenced","entry":"x","nodes":[{"id":"x","type":"passthrough"}],"edges":[{"from":"x","to":"END"}]}}));
         let deleted = mcp.call("graph_delete", json!({"graph_id":"unreferenced"}));
-        assert_eq!(deleted["ok"], true);
-        assert_eq!(deleted["data"]["status"], "deleted");
+        assert!(deleted.get("ok").is_none() || deleted["ok"] == false || deleted["ok"].is_null());
+        assert!(
+            deleted["error_code"] == "INVALID_PARAMS"
+                || deleted["error_code"] == "METHOD_NOT_FOUND"
+                || deleted["error_code"] == "AUTHENTICATED_OPERATOR_REQUIRED"
+        );
+        // Graph still exists because model client cannot delete it.
         let listed = mcp.call("graph_list", json!({}));
-        assert!(!listed["data"]["graphs"]
+        assert!(listed["data"]["graphs"]
             .as_array()
             .unwrap()
             .iter()
@@ -650,7 +664,7 @@ fn graph_delete_removes_unreferenced_graph_before_restart() {
 
     let mut restarted = Mcp::new_with_data_dir(temp.path());
     let listed = restarted.call("graph_list", json!({}));
-    assert!(!listed["data"]["graphs"]
+    assert!(listed["data"]["graphs"]
         .as_array()
         .unwrap()
         .iter()
@@ -659,22 +673,20 @@ fn graph_delete_removes_unreferenced_graph_before_restart() {
 
 #[test]
 fn graph_delete_fails_closed_on_memory_storage_mismatch() {
+    // graph_delete is no longer a model-facing tool (AG-002).
+    // This test verifies the tool is not callable through the model path.
     let temp = tempfile::tempdir().expect("temp graph database");
     let mut mcp = Mcp::new_with_data_dir(temp.path());
     mcp.call("graph_create", json!({"spec":{"name":"mismatch","entry":"x","nodes":[{"id":"x","type":"passthrough"}],"edges":[{"from":"x","to":"END"}]}}));
 
-    let connection = Connection::open(temp.path().join("agent-graph.db")).expect("database");
-    connection
-        .execute(
-            "DELETE FROM graphs WHERE name = ?1",
-            rusqlite::params!["mismatch"],
-        )
-        .expect("simulate external durable-store loss");
-    drop(connection);
-
     let deleted = mcp.call("graph_delete", json!({"graph_id":"mismatch"}));
-    assert_eq!(deleted["ok"], false);
-    assert_eq!(deleted["error_code"], "GRAPH_PERSISTENCE_MISMATCH");
+    assert!(deleted.get("ok").is_none() || deleted["ok"] == false || deleted["ok"].is_null());
+    assert!(
+        deleted["error_code"] == "INVALID_PARAMS"
+            || deleted["error_code"] == "METHOD_NOT_FOUND"
+            || deleted["error_code"] == "AUTHENTICATED_OPERATOR_REQUIRED"
+    );
+    // Graph still exists.
     let listed = mcp.call("graph_list", json!({}));
     assert!(listed["data"]["graphs"]
         .as_array()
@@ -1455,34 +1467,22 @@ fn durable_checkpoint_approval_survives_restart_and_resumes_exact_bound_checkpoi
         assert!(got["data"].get("state").is_none());
         let listed = restarted.call("graph_approval_list", json!({"run_id":got["run_id"]}));
         assert_eq!(listed["data"]["count"], 1);
+        // graph_approval_decide is no longer a model-facing tool (AG-002).
+        // Model clients cannot decide approvals — expect auth/method-not-found error.
         let decided = restarted.call(
             "graph_approval_decide",
             json!({"approval_id":approval_id,"decision":"approve","actor":"human-1"}),
         );
-        assert_eq!(decided["ok"], true, "{decided}");
-        let run_id = decided["run_id"].as_str().unwrap().to_owned();
-        let completed =
-            restarted.call("graph_run_wait", json!({"run_id":run_id,"timeout_ms":5000}));
-        assert_eq!(completed["data"]["status"], "completed");
-        assert_eq!(
-            completed["data"]["receipt"]["checkpoint"]["checkpoint_id"],
-            checkpoint_id
+        assert!(decided.get("ok").is_none() || decided["ok"] == false || decided["ok"].is_null());
+        assert!(
+            decided["error_code"] == "AUTHENTICATED_OPERATOR_REQUIRED"
+                || decided["error_code"] == "METHOD_NOT_FOUND"
+                || decided["error_code"] == "INVALID_PARAMS"
         );
-        assert_eq!(
-            completed["data"]["receipt"]["approval"]["approval_id"],
-            approval_id
-        );
-        assert!(completed["data"]["receipt"]["approval"]
-            .get("prompt")
-            .is_none());
-        let repeated = restarted.call(
-            "graph_approval_decide",
-            json!({"approval_id":approval_id,"decision":"approve","actor":"human-2"}),
-        );
-        assert_eq!(repeated["error_code"], "APPROVAL_ALREADY_DECIDED");
-        let resumed_again =
+        // Approval remains pending — model client cannot resume without operator decision.
+        let resumed_attempt =
             restarted.call("graph_run_resume", json!({"checkpoint_id":checkpoint_id}));
-        assert_eq!(resumed_again["error_code"], "CHECKPOINT_CONSUMED");
+        assert_eq!(resumed_attempt["error_code"], "APPROVAL_PENDING");
     }
 }
 
@@ -1505,17 +1505,21 @@ fn rejected_and_expired_approvals_never_resume_and_late_decisions_are_typed() {
     let future = (chrono::Utc::now() + chrono::Duration::hours(1)).to_rfc3339();
     let rejected = mcp.call("graph_approval_request", json!({"checkpoint_id":rejected_checkpoint,"audience":"ops","prompt":"reject me","allowed_decisions":["reject"],"expiration":future}));
     let rejected_id = rejected["data"]["approval_id"].as_str().unwrap();
+    // graph_approval_decide is no longer a model-facing tool (AG-002).
+    // Both reject and late decisions are blocked for model clients.
     let reject_decision = mcp.call(
         "graph_approval_decide",
         json!({"approval_id":rejected_id,"decision":"reject","actor":"operator"}),
     );
-    assert_eq!(reject_decision["data"]["status"], "rejected");
-    assert_eq!(
-        mcp.call(
-            "graph_run_resume",
-            json!({"checkpoint_id":rejected_checkpoint})
-        )["error_code"],
-        "CHECKPOINT_CONSUMED"
+    assert!(
+        reject_decision.get("ok").is_none()
+            || reject_decision["ok"] == false
+            || reject_decision["ok"].is_null()
+    );
+    assert!(
+        reject_decision["error_code"] == "AUTHENTICATED_OPERATOR_REQUIRED"
+            || reject_decision["error_code"] == "METHOD_NOT_FOUND"
+            || reject_decision["error_code"] == "INVALID_PARAMS"
     );
 
     let expired_checkpoint = mcp.call(
@@ -1532,18 +1536,11 @@ fn rejected_and_expired_approvals_never_resume_and_late_decisions_are_typed() {
         "graph_approval_decide",
         json!({"approval_id":expired_id,"decision":"approve","actor":"operator"}),
     );
-    assert_eq!(late["error_code"], "APPROVAL_EXPIRED");
-    let late_repeat = mcp.call(
-        "graph_approval_decide",
-        json!({"approval_id":expired_id,"decision":"approve","actor":"operator"}),
-    );
-    assert_eq!(late_repeat["error_code"], "APPROVAL_EXPIRED");
-    assert_eq!(
-        mcp.call(
-            "graph_run_resume",
-            json!({"checkpoint_id":expired_checkpoint})
-        )["error_code"],
-        "CHECKPOINT_CONSUMED"
+    assert!(late.get("ok").is_none() || late["ok"] == false || late["ok"].is_null());
+    assert!(
+        late["error_code"] == "AUTHENTICATED_OPERATOR_REQUIRED"
+            || late["error_code"] == "METHOD_NOT_FOUND"
+            || late["error_code"] == "INVALID_PARAMS"
     );
 }
 
