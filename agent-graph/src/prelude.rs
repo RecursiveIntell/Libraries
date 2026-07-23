@@ -3,7 +3,7 @@
 // Core graph types
 pub use crate::config::GraphConfig;
 pub use crate::edge::EdgeType;
-pub use crate::error::{AgentGraphError, Result};
+pub use crate::error::{AgentGraphError, CheckpointStoreOperation, Result};
 pub use crate::graph::{AgentGraph, AgentGraphBuilder, END, START};
 pub use crate::state::{AgentState, StateLimits, StateSnapshot, StateTransaction};
 

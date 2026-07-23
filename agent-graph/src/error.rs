@@ -1,5 +1,32 @@
 use thiserror::Error;
 
+/// The checkpoint-store operation that failed during a configured durable run.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CheckpointStoreOperation {
+    CreateRun,
+    RecordAttempt,
+    CompleteAttempt,
+    FailAttempt,
+    SaveStateSnapshot,
+    CompleteRun,
+    FailRun,
+}
+
+impl std::fmt::Display for CheckpointStoreOperation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let operation = match self {
+            Self::CreateRun => "create run",
+            Self::RecordAttempt => "record attempt",
+            Self::CompleteAttempt => "complete attempt",
+            Self::FailAttempt => "fail attempt",
+            Self::SaveStateSnapshot => "save state snapshot",
+            Self::CompleteRun => "complete run",
+            Self::FailRun => "fail run",
+        };
+        f.write_str(operation)
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum AgentGraphError {
     #[error("Node not found: {0}")]
@@ -19,6 +46,13 @@ pub enum AgentGraphError {
 
     #[error("Checkpoint error: {0}")]
     CheckpointError(String),
+
+    /// A configured granular checkpoint store failed; durable execution cannot continue.
+    #[error("Checkpoint store failed to {operation}: {message}")]
+    CheckpointStore {
+        operation: CheckpointStoreOperation,
+        message: String,
+    },
 
     #[error("Checkpoint graph mismatch: expected hash '{expected}', got '{actual}'")]
     CheckpointMismatch { expected: String, actual: String },
@@ -59,6 +93,7 @@ impl AgentGraphError {
             Self::MaxIterationsExceeded { .. } => "max_iterations",
             Self::CycleDetected { .. } => "cycle_detected",
             Self::CheckpointError(_) => "checkpoint",
+            Self::CheckpointStore { .. } => "checkpoint_store",
             Self::CheckpointMismatch { .. } => "checkpoint_mismatch",
             Self::ExecutionError(_) => "execution",
             Self::InterruptError { .. } => "interrupt",
