@@ -426,10 +426,15 @@ impl CheckpointStore for InMemoryCheckpointStore {
     fn complete_run(&self, run_id: &str) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
         let run_id = run_id.to_string();
         Box::pin(async move {
-            if let Some(run) = self.runs.write().await.get_mut(&run_id) {
-                run.status = RunStatus::Completed;
-                run.updated_at = chrono::Utc::now();
+            let mut runs = self.runs.write().await;
+            let run = runs
+                .get_mut(&run_id)
+                .ok_or_else(|| crate::AgentGraphError::RunNotFound(run_id.clone()))?;
+            if run.status != RunStatus::Running {
+                return Err(crate::AgentGraphError::TerminalStateConflict(run_id));
             }
+            run.status = RunStatus::Completed;
+            run.updated_at = chrono::Utc::now();
             Ok(())
         })
     }
@@ -441,10 +446,15 @@ impl CheckpointStore for InMemoryCheckpointStore {
     ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
         let run_id = run_id.to_string();
         Box::pin(async move {
-            if let Some(run) = self.runs.write().await.get_mut(&run_id) {
-                run.status = RunStatus::Failed;
-                run.updated_at = chrono::Utc::now();
+            let mut runs = self.runs.write().await;
+            let run = runs
+                .get_mut(&run_id)
+                .ok_or_else(|| crate::AgentGraphError::RunNotFound(run_id.clone()))?;
+            if run.status != RunStatus::Running {
+                return Err(crate::AgentGraphError::TerminalStateConflict(run_id));
             }
+            run.status = RunStatus::Failed;
+            run.updated_at = chrono::Utc::now();
             Ok(())
         })
     }

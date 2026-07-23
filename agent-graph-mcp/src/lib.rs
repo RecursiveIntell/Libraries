@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod cli;
 pub mod compiler;
 pub mod daemon;
@@ -7,6 +8,7 @@ pub mod lifecycle;
 pub mod migrations;
 pub mod nodes;
 pub mod owner_lock;
+pub mod policy;
 pub mod proxy;
 pub mod run_manager;
 pub mod server;

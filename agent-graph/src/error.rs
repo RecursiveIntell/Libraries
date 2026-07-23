@@ -57,6 +57,21 @@ pub enum AgentGraphError {
     #[error("Checkpoint graph mismatch: expected hash '{expected}', got '{actual}'")]
     CheckpointMismatch { expected: String, actual: String },
 
+    #[error("run not found: {0}")]
+    RunNotFound(String),
+    #[error("attempt not found: {0}")]
+    AttemptNotFound(String),
+    #[error("attempt '{attempt_id}' belongs to run '{actual_run}', not '{expected_run}'")]
+    AttemptRunMismatch {
+        attempt_id: String,
+        expected_run: String,
+        actual_run: String,
+    },
+    #[error("invalid checkpoint transition: {0}")]
+    InvalidTransition(String),
+    #[error("terminal state conflict for run '{0}'")]
+    TerminalStateConflict(String),
+
     #[error("Execution error: {0}")]
     ExecutionError(String),
 
@@ -95,6 +110,11 @@ impl AgentGraphError {
             Self::CheckpointError(_) => "checkpoint",
             Self::CheckpointStore { .. } => "checkpoint_store",
             Self::CheckpointMismatch { .. } => "checkpoint_mismatch",
+            Self::RunNotFound(_) => "run_not_found",
+            Self::AttemptNotFound(_) => "attempt_not_found",
+            Self::AttemptRunMismatch { .. } => "attempt_run_mismatch",
+            Self::InvalidTransition(_) => "invalid_transition",
+            Self::TerminalStateConflict(_) => "terminal_state_conflict",
             Self::ExecutionError(_) => "execution",
             Self::InterruptError { .. } => "interrupt",
             Self::PayloadError(_) => "payload",

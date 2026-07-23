@@ -43,6 +43,8 @@ pub fn compile(spec: &GraphSpec, cx: CompileContext) -> Result<AgentGraph, Strin
         .with_cycle_detection(false)
         .with_event_sink(Arc::new(Collector(cx.events)));
     for node in &spec.nodes {
+        GraphSpec::executable_node_type(&node.node_type)
+            .map_err(|error| format!("node '{}': {error}", node.id))?;
         let boxed: Box<dyn agent_graph::node::Node> = match node.node_type {
             NodeType::Passthrough => Box::new(PassthroughNode { ctx: run.clone() }),
             NodeType::Llm => {

@@ -110,6 +110,24 @@ pub enum ReducerKind {
 }
 
 impl GraphSpec {
+    /// Return the executable contract for every declared node type.
+    /// Reserved effectful classes are deliberately rejected before registration.
+    pub fn executable_node_type(node_type: &NodeType) -> Result<&'static str, String> {
+        match node_type {
+            NodeType::Llm => Ok("llm"),
+            NodeType::Router => Ok("router"),
+            NodeType::Passthrough => Ok("passthrough"),
+            NodeType::StateTransform => Ok("state_transform"),
+            NodeType::Join => Ok("join"),
+            NodeType::Parallel => Ok("parallel"),
+            NodeType::Subgraph => Ok("subgraph"),
+            NodeType::HumanApproval => Ok("human_approval"),
+            NodeType::External => Err("UNSUPPORTED_NODE_TYPE: external".into()),
+            NodeType::Tool => Err("UNSUPPORTED_NODE_TYPE: tool".into()),
+            NodeType::Loop => Err("UNSUPPORTED_NODE_TYPE: loop".into()),
+        }
+    }
+
     pub fn normalize(mut self) -> Self {
         self.spec_version = "2".into();
         if self.max_iterations.is_none() {

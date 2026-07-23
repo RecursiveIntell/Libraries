@@ -41,6 +41,7 @@ pub mod edge;
 pub mod engine;
 pub mod error;
 pub mod event_sink;
+pub mod execution_cursor;
 pub mod executor;
 pub mod graph;
 pub mod interrupt;

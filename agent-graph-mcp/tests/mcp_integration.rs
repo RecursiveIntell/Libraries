@@ -1614,16 +1614,29 @@ fn resume_rejects_non_deterministic_or_non_linear_specs() {
     ];
     for (label, spec) in cases {
         let created = mcp.call("graph_create", json!({"spec":spec}));
-        assert_eq!(
-            created["ok"], true,
-            "{label} graph should classify at checkpoint request"
-        );
-        let response = mcp.call(
-            "graph_run_start",
-            json!({"graph_id":created["graph_id"],"checkpoint":true}),
-        );
-        assert_eq!(response["ok"], false, "{label}");
-        assert_eq!(response["error_code"], "RESUME_INELIGIBLE", "{label}");
+        // subgraph and approval are accepted but resume-ineligible.
+        // external and tool are rejected at creation (UNSUPPORTED_NODE_TYPE).
+        if label == "external" || label == "tool" {
+            assert_eq!(
+                created["ok"], false,
+                "{label} graph should be rejected at creation as unsupported node type"
+            );
+            assert_eq!(
+                created["error_code"], "UNSUPPORTED_NODE_TYPE",
+                "{label} graph should return UNSUPPORTED_NODE_TYPE"
+            );
+        } else {
+            assert_eq!(
+                created["ok"], true,
+                "{label} graph should classify at checkpoint request"
+            );
+            let response = mcp.call(
+                "graph_run_start",
+                json!({"graph_id":created["graph_id"],"checkpoint":true}),
+            );
+            assert_eq!(response["ok"], false, "{label}");
+            assert_eq!(response["error_code"], "RESUME_INELIGIBLE", "{label}");
+        }
     }
 }
 

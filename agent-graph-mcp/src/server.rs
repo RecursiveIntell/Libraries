@@ -627,7 +627,7 @@ mod tests {
             .graph_approval_decide(Parameters(ApprovalDecideParams {
                 approval_id: approval_id.clone(),
                 decision: "approve".into(),
-                actor: "operator".into(),
+                claimed_actor_label: "operator".into(),
             }))
             .expect("approval response");
         assert_eq!(decided.0.error_code.as_deref(), Some("RUN_CAPACITY"));
@@ -742,6 +742,16 @@ impl AgentGraphServer {
             .unwrap_or_default();
         let spec_parsed =
             parse_and_validate(&raw).map_err(|e| invalid_params(format!("invalid spec: {e}")))?;
+        if let Some(node) = spec_parsed
+            .nodes
+            .iter()
+            .find(|node| crate::spec::GraphSpec::executable_node_type(&node.node_type).is_err())
+        {
+            return Ok(error_output(
+                format!("node '{}' declares an unsupported executable type", node.id),
+                "UNSUPPORTED_NODE_TYPE",
+            ));
+        }
         let normalized =
             serde_json::to_value(&spec_parsed).map_err(|e| internal_error(e.to_string()))?;
         let version = digest(&normalized);
@@ -1689,7 +1699,7 @@ impl AgentGraphServer {
         Parameters(ApprovalDecideParams {
             approval_id,
             decision,
-            actor,
+            claimed_actor_label,
         }): Parameters<ApprovalDecideParams>,
     ) -> Result<Json<StructuredOutput>, ErrorData> {
         let Some(store) = self.store.as_ref() else {
@@ -1704,7 +1714,7 @@ impl AgentGraphServer {
                 "INVALID_PARAMS",
             ));
         }
-        if actor.trim().is_empty() || actor.len() > 256 {
+        if claimed_actor_label.trim().is_empty() || claimed_actor_label.len() > 256 {
             return Ok(error_output(
                 "actor must be non-empty and at most 256 bytes",
                 "APPROVAL_INVALID_ACTOR",
@@ -1735,16 +1745,20 @@ impl AgentGraphServer {
             return Ok(error_output(error, "RUN_CAPACITY"));
         }
         drop(reserved_runs);
-        let decided =
-            match store.decide_checkpoint_approval(&approval_id, &decision, &actor, Utc::now()) {
-                Ok(value) => value,
-                Err(error) => {
-                    if let Ok(runs) = self.runs.lock() {
-                        runs.release_async_slot();
-                    }
-                    return Ok(approval_error_output(error));
+        let decided = match store.decide_checkpoint_approval(
+            &approval_id,
+            &decision,
+            &claimed_actor_label,
+            Utc::now(),
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                if let Ok(runs) = self.runs.lock() {
+                    runs.release_async_slot();
                 }
-            };
+                return Ok(approval_error_output(error));
+            }
+        };
         if decision == "reject" {
             if let Ok(runs) = self.runs.lock() {
                 runs.release_async_slot();

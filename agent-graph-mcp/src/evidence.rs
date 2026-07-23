@@ -5,6 +5,26 @@ use crate::store::PersistentStore;
 
 pub const MAX_WITNESS_CONTENT_BYTES: usize = 256 * 1024;
 pub const MAX_WITNESS_LOCATOR_BYTES: usize = 4096;
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct EvidenceDisposition {
+    pub shape_valid: bool,
+    pub integrity_verified: bool,
+    pub source_witness_bound: bool,
+    pub source_authority: &'static str,
+    pub factual_support: &'static str,
+}
+
+impl EvidenceDisposition {
+    pub fn model_output() -> Self {
+        Self {
+            shape_valid: false,
+            integrity_verified: false,
+            source_witness_bound: false,
+            source_authority: "unverified",
+            factual_support: "unjudged",
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WitnessError {

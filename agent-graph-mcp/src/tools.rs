@@ -189,8 +189,9 @@ pub struct ApprovalGetParams {
 pub struct ApprovalDecideParams {
     pub approval_id: String,
     pub decision: String,
-    /// Non-empty bounded caller identity recorded by digest in the receipt.
-    pub actor: String,
+    /// Caller-provided label is metadata only; it is never an authority identity.
+    #[serde(alias = "actor")]
+    pub claimed_actor_label: String,
 }
 
 // ─── Async run lifecycle ───────────────────────────────────────────────
