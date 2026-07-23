@@ -629,8 +629,9 @@ impl PersistentStore {
 
             CREATE TABLE IF NOT EXISTS idempotency_keys (
                 key TEXT PRIMARY KEY,
-                request_digest TEXT,
+                request_digest TEXT NOT NULL,
                 result_json TEXT NOT NULL,
+                valid INTEGER NOT NULL DEFAULT 1,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
 
@@ -660,6 +661,25 @@ impl PersistentStore {
             )
             .map_err(|e| format!("idempotency migration error: {e}"))?;
         }
+        let has_idempotency_valid = conn
+            .prepare("PRAGMA table_info(idempotency_keys)")
+            .map_err(|e| format!("idempotency schema inspection error: {e}"))?
+            .query_map([], |row| row.get::<_, String>(1))
+            .map_err(|e| format!("idempotency schema inspection error: {e}"))?
+            .filter_map(Result::ok)
+            .any(|column| column == "valid");
+        if !has_idempotency_valid {
+            conn.execute(
+                "ALTER TABLE idempotency_keys ADD COLUMN valid INTEGER NOT NULL DEFAULT 1",
+                [],
+            )
+            .map_err(|e| format!("idempotency migration error: {e}"))?;
+        }
+        conn.execute(
+            "UPDATE idempotency_keys SET valid = 0 WHERE request_digest IS NULL",
+            [],
+        )
+        .map_err(|e| format!("idempotency quarantine error: {e}"))?;
         for (table, column, definition) in [
             ("executions", "budgets_json", "TEXT"),
             ("checkpoints", "checkpoint_id", "TEXT"),
@@ -1876,7 +1896,7 @@ impl PersistentStore {
     pub fn check_idempotency(&self, key: &str) -> Result<Option<(Option<String>, Value)>, String> {
         let conn = self.conn.lock().map_err(|e| format!("lock error: {e}"))?;
         let mut stmt = conn
-            .prepare("SELECT request_digest, result_json FROM idempotency_keys WHERE key = ?1")
+            .prepare("SELECT request_digest, result_json FROM idempotency_keys WHERE key = ?1 AND request_digest IS NOT NULL AND valid = 1")
             .map_err(|e| format!("idempotency error: {e}"))?;
         let result: Option<(Option<String>, String)> = stmt
             .query_row(params![key], |row| Ok((row.get(0)?, row.get(1)?)))

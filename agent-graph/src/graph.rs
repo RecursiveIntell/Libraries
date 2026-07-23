@@ -251,9 +251,10 @@ impl AgentGraph {
                         "normal".hash(&mut hasher);
                         to.hash(&mut hasher);
                     }
-                    EdgeType::Conditional(_) => {
+                    EdgeType::Conditional(router) => {
                         "conditional".hash(&mut hasher);
                         from.hash(&mut hasher);
+                        router.semantic_digest().hash(&mut hasher);
                     }
                 }
             }

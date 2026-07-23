@@ -38,6 +38,12 @@ pub trait RoutingFunction: Send + Sync {
     /// Returns routing decision.
     /// Return `RouterOutput::Next(None)` to end execution.
     async fn route(&self, state: &AgentState, config: &GraphConfig) -> Result<RouterOutput>;
+
+    /// Stable caller-visible identity for routing semantics. Implementations
+    /// should override this when the route behavior depends on configuration.
+    fn semantic_digest(&self) -> String {
+        std::any::type_name::<Self>().to_string()
+    }
 }
 
 /// Helper to create a router from an async function

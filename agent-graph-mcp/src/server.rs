@@ -983,11 +983,17 @@ impl AgentGraphServer {
                 );
             }
             if Instant::now() >= deadline {
+                let cancellation = runs.cancel(&run_id).unwrap_or_else(
+                    |_| serde_json::json!({"run_id": run_id, "status": "cancellation_requested"}),
+                );
                 break output_with_meta(
                     serde_json::json!({
                         "run_id": run_id,
                         "status": r.status,
                         "timed_out": true,
+                        "completion_unknown": true,
+                        "cancellation": "requested",
+                        "cancellation_result": cancellation,
                     }),
                     Some(&graph_id),
                     Some(&graph.version),
@@ -1156,7 +1162,13 @@ impl AgentGraphServer {
                 "total_execution_count": run_ids.len(),
                 "base_url": self.safe_provider_label(),
                 "default_model": self.default_model,
-                "storage_class": "volatile",
+                "storage_class": if self.store.is_none() {
+                    "process_local"
+                } else if durable_integrity {
+                    "persisted_integrity_verified"
+                } else {
+                    "persisted_unverified"
+                },
                 "capabilities": {
                     "runtime": "agent_graph",
                     "async_start": true,

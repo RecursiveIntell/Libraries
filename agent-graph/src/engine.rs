@@ -622,6 +622,7 @@ impl<'a> GraphExecutor<'a> {
                     async move { executor.execute_node(node, state, config).await }
                 },
                 retry,
+                self.cancel_flag.clone(),
                 self.state.clone(),
                 self.event_sink.clone(),
                 self.graph.checkpoint_store.clone(),
@@ -644,6 +645,7 @@ impl<'a> GraphExecutor<'a> {
                     async move { node.execute(&state, &config).await }
                 },
                 retry,
+                self.cancel_flag.clone(),
                 self.state.clone(),
                 self.event_sink.clone(),
                 self.graph.checkpoint_store.clone(),
@@ -804,6 +806,7 @@ impl<'a> GraphExecutor<'a> {
         let trace_ctx = Some(self.trace_ctx.clone());
         let checkpoint_store = self.graph.checkpoint_store.clone();
         let node_attempt_count = self.total_attempts as u32;
+        let cancel_flag = self.cancel_flag.clone();
 
         if let Some(ref executor) = self.graph.executor {
             let exec = executor.clone();
@@ -822,6 +825,7 @@ impl<'a> GraphExecutor<'a> {
                         async move { exec.execute_node(node, forked_state, config).await }
                     },
                     retry_policy,
+                    cancel_flag.clone(),
                     forked_state.clone(),
                     event_sink.clone(),
                     checkpoint_store.clone(),
@@ -900,6 +904,7 @@ impl<'a> GraphExecutor<'a> {
                         async move { node.execute(&forked_state, &config).await }
                     },
                     retry_policy,
+                    cancel_flag.clone(),
                     forked_state.clone(),
                     event_sink.clone(),
                     checkpoint_store.clone(),
@@ -1007,6 +1012,7 @@ struct AttemptFamilyFailure {
 async fn execute_node_attempt_family<ExecOnce, ExecFut>(
     mut exec_once: ExecOnce,
     retry: Option<RetryPolicy>,
+    cancel_flag: Arc<AtomicBool>,
     state: AgentState,
     event_sink: Arc<dyn EventSink>,
     checkpoint_store: Option<Arc<dyn CheckpointStore>>,
@@ -1026,6 +1032,13 @@ where
         .map_or(1, |policy| policy.max_attempts.max(1));
 
     for attempt_index in 0..max_attempts {
+        if cancel_flag.load(Ordering::SeqCst) {
+            return Err(AttemptFamilyFailure {
+                error: AgentGraphError::Cancelled,
+                outcome: NodeOutcomeKind::Interrupted,
+                trial_id: stack_ids::TrialId::generate(),
+            });
+        }
         let trial_id = stack_ids::TrialId::generate();
         event_sink.emit(GraphEvent::NodeStart {
             run_id: run_id.clone(),
@@ -1163,7 +1176,22 @@ where
                         });
                     };
                     let delay = policy.delay_for_attempt(attempt_index);
-                    tokio::time::sleep(delay).await;
+                    let mut remaining = delay;
+                    loop {
+                        if cancel_flag.load(Ordering::SeqCst) {
+                            return Err(AttemptFamilyFailure {
+                                error: AgentGraphError::Cancelled,
+                                outcome: NodeOutcomeKind::Interrupted,
+                                trial_id,
+                            });
+                        }
+                        let tick = std::time::Duration::from_millis(10).min(remaining);
+                        tokio::time::sleep(tick).await;
+                        if remaining <= tick {
+                            break;
+                        }
+                        remaining -= tick;
+                    }
                 } else {
                     return Err(AttemptFamilyFailure {
                         error,
