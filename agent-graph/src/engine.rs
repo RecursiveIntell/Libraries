@@ -5,7 +5,7 @@ use crate::checkpoint_store::{CheckpointStore, RunStatus, RunSummary};
 use crate::command::{Navigation, NodeOutput};
 use crate::config::GraphConfig;
 use crate::edge::EdgeType;
-use crate::error::{AgentGraphError, Result};
+use crate::error::{AgentGraphError, CheckpointStoreOperation, Result};
 use crate::event_sink::{EventSink, GraphEvent, NodeOutcomeKind};
 use crate::graph::{AgentGraph, END, START};
 use crate::interrupt::{ExecutionResult, InterruptCheckpoint};
@@ -20,8 +20,38 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
+fn checkpoint_store_error(
+    operation: CheckpointStoreOperation,
+    error: AgentGraphError,
+) -> AgentGraphError {
+    AgentGraphError::CheckpointStore {
+        operation,
+        message: error.to_string(),
+    }
+}
+
 /// Execution-related methods on AgentGraph.
 impl AgentGraph {
+    fn unstarted_run_summary(&self, trace_ctx: stack_ids::TraceCtx) -> RunSummary {
+        let now = chrono::Utc::now();
+        RunSummary {
+            // An empty ID is reserved for a run that was never persisted.
+            run_id: String::new(),
+            graph_name: self
+                .graph_name
+                .clone()
+                .unwrap_or_else(|| "unnamed".to_string()),
+            status: RunStatus::Failed,
+            total_nodes_executed: 0,
+            total_attempts: 0,
+            failed_attempts: 0,
+            trace_id: Some(trace_ctx.to_legacy_trace_id().to_string()),
+            trace_ctx: Some(trace_ctx),
+            started_at: now,
+            finished_at: Some(now),
+        }
+    }
+
     /// Execute the graph starting from a specific node.
     pub async fn execute(&self, start_node: &str, state: AgentState) -> Result<AgentState> {
         self.execute_with_config(start_node, state, GraphConfig::default())
@@ -36,10 +66,13 @@ impl AgentGraph {
         config: GraphConfig,
     ) -> (Result<AgentState>, RunSummary) {
         self.register_reducers_on_state(&state).await;
+        let trace_ctx = config.resolve_trace_ctx();
+        let run_id = match self.create_run_id().await {
+            Ok(run_id) => run_id,
+            Err(error) => return (Err(error), self.unstarted_run_summary(trace_ctx)),
+        };
         let event_sink = self.resolve_event_sink(None);
         let cancel = Arc::new(AtomicBool::new(false));
-        let run_id = self.create_run_id(&event_sink).await;
-        let trace_ctx = config.resolve_trace_ctx();
 
         let executor = GraphExecutor {
             graph: self,
@@ -79,10 +112,18 @@ impl AgentGraph {
     ) -> ExecutionResult {
         self.register_reducers_on_state(&state).await;
         let state_clone = state.clone();
+        let trace_ctx = config.resolve_trace_ctx();
+        let run_id = match self.create_run_id().await {
+            Ok(run_id) => run_id,
+            Err(error) => {
+                return ExecutionResult::Failed {
+                    error,
+                    state: state_clone,
+                }
+            }
+        };
         let event_sink = self.resolve_event_sink(None);
         let cancel = Arc::new(AtomicBool::new(false));
-        let run_id = self.create_run_id(&event_sink).await;
-        let trace_ctx = config.resolve_trace_ctx();
 
         let executor = GraphExecutor {
             graph: self,
@@ -141,9 +182,9 @@ impl AgentGraph {
 
         let handle = tokio::spawn(async move {
             graph.register_reducers_on_state(&state).await;
-            let event_sink = graph.resolve_event_sink(None);
-            let run_id = graph.create_run_id(&event_sink).await;
             let trace_ctx = config.resolve_trace_ctx();
+            let run_id = graph.create_run_id().await?;
+            let event_sink = graph.resolve_event_sink(None);
 
             let executor = GraphExecutor {
                 graph: &graph,
@@ -184,10 +225,10 @@ impl AgentGraph {
 
         let handle = tokio::spawn(async move {
             graph.register_reducers_on_state(&state).await;
+            let trace_ctx = config.resolve_trace_ctx();
+            let run_id = graph.create_run_id().await?;
             let event_sink = graph.resolve_event_sink(Some(tx));
             let cancel = Arc::new(AtomicBool::new(false));
-            let run_id = graph.create_run_id(&event_sink).await;
-            let trace_ctx = config.resolve_trace_ctx();
 
             let executor = GraphExecutor {
                 graph: &graph,
@@ -249,32 +290,40 @@ impl<'a> GraphExecutor<'a> {
             graph_name: self.graph.graph_name.clone(),
         });
 
-        let result = self.execute_inner(start_node).await;
+        let mut result = self.execute_inner(start_node).await;
+
+        // A configured checkpoint store is part of the execution contract.
+        // Do not report success (or a durable failure) if its terminal state
+        // could not be persisted.
+        if let Some(ref store) = self.graph.checkpoint_store {
+            let terminal_result = match &result {
+                Ok(_) => store.complete_run(&self.run_id).await.map_err(|error| {
+                    checkpoint_store_error(CheckpointStoreOperation::CompleteRun, error)
+                }),
+                Err(AgentGraphError::Cancelled) => store
+                    .fail_run(&self.run_id, "cancelled")
+                    .await
+                    .map_err(|error| {
+                        checkpoint_store_error(CheckpointStoreOperation::FailRun, error)
+                    }),
+                Err(error) => store
+                    .fail_run(&self.run_id, &error.to_string())
+                    .await
+                    .map_err(|error| {
+                        checkpoint_store_error(CheckpointStoreOperation::FailRun, error)
+                    }),
+            };
+            if let Err(error) = terminal_result {
+                result = Err(error);
+            }
+        }
+
         let status = match &result {
             Ok(_) => RunStatus::Completed,
             Err(AgentGraphError::Cancelled) => RunStatus::Cancelled,
             Err(AgentGraphError::InterruptError { .. }) => RunStatus::Interrupted,
             Err(_) => RunStatus::Failed,
         };
-
-        // Record final status in checkpoint store
-        match &result {
-            Ok(_) => {
-                if let Some(ref store) = self.graph.checkpoint_store {
-                    let _ = store.complete_run(&self.run_id).await;
-                }
-            }
-            Err(AgentGraphError::Cancelled) => {
-                if let Some(ref store) = self.graph.checkpoint_store {
-                    let _ = store.fail_run(&self.run_id, "cancelled").await;
-                }
-            }
-            Err(e) => {
-                if let Some(ref store) = self.graph.checkpoint_store {
-                    let _ = store.fail_run(&self.run_id, &e.to_string()).await;
-                }
-            }
-        }
 
         let summary = self.build_run_summary(status, run_legacy_tid.clone());
 
@@ -369,7 +418,15 @@ impl<'a> GraphExecutor<'a> {
                         // Save state to checkpoint store
                         if let Some(ref store) = self.graph.checkpoint_store {
                             let state_data = self.state.export().await;
-                            let _ = store.save_state_snapshot(&self.run_id, &state_data).await;
+                            store
+                                .save_state_snapshot(&self.run_id, &state_data)
+                                .await
+                                .map_err(|error| {
+                                    checkpoint_store_error(
+                                        CheckpointStoreOperation::SaveStateSnapshot,
+                                        error,
+                                    )
+                                })?;
                         }
 
                         return Err(AgentGraphError::InterruptError {
@@ -462,7 +519,15 @@ impl<'a> GraphExecutor<'a> {
 
                         if let Some(ref store) = self.graph.checkpoint_store {
                             let state_data = self.state.export().await;
-                            let _ = store.save_state_snapshot(&self.run_id, &state_data).await;
+                            store
+                                .save_state_snapshot(&self.run_id, &state_data)
+                                .await
+                                .map_err(|error| {
+                                    checkpoint_store_error(
+                                        CheckpointStoreOperation::SaveStateSnapshot,
+                                        error,
+                                    )
+                                })?;
                         }
 
                         return Err(AgentGraphError::InterruptError {
@@ -493,7 +558,12 @@ impl<'a> GraphExecutor<'a> {
             // Save state snapshot to new checkpoint store
             if let Some(ref store) = self.graph.checkpoint_store {
                 let state_data = self.state.export().await;
-                let _ = store.save_state_snapshot(&self.run_id, &state_data).await;
+                store
+                    .save_state_snapshot(&self.run_id, &state_data)
+                    .await
+                    .map_err(|error| {
+                        checkpoint_store_error(CheckpointStoreOperation::SaveStateSnapshot, error)
+                    })?;
             }
 
             // Emit superstep end
@@ -969,10 +1039,22 @@ where
 
         let checkpoint_attempt_id = if let Some(ref store) = checkpoint_store {
             let state_val = serde_json::to_value(&state.export().await).unwrap_or(Value::Null);
-            store
+            match store
                 .record_attempt(&run_id, &node_id, attempt_index as u32, &state_val)
                 .await
-                .ok()
+            {
+                Ok(attempt_id) => Some(attempt_id),
+                Err(error) => {
+                    return Err(AttemptFamilyFailure {
+                        error: checkpoint_store_error(
+                            CheckpointStoreOperation::RecordAttempt,
+                            error,
+                        ),
+                        outcome: NodeOutcomeKind::Failed,
+                        trial_id,
+                    });
+                }
+            }
         } else {
             None
         };
@@ -985,9 +1067,18 @@ where
                             if let Err(error) = state.set(key, value.clone()).await {
                                 if let Some(ref store) = checkpoint_store {
                                     if let Some(ref attempt_id) = checkpoint_attempt_id {
-                                        let _ = store
-                                            .fail_attempt(attempt_id, &error.to_string())
-                                            .await;
+                                        if let Err(store_error) =
+                                            store.fail_attempt(attempt_id, &error.to_string()).await
+                                        {
+                                            return Err(AttemptFamilyFailure {
+                                                error: checkpoint_store_error(
+                                                    CheckpointStoreOperation::FailAttempt,
+                                                    store_error,
+                                                ),
+                                                outcome: NodeOutcomeKind::Failed,
+                                                trial_id: trial_id.clone(),
+                                            });
+                                        }
                                     }
                                 }
                                 return Err(AttemptFamilyFailure {
@@ -1009,7 +1100,18 @@ where
                         );
                         let state_val =
                             serde_json::to_value(&state.export().await).unwrap_or(Value::Null);
-                        let _ = store.complete_attempt(attempt_id, &state_val, &meta).await;
+                        if let Err(error) =
+                            store.complete_attempt(attempt_id, &state_val, &meta).await
+                        {
+                            return Err(AttemptFamilyFailure {
+                                error: checkpoint_store_error(
+                                    CheckpointStoreOperation::CompleteAttempt,
+                                    error,
+                                ),
+                                outcome: NodeOutcomeKind::Failed,
+                                trial_id: trial_id.clone(),
+                            });
+                        }
                     }
                 }
 
@@ -1018,7 +1120,18 @@ where
             Err(error) => {
                 if let Some(ref store) = checkpoint_store {
                     if let Some(ref attempt_id) = checkpoint_attempt_id {
-                        let _ = store.fail_attempt(attempt_id, &error.to_string()).await;
+                        if let Err(store_error) =
+                            store.fail_attempt(attempt_id, &error.to_string()).await
+                        {
+                            return Err(AttemptFamilyFailure {
+                                error: checkpoint_store_error(
+                                    CheckpointStoreOperation::FailAttempt,
+                                    store_error,
+                                ),
+                                outcome: NodeOutcomeKind::Failed,
+                                trial_id,
+                            });
+                        }
                     }
                 }
 

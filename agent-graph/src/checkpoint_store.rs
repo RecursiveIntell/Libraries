@@ -250,7 +250,7 @@ impl CheckpointStore for InMemoryCheckpointStore {
     ) -> Pin<Box<dyn Future<Output = Result<RunId>> + Send + '_>> {
         let graph_name = graph_name.to_string();
         Box::pin(async move {
-            let run_id = uuid::Uuid::new_v4().to_string();
+            let run_id = stack_ids::GraphRunId::random("agent-graph").to_string();
             let now = chrono::Utc::now();
             let run = RunState {
                 run_id: run_id.clone(),
@@ -278,7 +278,8 @@ impl CheckpointStore for InMemoryCheckpointStore {
         let node_id = node_id.to_string();
         let input = input.clone();
         Box::pin(async move {
-            let attempt_id = uuid::Uuid::new_v4().to_string();
+            let attempt_id =
+                stack_ids::GraphCheckpointAttemptId::random("agent-graph-checkpoint").to_string();
             let now = chrono::Utc::now();
             let record = AttemptRecord {
                 attempt_id: attempt_id.clone(),

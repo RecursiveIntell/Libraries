@@ -86,16 +86,22 @@ impl AgentGraph {
         }
     }
 
-    /// Create a run ID (from CheckpointStore if available, otherwise UUID).
-    pub(crate) async fn create_run_id(&self, _event_sink: &Arc<dyn EventSink>) -> String {
+    /// Create a run ID from a configured checkpoint store, or locally when no store is configured.
+    ///
+    /// A configured store is a durable-execution contract: its creation failure
+    /// is returned to the caller rather than silently degrading to a UUID.
+    pub(crate) async fn create_run_id(&self) -> Result<String> {
         if let Some(ref store) = self.checkpoint_store {
             let name = self.graph_name.as_deref().unwrap_or("unnamed");
             store
                 .create_run(name)
                 .await
-                .unwrap_or_else(|_| uuid::Uuid::new_v4().to_string())
+                .map_err(|error| AgentGraphError::CheckpointStore {
+                    operation: crate::error::CheckpointStoreOperation::CreateRun,
+                    message: error.to_string(),
+                })
         } else {
-            uuid::Uuid::new_v4().to_string()
+            Ok(stack_ids::GraphRunId::random("agent-graph").to_string())
         }
     }
 

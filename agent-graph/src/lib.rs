@@ -59,7 +59,7 @@ pub mod stream;
 #[cfg(feature = "checkpointing")]
 pub mod checkpoint;
 
-pub use error::{AgentGraphError, Result};
+pub use error::{AgentGraphError, CheckpointStoreOperation, Result};
 pub use graph::{AgentGraph, END, START};
 pub use receipt::{ExecutionOutcome, GraphExecutionReceiptV1, StepExecutionReceiptV1};
 pub use state::AgentState;
