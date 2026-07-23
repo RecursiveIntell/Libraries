@@ -2,7 +2,7 @@
 use rusqlite::{params, Connection, OptionalExtension};
 use sha2::{Digest, Sha256};
 
-pub const CURRENT_VERSION: i64 = 1;
+pub const CURRENT_VERSION: i64 = 2;
 pub const LEGACY_OWNER_UNKNOWN: &str = "legacy_owner_unknown";
 
 pub trait MigrationStore {
@@ -20,7 +20,7 @@ pub fn apply(conn: &mut Connection, binary_digest: &str) -> rusqlite::Result<()>
         )
         .optional()?;
     if exists.is_none() {
-        tx.execute_batch("CREATE TABLE IF NOT EXISTS server_instances (instance_id TEXT PRIMARY KEY, started_at TEXT NOT NULL, heartbeat_at TEXT NOT NULL, stopped_at TEXT, binary_digest TEXT NOT NULL);")?;
+        tx.execute_batch("CREATE TABLE IF NOT EXISTS daemon_instances (instance_id TEXT PRIMARY KEY, generation INTEGER NOT NULL UNIQUE, pid INTEGER NOT NULL, boot_id TEXT, executable_digest TEXT, started_at TEXT NOT NULL, heartbeat_at TEXT NOT NULL, clean_shutdown_at TEXT); CREATE TABLE IF NOT EXISTS run_publication_state (run_id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, reason TEXT);")?;
         let has_owner: Option<String> = tx
             .query_row(
                 "SELECT 1 FROM pragma_table_info('executions') WHERE name='owner_instance_id'",

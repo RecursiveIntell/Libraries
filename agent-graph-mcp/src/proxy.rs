@@ -14,8 +14,15 @@ impl From<io::Error> for ProxyError {
     }
 }
 pub fn connect(path: &std::path::Path) -> Result<UnixStream, ProxyError> {
-    UnixStream::connect(path).map_err(|_| ProxyError::DaemonUnavailable)
+    connect_timeout(path, 2000)
 }
+
+pub fn connect_timeout(path: &std::path::Path, timeout_ms: u64) -> Result<UnixStream, ProxyError> {
+    let stream = UnixStream::connect(path).map_err(|_| ProxyError::DaemonUnavailable)?;
+    stream.set_read_timeout(Some(std::time::Duration::from_millis(timeout_ms)))?;
+    Ok(stream)
+}
+
 pub fn read_frame<R: Read>(r: &mut R) -> Result<Vec<u8>, ProxyError> {
     let mut n = [0u8; 4];
     r.read_exact(&mut n)?;

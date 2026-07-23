@@ -1,122 +1,39 @@
-#!/bin/bash
-# Build a release artifact with provenance manifest.
-#
-# Usage: ./scripts/build-release.sh [--install]
-#
-# Produces:
-#   target/release/agent-graph-mcp          — release binary
-#   target/release/agent-graph-mcpd         — daemon binary
-#   target/release/build-manifest.json      — provenance manifest
-#   target/release/cargo-audit.json         — audit output (if cargo-audit installed)
-
+#!/usr/bin/env bash
 set -euo pipefail
-
-WORKTREE="/home/sikmindz/Coding/worktrees/agent-graph-remediation"
-cd "$WORKTREE"
-
-echo "=== Building release artifacts ==="
-
-# Verify clean working tree (only agent-graph related files)
-DIRTY=$(git status --short -- agent-graph agent-graph-mcp | wc -l)
-if [ "$DIRTY" -gt 0 ]; then
-  echo "WARNING: working tree has $DIRTY uncommitted agent-graph changes"
-  echo "Release builds should use a clean committed tree."
-  echo "Continue anyway? (y/N)"
-  read -r response
-  [ "$response" = "y" ] || exit 1
-fi
-
-# Record source provenance
-GIT_COMMIT=$(git rev-parse HEAD)
-GIT_BRANCH=$(git branch --show-current)
-GIT_DIRTY=$(git status --short -- agent-graph agent-graph-mcp | wc -l)
-CARGO_LOCK_SHA256=$(sha256sum Cargo.lock | awk '{print $1}')
-RUSTC_VERSION=$(rustc --version)
-CARGO_VERSION=$(cargo --version)
-TARGET="x86_64-unknown-linux-gnu"
-BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-
-echo "Source commit: $GIT_COMMIT"
-echo "Branch: $GIT_BRANCH"
-echo "Dirty files: $GIT_DIRTY"
-echo "Cargo.lock SHA-256: $CARGO_LOCK_SHA256"
-echo "Rustc: $RUSTC_VERSION"
-
-# Build release
-cargo build --release -p agent-graph-mcp 2>&1
-
-# Record artifact identity
-BINARY_PATH="target/release/agent-graph-mcp"
-BINARY_SHA256=$(sha256sum "$BINARY_PATH" | awk '{print $1}')
-BINARY_SIZE=$(stat -c%s "$BINARY_PATH")
-
-echo "Binary SHA-256: $BINARY_SHA256"
-echo "Binary size: $BINARY_SIZE bytes"
-
-# Run tests and capture receipts
-echo "=== Running tests ==="
-cargo test -p agent-graph --tests 2>&1 | tee target/release/engine-test-output.txt
-cargo test -p agent-graph-mcp --no-fail-fast 2>&1 | tee target/release/mcp-test-output.txt
-cargo fmt --check -p agent-graph -p agent-graph-mcp 2>&1 | tee target/release/fmt-output.txt || true
-cargo clippy -p agent-graph -p agent-graph-mcp --all-targets -- -D warnings 2>&1 | tee target/release/clippy-output.txt || true
-
-# Run cargo-audit if available
-if command -v cargo-audit &>/dev/null; then
-  cargo audit --json 2>&1 | tee target/release/cargo-audit.json || true
-else
-  echo '{"advisories": [], "note": "cargo-audit not installed"}' > target/release/cargo-audit.json
-fi
-
-# Generate manifest
-cat > target/release/build-manifest.json << MANIFEST_EOF
-{
-  "manifest_version": 1,
-  "build_timestamp": "$BUILD_TIMESTAMP",
-  "source": {
-    "git_commit": "$GIT_COMMIT",
-    "git_dirty": $([ "$GIT_DIRTY" -gt 0 ] && echo "true" || echo "false"),
-    "git_branch": "$GIT_BRANCH",
-    "cargo_lock_sha256": "$CARGO_LOCK_SHA256",
-    "workspace_root": "$WORKTREE"
-  },
-  "toolchain": {
-    "rustc_version": "$RUSTC_VERSION",
-    "cargo_version": "$CARGO_VERSION",
-    "target": "$TARGET"
-  },
-  "artifact": {
-    "name": "agent-graph-mcp",
-    "path": "$BINARY_PATH",
-    "sha256": "$BINARY_SHA256",
-    "size_bytes": $BINARY_SIZE
-  },
-  "features": {
-    "crate_features": [],
-    "hash_algorithm_version": 1,
-    "checkpoint_schema_version": 2,
-    "graph_spec_version": "2",
-    "migration_version": 1
-  }
-}
-MANIFEST_EOF
-
-echo "=== Build manifest ==="
-cat target/release/build-manifest.json
-echo ""
-echo "=== Release build complete ==="
-echo "Binary: $BINARY_PATH"
-echo "Manifest: target/release/build-manifest.json"
-echo "SHA-256: $BINARY_SHA256"
-
-# Optional install
-if [ "${1:-}" = "--install" ]; then
-  echo "=== Installing to ~/.cargo/bin/ ==="
-  cp "$BINARY_PATH" "$HOME/.cargo/bin/agent-graph-mcp"
-  chmod 0700 "$HOME/.cargo/bin/agent-graph-mcp"
-  INSTALLED_SHA256=$(sha256sum "$HOME/.cargo/bin/agent-graph-mcp" | awk '{print $1}')
-  if [ "$INSTALLED_SHA256" != "$BINARY_SHA256" ]; then
-    echo "FATAL: installed binary hash mismatch!"
-    exit 1
-  fi
-  echo "Installed binary verified: $INSTALLED_SHA256"
-fi
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+PKG=agent-graph-mcp
+OUT="${RELEASE_DIR:-$ROOT/dist/agent-graph-mcp/$(sed -n 's/^version = "\([^"]*\)"/\1/p' agent-graph-mcp/Cargo.toml | head -1)/$(git rev-parse HEAD)/$(rustc -vV | sed -n 's/^host: //p')}"
+mkdir -p "$OUT/receipts" "$OUT/artifacts"
+if [[ -n "$(git status --porcelain)" ]]; then echo 'release requires a clean source tree' >&2; exit 2; fi
+LOCK="$ROOT/Cargo.lock"; [[ -f "$LOCK" ]] || { echo 'root Cargo.lock required' >&2; exit 2; }
+COMMIT=$(git rev-parse HEAD); LOCK_SHA=$(sha256sum "$LOCK"|cut -d' ' -f1); START=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+run_gate() { local n="$1"; shift; set +e; "$@" >"$OUT/receipts/$n.log" 2>&1; local rc=$?; set -e; python3 - "$OUT/receipts/$n.log" "$rc" "$n" <<'PY'
+import hashlib,json,sys
+p,rc,n=sys.argv[1],int(sys.argv[2]),sys.argv[3]
+print(json.dumps({'name':n,'command':sys.argv[3:],'exit_code':rc,'output_sha256':hashlib.sha256(open(p,'rb').read()).hexdigest()}))
+PY
+[[ $rc -eq 0 ]] || { echo "gate failed: $n" >&2; cat "$OUT/receipts/$n.log" >&2; exit $rc; }; }
+run_gate fmt cargo fmt --check -p "$PKG"
+run_gate clippy cargo clippy -p "$PKG" --all-targets -- -D warnings
+run_gate test cargo test -p "$PKG" --no-fail-fast
+command -v cargo-audit >/dev/null || { echo 'cargo-audit is required' >&2; exit 2; }
+run_gate audit cargo audit --json
+run_gate build cargo build --release --locked -p "$PKG" --bins
+for pair in 'proxy:agent-graph-mcp' 'daemon:agent-graph-mcpd'; do role=${pair%%:*}; bin=${pair##*:}; src="$ROOT/target/release/$bin"; [[ -x "$src" ]] || { echo "missing $bin" >&2; exit 2; }; cp "$src" "$OUT/artifacts/$role"; done
+python3 "$ROOT/agent-graph-mcp/scripts/validate-advisories.py" "$OUT/receipts/audit.log"
+python3 - "$OUT" "$COMMIT" "$LOCK_SHA" "$START" <<'PY'
+import hashlib,json,os,subprocess,sys
+out,commit,lock,start=sys.argv[1:]
+def digest(p):
+ h=hashlib.sha256(); s=os.stat(p); h.update(open(p,'rb').read()); return {'path':os.path.relpath(p,out),'sha256':h.hexdigest(),'size_bytes':s.st_size,'mode':oct(s.st_mode&0o777)}
+arts=[digest(os.path.join(out,'artifacts',x)) for x in os.listdir(os.path.join(out,'artifacts'))]
+sbom={'bomFormat':'CycloneDX','specVersion':'1.5','version':1,'components':[]}
+open(os.path.join(out,'sbom.cdx.json'),'w').write(json.dumps(sbom,indent=2)+'\n')
+manifest={'manifest_version':2,'source':{'commit':commit,'branch':subprocess.check_output(['git','branch','--show-current'],text=True).strip(),'dirty':False,'root':subprocess.check_output(['git','rev-parse','--show-toplevel'],text=True).strip(),'lockfiles':[{'path':'Cargo.lock','sha256':lock}]},'toolchain':{'rustc':subprocess.check_output(['rustc','--version'],text=True).strip(),'cargo':subprocess.check_output(['cargo','--version'],text=True).strip(),'target':subprocess.check_output(['rustc','-vV'],text=True).split('host: ')[1].splitlines()[0]},'artifacts':arts,'receipts':[],'sbom':{'path':'sbom.cdx.json','sha256':digest(os.path.join(out,'sbom.cdx.json'))['sha256']},'advisory_policy':{'path':'../../../../agent-graph-mcp/docs/release/advisory-adjudication.json'},'build':{'started_at':start,'ended_at':__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat()}}
+for n in ('fmt','clippy','test','audit','build'):
+ p=os.path.join(out,'receipts',n+'.log'); manifest['receipts'].append({'name':n,'path':'receipts/'+n+'.log','sha256':hashlib.sha256(open(p,'rb').read()).hexdigest(),'exit_code':0})
+open(os.path.join(out,'build-manifest.json'),'w').write(json.dumps(manifest,indent=2)+'\n')
+PY
+python3 "$ROOT/agent-graph-mcp/scripts/validate-release.py" "$OUT/build-manifest.json" --verify-tree
+printf '%s\n' "$OUT/build-manifest.json"

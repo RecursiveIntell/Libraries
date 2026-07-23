@@ -55,7 +55,57 @@ impl std::fmt::Display for CliError {
 
 impl std::error::Error for CliError {}
 
-/// Parse command-line arguments into a typed config or return an error.
+#[derive(Debug, Clone)]
+pub struct ProxyConfig {
+    pub socket: PathBuf,
+    pub timeout_ms: u64,
+}
+pub fn parse_proxy_args(args: &[String]) -> Result<ProxyConfig, CliError> {
+    let mut socket = std::env::var_os("XDG_RUNTIME_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/tmp"))
+        .join("agent-graph/mcp.sock");
+    let mut timeout_ms = 2000;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--help" => {
+                return Err(CliError {
+                    message: "agent-graph-mcp [--socket PATH] [--connect-timeout-ms N]".into(),
+                    exit_code: 0,
+                })
+            }
+            "--version" => {
+                return Err(CliError {
+                    message: env!("CARGO_PKG_VERSION").into(),
+                    exit_code: 0,
+                })
+            }
+            "--socket" => {
+                i += 1;
+                socket = PathBuf::from(
+                    args.get(i)
+                        .ok_or_else(|| CliError::new("--socket requires a value"))?,
+                );
+            }
+            "--connect-timeout-ms" => {
+                i += 1;
+                timeout_ms = args
+                    .get(i)
+                    .ok_or_else(|| CliError::new("--connect-timeout-ms requires a value"))?
+                    .parse()
+                    .map_err(|_| CliError::new("invalid timeout"))?;
+            }
+            "--data-dir" | "--integrity-key" | "--base-url" | "--model" => {
+                return Err(CliError::new("LEGACY_DIRECT_DURABLE_UNSUPPORTED"))
+            }
+            other => return Err(CliError::new(format!("unknown argument: '{other}'"))),
+        }
+        i += 1;
+    }
+    Ok(ProxyConfig { socket, timeout_ms })
+}
+
 ///
 /// Strict rules:
 /// - Unknown flags are rejected.

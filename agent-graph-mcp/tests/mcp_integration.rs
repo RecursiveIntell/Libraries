@@ -20,7 +20,11 @@ impl Mcp {
     fn new_with_data_dir(data_dir: &std::path::Path) -> Self {
         let key_path = test_integrity_key();
         Self::new_with_args_and_key(
-            &["--data-dir", data_dir.to_str().expect("UTF-8 temp path")],
+            &[
+                "--direct",
+                "--data-dir",
+                data_dir.to_str().expect("UTF-8 temp path"),
+            ],
             Some(key_path),
         )
     }

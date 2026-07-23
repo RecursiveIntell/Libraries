@@ -16,5 +16,6 @@ pub mod spec;
 pub mod store;
 pub mod templates;
 pub mod tools;
+pub mod transport;
 
 pub use server::AgentGraphServer;
