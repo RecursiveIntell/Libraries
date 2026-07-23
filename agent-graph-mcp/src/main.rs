@@ -60,6 +60,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let rt = tokio::runtime::Runtime::new()?;
     rt.block_on(async {
+        let _owner_lock = if let Some(ref dir) = config.data_dir {
+            agent_graph_mcp::fs_security::ensure_private_dir(dir)?;
+            Some(agent_graph_mcp::owner_lock::OwnerLock::acquire(dir)?)
+        } else {
+            None
+        };
         let server = AgentGraphServer::new(
             config.base_url,
             config.default_model,

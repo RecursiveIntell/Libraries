@@ -462,6 +462,8 @@ impl PersistentStore {
         data_dir: &Path,
         integrity_key_path: Option<&Path>,
     ) -> Result<Self, String> {
+        crate::fs_security::validate_data_store(data_dir, integrity_key_path)
+            .map_err(|e| format!("filesystem security check failed: {e}"))?;
         std::fs::create_dir_all(data_dir).map_err(|e| format!("failed to create data dir: {e}"))?;
         let db_path = data_dir.join("agent-graph.db");
         let conn =
@@ -473,6 +475,8 @@ impl PersistentStore {
              PRAGMA busy_timeout = 5000;",
         )
         .map_err(|e| format!("pragma error: {e}"))?;
+        crate::fs_security::validate_data_store(data_dir, integrity_key_path)
+            .map_err(|e| format!("filesystem security check failed after WAL init: {e}"))?;
 
         let store = Self {
             conn: std::sync::Arc::new(Mutex::new(conn)),
