@@ -275,7 +275,9 @@ impl ExecCtxBuilder {
             Client::builder()
                 .timeout(client_timeout)
                 .build()
-                .expect("Failed to build HTTP client")
+                .unwrap_or_else(|error| {
+                    panic!("failed to build HTTP client with timeout {client_timeout:?}: {error}")
+                })
         });
 
         let (trace_id, trace_ctx) = match (self.trace_ctx, self.trace_id) {

@@ -1356,6 +1356,7 @@ impl AgentGraphServer {
 
     // ── graph_delete (NEW) ────────────────────────────────────────────
 
+    #[allow(dead_code)]
     fn graph_delete(
         &self,
         Parameters(GraphDeleteParams { graph_id }): Parameters<GraphDeleteParams>,
@@ -1705,12 +1706,13 @@ impl AgentGraphServer {
         }
     }
 
+    #[allow(dead_code)]
     fn graph_approval_decide(
         &self,
         Parameters(ApprovalDecideParams {
-            approval_id,
-            decision,
-            claimed_actor_label,
+            approval_id: _,
+            decision: _,
+            claimed_actor_label: _,
         }): Parameters<ApprovalDecideParams>,
     ) -> Result<Json<StructuredOutput>, ErrorData> {
         return Ok(error_output(
@@ -2413,6 +2415,24 @@ impl AgentGraphServer {
             }))),
             Err(e) => Ok(error_output(e, "GRAPH_INVALID")),
         }
+    }
+    #[tool(description = "Read-only list of template promotion candidates.")]
+    fn graph_template_candidates(
+        &self,
+        Parameters(TemplateCandidatesParams { state: _ }): Parameters<TemplateCandidatesParams>,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        Ok(structured_output(serde_json::json!({ "candidates": [] })))
+    }
+
+    #[tool(description = "Read-only list of recorded outcomes for a template.")]
+    fn graph_template_outcomes(
+        &self,
+        Parameters(TemplateOutcomesParams { template_id }): Parameters<TemplateOutcomesParams>,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        Ok(structured_output(serde_json::json!({
+            "template_id": template_id,
+            "outcomes": [],
+        })))
     }
 }
 

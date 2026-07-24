@@ -9,6 +9,7 @@ use std::{
     path::{Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
 };
+#[allow(dead_code)]
 pub const MAX_FRAME: usize = 1024 * 1024;
 #[derive(Debug)]
 pub enum DaemonError {
@@ -50,6 +51,7 @@ impl DaemonError {
 #[derive(Debug)]
 pub struct DaemonLock {
     file: File,
+    #[allow(dead_code)]
     pub path: PathBuf,
 }
 impl DaemonLock {
@@ -79,6 +81,7 @@ impl Drop for DaemonLock {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct DaemonIdentity {
     pub instance_id: String,
@@ -87,6 +90,7 @@ pub struct DaemonIdentity {
     pub started_at: String,
 }
 
+#[allow(dead_code)]
 pub fn identity(conn: &Connection) -> rusqlite::Result<DaemonIdentity> {
     use std::sync::atomic::{AtomicU64, Ordering};
     static COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -118,6 +122,7 @@ pub fn identity(conn: &Connection) -> rusqlite::Result<DaemonIdentity> {
     })
 }
 
+#[allow(dead_code)]
 pub fn recover_owned_state(
     conn: &Connection,
     instance_id: &str,
@@ -136,6 +141,7 @@ pub fn open_owned(
     migrations::apply(&mut c, binary_digest)?;
     Ok((lock, c))
 }
+#[allow(dead_code)]
 pub fn socket_path(runtime_dir: &Path, instance: &str) -> PathBuf {
     runtime_dir
         .join("agent-graph")

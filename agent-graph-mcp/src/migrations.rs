@@ -5,6 +5,7 @@ use sha2::{Digest, Sha256};
 pub const CURRENT_VERSION: i64 = 3;
 pub const LEGACY_OWNER_UNKNOWN: &str = "legacy_owner_unknown";
 
+#[allow(dead_code)]
 pub trait MigrationStore {
     fn connection(&self) -> &Connection;
 }
@@ -61,6 +62,7 @@ pub fn migration_digest(binary_digest: &str) -> String {
     format!("{:x}", h.finalize())
 }
 
+#[allow(dead_code)]
 pub fn owner_for_new_run<'a>(owner: &'a str) -> rusqlite::Result<&'a str> {
     if owner.is_empty() {
         Err(rusqlite::Error::InvalidParameterName(

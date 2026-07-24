@@ -1,18 +1,23 @@
 //! Framing and stdio/Unix transport helpers for the thin proxy.
 use std::io::{self, Read, Write};
 use std::os::unix::net::UnixStream;
+
 pub const MAX_FRAME: usize = 1024 * 1024;
+
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum ProxyError {
     DaemonUnavailable,
     FrameTooLarge,
     Io(io::Error),
 }
+
 impl From<io::Error> for ProxyError {
     fn from(e: io::Error) -> Self {
         Self::Io(e)
     }
 }
+
 pub fn connect(path: &std::path::Path) -> Result<UnixStream, ProxyError> {
     connect_timeout(path, 2000)
 }
@@ -34,6 +39,7 @@ pub fn read_frame<R: Read>(r: &mut R) -> Result<Vec<u8>, ProxyError> {
     r.read_exact(&mut b)?;
     Ok(b)
 }
+
 pub fn write_frame<W: Write>(w: &mut W, payload: &[u8]) -> Result<(), ProxyError> {
     if payload.len() > MAX_FRAME {
         return Err(ProxyError::FrameTooLarge);

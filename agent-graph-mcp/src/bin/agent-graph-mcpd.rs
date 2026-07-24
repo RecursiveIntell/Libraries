@@ -5,6 +5,7 @@ use std::{
     os::unix::net::{UnixListener, UnixStream},
     path::PathBuf,
 };
+use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut data = PathBuf::from("/tmp/agent-graph");
@@ -64,28 +65,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn serve_connection(
     stream: UnixStream,
-    _server: std::sync::Arc<AgentGraphServer>,
+    server: std::sync::Arc<AgentGraphServer>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // The proxy uses a bounded length-prefixed envelope. Adapt it to rmcp's
-    // newline JSON transport through a local duplex stream.
-    let (mut input, mut output) = tokio::io::duplex(1024 * 1024);
-    let mut reader = stream.try_clone()?;
-    let mut writer = stream;
-    let bridge = std::thread::spawn(move || {
-        while let Ok(frame) = transport::read_frame(&mut reader) {
-            use std::io::Write;
-            if writer
-                .write_all(&(frame.len() as u32).to_be_bytes())
-                .is_err()
-                || writer.write_all(&frame).is_err()
-            {
-                break;
+    let runtime = tokio::runtime::Runtime::new()?;
+    runtime.block_on(async move {
+        let socket = tokio::net::UnixStream::from_std(stream)?;
+        let (mut socket_reader, mut socket_writer) = socket.into_split();
+        let (rmcp_input, rmcp_transport) = tokio::io::duplex(transport::MAX_FRAME + 4096);
+        let (rmcp_reader, mut rmcp_writer) = tokio::io::split(rmcp_input);
+
+        let socket_to_rmcp = async {
+            loop {
+                let mut header = [0u8; 4];
+                socket_reader.read_exact(&mut header).await?;
+                let length = u32::from_be_bytes(header) as usize;
+                if length > transport::MAX_FRAME {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "frame too large",
+                    ));
+                }
+                let mut frame = vec![0u8; length];
+                socket_reader.read_exact(&mut frame).await?;
+                rmcp_writer.write_all(&frame).await?;
+                rmcp_writer.write_all(b"\n").await?;
             }
-        }
-    });
-    let _ = (&mut input, &mut output, &bridge);
-    // rmcp transport integration is completed by the direct compatibility
-    // path; retain the bounded bridge here until the daemon protocol adapter
-    // is upgraded to the stream transport API.
-    Ok(())
+            #[allow(unreachable_code)]
+            Ok::<(), std::io::Error>(())
+        };
+
+        let rmcp_to_socket = async {
+            let mut lines = tokio::io::BufReader::new(rmcp_reader).lines();
+            while let Some(line) = lines.next_line().await? {
+                transport::write_frame_async(&mut socket_writer, line.as_bytes()).await?;
+            }
+            Ok::<(), std::io::Error>(())
+        };
+
+        let service = server
+            .serve(rmcp_transport)
+            .await
+            .map_err(|e| std::io::Error::other(e.to_string()))?;
+        let bridges = tokio::try_join!(socket_to_rmcp, rmcp_to_socket);
+        let _ = service.cancel().await;
+        bridges.map(|_| ()).map_err(Into::into)
+    })
 }

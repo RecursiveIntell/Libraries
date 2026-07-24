@@ -322,3 +322,14 @@ pub struct TemplateInstantiateParams {
     pub template_id: String,
     pub name: String,
 }
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct TemplateCandidatesParams {
+    #[serde(default)]
+    pub state: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct TemplateOutcomesParams {
+    pub template_id: String,
+}

@@ -1,6 +1,5 @@
 //! Process-boundary test: daemon starts, acquires lock, second daemon rejected.
 use agent_graph_mcp::daemon;
-use std::fs;
 use tempfile::tempdir;
 
 #[test]

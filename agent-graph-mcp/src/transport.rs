@@ -1,5 +1,6 @@
 //! Bounded length-prefixed transport shared by the daemon and proxy.
 use std::io::{self, Read, Write};
+use tokio::io::{AsyncWrite, AsyncWriteExt};
 pub const MAX_FRAME: usize = 1024 * 1024;
 #[derive(Debug)]
 pub enum FrameError {
@@ -41,4 +42,19 @@ pub fn write_frame<W: Write>(w: &mut W, b: &[u8]) -> Result<(), FrameError> {
     w.write_all(b)?;
     w.flush()?;
     Ok(())
+}
+
+pub async fn write_frame_async<W: AsyncWrite + Unpin>(
+    w: &mut W,
+    b: &[u8],
+) -> Result<(), io::Error> {
+    if b.len() > MAX_FRAME {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "frame exceeds maximum size",
+        ));
+    }
+    w.write_all(&(b.len() as u32).to_be_bytes()).await?;
+    w.write_all(b).await?;
+    w.flush().await
 }
