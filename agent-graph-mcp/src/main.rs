@@ -33,13 +33,18 @@ fn main() {
         if transport::write_frame(&mut socket, line.as_bytes()).is_err() {
             break;
         }
-        let response = match transport::read_frame(&mut socket) {
-            Ok(v) => v,
-            Err(_) => break,
-        };
-        let _ = out.write_all(&response);
-        let _ = out.write_all(b"\n");
-        let _ = out.flush();
+        // JSON-RPC notifications have no "id" field and expect no response.
+        // Skip read_frame for notifications to avoid blocking.
+        let is_notification = line.contains("\"method\"") && !line.contains("\"id\"");
+        if !is_notification {
+            let response = match transport::read_frame(&mut socket) {
+                Ok(v) => v,
+                Err(_) => break,
+            };
+            let _ = out.write_all(&response);
+            let _ = out.write_all(b"\n");
+            let _ = out.flush();
+        }
     }
 }
 
