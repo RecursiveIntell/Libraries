@@ -1,10 +1,10 @@
 use std::sync::{atomic::AtomicBool, Arc, Mutex};
 
-use agent_graph::event_sink::{EventSink, GraphEvent};
-use agent_graph::join::JoinNode;
-use agent_graph::reducer::{AddReducer, AppendReducer, LastWriteWins, MergeReducer};
-use agent_graph::retry::RetryPolicy;
-use agent_graph::AgentGraph;
+use ri_agent_graph::event_sink::{EventSink, GraphEvent};
+use ri_agent_graph::join::JoinNode;
+use ri_agent_graph::reducer::{AddReducer, AppendReducer, LastWriteWins, MergeReducer};
+use ri_agent_graph::retry::RetryPolicy;
+use ri_agent_graph::AgentGraph;
 use tokio::sync::Notify;
 
 use crate::nodes::{
@@ -45,7 +45,7 @@ pub fn compile(spec: &GraphSpec, cx: CompileContext) -> Result<AgentGraph, Strin
     for node in &spec.nodes {
         GraphSpec::executable_node_type(&node.node_type)
             .map_err(|error| format!("node '{}': {error}", node.id))?;
-        let boxed: Box<dyn agent_graph::node::Node> = match node.node_type {
+        let boxed: Box<dyn ri_agent_graph::node::Node> = match node.node_type {
             NodeType::Passthrough => Box::new(PassthroughNode { ctx: run.clone() }),
             NodeType::Llm => {
                 let input_key = node
@@ -287,7 +287,7 @@ pub fn compile(spec: &GraphSpec, cx: CompileContext) -> Result<AgentGraph, Strin
     builder = builder.set_entry_point(&spec.entry);
     for edge in &spec.edges {
         let target = if edge.to == "END" {
-            agent_graph::END
+            ri_agent_graph::END
         } else {
             edge.to.as_str()
         };

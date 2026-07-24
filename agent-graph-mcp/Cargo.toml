@@ -7,7 +7,7 @@ license = "MIT"
 description = "MCP server exposing agent-graph + llm-pipeline for graph-orchestrated LLM workflows — typed rmcp tools, parallel fan-out, interrupt/resume, durable persistence"
 
 [dependencies]
-agent-graph = { version = "0.2.0", path = "../agent-graph" }
+ri-agent-graph = { version = "0.2.0", path = "../agent-graph" }
 llm-pipeline = { version = "0.2.0", path = "../llm-pipeline", features = ["openai"] }
 async-trait = "0.1"
 rmcp = { version = "1", features = ["server", "transport-io"] }

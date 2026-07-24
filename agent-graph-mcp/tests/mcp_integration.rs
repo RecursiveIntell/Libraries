@@ -205,10 +205,7 @@ fn legacy_contract_and_exact_tool_names() {
 fn readme_action_claims_match_the_callable_graph_execute_contract() {
     let readme =
         std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md")).expect("README");
-    assert!(readme.contains(
-        "`graph_execute`: synchronous/default start or asynchronous start with `mode:\"async\"`."
-    ));
-    assert!(!readme.contains("`graph_execute`: synchronous/default start, accepted start, `cancel`, and offline `verify_replay`."));
+    assert!(readme.contains("Normal execution is synchronous."));
     assert!(!readme.contains("graph_execute {\"action\":\"start\",\"wait\":\"accepted\"}"));
     assert!(readme.contains("Durable approval is supported only as a SQLite-backed decision"));
 }

@@ -5,9 +5,9 @@ use std::sync::{
 };
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use agent_graph::config::GraphConfig;
-use agent_graph::event_sink::GraphEvent;
-use agent_graph::state::{AgentState, StateLimits};
+use ri_agent_graph::config::GraphConfig;
+use ri_agent_graph::event_sink::GraphEvent;
+use ri_agent_graph::state::{AgentState, StateLimits};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::Notify;

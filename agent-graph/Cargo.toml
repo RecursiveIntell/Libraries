@@ -1,5 +1,5 @@
 [package]
-name = "agent-graph"
+name = "ri-agent-graph"
 version = "0.2.0"
 edition = "2021"
 description = "Graph-based agent orchestration for Rust - LangGraph for the Rust ecosystem"

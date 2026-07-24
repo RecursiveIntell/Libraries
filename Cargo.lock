@@ -9,35 +9,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
-name = "agent-graph"
-version = "0.2.0"
-dependencies = [
- "async-trait",
- "chrono",
- "criterion 0.5.1",
- "futures",
- "rusqlite",
- "serde",
- "serde_json",
- "stack-ids",
- "thiserror 2.0.18",
- "tokio",
- "tokio-test",
- "tracing",
- "uuid",
-]
-
-[[package]]
 name = "agent-graph-mcp"
 version = "0.2.0"
 dependencies = [
- "agent-graph",
  "anyhow",
  "async-trait",
  "chrono",
  "fs2",
  "libc",
  "llm-pipeline",
+ "ri-agent-graph",
  "rmcp",
  "rusqlite",
  "schemars 1.2.1",
@@ -4430,6 +4411,25 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-streams 0.5.0",
  "web-sys",
+]
+
+[[package]]
+name = "ri-agent-graph"
+version = "0.2.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "criterion 0.5.1",
+ "futures",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "stack-ids",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-test",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

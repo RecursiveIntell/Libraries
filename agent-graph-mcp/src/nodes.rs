@@ -4,11 +4,11 @@ use std::sync::{
     Arc,
 };
 
-use agent_graph::command::{Command, Navigation, NodeOutput};
-use agent_graph::config::GraphConfig;
-use agent_graph::error::{AgentGraphError, Result};
-use agent_graph::node::Node;
-use agent_graph::state::AgentState;
+use ri_agent_graph::command::{Command, Navigation, NodeOutput};
+use ri_agent_graph::config::GraphConfig;
+use ri_agent_graph::error::{AgentGraphError, Result};
+use ri_agent_graph::node::Node;
+use ri_agent_graph::state::AgentState;
 use async_trait::async_trait;
 use llm_pipeline::payload::Payload;
 use llm_pipeline::{ExecCtx, LlmCall, LlmConfig};
