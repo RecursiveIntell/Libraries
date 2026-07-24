@@ -52,9 +52,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let stream = stream?;
             let server = server.clone();
             std::thread::spawn(move || {
-                // Each connection gets the daemon-owned handler state. The
-                // listener, lock, recovery, and durable store are initialized
-                // exactly once above; rmcp's per-session service is isolated.
                 let _ = serve_connection(stream, server);
             });
         }
@@ -71,9 +68,13 @@ fn serve_connection(
     runtime.block_on(async move {
         let socket = tokio::net::UnixStream::from_std(stream)?;
         let (mut socket_reader, mut socket_writer) = socket.into_split();
-        let (rmcp_input, rmcp_transport) = tokio::io::duplex(transport::MAX_FRAME + 4096);
-        let (rmcp_reader, mut rmcp_writer) = tokio::io::split(rmcp_input);
 
+        // Create a duplex: rmcp_transport is given to serve(), rmcp_input is our bridge end.
+        // rmcp reads JSON-RPC lines from one side and writes responses as lines to the other.
+        let (rmcp_bridge, rmcp_transport) = tokio::io::duplex(transport::MAX_FRAME + 4096);
+        let (bridge_reader, mut bridge_writer) = tokio::io::split(rmcp_bridge);
+
+        // Task 1: socket frames → bridge writer (write frame body + newline as JSON-RPC line)
         let socket_to_rmcp = async {
             loop {
                 let mut header = [0u8; 4];
@@ -87,27 +88,51 @@ fn serve_connection(
                 }
                 let mut frame = vec![0u8; length];
                 socket_reader.read_exact(&mut frame).await?;
-                rmcp_writer.write_all(&frame).await?;
-                rmcp_writer.write_all(b"\n").await?;
+                bridge_writer.write_all(&frame).await?;
+                bridge_writer.write_all(b"\n").await?;
+                bridge_writer.flush().await?;
             }
             #[allow(unreachable_code)]
             Ok::<(), std::io::Error>(())
         };
 
+        // Task 2: bridge reader lines → socket frames (read JSON-RPC response lines, write as frames)
         let rmcp_to_socket = async {
-            let mut lines = tokio::io::BufReader::new(rmcp_reader).lines();
-            while let Some(line) = lines.next_line().await? {
+            let mut lines = tokio::io::BufReader::new(bridge_reader).lines();
+            while let Ok(Some(line)) = lines.next_line().await {
+                if line.is_empty() {
+                    continue;
+                }
                 transport::write_frame_async(&mut socket_writer, line.as_bytes()).await?;
+                socket_writer.flush().await?;
             }
             Ok::<(), std::io::Error>(())
         };
 
-        let service = server
-            .serve(rmcp_transport)
-            .await
-            .map_err(|e| std::io::Error::other(e.to_string()))?;
-        let bridges = tokio::try_join!(socket_to_rmcp, rmcp_to_socket);
-        let _ = service.cancel().await;
-        bridges.map(|_| ()).map_err(Into::into)
+        // Task 3: rmcp serve on the transport side of the duplex
+        let serve = async {
+            let service = server
+                .serve(rmcp_transport)
+                .await
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            let _ = service.cancel().await;
+            Ok::<(), std::io::Error>(())
+        };
+
+        // Run all three concurrently. When the socket closes, the bridges end,
+        // and serve will complete when its transport drops.
+        tokio::select! {
+            result = serve => {
+                let _ = result;
+            }
+            result = socket_to_rmcp => {
+                let _ = result;
+            }
+            result = rmcp_to_socket => {
+                let _ = result;
+            }
+        }
+
+        Ok::<(), Box<dyn std::error::Error>>(())
     })
 }
