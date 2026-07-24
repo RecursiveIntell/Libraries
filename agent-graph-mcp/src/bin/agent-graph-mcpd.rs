@@ -30,8 +30,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (_lock, conn) = daemon::open_owned(&data, "daemon")?;
     let id = daemon::identity(&conn)?;
     let _ = daemon::recover_owned_state(&conn, &id.instance_id, id.generation)?;
-    // Server is created per-connection in serve_connection since serve() takes ownership.
-    // The daemon lock, identity, and recovery above are performed once at startup.
     drop(conn);
     if socket.exists() {
         std::fs::remove_file(&socket)?;
@@ -58,13 +56,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-/// Serve a single connection by bridging framed Unix socket transport to
-/// rmcp's line-based JSON-RPC transport via a tokio duplex.
-///
-/// The proxy sends each JSON-RPC message as a 4-byte BE length + payload frame.
-/// rmcp expects newline-delimited JSON-RPC on stdin/stdout.
-/// We bridge: decode frames → write lines to duplex → rmcp reads and processes →
-/// rmcp writes response lines to duplex → we encode response lines as frames.
 fn serve_connection(
     stream: UnixStream,
     data_dir: &std::path::Path,
@@ -72,27 +63,18 @@ fn serve_connection(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let runtime = tokio::runtime::Runtime::new()?;
     runtime.block_on(async move {
-        // Create server per connection — serve() takes ownership
-        let server = AgentGraphServer::new(
-            "http://127.0.0.1:11434".into(),
-            "glm-5.2:cloud".into(),
-            Some(data_dir.to_path_buf()),
-            key_path.map(|p| p.to_path_buf()),
-        )
-        .map_err(std::io::Error::other)?;
         let socket = tokio::net::UnixStream::from_std(stream)?;
         let (mut sock_rx, mut sock_tx) = socket.into_split();
 
-        // duplex: [bridge_side] <---> [rmcp_side]
-        // rmcp reads from rmcp_side and writes to rmcp_side
-        // we read from bridge_side and write to bridge_side
+        // Create a duplex: bridge_side <-> rmcp_side
+        // rmcp reads JSON-RPC lines from rmcp_side and writes responses as lines to rmcp_side
+        // We bridge: decode frames -> write lines to bridge -> rmcp reads -> rmcp writes response lines -> we read and encode as frames
         let (bridge_side, rmcp_side) = tokio::io::duplex(1024 * 1024 + 4096);
         let (bridge_rx, mut bridge_tx) = tokio::io::split(bridge_side);
 
-        // Bridge: socket frames → rmcp input (as newline-delimited JSON)
+        // Bridge: socket frames -> rmcp input (as newline-delimited JSON)
         let to_rmcp = async {
             loop {
-                // Read 4-byte length header
                 let mut hdr = [0u8; 4];
                 if sock_rx.read_exact(&mut hdr).await.is_err() {
                     break;
@@ -101,12 +83,10 @@ fn serve_connection(
                 if len > 1024 * 1024 {
                     break;
                 }
-                // Read payload
                 let mut payload = vec![0u8; len];
                 if sock_rx.read_exact(&mut payload).await.is_err() {
                     break;
                 }
-                // Write payload + newline to rmcp's input
                 if bridge_tx.write_all(&payload).await.is_err() {
                     break;
                 }
@@ -117,23 +97,22 @@ fn serve_connection(
                     break;
                 }
             }
-            // Close the write side to signal EOF to rmcp
+            // Signal EOF to rmcp by closing write side
             drop(bridge_tx);
         };
 
-        // Bridge: rmcp output → socket frames
+        // Bridge: rmcp output -> socket frames
         let from_rmcp = async {
             let mut reader = tokio::io::BufReader::new(bridge_rx);
             loop {
                 let mut line = String::new();
                 match reader.read_line(&mut line).await {
-                    Ok(0) => break, // EOF
+                    Ok(0) => break,
                     Ok(_) => {
                         let trimmed = line.trim_end();
                         if trimmed.is_empty() {
                             continue;
                         }
-                        // Write as frame: 4-byte BE length + payload
                         let len = trimmed.len() as u32;
                         if sock_tx.write_all(&len.to_be_bytes()).await.is_err() {
                             break;
@@ -150,17 +129,24 @@ fn serve_connection(
             }
         };
 
-        // rmcp serve on the rmcp_side of the duplex
+        // Create server and serve on rmcp_side of the duplex
+        let server = AgentGraphServer::new(
+            "http://127.0.0.1:11434".into(),
+            "glm-5.2:cloud".into(),
+            Some(data_dir.to_path_buf()),
+            key_path.map(|p| p.to_path_buf()),
+        )
+        .map_err(std::io::Error::other)?;
+
+        // Use serve() which handles the initialize handshake
         let serve = async {
             let service = match server.serve(rmcp_side).await {
                 Ok(s) => s,
                 Err(_) => return,
             };
-            // Wait for the service to complete (when client disconnects)
             let _ = service.cancel().await;
         };
 
-        // Run all three concurrently
         tokio::select! {
             _ = serve => {}
             _ = to_rmcp => {}
