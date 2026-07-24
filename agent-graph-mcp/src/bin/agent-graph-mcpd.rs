@@ -72,13 +72,15 @@ fn serve_connection(
         let (bridge_side, rmcp_side) = tokio::io::duplex(1024 * 1024 + 4096);
         let (bridge_rx, mut bridge_tx) = tokio::io::split(bridge_side);
 
-        // Bridge: socket frames -> rmcp input (as newline-delimited JSON)
-        let to_rmcp = async {
+        // Spawn the bridges independently. Do not use `tokio::select!` here:
+        // when one bridge finishes, select would cancel the response bridge while
+        // rmcp is still processing the request and preparing its response.
+        let to_rmcp = tokio::spawn(async move {
             loop {
                 let mut hdr = [0u8; 4];
                 if sock_rx.read_exact(&mut hdr).await.is_err() {
                     break;
-                };
+                }
                 let len = u32::from_be_bytes(hdr) as usize;
                 if len > 1024 * 1024 {
                     break;
@@ -87,22 +89,18 @@ fn serve_connection(
                 if sock_rx.read_exact(&mut payload).await.is_err() {
                     break;
                 }
-                if bridge_tx.write_all(&payload).await.is_err() {
-                    break;
-                }
-                if bridge_tx.write_all(b"\n").await.is_err() {
-                    break;
-                }
-                if bridge_tx.flush().await.is_err() {
+                if bridge_tx.write_all(&payload).await.is_err()
+                    || bridge_tx.write_all(b"\n").await.is_err()
+                    || bridge_tx.flush().await.is_err()
+                {
                     break;
                 }
             }
-            // Signal EOF to rmcp by closing write side
+            // Signal EOF to rmcp by closing the write side.
             drop(bridge_tx);
-        };
+        });
 
-        // Bridge: rmcp output -> socket frames
-        let from_rmcp = async {
+        let from_rmcp = tokio::spawn(async move {
             let mut reader = tokio::io::BufReader::new(bridge_rx);
             loop {
                 let mut line = String::new();
@@ -114,20 +112,17 @@ fn serve_connection(
                             continue;
                         }
                         let len = trimmed.len() as u32;
-                        if sock_tx.write_all(&len.to_be_bytes()).await.is_err() {
-                            break;
-                        }
-                        if sock_tx.write_all(trimmed.as_bytes()).await.is_err() {
-                            break;
-                        }
-                        if sock_tx.flush().await.is_err() {
+                        if sock_tx.write_all(&len.to_be_bytes()).await.is_err()
+                            || sock_tx.write_all(trimmed.as_bytes()).await.is_err()
+                            || sock_tx.flush().await.is_err()
+                        {
                             break;
                         }
                     }
                     Err(_) => break,
                 }
             }
-        };
+        });
 
         // Create server and serve on rmcp_side of the duplex
         let server = AgentGraphServer::new(
@@ -138,20 +133,19 @@ fn serve_connection(
         )
         .map_err(std::io::Error::other)?;
 
-        // Use serve() which handles the initialize handshake
-        let serve = async {
-            let service = match server.serve(rmcp_side).await {
-                Ok(s) => s,
-                Err(_) => return,
-            };
-            let _ = service.cancel().await;
+        // Keep rmcp and both bridges alive until the service finishes. Aborting
+        // the bridges afterward closes the per-connection transport cleanly.
+        let service = match server.serve(rmcp_side).await {
+            Ok(service) => service,
+            Err(_) => {
+                to_rmcp.abort();
+                from_rmcp.abort();
+                return Ok::<(), Box<dyn std::error::Error>>(());
+            }
         };
-
-        tokio::select! {
-            _ = serve => {}
-            _ = to_rmcp => {}
-            _ = from_rmcp => {}
-        }
+        let _ = service.waiting().await;
+        to_rmcp.abort();
+        from_rmcp.abort();
 
         Ok::<(), Box<dyn std::error::Error>>(())
     })
