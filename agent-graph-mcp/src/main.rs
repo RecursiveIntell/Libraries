@@ -33,17 +33,24 @@ fn main() {
         if transport::write_frame(&mut socket, line.as_bytes()).is_err() {
             break;
         }
-        // JSON-RPC notifications have no "id" field and expect no response.
-        // Skip read_frame for notifications to avoid blocking.
+        // Always read a response. For notifications (no "id"), the daemon
+        // sends nothing, so the read will time out. We detect that and continue.
+        // For requests (with "id"), a timeout means the daemon is slow/unreachable.
         let is_notification = line.contains("\"method\"") && !line.contains("\"id\"");
-        if !is_notification {
-            let response = match transport::read_frame(&mut socket) {
-                Ok(v) => v,
-                Err(_) => break,
-            };
-            let _ = out.write_all(&response);
-            let _ = out.write_all(b"\n");
-            let _ = out.flush();
+        match transport::read_frame(&mut socket) {
+            Ok(response) => {
+                let _ = out.write_all(&response);
+                let _ = out.write_all(b"\n");
+                let _ = out.flush();
+            }
+            Err(_) if is_notification => {
+                // Expected: daemon doesn't respond to notifications.
+                // Read timed out — continue to next line.
+            }
+            Err(_) => {
+                // Unexpected read failure for a request — abort.
+                break;
+            }
         }
     }
 }
