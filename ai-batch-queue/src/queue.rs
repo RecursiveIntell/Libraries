@@ -70,8 +70,7 @@ where
         let mut jobs = self.jobs.lock().map_err(|e| anyhow::anyhow!("{}", e))?;
 
         if job.id.is_empty() {
-            // TODO(ID-002): migrate this queue-local generator to stack-ids::random.
-            job.id = uuid::Uuid::new_v4().to_string();
+            job.id = stack_ids::BatchJobId::random("ai-batch-queue").to_string();
         }
         job.status = BatchJobStatus::Queued;
         job.created_at = chrono::Utc::now().to_rfc3339();

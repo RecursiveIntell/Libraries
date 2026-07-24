@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::{
     require_non_empty, require_non_empty_slice, AuthorityValidationError, AuthorityValidationResult,
 };
+const MAX_DELEGATION_DEPTH: i64 = 64;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -70,7 +71,7 @@ impl CapabilityClassV1 {
         require_non_empty(&self.capability_class_id, "capability_class_id")?;
         require_non_empty_slice(&self.governed_effect_families, "governed_effect_families")?;
         require_non_empty(&self.required_review_class, "required_review_class")?;
-        if self.max_delegation_depth < 0 {
+        if self.max_delegation_depth <= 0 || self.max_delegation_depth > MAX_DELEGATION_DEPTH {
             return Err(AuthorityValidationError::InvalidState(
                 "max_delegation_depth",
             ));

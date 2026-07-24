@@ -105,7 +105,7 @@ where
 
     if !resp.status().is_success() {
         let status = resp.status();
-        let text = resp.text().await.unwrap_or_default();
+        let text = resp.text().await.map_err(PipelineError::Request)?;
         return Err(PipelineError::Other(format!(
             "LLM returned error {}: {}",
             status, text
@@ -183,7 +183,7 @@ where
 
     if !resp.status().is_success() {
         let status = resp.status();
-        let text = resp.text().await.unwrap_or_default();
+        let text = resp.text().await.map_err(PipelineError::Request)?;
         return Err(PipelineError::Other(format!(
             "LLM returned error {}: {}",
             status, text
@@ -260,7 +260,7 @@ where
 
     if !resp.status().is_success() {
         let status = resp.status();
-        let text = resp.text().await.unwrap_or_default();
+        let text = resp.text().await.map_err(PipelineError::Request)?;
         return Err(PipelineError::Other(format!(
             "LLM returned error {}: {}",
             status, text

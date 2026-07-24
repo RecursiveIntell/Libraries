@@ -128,6 +128,77 @@ fn transform_rejects_tampered_digest() {
 }
 
 #[test]
+fn transform_envelope_rejects_oversized_record_batches() {
+    let scope = ScopeKey::namespace_only("test");
+    let records: Vec<ExportRecord> = (0..=MAX_COMPAT_RECORDS)
+        .map(|idx| {
+            ExportRecord::Claim(ExportClaim {
+                claim_id: Some(ClaimId::new(format!("claim-{idx}"))),
+                claim_version_id: Some(ClaimVersionId::new(format!("claim-v-{idx}"))),
+                subject_entity_id: EntityId::new(format!("ent-{idx}")),
+                predicate: "has_type".into(),
+                object_anchor: serde_json::json!("type"),
+                valid_from: None,
+                valid_to: None,
+                confidence: 0.95,
+                content: format!("claim {idx}"),
+                projection_family: "forge_verification".into(),
+                supersedes_claim_id: None,
+                supersedes_claim_version_id: None,
+                metadata: None,
+            })
+        })
+        .collect();
+    let digest = ExportEnvelopeV1::compute_digest("forge", &scope, &records).unwrap();
+    let env = ExportEnvelopeV1 {
+        envelope_id: EnvelopeId::new("env-oversized"),
+        schema_version: EXPORT_ENVELOPE_V1_SCHEMA.into(),
+        content_digest: digest,
+        source_authority: "forge".into(),
+        scope_key: scope,
+        trace_ctx: Some(TraceCtx::generate()),
+        exported_at: "2026-03-07T00:00:00Z".into(),
+        records,
+    };
+
+    let err = transform_envelope(&env).unwrap_err();
+    assert!(matches!(err, BridgeError::InvalidRecord { .. }));
+}
+
+#[test]
+fn transform_envelope_rejects_invalid_exported_at_timestamp() {
+    let mut env = make_claim_envelope();
+    env.exported_at = "not-a-timestamp".into();
+
+    let err = transform_envelope(&env).unwrap_err();
+    match err {
+        BridgeError::InvalidRecord { reason } => {
+            assert!(reason.contains("exported_at"));
+        }
+        _ => panic!("expected InvalidRecord due to bad exported_at"),
+    }
+}
+
+#[test]
+fn transform_envelope_rejects_invalid_record_timestamp() {
+    let mut env = make_claim_envelope();
+    let ExportRecord::Claim(claim) = &mut env.records[0] else {
+        panic!("expected claim record");
+    };
+    claim.valid_from = Some("not-a-timestamp".into());
+    env.content_digest =
+        ExportEnvelopeV1::compute_digest("forge", &env.scope_key, &env.records).unwrap();
+
+    let err = transform_envelope(&env).unwrap_err();
+    match err {
+        BridgeError::InvalidRecord { reason } => {
+            assert!(reason.contains("valid_from"));
+        }
+        _ => panic!("expected InvalidRecord due to bad record timestamp"),
+    }
+}
+
+#[test]
 fn transform_multi_record_envelope() {
     let records = vec![
         ExportRecord::Claim(ExportClaim {

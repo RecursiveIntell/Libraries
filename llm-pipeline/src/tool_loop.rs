@@ -677,7 +677,7 @@ async fn post_json_with_backoff(
             .map(Duration::from_secs);
         let error = PipelineError::HttpError {
             status: response.status().as_u16(),
-            body: response.text().await.unwrap_or_default(),
+            body: response.text().await.map_err(PipelineError::Request)?,
             retry_after,
         };
 
@@ -717,7 +717,7 @@ async fn post_ollama_stream(
     if !response.status().is_success() {
         return Err(PipelineError::HttpError {
             status: response.status().as_u16(),
-            body: response.text().await.unwrap_or_default(),
+            body: response.text().await.map_err(PipelineError::Request)?,
             retry_after: None,
         });
     }
@@ -983,9 +983,10 @@ mod tests {
     fn canned_fetcher(responses: Vec<Value>) -> impl FnMut(Value) -> JsonFetchFuture<'static> {
         let mut responses = VecDeque::from(responses);
         move |_body: Value| {
-            let response = responses
-                .pop_front()
-                .expect("canned provider response should be available");
+            let response = match responses.pop_front() {
+                Some(response) => response,
+                None => panic!("canned provider response should be available"),
+            };
             Box::pin(async move { Ok(response) })
         }
     }
@@ -1099,10 +1100,10 @@ mod tests {
         assert_eq!(output.invocations.len(), 1);
 
         let receipt_id = &output.invocations[0].receipt.receipt_id;
-        let stored = store
-            .get_tool_receipt(receipt_id)
-            .unwrap()
-            .expect("receipt should persist to Forge");
+        let stored = match store.get_tool_receipt(receipt_id).unwrap() {
+            Some(stored) => stored,
+            None => panic!("receipt should persist to Forge"),
+        };
 
         assert_eq!(stored.tool_name, "add");
         assert_eq!(stored.tool_version, "1.0.0");

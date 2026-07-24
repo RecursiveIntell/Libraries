@@ -30,6 +30,7 @@ pub const EFFECT_POLICY_PROFILE_V1_SCHEMA: &str = "effect_policy_profile_v1";
 pub const DELEGATION_POLICY_PROFILE_V1_SCHEMA: &str = "delegation_policy_profile_v1";
 pub const RELEASE_POLICY_PROFILE_V1_SCHEMA: &str = "release_policy_profile_v1";
 pub const CONTINUITY_POLICY_PROFILE_V1_SCHEMA: &str = "continuity_policy_profile_v1";
+const MAX_DELEGATION_DEPTH: i64 = 64;
 
 pub use verification_control::{
     ConstitutionalContextStatus, V25CitationContext, V25ControlObligationRefs,
@@ -259,7 +260,7 @@ impl DelegationPolicyProfileV1 {
             DELEGATION_POLICY_PROFILE_V1_SCHEMA,
             "schema_version",
         )?;
-        if self.max_delegation_depth < 0 {
+        if self.max_delegation_depth <= 0 || self.max_delegation_depth > MAX_DELEGATION_DEPTH {
             return Err("max_delegation_depth");
         }
         require_unique(
@@ -1046,5 +1047,23 @@ mod tests {
         };
 
         assert_eq!(effect.validate(), Err("allowed_run_modes"));
+    }
+
+    #[test]
+    fn delegation_profile_rejects_depth_zero_or_unbounded() {
+        let mut profile = DelegationPolicyProfileV1 {
+            schema_version: DELEGATION_POLICY_PROFILE_V1_SCHEMA.into(),
+            delegation_policy_profile_id: stack_ids::DelegationPolicyProfileId::new(
+                "delegation-policy-profile-depth",
+            ),
+            max_delegation_depth: 0,
+            break_glass_requires_post_hoc_review: true,
+            forbidden_role_combinations: Vec::new(),
+            require_typed_authority_chain: false,
+        };
+        assert_eq!(profile.validate(), Err("max_delegation_depth"));
+
+        profile.max_delegation_depth = 65_000;
+        assert_eq!(profile.validate(), Err("max_delegation_depth"));
     }
 }

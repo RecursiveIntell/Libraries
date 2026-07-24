@@ -17,6 +17,11 @@ use semantic_memory_forge::{
 };
 use stack_ids::{ClaimId, ClaimVersionId, RelationVersionId, TraceCtx};
 
+use chrono::DateTime;
+
+const MAX_COMPAT_RECORDS: usize = 5_000;
+const MAX_COMPAT_VECTOR_ENTRIES: usize = 5_000;
+
 /// Transform an `ExportEnvelopeV1` into a `ProjectionImportBatchV1`.
 ///
 /// This is a compatibility-only bridge operation. It:
@@ -47,6 +52,13 @@ pub fn transform_envelope(
 ) -> Result<ProjectionImportBatchV1, BridgeError> {
     // Step 1: Validate
     envelope.validate()?;
+    validate_timestamp_str("exported_at", &envelope.exported_at)?;
+    enforce_compat_record_limit("envelope.records", envelope.records.len())?;
+    envelope
+        .records
+        .iter()
+        .enumerate()
+        .try_for_each(|(idx, record)| validate_record_timestamps(record, idx))?;
 
     let now = chrono::Utc::now().to_rfc3339();
 
@@ -91,6 +103,16 @@ pub fn transform_envelope_v2(
     envelope: &ExportEnvelopeV2,
 ) -> Result<ProjectionImportBatchV2, BridgeError> {
     envelope.validate()?;
+    validate_timestamp_str("exported_at", &envelope.exported_at)?;
+    if let Some(meta) = &envelope.export_meta {
+        validate_timestamp_str("export_meta.exported_at", &meta.exported_at)?;
+    }
+    enforce_compat_record_limit("envelope.records", envelope.records.len())?;
+    envelope
+        .records
+        .iter()
+        .enumerate()
+        .try_for_each(|(idx, record)| validate_record_timestamps(record, idx))?;
 
     let now = chrono::Utc::now().to_rfc3339();
     let records = envelope
@@ -129,6 +151,100 @@ pub fn transform_envelope_v3(
     envelope: &ExportEnvelopeV3,
 ) -> Result<ProjectionImportBatchV3, BridgeError> {
     envelope.validate()?;
+    validate_timestamp_str("exported_at", &envelope.exported_at)?;
+    if let Some(meta) = &envelope.export_meta {
+        validate_timestamp_str("export_meta.exported_at", &meta.exported_at)?;
+    }
+    enforce_compat_record_limit("envelope.records", envelope.records.len())?;
+    enforce_compat_vector_limit("support_sets", envelope.support_sets.len())?;
+    enforce_compat_vector_limit(
+        "contradiction_witnesses",
+        envelope.contradiction_witnesses.len(),
+    )?;
+    enforce_compat_vector_limit("retraction_records", envelope.retraction_records.len())?;
+    enforce_compat_vector_limit("claim_states_v13", envelope.claim_states_v13.len())?;
+    enforce_compat_vector_limit(
+        "intervention_bundles_v14",
+        envelope.intervention_bundles_v14.len(),
+    )?;
+    enforce_compat_vector_limit("outcome_schemas_v14", envelope.outcome_schemas_v14.len())?;
+    enforce_compat_vector_limit("cohort_contracts_v14", envelope.cohort_contracts_v14.len())?;
+    enforce_compat_vector_limit(
+        "counterfactual_slices_v14",
+        envelope.counterfactual_slices_v14.len(),
+    )?;
+    enforce_compat_vector_limit("experiment_cases_v14", envelope.experiment_cases_v14.len())?;
+    enforce_compat_vector_limit(
+        "comparability_matrices_v14",
+        envelope.comparability_matrices_v14.len(),
+    )?;
+    enforce_compat_vector_limit("decision_traces_v14", envelope.decision_traces_v14.len())?;
+    enforce_compat_vector_limit("refuter_suites_v14", envelope.refuter_suites_v14.len())?;
+    enforce_compat_vector_limit("refuter_results_v14", envelope.refuter_results_v14.len())?;
+    enforce_compat_vector_limit(
+        "experiment_budgets_v14",
+        envelope.experiment_budgets_v14.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "rollout_decisions_v14",
+        envelope.rollout_decisions_v14.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "rollback_decisions_v14",
+        envelope.rollback_decisions_v14.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "attestation_envelopes_v15",
+        envelope.attestation_envelopes_v15.len(),
+    )?;
+    enforce_compat_vector_limit("trust_root_sets_v15", envelope.trust_root_sets_v15.len())?;
+    enforce_compat_vector_limit(
+        "artifact_admission_policies_v15",
+        envelope.artifact_admission_policies_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "transparency_receipts_v15",
+        envelope.transparency_receipts_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "attestation_revocations_v15",
+        envelope.attestation_revocations_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "attestation_supersessions_v15",
+        envelope.attestation_supersessions_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "remote_oracle_leases_v15",
+        envelope.remote_oracle_leases_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "remote_slice_requests_v15",
+        envelope.remote_slice_requests_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "remote_slice_results_v15",
+        envelope.remote_slice_results_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "cross_runtime_replay_tickets_v15",
+        envelope.cross_runtime_replay_tickets_v15.len(),
+    )?;
+    enforce_compat_vector_limit("dispute_bundles_v15", envelope.dispute_bundles_v15.len())?;
+    enforce_compat_vector_limit(
+        "disclosure_policies_v15",
+        envelope.disclosure_policies_v15.len(),
+    )?;
+    enforce_compat_vector_limit(
+        "disclosure_budgets_v15",
+        envelope.disclosure_budgets_v15.len(),
+    )?;
+
+    envelope
+        .records
+        .iter()
+        .enumerate()
+        .try_for_each(|(idx, record)| validate_record_v3_timestamps(record, idx))?;
 
     let now = chrono::Utc::now().to_rfc3339();
     let records = envelope
@@ -185,6 +301,67 @@ pub fn transform_envelope_v3(
         disclosure_budgets_v15: envelope.disclosure_budgets_v15.clone(),
         records,
     })
+}
+
+fn enforce_compat_record_limit(field_name: &str, count: usize) -> Result<(), BridgeError> {
+    if count > MAX_COMPAT_RECORDS {
+        return Err(BridgeError::InvalidRecord {
+            reason: format!("{field_name} exceeds compatibility cap {MAX_COMPAT_RECORDS}: {count}"),
+        });
+    }
+    Ok(())
+}
+
+fn enforce_compat_vector_limit(field_name: &str, count: usize) -> Result<(), BridgeError> {
+    if count > MAX_COMPAT_VECTOR_ENTRIES {
+        return Err(BridgeError::InvalidRecord {
+            reason: format!(
+                "{field_name} exceeds compatibility vector cap {MAX_COMPAT_VECTOR_ENTRIES}: {count}",
+            ),
+        });
+    }
+    Ok(())
+}
+
+fn validate_timestamp_str(field_name: &str, value: &str) -> Result<(), BridgeError> {
+    DateTime::parse_from_rfc3339(value).map_err(|error| BridgeError::InvalidRecord {
+        reason: format!("{field_name} must be valid RFC3339 timestamp: {error}"),
+    })?;
+    Ok(())
+}
+
+fn validate_record_timestamps(record: &ExportRecord, idx: usize) -> Result<(), BridgeError> {
+    let context = format!("record[{idx}]");
+    match record {
+        ExportRecord::Claim(claim) => {
+            validate_optional_timestamp(&context, "valid_from", claim.valid_from.as_deref())?;
+            validate_optional_timestamp(&context, "valid_to", claim.valid_to.as_deref())?;
+        }
+        ExportRecord::Relation(relation) => {
+            validate_optional_timestamp(&context, "valid_from", relation.valid_from.as_deref())?;
+            validate_optional_timestamp(&context, "valid_to", relation.valid_to.as_deref())?;
+        }
+        ExportRecord::Episode(_) | ExportRecord::EntityAlias(_) | ExportRecord::EvidenceRef(_) => {}
+    }
+    Ok(())
+}
+
+fn validate_record_v3_timestamps(record: &ExportRecordV3, idx: usize) -> Result<(), BridgeError> {
+    validate_record_timestamps(&record.record, idx)
+}
+
+fn validate_optional_timestamp(
+    context: &str,
+    field_name: &str,
+    value: Option<&str>,
+) -> Result<(), BridgeError> {
+    let Some(value) = value else {
+        return Ok(());
+    };
+    DateTime::parse_from_rfc3339(value).map_err(|error| BridgeError::InvalidRecord {
+        reason: format!("{context}.{field_name} must be valid RFC3339 timestamp: {error}"),
+    })?;
+    Ok(())
 }
 
 fn derive_execution_context_v2(envelope: &ExportEnvelopeV2) -> ExecutionContextV1 {

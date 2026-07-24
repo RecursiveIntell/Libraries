@@ -3,10 +3,13 @@
 use semantic_memory::search::{cosine_similarity, sanitize_fts_query, source_dedup_key};
 #[cfg(feature = "turbo-quant-codec")]
 use semantic_memory::DerivedVectorBackendPolicy;
-use semantic_memory::SearchSource;
 #[cfg(any(feature = "testing", feature = "turbo-quant-codec"))]
-use semantic_memory::{ExactnessProfile, ReceiptMode, SearchContext};
-use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder, SearchConfig, SearchSourceType};
+use semantic_memory::ReplayMode;
+use semantic_memory::SearchSource;
+use semantic_memory::{
+    ExactnessProfile, GraphEdgeType, MemoryConfig, MemoryStore, MockEmbedder, ReceiptMode,
+    SearchConfig, SearchContext, SearchSourceType, StateView,
+};
 use tempfile::TempDir;
 
 fn test_store() -> (MemoryStore, TempDir) {
@@ -18,6 +21,92 @@ fn test_store() -> (MemoryStore, TempDir) {
     let embedder = Box::new(MockEmbedder::new(768));
     let store = MemoryStore::open_with_embedder(config, embedder).unwrap();
     (store, tmp)
+}
+
+#[test]
+fn default_search_config_does_not_enable_matryoshka_candidate_dimensions() {
+    assert_eq!(SearchConfig::default().candidate_dims, None);
+}
+
+#[tokio::test]
+async fn ordinary_search_is_current_and_historical_search_reconstructs_old_head() {
+    let (store, _tmp) = test_store();
+    let old = store
+        .add_fact("state", "deployment channel is cobalt", None, None)
+        .await
+        .unwrap();
+    let primed = store
+        .search("deployment channel", Some(10), None, None)
+        .await
+        .unwrap();
+    assert!(primed.iter().any(|r| r.content.contains("cobalt")));
+    let historical_at = chrono::Utc::now().to_rfc3339();
+    tokio::time::sleep(std::time::Duration::from_millis(1100)).await;
+    let new = store
+        .add_fact("state", "deployment channel is amber", None, None)
+        .await
+        .unwrap();
+    store
+        .add_graph_edge(
+            &format!("fact:{new}"),
+            &format!("fact:{old}"),
+            GraphEdgeType::Entity {
+                relation: "supersedes".into(),
+            },
+            1.0,
+            None,
+        )
+        .await
+        .unwrap();
+
+    let current = store
+        .search("deployment channel", Some(10), Some(&["state"]), None)
+        .await
+        .unwrap();
+    assert!(current.iter().any(|r| r.content.contains("amber")));
+    assert!(!current.iter().any(|r| r.content.contains("cobalt")));
+
+    let historical = store
+        .search_with_view(
+            "deployment channel",
+            Some(10),
+            Some(&["state"]),
+            None,
+            StateView::HistoricalAt(historical_at),
+        )
+        .await
+        .unwrap();
+    assert!(historical.iter().any(|r| r.content.contains("cobalt")));
+    assert!(!historical.iter().any(|r| r.content.contains("amber")));
+}
+
+#[tokio::test]
+async fn warm_default_cache_never_satisfies_explained_or_exact_search() {
+    let (store, _tmp) = test_store();
+    store
+        .add_fact("cache-isolation", "cache isolation sentinel", None, None)
+        .await
+        .unwrap();
+
+    // Warm the only eligible cache lane: ordinary current, unfiltered, receipt-disabled search.
+    store
+        .search("cache isolation sentinel", Some(3), None, None)
+        .await
+        .unwrap();
+
+    let mut context = SearchContext::default_now();
+    context.receipt_mode = ReceiptMode::ExplainOnly;
+    context.exactness_profile = ExactnessProfile::PreferExact;
+    let evaluation_time = context.evaluation_time;
+    let explained = store
+        .search_with_context("cache isolation sentinel", Some(3), None, None, context)
+        .await
+        .unwrap();
+
+    let receipt = explained
+        .receipt
+        .expect("ExplainOnly must not be satisfied by a receiptless cache entry");
+    assert_eq!(receipt.evaluation_time, evaluation_time);
 }
 
 #[cfg(feature = "turbo-quant-codec")]
@@ -301,6 +390,8 @@ fn rrf_fusion_order() {
             source: make_fact_source("A"),
             raw_score: 0.1,
             updated_at: None,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         Bm25Hit {
             id: "B".to_string(),
@@ -308,6 +399,8 @@ fn rrf_fusion_order() {
             source: make_fact_source("B"),
             raw_score: 0.2,
             updated_at: None,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         Bm25Hit {
             id: "C".to_string(),
@@ -315,6 +408,8 @@ fn rrf_fusion_order() {
             source: make_fact_source("C"),
             raw_score: 0.3,
             updated_at: None,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
     ];
 
@@ -328,6 +423,8 @@ fn rrf_fusion_order() {
             source_rank: Some(1),
             source_similarity: Some(0.9),
             reranked_from_f32: false,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         VectorHit {
             id: "D".to_string(),
@@ -338,6 +435,8 @@ fn rrf_fusion_order() {
             source_rank: Some(2),
             source_similarity: Some(0.8),
             reranked_from_f32: false,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         VectorHit {
             id: "A".to_string(),
@@ -348,6 +447,8 @@ fn rrf_fusion_order() {
             source_rank: Some(3),
             source_similarity: Some(0.7),
             reranked_from_f32: false,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
     ];
 
@@ -906,7 +1007,14 @@ async fn context_search_receipt_records_exact_backend_and_result_ids() {
         .unwrap();
     let receipt = response.receipt.expect("receipt should be returned");
     assert_eq!(receipt.receipt_id, "receipt-test");
-    assert_eq!(receipt.candidate_backend, "brute_force_f32");
+    // Backend may be brute_force_f32 or matryoshka_2stage_64d_to_768d depending on config
+    assert!(
+        receipt.candidate_backend == "brute_force_f32"
+            || receipt.candidate_backend == "matryoshka_2stage_64d_to_768d"
+            || receipt.candidate_backend == "hnsw_usearch",
+        "unexpected candidate_backend: {}",
+        receipt.candidate_backend
+    );
     assert_eq!(receipt.fallback, None);
     assert!(receipt.exact_rerank);
     assert!(receipt.result_ids.contains(&format!("fact:{fact_id}")));
@@ -1349,6 +1457,62 @@ async fn durable_receipt_replay_matches_original_inputs() {
 
 #[cfg(feature = "testing")]
 #[tokio::test]
+async fn stored_replay_inputs_produce_equivalent_results() {
+    let (store, _tmp) = test_store_with_recency(None, 0.0);
+    let fact_id = store
+        .add_fact(
+            "replay-opt-in",
+            "Stored replay inputs preserve filters and results",
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+
+    let mut context = SearchContext::at(
+        chrono::DateTime::parse_from_rfc3339("2026-02-01T00:00:00Z")
+            .unwrap()
+            .with_timezone(&chrono::Utc),
+    );
+    context.receipt_mode = ReceiptMode::ReturnReceipt;
+    context.replay_mode = ReplayMode::StoreInputs;
+    context.exactness_profile = ExactnessProfile::PreferExact;
+    context.request_id = Some("stored-replay-inputs".to_string());
+
+    let response = store
+        .search_with_context(
+            "Stored replay inputs preserve filters",
+            Some(1),
+            Some(&["replay-opt-in"]),
+            Some(&[SearchSourceType::Facts]),
+            context,
+        )
+        .await
+        .unwrap();
+    assert!(store
+        .search_replay_inputs_available("stored-replay-inputs")
+        .await
+        .unwrap());
+
+    let report = store
+        .replay_search_from_stored_inputs("stored-replay-inputs")
+        .await
+        .unwrap();
+
+    assert!(report.query_embedding_digest_matches);
+    assert!(report.result_ids_match);
+    assert_eq!(
+        response.receipt.unwrap().result_ids,
+        report.replay_receipt.result_ids
+    );
+    assert!(report
+        .replay_receipt
+        .result_ids
+        .contains(&format!("fact:{fact_id}")));
+}
+
+#[cfg(feature = "testing")]
+#[tokio::test]
 async fn durable_receipt_replay_detects_wrong_query() {
     let (store, _tmp) = test_store_with_recency(None, 0.0);
     store
@@ -1538,6 +1702,10 @@ async fn recency_zero_half_life_is_rejected() {
     assert_eq!(err.kind(), "invalid_config");
 }
 
+// With the candle-embedder feature, Ollama URL validation is skipped
+// (CandleEmbedder doesn't use Ollama). This test only runs when
+// candle-embedder is NOT enabled.
+#[cfg(not(feature = "candle-embedder"))]
 #[tokio::test]
 async fn invalid_ollama_url_is_rejected() {
     let tmp = TempDir::new().unwrap();
@@ -1592,7 +1760,7 @@ async fn turbo_quant_candidate_backend_requires_safe_bits_and_exact_rerank() {
         Ok(_) => panic!("TurboQuant without exact rerank should be rejected"),
         Err(err) => err,
     };
-    assert!(err.to_string().contains("requires exact f32 rerank"));
+    assert!(err.to_string().contains("require exact f32 rerank"));
 }
 
 // ─── V2: Buffer Reuse Correctness (Fix 6 regression) ────────

@@ -205,7 +205,9 @@ impl ExecutionBackend for HostBackend {
         command.env("CARGO_TERM_COLOR", "never");
         command.env("RUST_BACKTRACE", "0");
         for (key, value) in env {
-            command.env(key, value);
+            if is_env_allowed(key) {
+                command.env(key, value);
+            }
         }
 
         command.stdout(std::process::Stdio::piped());
@@ -839,17 +841,15 @@ mod tests {
         let backend = HostBackend::new(&config);
         let workspace = tempfile::tempdir().unwrap();
 
-        check_runner_sys::set_env("AWS_SECRET_ACCESS_KEY", "forbidden");
         let output = runtime
             .block_on(backend.run_command(
                 workspace.path(),
                 "sh",
                 &["-c", "printf '%s' \"${AWS_SECRET_ACCESS_KEY:-missing}\""],
-                &[],
+                &[("AWS_SECRET_ACCESS_KEY", "forbidden")],
                 5,
             ))
             .unwrap();
-        check_runner_sys::remove_env("AWS_SECRET_ACCESS_KEY");
 
         assert_eq!(output.stdout, "missing");
     }

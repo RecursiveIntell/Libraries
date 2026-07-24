@@ -11,7 +11,13 @@ import argparse
 import json
 from pathlib import Path
 
-from evidence_common import REQUIRED_BINDING_FIELDS, verify_binding
+from evidence_common import (
+    REQUIRED_BINDING_FIELDS,
+    git_status_porcelain,
+    verify_binding,
+    verify_gate_contract,
+)
+from release_gate_set import RELEASE_GATE_COMMANDS, gate_sha256
 
 ROOT = Path(__file__).resolve().parent.parent
 EVIDENCE_MANIFEST = ROOT / "STATUS_EVIDENCE_MANIFEST.json"
@@ -24,6 +30,9 @@ def main() -> int:
     args = parser.parse_args()
     repo = args.repo.resolve()
     findings: list[str] = []
+
+    if git_status_porcelain(repo):
+        findings.append("working tree is dirty; release evidence is not current")
 
     manifest_path = repo / EVIDENCE_MANIFEST.name
     receipt_path = repo / "release" / RECEIPT_PATH.name
@@ -43,6 +52,7 @@ def main() -> int:
     manifest_results = {item.get("command"): item.get("result") for item in manifest.get("proof_results", [])}
     if manifest_results != receipt.get("gate_results"):
         findings.append("gate result mismatch")
+    findings.extend(verify_gate_contract(manifest, RELEASE_GATE_COMMANDS, gate_sha256()))
 
     binding = manifest.get("source_binding")
     if not isinstance(binding, dict):

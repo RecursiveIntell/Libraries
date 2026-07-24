@@ -8,8 +8,12 @@ use crate::{MemoryError, MemoryStoreInner};
 use rusqlite::{params, Connection};
 use std::collections::{BTreeMap, HashSet, VecDeque};
 use std::sync::Arc;
+use std::time::Instant;
 
 const SEMANTIC_EDGE_LIMIT: usize = 5;
+const DEFAULT_MAX_GRAPH_NODES: usize = 500;
+const DEFAULT_MAX_EDGES_PER_NODE: usize = 50;
+const DEFAULT_GRAPH_TRAVERSAL_DEADLINE_MS: u64 = 5_000;
 
 pub(crate) fn graph_view(inner: Arc<MemoryStoreInner>) -> Arc<dyn GraphView> {
     Arc::new(StoreGraphView { inner })
@@ -33,7 +37,16 @@ impl GraphView for StoreGraphView {
         let node_id = node_id.to_string();
         let min_similarity = self.inner.config.search.min_similarity.max(0.0) as f32;
         self.inner.pool.with_read_conn(|conn| {
-            collect_neighbors(conn, &node_id, direction, max_depth, min_similarity)
+            collect_neighbors(
+                conn,
+                &node_id,
+                direction,
+                max_depth,
+                min_similarity,
+                DEFAULT_MAX_GRAPH_NODES,
+                DEFAULT_MAX_EDGES_PER_NODE,
+                DEFAULT_GRAPH_TRAVERSAL_DEADLINE_MS,
+            )
         })
     }
 
@@ -53,9 +66,18 @@ impl GraphView for StoreGraphView {
         let from = from.to_string();
         let to = to.to_string();
         let min_similarity = self.inner.config.search.min_similarity.max(0.0) as f32;
-        self.inner
-            .pool
-            .with_read_conn(|conn| shortest_path(conn, &from, &to, max_depth, min_similarity))
+        self.inner.pool.with_read_conn(|conn| {
+            shortest_path(
+                conn,
+                &from,
+                &to,
+                max_depth,
+                min_similarity,
+                DEFAULT_MAX_GRAPH_NODES,
+                DEFAULT_MAX_EDGES_PER_NODE,
+                DEFAULT_GRAPH_TRAVERSAL_DEADLINE_MS,
+            )
+        })
     }
 }
 
@@ -65,18 +87,52 @@ fn collect_neighbors(
     direction: GraphDirection,
     max_depth: usize,
     min_similarity: f32,
+    max_nodes: usize,
+    max_edges_per_node: usize,
+    deadline_ms: u64,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
     let mut visited = HashSet::from([start.to_string()]);
     let mut queue = VecDeque::from([(start.to_string(), 0usize)]);
     let mut edges = Vec::new();
     let mut seen_edges = HashSet::new();
+    let mut nodes_expanded = 0usize;
+    let start_time = Instant::now();
 
     while let Some((node_id, depth)) = queue.pop_front() {
+        if nodes_expanded >= max_nodes {
+            tracing::warn!(
+                start = start,
+                max_nodes,
+                deadline_ms,
+                nodes_expanded,
+                "graph traversal budget exceeded: max_nodes"
+            );
+            break;
+        }
+        nodes_expanded += 1;
+
+        if start_time.elapsed().as_millis() > deadline_ms as u128 {
+            tracing::warn!(
+                start = start,
+                max_nodes,
+                deadline_ms,
+                nodes_expanded,
+                "graph traversal budget exceeded: deadline_ms"
+            );
+            break;
+        }
+
         if depth >= max_depth {
             continue;
         }
 
-        for edge in direct_edges(conn, &node_id, direction, min_similarity)? {
+        for edge in direct_edges(
+            conn,
+            &node_id,
+            direction,
+            min_similarity,
+            max_edges_per_node,
+        )? {
             let edge_key = edge_dedup_key(&edge)?;
             if seen_edges.insert(edge_key) {
                 if let Some(next) = next_node_for_edge(&edge, &node_id) {
@@ -108,17 +164,52 @@ fn shortest_path(
     to: &str,
     max_depth: usize,
     min_similarity: f32,
+    max_nodes: usize,
+    max_edges_per_node: usize,
+    deadline_ms: u64,
 ) -> Result<Option<Vec<String>>, MemoryError> {
     let mut visited = HashSet::from([from.to_string()]);
     let mut parents = BTreeMap::<String, String>::new();
     let mut queue = VecDeque::from([(from.to_string(), 0usize)]);
+    let mut nodes_expanded = 0usize;
+    let start_time = Instant::now();
 
     while let Some((node_id, depth)) = queue.pop_front() {
+        if nodes_expanded >= max_nodes {
+            tracing::warn!(
+                from = from,
+                to = to,
+                max_nodes,
+                deadline_ms,
+                nodes_expanded,
+                "graph traversal budget exceeded: max_nodes"
+            );
+            return Ok(None);
+        }
+        nodes_expanded += 1;
+
+        if start_time.elapsed().as_millis() > deadline_ms as u128 {
+            tracing::warn!(
+                from = from,
+                to = to,
+                deadline_ms,
+                nodes_expanded,
+                "graph traversal budget exceeded: deadline_ms"
+            );
+            return Ok(None);
+        }
+
         if depth >= max_depth {
             continue;
         }
 
-        for edge in direct_edges(conn, &node_id, GraphDirection::Both, min_similarity)? {
+        for edge in direct_edges(
+            conn,
+            &node_id,
+            GraphDirection::Both,
+            min_similarity,
+            max_edges_per_node,
+        )? {
             let Some(next) = next_node_for_edge(&edge, &node_id) else {
                 continue;
             };
@@ -162,18 +253,39 @@ fn direct_edges(
     node_id: &str,
     direction: GraphDirection,
     min_similarity: f32,
+    max_edges_per_node: usize,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
-    let outgoing = outgoing_edges(conn, node_id, min_similarity)?;
+    // Derived outgoing edges (semantic, temporal, causal, entity from content).
+    let outgoing = outgoing_edges(conn, node_id, min_similarity, max_edges_per_node)?;
+
+    // Stored graph edges (first-class, operator-authored).
+    // These are directional: source->target is the canonical direction.
+    let stored_out = crate::graph_edges::stored_outgoing_edges(conn, node_id)?;
+    let stored_in = crate::graph_edges::stored_incoming_edges(conn, node_id)?;
+
     match direction {
-        GraphDirection::Outgoing => Ok(outgoing),
+        GraphDirection::Outgoing => {
+            // Merge derived outgoing + stored outgoing (source=node).
+            let mut edges = outgoing;
+            edges.extend(stored_out);
+            dedupe_edges(edges)
+        }
         GraphDirection::Incoming => {
-            let mut incoming = outgoing.into_iter().map(reverse_edge).collect::<Vec<_>>();
+            // True incoming: stored edges where target=node, plus derived
+            // cause backlinks. Do NOT reverse outgoing edges — that conflates
+            // direction. Only symmetric/undirected edge types could justify
+            // reversal, and we handle those under Both.
+            let mut incoming = stored_in;
             incoming.extend(cause_backlinks(conn, node_id)?);
             dedupe_edges(incoming)
         }
         GraphDirection::Both => {
+            // Both directions: outgoing + stored outgoing + stored incoming +
+            // reversed outgoing (for symmetric traversal) + cause backlinks.
             let mut both = outgoing.clone();
             both.extend(outgoing.into_iter().map(reverse_edge));
+            both.extend(stored_out);
+            both.extend(stored_in);
             both.extend(cause_backlinks(conn, node_id)?);
             dedupe_edges(both)
         }
@@ -234,15 +346,24 @@ fn outgoing_edges(
     conn: &Connection,
     node_id: &str,
     min_similarity: f32,
+    max_edges_per_node: usize,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
     let mut edges = match parse_node_id(node_id) {
         ParsedNodeId::Namespace(namespace) => namespace_edges(conn, &namespace)?,
-        ParsedNodeId::Fact(fact_id) => fact_edges(conn, &fact_id, min_similarity)?,
+        ParsedNodeId::Fact(fact_id) => {
+            fact_edges(conn, &fact_id, min_similarity, max_edges_per_node)?
+        }
         ParsedNodeId::Document(document_id) => document_edges(conn, &document_id)?,
-        ParsedNodeId::Chunk(chunk_id) => chunk_edges(conn, &chunk_id, min_similarity)?,
+        ParsedNodeId::Chunk(chunk_id) => {
+            chunk_edges(conn, &chunk_id, min_similarity, max_edges_per_node)?
+        }
         ParsedNodeId::Session(session_id) => session_edges(conn, &session_id)?,
-        ParsedNodeId::Message(message_id) => message_edges(conn, message_id, min_similarity)?,
-        ParsedNodeId::Episode(document_id) => episode_edges(conn, &document_id, min_similarity)?,
+        ParsedNodeId::Message(message_id) => {
+            message_edges(conn, message_id, min_similarity, max_edges_per_node)?
+        }
+        ParsedNodeId::Episode(document_id) => {
+            episode_edges(conn, &document_id, min_similarity, max_edges_per_node)?
+        }
         ParsedNodeId::Opaque => Vec::new(),
     };
     edges.sort_by(|a, b| {
@@ -293,6 +414,7 @@ fn fact_edges(
     conn: &Connection,
     fact_id: &str,
     min_similarity: f32,
+    max_edges_per_node: usize,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
     let row = conn.query_row(
         "SELECT namespace, embedding FROM facts WHERE id = ?1",
@@ -316,6 +438,7 @@ fn fact_edges(
                     &format!("fact:{fact_id}"),
                     &embedding,
                     min_similarity,
+                    max_edges_per_node,
                 )?);
             }
             Ok(edges)
@@ -381,6 +504,7 @@ fn chunk_edges(
     conn: &Connection,
     chunk_id: &str,
     min_similarity: f32,
+    max_edges_per_node: usize,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
     let row = conn.query_row(
         "SELECT document_id, chunk_index, embedding
@@ -435,6 +559,7 @@ fn chunk_edges(
                     &format!("chunk:{chunk_id}"),
                     &embedding,
                     min_similarity,
+                    max_edges_per_node,
                 )?);
             }
 
@@ -479,6 +604,7 @@ fn message_edges(
     conn: &Connection,
     message_id: i64,
     min_similarity: f32,
+    max_edges_per_node: usize,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
     let row = conn.query_row(
         "SELECT session_id, created_at, embedding
@@ -506,19 +632,23 @@ fn message_edges(
 
             if let Some(prev) = adjacent_message(conn, &session_id, &created_at, message_id, true)?
             {
-                edges.push(temporal_edge(
-                    format!("msg:{message_id}"),
-                    format!("msg:{}", prev.id),
-                    prev.delta_secs,
-                ));
+                if let Some(delta) = prev.delta_secs {
+                    edges.push(temporal_edge(
+                        format!("msg:{message_id}"),
+                        format!("msg:{}", prev.id),
+                        delta,
+                    ));
+                }
             }
             if let Some(next) = adjacent_message(conn, &session_id, &created_at, message_id, false)?
             {
-                edges.push(temporal_edge(
-                    format!("msg:{message_id}"),
-                    format!("msg:{}", next.id),
-                    next.delta_secs,
-                ));
+                if let Some(delta) = next.delta_secs {
+                    edges.push(temporal_edge(
+                        format!("msg:{message_id}"),
+                        format!("msg:{}", next.id),
+                        delta,
+                    ));
+                }
             }
 
             if let Some(blob) = embedding_blob {
@@ -528,6 +658,7 @@ fn message_edges(
                     &format!("msg:{message_id}"),
                     &embedding,
                     min_similarity,
+                    max_edges_per_node,
                 )?);
             }
 
@@ -542,6 +673,7 @@ fn episode_edges(
     conn: &Connection,
     episode_id: &str,
     min_similarity: f32,
+    max_edges_per_node: usize,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
     // Canonical: episode nodes resolve only by episode_id.
     let row = conn.query_row(
@@ -597,7 +729,13 @@ fn episode_edges(
 
     if let Some(blob) = embedding_blob {
         let embedding = db::bytes_to_embedding(&blob)?;
-        edges.extend(semantic_edges(conn, &ep_node, &embedding, min_similarity)?);
+        edges.extend(semantic_edges(
+            conn,
+            &ep_node,
+            &embedding,
+            min_similarity,
+            max_edges_per_node,
+        )?);
     }
 
     Ok(edges)
@@ -605,7 +743,7 @@ fn episode_edges(
 
 struct AdjacentMessage {
     id: i64,
-    delta_secs: u64,
+    delta_secs: Option<u64>,
 }
 
 fn adjacent_message(
@@ -644,11 +782,21 @@ fn adjacent_message(
     }
 }
 
-fn timestamp_delta_secs(a: &str, b: &str) -> u64 {
-    let parse = |value: &str| chrono::NaiveDateTime::parse_from_str(value, "%Y-%m-%d %H:%M:%S");
+fn timestamp_delta_secs(a: &str, b: &str) -> Option<u64> {
+    let parse = |value: &str| {
+        // Try the common format first, then with fractional seconds (SQLite/chrono).
+        chrono::NaiveDateTime::parse_from_str(value, "%Y-%m-%d %H:%M:%S")
+            .or_else(|_| chrono::NaiveDateTime::parse_from_str(value, "%Y-%m-%d %H:%M:%S%.6f"))
+            .or_else(|_| chrono::NaiveDateTime::parse_from_str(value, "%Y-%m-%d %H:%M:%S%.3f"))
+            .or_else(|_| {
+                // Try RFC3339 / ISO8601 with timezone.
+                chrono::DateTime::parse_from_rfc3339(value).map(|dt| dt.naive_utc())
+            })
+    };
     match (parse(a), parse(b)) {
-        (Ok(a), Ok(b)) => (a - b).num_seconds().unsigned_abs(),
-        _ => 0,
+        (Ok(a), Ok(b)) => Some((a - b).num_seconds().unsigned_abs()),
+        // Parse failure: return None instead of 0 to avoid false temporal edges.
+        _ => None,
     }
 }
 
@@ -762,31 +910,62 @@ fn semantic_edges(
     source_node_id: &str,
     embedding: &[f32],
     min_similarity: f32,
+    max_edges_per_node: usize,
 ) -> Result<Vec<GraphEdge>, MemoryError> {
-    let mut candidates = semantic_candidates(conn, "facts", "id", "embedding", |row_id| {
-        format!("fact:{row_id}")
-    })?;
-    candidates.extend(semantic_candidates(
-        conn,
-        "chunks",
-        "id",
-        "embedding",
-        |row_id| format!("chunk:{row_id}"),
-    )?);
-    candidates.extend(semantic_candidates(
-        conn,
-        "messages",
-        "id",
-        "embedding",
-        |row_id| format!("msg:{row_id}"),
-    )?);
-    candidates.extend(semantic_candidates(
-        conn,
-        "episodes",
-        "episode_id",
-        "embedding",
-        |ep_id| episodes::episode_node_id(&ep_id),
-    )?);
+    let mut candidates = Vec::new();
+    let mut remaining_capacity = max_edges_per_node;
+
+    if remaining_capacity > 0 {
+        let mut fact_candidates = semantic_candidates(
+            conn,
+            "facts",
+            "id",
+            "embedding",
+            |row_id| format!("fact:{row_id}"),
+            remaining_capacity,
+        )?;
+        let take = remaining_capacity.min(fact_candidates.len());
+        candidates.extend(fact_candidates.drain(0..take));
+        remaining_capacity -= take;
+    }
+    if remaining_capacity > 0 {
+        let mut chunk_candidates = semantic_candidates(
+            conn,
+            "chunks",
+            "id",
+            "embedding",
+            |row_id| format!("chunk:{row_id}"),
+            remaining_capacity,
+        )?;
+        let take = remaining_capacity.min(chunk_candidates.len());
+        candidates.extend(chunk_candidates.drain(0..take));
+        remaining_capacity -= take;
+    }
+    if remaining_capacity > 0 {
+        let mut message_candidates = semantic_candidates(
+            conn,
+            "messages",
+            "id",
+            "embedding",
+            |row_id| format!("msg:{row_id}"),
+            remaining_capacity,
+        )?;
+        let take = remaining_capacity.min(message_candidates.len());
+        candidates.extend(message_candidates.drain(0..take));
+        remaining_capacity -= take;
+    }
+    if remaining_capacity > 0 {
+        let mut episode_candidates = semantic_candidates(
+            conn,
+            "episodes",
+            "episode_id",
+            "embedding",
+            |ep_id| episodes::episode_node_id(&ep_id),
+            remaining_capacity,
+        )?;
+        let take = remaining_capacity.min(episode_candidates.len());
+        candidates.extend(episode_candidates.drain(0..take));
+    }
 
     let mut scored = candidates
         .into_iter()
@@ -833,22 +1012,29 @@ fn semantic_candidates<F>(
     id_column: &str,
     embedding_column: &str,
     key_fn: F,
+    max_edges_per_node: usize,
 ) -> Result<Vec<(String, Vec<f32>)>, MemoryError>
 where
     F: Fn(String) -> String,
 {
+    // SQL-level LIMIT bounds the query plan, not just the Rust iterator.
+    // Without LIMIT, SQLite prepares a full-table-scan plan even though we
+    // break early in the iterator. With LIMIT, SQLite can short-circuit.
     let sql = format!(
-        "SELECT {id_column}, {embedding_column} FROM {table} WHERE {embedding_column} IS NOT NULL"
+        "SELECT {id_column}, {embedding_column}
+         FROM {table}
+         WHERE {embedding_column} IS NOT NULL
+         LIMIT {limit}",
+        limit = max_edges_per_node
     );
     let mut stmt = conn.prepare(&sql)?;
-    let rows = stmt
-        .query_map([], |row| {
-            Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
-        })?
-        .collect::<Result<Vec<_>, _>>()?;
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+    })?;
 
     let mut decoded = Vec::new();
-    for (row_id, blob) in rows {
+    for row in rows {
+        let (row_id, blob) = row?;
         if let Ok(embedding) = db::bytes_to_embedding(&blob) {
             decoded.push((key_fn(row_id), embedding));
         }

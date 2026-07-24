@@ -133,13 +133,13 @@ impl<T> QueueJob<T>
 where
     T: Serialize + DeserializeOwned + Clone + Send + Sync,
 {
-    /// Create a new job with a generated UUID and Normal priority.
+    /// Create a new job with a canonical queue identity and Normal priority.
     ///
     /// A fresh `AttemptId` is generated automatically (this crate is the
     /// retry owner — each enqueue is a new attempt).
     pub fn new(data: T) -> Self {
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: stack_ids::QueueJobId::random("job-queue").to_string(),
             trace_id: None,
             trace_ctx: None,
             attempt_id: Some(stack_ids::AttemptId::generate()),

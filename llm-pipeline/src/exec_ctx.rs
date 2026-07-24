@@ -272,10 +272,10 @@ impl ExecCtxBuilder {
         // by each backend, driven by LlmCall.timeout or PipelineLimits.request_timeout.
         let client_timeout = self.timeout.unwrap_or(Duration::from_secs(300));
         let client = self.client.unwrap_or_else(|| {
-            Client::builder()
-                .timeout(client_timeout)
-                .build()
-                .expect("Failed to build HTTP client")
+            Client::builder().timeout(client_timeout).build().unwrap_or_else(|error| {
+                eprintln!("Failed to build HTTP client ({error}), falling back to reqwest default client");
+                Client::new()
+            })
         });
 
         let (trace_id, trace_ctx) = match (self.trace_ctx, self.trace_id) {

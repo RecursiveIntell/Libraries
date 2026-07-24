@@ -4151,6 +4151,11 @@
     },
     {
       "classification": "run-evidence",
+      "path": "docs/codex-runs/HOSTILE_AUDIT_P32_CLOSEOUT_2026-07-16.md",
+      "run": "P32"
+    },
+    {
+      "classification": "run-evidence",
       "path": "target/super-pass/audit/PHASE_15_AUDIT_LOG_HASHES.json",
       "run": "P32"
     },

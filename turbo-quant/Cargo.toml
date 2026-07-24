@@ -1,37 +1,31 @@
 [package]
 name = "turbo-quant"
-version = "0.2.0"
+version = "0.2.3"
 edition = "2021"
 rust-version = "1.75.0"
-description = "Experimental vector compression sidecars with PolarQuant, TurboQuant, QJL sketches, wire formats, and benchmark receipts"
-license = "MIT"
+description = "Experimental codec substrate: PolarQuant angular quantization, TurboQuant with QJL residual sketches, and bit-packed wire formats. Includes KV-cache shadow mode. NOT a vector-search sidecar — see docs/codex-runs/P27/REAL_BENCH_AUDIT.md"
+license = "MIT OR Apache-2.0"
+authors = ["sikmindz"]
+readme = "README.md"
 repository = "https://github.com/RecursiveIntell/turbo-quant"
-keywords = ["quantization", "vector-search", "compression", "embeddings", "machine-learning"]
-categories = ["science", "algorithms", "compression", "mathematics"]
+homepage = "https://github.com/RecursiveIntell/turbo-quant"
+documentation = "https://docs.rs/turbo-quant"
+keywords = ['quantization', 'compression', 'embeddings', 'kv-cache', 'codec']
+categories = ["science", "algorithms", "compression", "mathematics", "database"]
 exclude = [
-    ".codex/",
     ".github/",
     ".gitignore",
-    "0*_*.md",
-    "0*_*.sh",
-    "0*_*.json",
     "AGENTS.md",
-    "AGENTS.release.md",
-    "OPERATOR_CHECKLIST.md",
-    "P26_EXECUTION_BUNDLE.md",
     "codex/",
     "prompts/",
-    "docs/codex-runs/",
-    "docs/release-evidence/",
-    "docs/P26_*.md",
-    "docs/UPLOADED_PACKAGE_SOURCE_FACTS.json",
-    "governor/",
-    "install_into_repo.sh",
     "p33boot/",
+    "governor/",
     "schemas/",
     "scripts/",
     "templates/",
     "tools/semantic_memory_harness/",
+    "docs/codex-runs/",
+    "docs/release-evidence/",
     "target/",
     "*.zip",
     "*.codex-archive.json",
@@ -39,7 +33,6 @@ exclude = [
     "*.findings.json",
     "*.excluded.json",
     "*.report.md",
-    "z.py",
 ]
 
 [dependencies]
@@ -51,6 +44,12 @@ rand_chacha = "0.3"
 rand_distr = "0.4"
 nalgebra = { version = "0.33", features = ["serde-serialize"] }
 
+[features]
+default = []
+
+[build-dependencies]
+cc = "1.0"
+
 [dev-dependencies]
 criterion = "0.5"
 serde_json = "1"
@@ -58,6 +57,3 @@ serde_json = "1"
 [[bench]]
 name = "turbo_quant_search"
 harness = false
-
-[lints]
-workspace = true

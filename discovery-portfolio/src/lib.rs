@@ -145,17 +145,25 @@ pub fn evaluate_portfolio_plan(
         .iter()
         .map(|estimate| (estimate.campaign_id.as_str().to_string(), estimate))
         .collect::<std::collections::BTreeMap<_, _>>();
+    let campaign_review_cost = |campaign: &ExperimentCampaignV1| -> u32 {
+        estimate_by_campaign
+            .get(campaign.experiment_campaign_id.as_str())
+            .map(|estimate| estimate.estimated_review_cost)
+            .unwrap_or(campaign.required_review_slots)
+    };
 
     candidate_campaigns.sort_by(|left, right| {
         let left_estimate = estimate_by_campaign.get(left.experiment_campaign_id.as_str());
         let right_estimate = estimate_by_campaign.get(right.experiment_campaign_id.as_str());
+        let left_cost = campaign_review_cost(left) as u128;
+        let right_cost = campaign_review_cost(right) as u128;
 
         match (left_estimate, right_estimate) {
             (Some(left_estimate), Some(right_estimate)) => {
-                let left_cost = left_estimate.estimated_review_cost.max(1);
-                let right_cost = right_estimate.estimated_review_cost.max(1);
-                let left_ratio = left_estimate.expected_information_gain * right_cost;
-                let right_ratio = right_estimate.expected_information_gain * left_cost;
+                let left_ratio =
+                    (left_estimate.expected_information_gain as u128) * right_cost.max(1);
+                let right_ratio =
+                    (right_estimate.expected_information_gain as u128) * left_cost.max(1);
                 right_ratio
                     .cmp(&left_ratio)
                     .then_with(|| {
@@ -163,7 +171,7 @@ pub fn evaluate_portfolio_plan(
                             .expected_information_gain
                             .cmp(&left_estimate.expected_information_gain)
                     })
-                    .then_with(|| left.required_review_slots.cmp(&right.required_review_slots))
+                    .then_with(|| left_cost.cmp(&right_cost))
                     .then_with(|| {
                         let left_order = plan_order
                             .get(left.experiment_campaign_id.as_str())
@@ -187,13 +195,12 @@ pub fn evaluate_portfolio_plan(
         let expected_information_gain = estimate
             .map(|estimate| estimate.expected_information_gain)
             .unwrap_or_default();
-        let estimated_review_cost = estimate
-            .map(|estimate| estimate.estimated_review_cost)
-            .unwrap_or(campaign.required_review_slots);
+        let estimated_review_cost = campaign_review_cost(campaign);
+        let normalized_cost = estimated_review_cost.max(1);
         let budget_pressure = if remaining == 0 {
             1.0
         } else {
-            campaign.required_review_slots as f64 / remaining as f64
+            normalized_cost as f64 / remaining as f64
         };
         let hypothesis_context = if hypotheses.hypothesis_refs.is_empty() {
             "no hypothesis refs were attached".to_string()
@@ -220,8 +227,8 @@ pub fn evaluate_portfolio_plan(
                     "verification budget is exhausted, so the program pauses explicitly even though expected information gain is {expected_information_gain}; {hypothesis_context}"
                 ),
             )
-        } else if remaining >= campaign.required_review_slots {
-            remaining -= campaign.required_review_slots;
+        } else if remaining >= normalized_cost {
+            remaining -= normalized_cost;
             (
                 CampaignDecision::Launch,
                 format!(
@@ -262,5 +269,115 @@ pub fn evaluate_portfolio_plan(
         advisory_only: true,
         degraded,
         generated_at: generated_at.into(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use stack_ids::{
+        DiscoveryProgramId, ExperimentCampaignId, PortfolioPlanId, VerificationLoadBudgetId,
+    };
+
+    fn fixture_program() -> (
+        DiscoveryProgramV1,
+        ProgramHypothesisSetV1,
+        PortfolioPlanV1,
+        VerificationLoadBudgetV1,
+    ) {
+        (
+            DiscoveryProgramV1 {
+                schema_version: DISCOVERY_PROGRAM_V1_SCHEMA.into(),
+                discovery_program_id: DiscoveryProgramId::new("prog-1"),
+                program_name: "test".into(),
+                canonical_owner: "owner".into(),
+                publication_status: SurfaceStatus::AdvisoryOnly,
+            },
+            ProgramHypothesisSetV1 {
+                schema_version: PROGRAM_HYPOTHESIS_SET_V1_SCHEMA.into(),
+                discovery_program_id: DiscoveryProgramId::new("prog-1"),
+                hypothesis_refs: vec!["h1".into()],
+                horizon_only: false,
+            },
+            PortfolioPlanV1 {
+                schema_version: PORTFOLIO_PLAN_V1_SCHEMA.into(),
+                portfolio_plan_id: PortfolioPlanId::new("plan-1"),
+                discovery_program_id: DiscoveryProgramId::new("prog-1"),
+                campaign_ids: vec![
+                    ExperimentCampaignId::new("campaign-1"),
+                    ExperimentCampaignId::new("campaign-2"),
+                ],
+                utility_rationale: "cost-aware".into(),
+                review_load_rationale: "budget-aware".into(),
+                advisory_only: true,
+            },
+            VerificationLoadBudgetV1 {
+                schema_version: VERIFICATION_LOAD_BUDGET_V1_SCHEMA.into(),
+                verification_load_budget_id: VerificationLoadBudgetId::new("budget-1"),
+                total_review_slots: 5,
+                remaining_review_slots: 5,
+                exhausted: false,
+                horizon_only: false,
+            },
+        )
+    }
+
+    #[test]
+    fn evaluate_portfolio_plan_uses_estimated_review_cost_for_budget_pressure() {
+        let (program, hypotheses, plan, budget) = fixture_program();
+        let campaigns = vec![
+            ExperimentCampaignV1 {
+                schema_version: EXPERIMENT_CAMPAIGN_V1_SCHEMA.into(),
+                experiment_campaign_id: ExperimentCampaignId::new("campaign-1"),
+                campaign_name: "cheap".into(),
+                utility_case: "x".into(),
+                information_value_estimate_id: InformationValueEstimateId::new("ive-1"),
+                required_review_slots: 10,
+                advisory_only: true,
+            },
+            ExperimentCampaignV1 {
+                schema_version: EXPERIMENT_CAMPAIGN_V1_SCHEMA.into(),
+                experiment_campaign_id: ExperimentCampaignId::new("campaign-2"),
+                campaign_name: "expensive".into(),
+                utility_case: "y".into(),
+                information_value_estimate_id: InformationValueEstimateId::new("ive-2"),
+                required_review_slots: 1,
+                advisory_only: true,
+            },
+        ];
+        let estimates = vec![
+            InformationValueEstimateV1 {
+                schema_version: INFORMATION_VALUE_ESTIMATE_V1_SCHEMA.into(),
+                information_value_estimate_id: InformationValueEstimateId::new("ive-1"),
+                campaign_id: ExperimentCampaignId::new("campaign-1"),
+                expected_information_gain: 10,
+                estimated_review_cost: 1,
+            },
+            InformationValueEstimateV1 {
+                schema_version: INFORMATION_VALUE_ESTIMATE_V1_SCHEMA.into(),
+                information_value_estimate_id: InformationValueEstimateId::new("ive-2"),
+                campaign_id: ExperimentCampaignId::new("campaign-2"),
+                expected_information_gain: 100,
+                estimated_review_cost: 4,
+            },
+        ];
+        let trace = evaluate_portfolio_plan(
+            &program,
+            &hypotheses,
+            &plan,
+            &campaigns,
+            &estimates,
+            &budget,
+            "t0",
+        );
+
+        assert_eq!(trace.decisions.len(), 2);
+        assert_eq!(
+            trace.decisions[0].campaign_id,
+            ExperimentCampaignId::new("campaign-2")
+        );
+        assert_eq!(trace.decisions[0].estimated_review_cost, 4);
+        assert_eq!(trace.decisions[1].estimated_review_cost, 1);
+        assert_eq!(trace.remaining_review_slots, 0);
     }
 }

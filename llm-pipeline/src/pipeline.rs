@@ -18,17 +18,15 @@ use reqwest::Client;
 use serde_json::Value;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
-    Arc,
+    Arc, Mutex,
 };
 use tokio::sync::mpsc;
 
 /// SHA-256 digest helper for receipts.
 fn sha256_digest(data: &str) -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-    let mut h = DefaultHasher::new();
-    data.hash(&mut h);
-    format!("{:016x}", h.finish())
+    use sha2::{Digest, Sha256};
+
+    format!("{:x}", Sha256::digest(data.as_bytes()))
 }
 
 /// Pipeline executor for multi-stage LLM workflows.
@@ -48,7 +46,7 @@ where
     cancellation: Option<Arc<AtomicBool>>,
     _phantom: std::marker::PhantomData<T>,
     /// The last execution receipt, populated after each `execute_*` call.
-    last_receipt: Option<PipelineExecutionReceiptV1>,
+    last_receipt: Arc<Mutex<Option<PipelineExecutionReceiptV1>>>,
 }
 
 impl<T> std::fmt::Debug for Pipeline<T>
@@ -85,8 +83,22 @@ where
     }
 
     /// Returns the last execution receipt, if any.
-    pub fn last_receipt(&self) -> Option<&PipelineExecutionReceiptV1> {
-        self.last_receipt.as_ref()
+    pub fn last_receipt(&self) -> Option<PipelineExecutionReceiptV1> {
+        match self.last_receipt.lock() {
+            Ok(receipt) => receipt.clone(),
+            Err(poisoned) => poisoned.into_inner().clone(),
+        }
+    }
+
+    fn set_last_receipt(&self, receipt: PipelineExecutionReceiptV1) {
+        match self.last_receipt.lock() {
+            Ok(mut lock) => {
+                *lock = Some(receipt);
+            }
+            Err(poisoned) => {
+                *poisoned.into_inner() = Some(receipt);
+            }
+        }
     }
 
     /// Check whether cancellation has been requested.
@@ -171,6 +183,11 @@ where
             });
 
             let start = std::time::Instant::now();
+            let request_json = serde_json::to_string(&current_input).map_err(|error| {
+                PipelineError::Other(format!(
+                    "failed to serialize stage request for receipt: {error}"
+                ))
+            })?;
             let output = payload
                 .invoke(&ctx, current_input.clone())
                 .await
@@ -185,9 +202,7 @@ where
                 receipt_id: uuid::Uuid::new_v4().to_string(),
                 provider: "ollama".to_string(),
                 model_route: payload.model().to_string(),
-                request_digest: sha256_digest(
-                    &serde_json::to_string(&current_input).unwrap_or_default(),
-                ),
+                request_digest: sha256_digest(&request_json),
                 response_digest: sha256_digest(&output.raw_response),
                 latency_ms,
                 tokens_in: 0, // Backend doesn't expose token counts in LlmResponse metadata
@@ -231,6 +246,11 @@ where
             .ok_or_else(|| PipelineError::Other("No stages were executed".to_string()))?
             .output
             .clone();
+        let final_output_json = serde_json::to_string(&final_output).map_err(|error| {
+            PipelineError::Other(format!(
+                "failed to serialize pipeline output for receipt: {error}"
+            ))
+        })?;
 
         // Build the execution receipt and store it.
         let receipt = PipelineExecutionReceiptV1 {
@@ -239,19 +259,11 @@ where
             provider_calls,
             retry_decisions,
             budget_debits,
-            response_digest: sha256_digest(
-                &serde_json::to_string(&final_output).unwrap_or_default(),
-            ),
+            response_digest: sha256_digest(&final_output_json),
             outcome: ExecutionOutcome::Success,
             recorded_time: chrono::Utc::now(),
         };
-        // Store via interior mutability (RefCell) — safe because this is &mut self
-        // and each call gets a fresh pipeline reference.
-        let receipt_box = Box::new(receipt);
-        let receipt_ptr = Box::into_raw(receipt_box) as *mut Option<PipelineExecutionReceiptV1>;
-        // SAFETY: self.last_receipt is now set via pointer injection — the receipt
-        // is dropped when Pipeline is dropped (Box manages allocation).
-        let _ = receipt_ptr;
+        self.set_last_receipt(receipt);
 
         Ok(PipelineResult {
             final_output,
@@ -287,6 +299,9 @@ where
 
         let mut current_input = Value::String(input.idea);
         let mut stage_results = Vec::new();
+        let mut provider_calls = Vec::new();
+        let retry_decisions = Vec::new();
+        let budget_debits = Vec::new();
 
         for (idx, payload) in &payloads {
             self.check_cancelled()?;
@@ -314,6 +329,11 @@ where
                 .with_trace_id(trace_id.clone())
                 .build();
 
+            let request_json = serde_json::to_string(&current_input).map_err(|error| {
+                PipelineError::Other(format!(
+                    "failed to serialize stage request for receipt: {error}"
+                ))
+            })?;
             let invoke = payload.invoke(&stage_ctx, current_input);
             tokio::pin!(invoke);
 
@@ -331,14 +351,25 @@ where
                 }
             };
 
-            let parsed: T = output.parse_as().map_err(|e| PipelineError::StageFailed {
+            provider_calls.push(ProviderCallReceiptV1 {
+                receipt_id: uuid::Uuid::new_v4().to_string(),
+                provider: "ollama".to_string(),
+                model_route: payload.model().to_string(),
+                request_digest: sha256_digest(&request_json),
+                response_digest: sha256_digest(&output.raw_response),
+                latency_ms: 0,
+                tokens_in: 0,
+                tokens_out: 0,
+            });
+
+            let final_output: T = output.parse_as().map_err(|e| PipelineError::StageFailed {
                 stage: payload.name().to_string(),
                 message: e.to_string(),
             })?;
 
             current_input = output.value;
             stage_results.push(StageOutput {
-                output: parsed,
+                output: final_output,
                 thinking: output.thinking,
                 raw_response: output.raw_response,
             });
@@ -349,6 +380,22 @@ where
             .ok_or_else(|| PipelineError::Other("No stages were executed".to_string()))?
             .output
             .clone();
+        let final_output_json = serde_json::to_string(&final_output).map_err(|error| {
+            PipelineError::Other(format!(
+                "failed to serialize pipeline output for receipt: {error}"
+            ))
+        })?;
+        let receipt = PipelineExecutionReceiptV1 {
+            receipt_id: uuid::Uuid::new_v4().to_string(),
+            pipeline_id: format!("pipeline-{}", stages_enabled.iter().filter(|&&b| b).count()),
+            provider_calls,
+            retry_decisions,
+            budget_debits,
+            response_digest: sha256_digest(&final_output_json),
+            outcome: ExecutionOutcome::Success,
+            recorded_time: chrono::Utc::now(),
+        };
+        self.set_last_receipt(receipt);
 
         Ok(PipelineResult {
             final_output,
@@ -420,7 +467,7 @@ where
             context: self.context,
             cancellation: self.cancellation,
             _phantom: std::marker::PhantomData,
-            last_receipt: None,
+            last_receipt: Arc::new(Mutex::new(None)),
         })
     }
 }
@@ -540,5 +587,13 @@ mod tests {
         assert_eq!(payloads[0].1.name(), "a");
         assert_eq!(payloads[1].0, 2); // stage index 2 (b was skipped)
         assert_eq!(payloads[1].1.name(), "c");
+    }
+
+    #[test]
+    fn receipt_digest_is_sha256() {
+        assert_eq!(
+            sha256_digest("abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
     }
 }

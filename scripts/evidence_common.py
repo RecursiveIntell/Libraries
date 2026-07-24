@@ -108,6 +108,53 @@ def source_binding(repo: Path, command_receipts: list[dict[str, Any]]) -> dict[s
     }
 
 
+def verify_gate_contract(
+    manifest: dict[str, Any], expected_commands: list[str], expected_gate_sha256: str
+) -> list[str]:
+    """Verify that evidence covers exactly one complete canonical gate run."""
+    findings: list[str] = []
+    gate_definition = manifest.get("gate_definition")
+    if not isinstance(gate_definition, dict):
+        findings.append("missing gate_definition")
+    else:
+        if gate_definition.get("path") != "scripts/release_gate_set.py":
+            findings.append("gate definition path mismatch")
+        if gate_definition.get("sha256") != expected_gate_sha256:
+            findings.append("gate definition digest mismatch")
+        if gate_definition.get("command_count") != len(expected_commands):
+            findings.append("gate definition command count mismatch")
+
+    proof_commands = manifest.get("proof_commands")
+    if proof_commands != expected_commands:
+        findings.append("proof commands do not match the canonical gate set")
+
+    proof_results = manifest.get("proof_results")
+    expected_results = [{"command": command, "result": "pass"} for command in expected_commands]
+    if proof_results != expected_results:
+        findings.append("proof results do not show every canonical gate passing in order")
+
+    binding = manifest.get("source_binding")
+    receipts = binding.get("command_receipts") if isinstance(binding, dict) else None
+    if not isinstance(receipts, list):
+        return findings
+    if len(receipts) != len(expected_commands):
+        findings.append("command receipt count mismatch")
+        return findings
+    for expected_command, receipt in zip(expected_commands, receipts):
+        if not isinstance(receipt, dict):
+            findings.append("invalid command receipt")
+            continue
+        if receipt.get("command") != expected_command:
+            findings.append("command receipt command mismatch")
+        if receipt.get("argv") != ["/bin/sh", "-c", expected_command]:
+            findings.append("command receipt argv mismatch")
+        if receipt.get("cwd") != ".":
+            findings.append("command receipt cwd mismatch")
+        if receipt.get("exit_code") != 0 or receipt.get("result") != "pass":
+            findings.append("command receipt is not a passing canonical gate")
+    return findings
+
+
 def evidence_only_descendant(repo: Path, recorded_commit: str, head_commit: str) -> bool:
     """Return whether HEAD only adds/modifies derived evidence after recording.
 

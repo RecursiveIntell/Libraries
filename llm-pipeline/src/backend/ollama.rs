@@ -152,7 +152,7 @@ impl OllamaBackend {
                 .get("retry-after")
                 .and_then(|v| v.to_str().ok())
                 .and_then(Self::parse_retry_after);
-            let text = resp.text().await.unwrap_or_default();
+            let text = resp.text().await.map_err(PipelineError::Request)?;
             return Err(PipelineError::HttpError {
                 status,
                 body: text,
@@ -278,7 +278,7 @@ impl Backend for OllamaBackend {
                 .get("retry-after")
                 .and_then(|v| v.to_str().ok())
                 .and_then(Self::parse_retry_after);
-            let text = resp.text().await.unwrap_or_default();
+            let text = resp.text().await.map_err(PipelineError::Request)?;
             return Err(PipelineError::HttpError {
                 status,
                 body: text,
@@ -389,7 +389,9 @@ mod tests {
         assert_eq!(body["model"], "llama3.2");
         assert_eq!(body["stream"], false);
 
-        let messages = body["messages"].as_array().expect("messages array");
+        let messages = body["messages"]
+            .as_array()
+            .unwrap_or_else(|| panic!("messages array"));
         assert_eq!(messages.len(), 2);
         assert_eq!(messages[0]["role"], "system");
         assert_eq!(messages[0]["content"], "You are a helpful assistant.");
@@ -474,7 +476,9 @@ mod tests {
         ];
 
         let body = OllamaBackend::build_chat_body(&request, false);
-        let messages = body["messages"].as_array().expect("messages");
+        let messages = body["messages"]
+            .as_array()
+            .unwrap_or_else(|| panic!("messages"));
         // system + 3 history messages (no extra user message since messages is non-empty)
         assert_eq!(messages.len(), 4);
         assert_eq!(messages[0]["role"], "system");

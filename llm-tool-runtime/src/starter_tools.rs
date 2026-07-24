@@ -219,7 +219,16 @@ where
             .get("artifact_id")
             .and_then(|value| value.as_str())
             .unwrap_or_default();
-        let content = self.port.read(&ArtifactId::new(artifact_id)).await?;
+        let artifact_id = match ArtifactId::try_new(artifact_id) {
+            Ok(id) => id,
+            Err(err) => {
+                return Err(ToolError::new(
+                    crate::ToolErrorClass::InvalidArguments,
+                    format!("invalid artifact_id: {err}"),
+                ));
+            }
+        };
+        let content = self.port.read(&artifact_id).await?;
         Ok(ToolResult::text(content.content))
     }
 }

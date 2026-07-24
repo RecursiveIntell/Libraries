@@ -1,8 +1,6 @@
 //! Integration tests for bitemporal-runtime.
 
-use bitemporal_runtime::{
-    append_supersede, as_of_query, temporal_snapshot, BitemporalRecord, InMemoryDb,
-};
+use bitemporal_runtime::{append_supersede, as_of_query, BitemporalRecord, InMemoryDb};
 use chrono::TimeZone;
 
 /// Test 1: append_supersede_creates_receipt — call append_supersede, verify receipt returned.

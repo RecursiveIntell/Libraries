@@ -194,6 +194,9 @@ pub struct SearchConfig {
     pub rerank_from_f32: bool,
 }
 
+const MAX_SEARCH_CANDIDATE_POOL_SIZE: usize = 2_000;
+const MAX_SEARCH_DEFAULT_TOP_K: usize = 200;
+
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
@@ -212,12 +215,8 @@ impl Default for SearchConfig {
 
 impl SearchConfig {
     fn normalize_and_validate(&mut self) -> Result<(), MemoryError> {
-        if self.candidate_pool_size == 0 {
-            self.candidate_pool_size = 1;
-        }
-        if self.default_top_k == 0 {
-            self.default_top_k = 1;
-        }
+        self.candidate_pool_size = self.candidate_pool_size.max(1).min(MAX_SEARCH_CANDIDATE_POOL_SIZE);
+        self.default_top_k = self.default_top_k.max(1).min(MAX_SEARCH_DEFAULT_TOP_K);
         self.candidate_pool_size = self.candidate_pool_size.max(self.default_top_k);
         if !self.rrf_k.is_finite() || self.rrf_k <= 0.0 {
             return Err(MemoryError::InvalidConfig {
