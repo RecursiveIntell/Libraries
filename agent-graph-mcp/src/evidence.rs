@@ -670,4 +670,18 @@ mod tests {
             "WITNESS_SPAN_OUT_OF_RANGE"
         );
     }
+
+    #[test]
+    fn evidence_requires_durable_witness_store() {
+        configure_test_integrity_key();
+        let temp = tempfile::tempdir().expect("witness database");
+        let store = PersistentStore::open(temp.path()).expect("store");
+        let value = json!({
+            "claims": [{"text":"claim","witness_id":"witness-absent","span":{"start":0,"end":5}}],
+            "sources": [{"locator":"local://missing","source_type":"local"}]
+        });
+        let error = validate_witness_dependencies(&value, &store)
+            .expect_err("missing durable witness must fail closed");
+        assert_eq!(error.code, "WITNESS_NOT_FOUND");
+    }
 }

@@ -1,7 +1,7 @@
 //! Lock-owning daemon primitives.
 use crate::migrations;
 use fs2::FileExt;
-use rusqlite::Connection;
+use rusqlite::{Connection, OptionalExtension};
 use std::{
     fs::{self, File, OpenOptions},
     io,
@@ -128,8 +128,40 @@ pub fn recover_owned_state(
     instance_id: &str,
     generation: i64,
 ) -> rusqlite::Result<usize> {
-    let changed = conn.execute("UPDATE executions SET status='legacy_unverified' WHERE owner_instance_id IS NULL AND status IN ('accepted','running')", [])?;
-    conn.execute("UPDATE daemon_instances SET heartbeat_at=CURRENT_TIMESTAMP WHERE instance_id=?1 AND generation=?2", rusqlite::params![instance_id, generation])?;
+    let has_executions: bool = conn
+        .query_row(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='executions'",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .optional()?
+        .is_some();
+
+    let has_owner_column: bool = if has_executions {
+        conn.query_row(
+            "SELECT 1 FROM pragma_table_info('executions') WHERE name='owner_instance_id'",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .optional()?
+        .is_some()
+    } else {
+        false
+    };
+
+    let changed = if has_executions && has_owner_column {
+        conn.execute(
+            "UPDATE executions SET status='legacy_unverified' WHERE owner_instance_id IS NULL AND status IN ('accepted','running')",
+            [],
+        )?
+    } else {
+        0
+    };
+
+    conn.execute(
+        "UPDATE daemon_instances SET heartbeat_at=CURRENT_TIMESTAMP WHERE instance_id=?1 AND generation=?2",
+        rusqlite::params![instance_id, generation],
+    )?;
     Ok(changed)
 }
 pub fn open_owned(
@@ -140,6 +172,34 @@ pub fn open_owned(
     let mut c = Connection::open(data_dir.join("agent-graph.db"))?;
     migrations::apply(&mut c, binary_digest)?;
     Ok((lock, c))
+}
+
+/// Persist the integrity mode and reject mixed keyless/key-enabled restarts.
+pub fn enforce_startup_mode(conn: &Connection, key_enabled: bool) -> rusqlite::Result<()> {
+    conn.execute_batch("CREATE TABLE IF NOT EXISTS daemon_startup_mode (mode TEXT PRIMARY KEY CHECK(mode IN ('keyless','key-enabled')));")?;
+    let expected = if key_enabled {
+        "key-enabled"
+    } else {
+        "keyless"
+    };
+    let current: Option<String> = conn
+        .query_row("SELECT mode FROM daemon_startup_mode LIMIT 1", [], |r| {
+            r.get(0)
+        })
+        .optional()?;
+    match current {
+        Some(mode) if mode != expected => Err(rusqlite::Error::InvalidParameterName(
+            "STARTUP_MODE_MISMATCH".into(),
+        )),
+        Some(_) => Ok(()),
+        None => {
+            conn.execute(
+                "INSERT INTO daemon_startup_mode(mode) VALUES (?1)",
+                [expected],
+            )?;
+            Ok(())
+        }
+    }
 }
 #[allow(dead_code)]
 pub fn socket_path(runtime_dir: &Path, instance: &str) -> PathBuf {

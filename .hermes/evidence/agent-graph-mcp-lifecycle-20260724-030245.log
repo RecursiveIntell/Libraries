@@ -1,0 +1,60 @@
+{
+  "step1_initialize": {
+    "response": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "protocolVersion": "2024-11-05",
+        "capabilities": {
+          "tools": {}
+        },
+        "serverInfo": {
+          "name": "agent-graph-mcp",
+          "version": "0.2.0"
+        },
+        "instructions": "Graph orchestration for bounded multi-step LLM workflows with parallel fan-out, conditional routing, state transforms, joins, cooperative cancellation, and optional enforced max_wall_clock_ms/max_nodes run budgets. max_llm_calls is rejected with INVALID_BUDGETS because no real invocation hook exists in this runtime path. Parallel unordered state writes require an explicit reducer. Cancellation can drop the local provider future on request, best effort; an underlying provider request may continue. Optional SQLite stores terminal projections plus explicit pre-execution checkpoints. Durable checkpoints, approvals, terminal receipts, and source witnesses require an external key file named by AGENT_GRAPH_INTEGRITY_KEY_PATH; without it their operations fail closed with INTEGRITY_KEY_REQUIRED. Deterministic local resume is limited to linear passthrough/state_transform chains and is never generic replay; uncheckpointed or ineligible runs remain interrupted_non_resumable after restart. SQLite-backed approvals can decide only an immutable deterministic-local checkpoint and resume that checkpoint; HumanApproval nodes and arbitrary external actions remain unsupported. Source witnesses are caller-supplied local captures: locators are never fetched, HMAC-authenticated witness integrity and bounded evidence spans are checked against SQLite, and source authority is not independently verified. Receipts provide integrity_only except a successfully resumed deterministic-local path, which reports deterministic_local_resume. Define graphs with graph_create, execute with graph_execute or graph_run_start, checkpoint with checkpoint:true, inspect with graph_run_get/wait/cancel/state/events/receipt/checkpoint, request or decide checkpoint approvals with graph_approval_request/decide, and resume with graph_run_resume."
+      }
+    },
+    "has_result": true,
+    "protocol_version": "2024-11-05",
+    "server_name": "agent-graph-mcp"
+  },
+  "step2_initialized": {
+    "sent": true
+  },
+  "step3_tools_list": {
+    "tool_count": 25,
+    "tool_names": [
+      "graph_approval_get",
+      "graph_approval_list",
+      "graph_approval_request",
+      "graph_create",
+      "graph_execute",
+      "graph_inspect",
+      "graph_list",
+      "graph_policy_check",
+      "graph_render",
+      "graph_run_cancel",
+      "graph_run_checkpoint",
+      "graph_run_events",
+      "graph_run_get",
+      "graph_run_receipt",
+      "graph_run_resume",
+      "graph_run_start",
+      "graph_run_state",
+      "graph_run_wait",
+      "graph_source_witness_capture",
+      "graph_source_witness_get",
+      "graph_status",
+      "graph_template_candidates",
+      "graph_template_instantiate",
+      "graph_template_list",
+      "graph_template_outcomes"
+    ],
+    "has_result": true
+  },
+  "transport": "Unix socket framed (4-byte BE length prefix + JSON-RPC 2.0)",
+  "socket_perms": "0600",
+  "daemon_binary": "agent-graph-mcpd",
+  "verdict": "MCP lifecycle complete: initialize OK, notifications/initialized sent, tools/list returned 25 tools"
+}

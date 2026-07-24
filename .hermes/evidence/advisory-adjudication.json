@@ -1,0 +1,17 @@
+{
+  "advisories": {
+    "list": [
+      {"id":"RUSTSEC-2026-0204","crate":"crossbeam-epoch","version":"0.9.18","classification":"not_reachable_from_agent_graph_mcp"},
+      {"id":"RUSTSEC-2026-0194","crate":"quick-xml","version":"0.39.4","classification":"not_reachable_from_agent_graph_mcp"},
+      {"id":"RUSTSEC-2026-0195","crate":"quick-xml","version":"0.39.4","classification":"not_reachable_from_agent_graph_mcp"},
+      {"id":"RUSTSEC-2026-0185","crate":"quinn-proto","version":"0.11.14","classification":"not_reachable_from_agent_graph_mcp"},
+      {"id":"RUSTSEC-2026-0049","crate":"rustls-webpki","version":"0.103.9","classification":"no_reverse_dependency_reported_for_agent_graph_mcp"},
+      {"id":"RUSTSEC-2026-0098","crate":"rustls-webpki","version":"0.103.9","classification":"no_reverse_dependency_reported_for_agent_graph_mcp"},
+      {"id":"RUSTSEC-2026-0099","crate":"rustls-webpki","version":"0.103.9","classification":"no_reverse_dependency_reported_for_agent_graph_mcp"},
+      {"id":"RUSTSEC-2026-0104","crate":"rustls-webpki","version":"0.103.9","classification":"no_reverse_dependency_reported_for_agent_graph_mcp"}
+    ]
+  },
+  "audit_summary": {"vulnerabilities":8,"allowed_warnings":20,"exit_code":1},
+  "reachability_evidence":"cargo tree -i <crate> -p agent-graph-mcp --target all; crossbeam-epoch, quick-xml, quinn-proto returned package ID did not match any packages; rustls-webpki returned nothing to print.",
+  "caveat":"Scoped to agent-graph-mcp; cargo audit scanned 692 workspace dependencies."
+}

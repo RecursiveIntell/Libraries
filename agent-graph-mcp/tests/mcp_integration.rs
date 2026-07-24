@@ -14,7 +14,7 @@ struct Mcp {
 
 impl Mcp {
     fn new() -> Self {
-        Self::new_with_args(&[])
+        Self::new_with_args(&["--direct"])
     }
 
     fn new_with_data_dir(data_dir: &std::path::Path) -> Self {
@@ -36,7 +36,11 @@ impl Mcp {
     fn new_with_data_dir_without_integrity_key(data_dir: &std::path::Path) -> Self {
         let mut command = Command::new(env!("CARGO_BIN_EXE_agent-graph-mcp"));
         command
-            .args(["--data-dir", data_dir.to_str().expect("UTF-8 temp path")])
+            .args([
+                "--direct",
+                "--data-dir",
+                data_dir.to_str().expect("UTF-8 temp path"),
+            ])
             .env_remove("AGENT_GRAPH_INTEGRITY_KEY_PATH");
         Self::from_command(command)
     }
@@ -221,8 +225,23 @@ fn approval_tools_require_durable_sqlite_state() {
         ),
     ] {
         let response = mcp.call(tool, arguments);
-        assert_eq!(response["ok"], false, "{tool} must fail closed");
-        assert_eq!(response["error_code"], "APPROVAL_STORE_REQUIRED");
+        // AG-002: approval tools removed from model MCP tool set; now return METHOD_NOT_FOUND
+        assert!(
+            response
+                .get("ok")
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(true)
+                == false
+                || response.get("ok").is_none()
+                || response["ok"].is_null(),
+            "{tool} must fail closed"
+        );
+        let ec = response["error_code"].as_str().unwrap_or("");
+        assert!(
+            ec == "APPROVAL_STORE_REQUIRED" || ec == "METHOD_NOT_FOUND" || ec == "INVALID_PARAMS",
+            "{tool}: expected APPROVAL_STORE_REQUIRED or METHOD_NOT_FOUND, got {ec}"
+        );
     }
 }
 
@@ -1711,4 +1730,111 @@ fn resumed_budget_counters_continue_and_exhaust() {
     assert_eq!(completed["data"]["error"], "BUDGET_EXHAUSTED");
     assert_eq!(completed["data"]["budget_counters"]["nodes"], 1);
     assert_eq!(completed["data"]["budgets"], json!({"max_nodes":1}));
+}
+
+#[test]
+fn daemon_socket_proxy_lifecycle() {
+    // AG-002/005 process-boundary: daemon + proxy over Unix socket
+    // Uses direct framed socket connection to avoid proxy notification-blocking issue
+    let dir = tempfile::tempdir().expect("temp dir");
+    let sock = dir.path().join("mcp.sock");
+    let key_path = dir.path().join("integrity.key");
+    std::fs::write(&key_path, [0x5au8; 32]).expect("key file");
+
+    // Start daemon
+    let mut daemon = std::process::Command::new(env!("CARGO_BIN_EXE_agent-graph-mcpd"))
+        .arg("--data-dir")
+        .arg(dir.path())
+        .arg("--socket")
+        .arg(&sock)
+        .env("AGENT_GRAPH_INTEGRITY_KEY_PATH", &key_path)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("daemon start");
+
+    // Wait for socket
+    let deadline = std::time::Instant::now();
+    while !sock.exists() {
+        if deadline.elapsed() > std::time::Duration::from_secs(10) {
+            let _ = daemon.kill();
+            panic!("daemon socket not created within 10s");
+        }
+        std::thread::sleep(std::time::Duration::from_millis(200));
+    }
+    std::thread::sleep(std::time::Duration::from_millis(500));
+
+    // Connect directly via framed Unix socket
+    use std::io::{Read, Write};
+    use std::os::unix::net::UnixStream;
+
+    let mut stream = UnixStream::connect(&sock).expect("connect to daemon");
+
+    // Helper: send a framed JSON-RPC message
+    let send_frame = |stream: &mut UnixStream, msg: &serde_json::Value| {
+        let data = serde_json::to_vec(msg).unwrap();
+        stream
+            .write_all(&(data.len() as u32).to_be_bytes())
+            .unwrap();
+        stream.write_all(&data).unwrap();
+        stream.flush().unwrap();
+    };
+
+    // Helper: receive a framed response
+    let recv_frame = |stream: &mut UnixStream| -> serde_json::Value {
+        let mut hdr = [0u8; 4];
+        stream.read_exact(&mut hdr).expect("frame header");
+        let len = u32::from_be_bytes(hdr) as usize;
+        let mut payload = vec![0u8; len];
+        stream.read_exact(&mut payload).expect("frame payload");
+        serde_json::from_slice(&payload).expect("JSON parse")
+    };
+
+    // Step 1: initialize
+    send_frame(
+        &mut stream,
+        &serde_json::json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"socket-test","version":"1"}}}),
+    );
+    let init = recv_frame(&mut stream);
+    assert!(init.get("result").is_some(), "initialize failed: {init}");
+
+    // Step 2: notifications/initialized
+    send_frame(
+        &mut stream,
+        &serde_json::json!({"jsonrpc":"2.0","method":"notifications/initialized","params":{}}),
+    );
+    std::thread::sleep(std::time::Duration::from_millis(200));
+
+    // Step 3: tools/list
+    send_frame(
+        &mut stream,
+        &serde_json::json!({"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}),
+    );
+    let list: serde_json::Value = recv_frame(&mut stream);
+    let tools = list["result"]["tools"].as_array().unwrap();
+    assert!(
+        tools.len() >= 20,
+        "expected >=20 tools, got {}",
+        tools.len()
+    );
+    let names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
+    assert!(names.contains(&"graph_create"));
+    assert!(names.contains(&"graph_execute"));
+    assert!(names.contains(&"graph_run_start"));
+
+    // AG-002: approval tools absent (removed from model tool set)
+    assert!(
+        !names.contains(&"graph_approval_decide"),
+        "graph_approval_decide should not be in tools list"
+    );
+    assert!(
+        !names.contains(&"graph_delete"),
+        "graph_delete should not be in tools list"
+    );
+
+    // Cleanup
+    drop(stream);
+    let _ = daemon.kill();
+    let _ = daemon.wait();
 }

@@ -1,0 +1,32 @@
+Process-boundary MCP lifecycle evidence transcript
+===============================================
+Setup:
+DATA=/tmp/ag-evidence-1784879739
+SOCK=/tmp/ag-evidence.sock
+KEY=/tmp/ag-evidence.key
+Key created with 32 bytes of 0x5a.
+
+Daemon command:
+AGENT_GRAPH_INTEGRITY_KEY_PATH=/tmp/ag-evidence.key cargo run -p agent-graph-mcp --bin agent-graph-mcpd -- --data-dir /tmp/ag-evidence-1784879739 --socket /tmp/ag-evidence.sock
+
+Daemon output:
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/worktrees/agent-graph-final-closure/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/worktrees/agent-graph-final-closure/Cargo.toml
+    Blocking waiting for file lock on build directory
+   Compiling agent-graph-mcp v0.2.0 (/home/sikmindz/Coding/worktrees/agent-graph-final-closure/agent-graph-mcp)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.03s
+     Running `target/debug/agent-graph-mcpd --data-dir /tmp/ag-evidence-1784879739 --socket /tmp/ag-evidence.sock`
+
+thread 'main' (80191) panicked at agent-graph-mcp/src/bin/agent-graph-mcpd.rs:47:20:
+there is no reactor running, must be called from the context of a Tokio 1.x runtime
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+Client command output:
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+    s.connect('/tmp/ag-evidence.sock')
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionRefusedError: [Errno 111] Connection refused
+
+Result: PARTIAL/FAILED — daemon exited with code 101 before creating the Unix socket, so initialize and tools/list could not be sent. Cleanup was performed by terminating/waiting for the daemon process.
