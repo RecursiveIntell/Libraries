@@ -6,7 +6,7 @@ fn bench_graph_execution(c: &mut Criterion) {
     c.bench_function("linear_graph_3_nodes", |b| {
         b.iter(|| {
             rt.block_on(async {
-                use agent_graph::prelude::*;
+                use ri_agent_graph::prelude::*;
 
                 let graph = AgentGraph::builder()
                     .add_node(
@@ -46,7 +46,7 @@ fn bench_graph_execution(c: &mut Criterion) {
     c.bench_function("loop_graph_10_iterations", |b| {
         b.iter(|| {
             rt.block_on(async {
-                use agent_graph::prelude::*;
+                use ri_agent_graph::prelude::*;
 
                 let graph = AgentGraph::builder()
                     .add_node(
@@ -80,7 +80,7 @@ fn bench_graph_execution(c: &mut Criterion) {
     c.bench_function("state_read_write", |b| {
         b.iter(|| {
             rt.block_on(async {
-                use agent_graph::state::AgentState;
+                use ri_agent_graph::state::AgentState;
 
                 let state = AgentState::new();
                 for i in 0..100 {

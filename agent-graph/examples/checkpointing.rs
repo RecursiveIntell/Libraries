@@ -1,12 +1,12 @@
 #[cfg(feature = "checkpointing")]
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[cfg(feature = "checkpointing")]
 #[tokio::main]
 async fn main() -> Result<()> {
     println!("=== Checkpointing Example ===\n");
 
-    let db_path = "/tmp/agent_graph_checkpoints.db";
+    let db_path = "/tmp/ri_agent_graph_checkpoints.db";
 
     // Create checkpoint manager
     let manager = CheckpointManager::new(db_path)?;

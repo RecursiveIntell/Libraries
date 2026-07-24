@@ -1,4 +1,4 @@
-use agent_graph::error::AgentGraphError;
+use ri_agent_graph::error::AgentGraphError;
 
 #[test]
 fn other_error_variant_is_string_bounded() {

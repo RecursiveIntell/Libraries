@@ -1,6 +1,6 @@
 //! Contract tests for configured checkpoint-store persistence failures.
 
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::future::Future;

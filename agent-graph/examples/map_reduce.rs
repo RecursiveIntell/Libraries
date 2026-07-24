@@ -1,4 +1,4 @@
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 /// Demonstrates the map-reduce pattern using fan-out with parallel execution.
 /// A "distribute" node fans out to multiple "worker" nodes,

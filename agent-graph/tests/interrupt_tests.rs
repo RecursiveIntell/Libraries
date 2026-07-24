@@ -1,4 +1,4 @@
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[tokio::test]
 async fn test_interrupt_before() {
@@ -213,7 +213,7 @@ async fn test_dynamic_interrupt_from_node() {
             node!(|state| async move {
                 let needs_review: bool = state.get_opt("needs_review").await?.unwrap_or(false);
                 if needs_review {
-                    return Err(agent_graph::error::interrupt(
+                    return Err(ri_agent_graph::error::interrupt(
                         "review",
                         Some(serde_json::json!({"reason": "manual review needed"})),
                     ));

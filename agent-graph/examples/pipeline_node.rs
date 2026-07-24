@@ -1,7 +1,7 @@
 // This example shows how to use llm-pipeline as a node in agent-graph.
 // Demonstrates the complementary nature of the two libraries.
 
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {

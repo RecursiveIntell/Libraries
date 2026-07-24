@@ -8,7 +8,7 @@
 //! This test ensures that a node returning an error results in `Failed`,
 //! not `Complete` or `Interrupted`.
 
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[tokio::test]
 async fn test_ordinary_error_is_failed_not_complete() {

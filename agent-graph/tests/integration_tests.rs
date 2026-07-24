@@ -1,4 +1,4 @@
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[tokio::test]
 async fn test_research_pattern() {
@@ -270,7 +270,7 @@ async fn test_snapshot_during_execution() {
 #[cfg(feature = "checkpointing")]
 #[tokio::test]
 async fn test_checkpoint_save_load() {
-    let db_path = "/tmp/test_agent_graph_checkpoint.db";
+    let db_path = "/tmp/test_ri_agent_graph_checkpoint.db";
 
     // Clean up first
     std::fs::remove_file(db_path).ok();

@@ -1,4 +1,4 @@
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[tokio::test]
 async fn test_subgraph_basic() {

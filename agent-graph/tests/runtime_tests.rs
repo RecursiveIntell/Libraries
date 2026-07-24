@@ -9,7 +9,7 @@
 //! - Router branching
 //! - Loop termination
 
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::future::Future;

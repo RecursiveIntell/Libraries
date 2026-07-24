@@ -1,4 +1,4 @@
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;

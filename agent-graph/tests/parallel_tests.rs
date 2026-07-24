@@ -1,4 +1,4 @@
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[tokio::test]
 async fn test_parallel_failure_cancels_delayed_side_effect_branch() {

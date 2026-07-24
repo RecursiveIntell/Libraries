@@ -1,6 +1,6 @@
 //! VG-5 verification tests for agent-graph upgrades.
 
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,

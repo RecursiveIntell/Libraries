@@ -1,4 +1,4 @@
-use agent_graph::prelude::*;
+use ri_agent_graph::prelude::*;
 
 #[tokio::test]
 async fn test_memory_saver_basic() {
@@ -7,7 +7,7 @@ async fn test_memory_saver_basic() {
     let state = AgentState::new();
     state.set("key", "value").await.unwrap();
 
-    let checkpoint = agent_graph::checkpoint::Checkpoint {
+    let checkpoint = ri_agent_graph::checkpoint::Checkpoint {
         execution_id: "thread-1".to_string(),
         timestamp: chrono::Utc::now(),
         current_node: "step1".to_string(),
@@ -33,7 +33,7 @@ async fn test_memory_saver_history() {
     let state = AgentState::new();
     for i in 0..3 {
         state.set("step", i as i32).await.unwrap();
-        let checkpoint = agent_graph::checkpoint::Checkpoint {
+        let checkpoint = ri_agent_graph::checkpoint::Checkpoint {
             execution_id: "thread-1".to_string(),
             timestamp: chrono::Utc::now(),
             current_node: format!("step{}", i),
@@ -58,7 +58,7 @@ async fn test_memory_saver_clear() {
     let saver = MemorySaver::new();
 
     let state = AgentState::new();
-    let checkpoint = agent_graph::checkpoint::Checkpoint {
+    let checkpoint = ri_agent_graph::checkpoint::Checkpoint {
         execution_id: "thread-1".to_string(),
         timestamp: chrono::Utc::now(),
         current_node: "step1".to_string(),
@@ -81,7 +81,7 @@ async fn test_memory_saver_multiple_threads() {
     let state = AgentState::new();
     for thread_id in &["thread-1", "thread-2"] {
         state.set("thread", *thread_id).await.unwrap();
-        let checkpoint = agent_graph::checkpoint::Checkpoint {
+        let checkpoint = ri_agent_graph::checkpoint::Checkpoint {
             execution_id: thread_id.to_string(),
             timestamp: chrono::Utc::now(),
             current_node: "step1".to_string(),
@@ -186,7 +186,7 @@ async fn test_sqlite_saver_basic() {
     let state = AgentState::new();
     state.set("key", "value").await.unwrap();
 
-    let checkpoint = agent_graph::checkpoint::Checkpoint {
+    let checkpoint = ri_agent_graph::checkpoint::Checkpoint {
         execution_id: "sqlite-thread-1".to_string(),
         timestamp: chrono::Utc::now(),
         current_node: "step1".to_string(),
