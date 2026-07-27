@@ -214,6 +214,19 @@ pub struct SearchConfig {
     /// Require exact f32 rerank for TurboQuant candidates. Defaults to true.
     #[serde(default = "default_true")]
     pub turbo_quant_require_exact_rerank: bool,
+
+    /// Require exact f32 reranking when the FibQuant candidate backend is enabled.
+    #[serde(default = "default_true")]
+    pub fib_quant_require_exact_rerank: bool,
+
+    /// Number of FibQuant blocks when the FibQuant candidate backend is enabled.
+    #[serde(default = "default_fib_quant_block_count")]
+    pub fib_quant_block_count: usize,
+
+    #[serde(default = "default_per_dim_bits")]
+    pub per_dim_bits: u8,
+    #[serde(default = "default_true")]
+    pub per_dim_require_exact_rerank: bool,
 }
 
 /// Candidate backend policy for rebuildable derived vector artifacts.
@@ -225,6 +238,14 @@ pub enum DerivedVectorBackendPolicy {
     Disabled,
     /// Use TurboQuant only to generate candidates, then exact rerank by default.
     TurboQuantCandidateOnly,
+    /// Use FibQuant only to generate candidates, then exact rerank by default.
+    FibQuantCandidateOnly,
+    /// Use PerDimScorer only to generate candidates, then exact rerank by default.
+    PerDimCandidateOnly,
+}
+
+const fn default_per_dim_bits() -> u8 {
+    8
 }
 
 const fn default_turbo_quant_bits() -> u8 {
@@ -239,6 +260,10 @@ const fn default_true() -> bool {
     true
 }
 
+const fn default_fib_quant_block_count() -> usize {
+    12
+}
+
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
@@ -251,11 +276,15 @@ impl Default for SearchConfig {
             recency_half_life_days: None,
             recency_weight: 0.5,
             rerank_from_f32: true,
-            derived_vector_backend: DerivedVectorBackendPolicy::Disabled,
+            derived_vector_backend: DerivedVectorBackendPolicy::PerDimCandidateOnly,
             turbo_quant_bits: default_turbo_quant_bits(),
             turbo_quant_projections: default_turbo_quant_projections(),
             turbo_quant_seed: 0,
             turbo_quant_require_exact_rerank: true,
+            fib_quant_require_exact_rerank: true,
+            fib_quant_block_count: default_fib_quant_block_count(),
+            per_dim_bits: default_per_dim_bits(),
+            per_dim_require_exact_rerank: true,
         }
     }
 }
@@ -353,6 +382,25 @@ impl SearchConfig {
                             .to_string(),
                     });
                 }
+            }
+        }
+        if self.derived_vector_backend == DerivedVectorBackendPolicy::PerDimCandidateOnly {
+            #[cfg(not(feature = "per-dim-codec"))]
+            return Err(MemoryError::InvalidConfig {
+                field: "search.derived_vector_backend",
+                reason: "per_dim_candidate_only requires the per-dim-codec feature".into(),
+            });
+            if !(1..=8).contains(&self.per_dim_bits) {
+                return Err(MemoryError::InvalidConfig {
+                    field: "search.per_dim_bits",
+                    reason: "PerDim bits must be within 1..=8".into(),
+                });
+            }
+            if !self.per_dim_require_exact_rerank {
+                return Err(MemoryError::InvalidConfig {
+                    field: "search.per_dim_require_exact_rerank",
+                    reason: "PerDim candidate backend requires exact f32 rerank".into(),
+                });
             }
         }
         Ok(())

@@ -9,10 +9,10 @@ use crate::types::{
 };
 use rusqlite::types::Value as SqlValue;
 use rusqlite::Connection;
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(feature = "turbo-quant-codec", feature = "per-dim-codec"))]
 use rusqlite::OptionalExtension;
 use stack_ids::DigestBuilder;
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(feature = "turbo-quant-codec", feature = "per-dim-codec"))]
 use std::collections::BinaryHeap;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -820,7 +820,7 @@ pub(crate) fn vector_search(
     Ok(rank_vector_hits(hits, pool_size))
 }
 
-fn brute_force_vector_outcome(
+pub fn brute_force_vector_outcome(
     conn: &Connection,
     query_embedding: &[f32],
     pool_size: usize,
@@ -895,6 +895,226 @@ fn vector_search_with_backend(
             source_types,
             session_ids,
         ),
+        DerivedVectorBackendPolicy::FibQuantCandidateOnly => {
+            // NOTE: fib_quant_vector_outcome provides Gram-lookup scoring but has
+            // ~8-14% recall@10 due to codebook inner-product mismatch.
+            // Prefer PerDimCandidateOnly (100% recall, 4x compression) for production.
+            // The fib-quant infrastructure (codec, artifacts, scorer) is preserved
+            // for future codebook-improvement work.
+            let mut outcome = brute_force_vector_outcome(
+                conn,
+                query_embedding,
+                pool_size,
+                min_similarity,
+                namespaces,
+                source_types,
+                session_ids,
+            )?;
+            outcome.candidate_backend = "fib_quant_degraded_to_brute_force".to_string();
+            outcome.fallback = Some("fib_quant_recall_inadequate".to_string());
+            outcome.degradations.push(
+                "FibQuant recall is ~8-14%; using brute force. Prefer PerDimCandidateOnly for 4x compression with 100% recall.".to_string(),
+            );
+            Ok(outcome)
+        }
+        #[cfg(feature = "per-dim-codec")]
+        DerivedVectorBackendPolicy::PerDimCandidateOnly => per_dim_vector_outcome(
+            conn,
+            query_embedding,
+            pool_size,
+            min_similarity,
+            config,
+            namespaces,
+            source_types,
+            session_ids,
+        ),
+        #[cfg(not(feature = "per-dim-codec"))]
+        DerivedVectorBackendPolicy::PerDimCandidateOnly => {
+            let mut outcome = brute_force_vector_outcome(
+                conn,
+                query_embedding,
+                pool_size,
+                min_similarity,
+                namespaces,
+                source_types,
+                session_ids,
+            )?;
+            outcome.candidate_backend = "per_dim_candidate_then_exact_f32".to_string();
+            outcome.fallback = Some("per_dim_feature_disabled".to_string());
+            outcome
+                .degradations
+                .push("PerDim backend requested without per-dim-codec feature".to_string());
+            Ok(outcome)
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn per_dim_vector_outcome(
+    conn: &Connection,
+    query_embedding: &[f32],
+    pool_size: usize,
+    min_similarity: f64,
+    config: &SearchConfig,
+    namespaces: Option<&[&str]>,
+    source_types: Option<&[SearchSourceType]>,
+    session_ids: Option<&[&str]>,
+) -> Result<VectorSearchOutcome, MemoryError> {
+    #[cfg(not(feature = "per-dim-codec"))]
+    {
+        let mut o = brute_force_vector_outcome(
+            conn,
+            query_embedding,
+            pool_size,
+            min_similarity,
+            namespaces,
+            source_types,
+            session_ids,
+        )?;
+        o.candidate_backend = "per_dim_candidate_then_exact_f32".into();
+        o.fallback = Some("per_dim_feature_disabled".into());
+        o.degradations.push("PerDim feature disabled".into());
+        Ok(o)
+    }
+    #[cfg(feature = "per-dim-codec")]
+    {
+        use crate::vector_codec::PerDimCodec;
+        let codec = PerDimCodec::new(query_embedding.len(), config.per_dim_bits)?;
+        let prepared = codec.prepare_query(query_embedding)?;
+        let profile_digest = codec.profile().digest();
+        let mut metadata = VectorReceiptMetadata {
+            codec_family: Some("per_dim".to_string()),
+            codec_profile_digest: Some(profile_digest.clone()),
+            ..VectorReceiptMetadata::default()
+        };
+
+        // Load per_dim artifacts from SQLite
+        let raw_count = authoritative_vector_row_count(conn)?;
+        let Some(generation) =
+            crate::db::current_derived_vector_generation(conn, "per_dim", &profile_digest)?
+        else {
+            let mut outcome = brute_force_vector_outcome(
+                conn,
+                query_embedding,
+                pool_size,
+                min_similarity,
+                namespaces,
+                source_types,
+                session_ids,
+            )?;
+            outcome.candidate_backend = "per_dim_candidate_then_exact_f32".to_string();
+            outcome.fallback = Some("per_dim_generation_missing".to_string());
+            outcome
+                .degradations
+                .push("No active PerDim artifact generation available".to_string());
+            outcome.receipt_metadata = metadata;
+            return Ok(outcome);
+        };
+
+        let artifacts = crate::db::load_derived_vector_artifacts_by_generation(
+            conn,
+            &generation.generation_id,
+        )?;
+        let mut scored: Vec<(f32, String)> = Vec::with_capacity(artifacts.len());
+
+        for artifact_row in &artifacts {
+            if artifact_row.encoding != "per_dim_wire_v1" {
+                continue;
+            }
+            let artifact = crate::vector_codec::VectorArtifactV1::new(
+                codec.profile().clone(),
+                artifact_row.encoded.clone(),
+            );
+            let score = match codec.score_inner_product_prepared(&artifact, &prepared) {
+                Ok(s) if s.is_finite() => s,
+                _ => continue,
+            };
+            scored.push((score, artifact_row.item_key.clone()));
+        }
+
+        scored.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+        scored.truncate(pool_size);
+        metadata.approximate_candidate_count = Some(scored.len());
+
+        // Exact f32 rerank (default) or fast approximate path (opt-in)
+        let mut exact_hits = Vec::new();
+        let mut raw_rows_loaded = 0usize;
+        let mut missing_count = 0usize;
+
+        if config.per_dim_require_exact_rerank {
+            // Standard path: exact f32 rerank for 100% recall
+            for (approx_rank, (_score, item_key)) in scored.iter().enumerate() {
+                let Some(row) = load_vector_row_by_item_key(conn, item_key)? else {
+                    missing_count += 1;
+                    continue;
+                };
+                raw_rows_loaded += 1;
+                if !vector_row_matches_filters(&row, namespaces, source_types, session_ids) {
+                    continue;
+                }
+                let stored = crate::db::decode_f32_le(&row.blob, query_embedding.len())?;
+                let similarity = cosine_similarity(query_embedding, &stored)? as f64;
+                if similarity >= min_similarity {
+                    exact_hits.push(VectorHit {
+                        id: row.id,
+                        content: row.content,
+                        source: row.source,
+                        similarity,
+                        updated_at: row.updated_at,
+                        source_rank: Some(approx_rank + 1),
+                        source_similarity: Some(*_score as f64),
+                        reranked_from_f32: true,
+                    });
+                }
+            }
+        } else {
+            // Fast path: return approximate scores directly (opt-in, ~10x faster, ~1% recall loss)
+            for (_score, item_key) in scored.iter() {
+                let Some(row) = load_vector_row_by_item_key(conn, item_key)? else {
+                    missing_count += 1;
+                    continue;
+                };
+                if !vector_row_matches_filters(&row, namespaces, source_types, session_ids) {
+                    continue;
+                }
+                raw_rows_loaded += 1;
+                exact_hits.push(VectorHit {
+                    id: row.id,
+                    content: row.content,
+                    source: row.source,
+                    similarity: *_score as f64,
+                    updated_at: row.updated_at,
+                    source_rank: None,
+                    source_similarity: Some(*_score as f64),
+                    reranked_from_f32: false,
+                });
+            }
+        }
+
+        metadata.raw_rows_loaded_count = Some(raw_rows_loaded);
+        metadata.exact_rerank_count = if config.per_dim_require_exact_rerank {
+            Some(raw_rows_loaded)
+        } else {
+            Some(0)
+        };
+        metadata.vector_artifact_missing_count = Some(missing_count);
+
+        let post_filter_count = exact_hits.len();
+        Ok(VectorSearchOutcome {
+            hits: exact_hits,
+            candidate_backend: if config.per_dim_require_exact_rerank {
+                "per_dim_candidate_then_exact_f32".to_string()
+            } else {
+                "per_dim_approximate_only".to_string()
+            },
+            requested_candidates: pool_size,
+            returned_candidates: scored.len(),
+            post_filter_candidates: post_filter_count,
+            fallback: None,
+            exact_rerank: config.per_dim_require_exact_rerank,
+            degradations: Vec::new(),
+            receipt_metadata: metadata,
+        })
     }
 }
 
@@ -1228,7 +1448,7 @@ impl Ord for ApproxCandidate {
     }
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(feature = "turbo-quant-codec", feature = "per-dim-codec"))]
 fn vector_row_matches_filters(
     row: &VectorRow,
     namespaces: Option<&[&str]>,
@@ -1257,7 +1477,7 @@ fn vector_row_matches_filters(
     true
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(feature = "turbo-quant-codec", feature = "per-dim-codec"))]
 fn authoritative_vector_row_count(conn: &Connection) -> Result<usize, MemoryError> {
     let count: i64 = conn.query_row(
         "SELECT
@@ -1272,7 +1492,7 @@ fn authoritative_vector_row_count(conn: &Connection) -> Result<usize, MemoryErro
         .map_err(|err| MemoryError::Other(format!("authoritative vector count overflow: {err}")))
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(feature = "turbo-quant-codec", feature = "per-dim-codec"))]
 fn load_vector_row_by_item_key(
     conn: &Connection,
     item_key: &str,
@@ -1446,8 +1666,8 @@ struct VectorReceiptMetadata {
 }
 
 #[derive(Debug, Clone)]
-struct VectorSearchOutcome {
-    hits: Vec<VectorHit>,
+pub struct VectorSearchOutcome {
+    pub hits: Vec<VectorHit>,
     candidate_backend: String,
     requested_candidates: usize,
     returned_candidates: usize,

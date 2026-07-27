@@ -3,14 +3,22 @@
 use crate::config::{EmbeddingConfig, MemoryLimits, PoolConfig};
 use crate::error::MemoryError;
 use crate::quantize::unpack_quantized;
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 use crate::types::{DerivedVectorArtifactGenerationV1, VectorArtifactBuildReceiptV1};
 use crate::types::{EpisodeOutcome, Role, VectorSearchReceiptV1, VerificationStatus};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, OpenFlags, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use stack_ids::ContentDigest;
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 use stack_ids::DigestBuilder;
 use std::path::Path;
 
@@ -324,6 +332,11 @@ ALTER TABLE derived_vector_artifacts ADD COLUMN degradation_budget REAL;
 ALTER TABLE derived_vector_artifacts ADD COLUMN raw_source_artifact_id TEXT;
 "#;
 
+/// V24 migration: configuration payload for derived vector artifact generations.
+const MIGRATION_V24: &str = r#"
+ALTER TABLE derived_vector_artifact_generations ADD COLUMN config_json TEXT NOT NULL DEFAULT '{}';
+"#;
+
 /// V22 migration: bitemporal columns on episodes table.
 /// Adds valid_time, recorded_time, superseded_by, and fact_digest for append-supersede semantics.
 const MIGRATION_V22: &str = r#"
@@ -363,10 +376,11 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (21, MIGRATION_V21),
     (22, MIGRATION_V22),
     (23, MIGRATION_V23),
+    (24, MIGRATION_V24),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 23;
+pub const MAX_SCHEMA_VERSION: u32 = 24;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
@@ -969,7 +983,11 @@ fn b3_digest(bytes: &[u8]) -> String {
 }
 
 /// Row from the derived vector artifact store.
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 #[derive(Debug, Clone)]
 pub(crate) struct DerivedVectorArtifactRow {
     pub item_key: String,
@@ -990,7 +1008,11 @@ pub(crate) struct DerivedVectorArtifactRow {
 }
 
 /// Active derived vector artifact generation row.
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub(crate) struct DerivedVectorArtifactGenerationRow {
@@ -1007,7 +1029,11 @@ pub(crate) struct DerivedVectorArtifactGenerationRow {
 }
 
 /// Stable digest for an authoritative raw f32 embedding BLOB.
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 pub(crate) fn source_embedding_digest(
     blob: &[u8],
     expected_dim: usize,
@@ -1023,7 +1049,11 @@ pub(crate) fn source_embedding_digest(
     Ok(format!("blake3:{}", builder.finalize().hex()))
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 fn source_snapshot_digest(rows: &[DerivedVectorArtifactRow], dim: usize) -> String {
     let mut entries = rows
         .iter()
@@ -1047,7 +1077,11 @@ fn source_snapshot_digest(rows: &[DerivedVectorArtifactRow], dim: usize) -> Stri
     format!("blake3:{}", builder.finalize().hex())
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 pub(crate) fn current_source_snapshot_digest(
     conn: &Connection,
     dim: usize,
@@ -1091,7 +1125,11 @@ pub(crate) fn current_source_snapshot_digest(
     ))
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 fn derived_artifact_manifest_digest(rows: &[DerivedVectorArtifactRow]) -> String {
     let mut entries = rows
         .iter()
@@ -1121,7 +1159,11 @@ fn derived_artifact_manifest_digest(rows: &[DerivedVectorArtifactRow]) -> String
     format!("blake3:{}", builder.finalize().hex())
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 pub(crate) fn upsert_derived_vector_artifact(
     conn: &Connection,
     row: &DerivedVectorArtifactRow,
@@ -1183,7 +1225,11 @@ pub fn invalidate_derived_vector_artifact(
     Ok(())
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 #[allow(dead_code)]
 pub(crate) fn load_derived_vector_artifacts_by_profile(
     conn: &Connection,
@@ -1230,7 +1276,11 @@ pub(crate) fn load_derived_vector_artifacts_by_profile(
     Ok(artifacts)
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 pub(crate) fn load_derived_vector_artifacts_by_generation(
     conn: &Connection,
     generation_id: &str,
@@ -1275,7 +1325,11 @@ pub(crate) fn load_derived_vector_artifacts_by_generation(
     Ok(artifacts)
 }
 
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(
+    feature = "turbo-quant-codec",
+    feature = "fib-quant-codec",
+    feature = "per-dim-codec"
+))]
 pub(crate) fn current_derived_vector_generation(
     conn: &Connection,
     codec_family: &str,
@@ -1356,6 +1410,7 @@ pub(crate) fn rebuild_turbo_quant_artifacts(
 
     let started = std::time::Instant::now();
     let codec = TurboQuantCodec::new(dim, bits, projections, seed)?;
+    let codebook_json = "{}".to_string();
     let codec_profile_digest = codec.profile().digest();
     let generation_id = uuid::Uuid::new_v4().to_string();
     let mut source_row_count = 0usize;
@@ -1467,8 +1522,8 @@ pub(crate) fn rebuild_turbo_quant_artifacts(
                 (generation_id, schema_version, codec_family, codec_profile_digest,
                  source_snapshot_digest, source_row_count, artifact_count, source_tables_json,
                  dim, encoding, created_at, build_receipt_id, artifact_manifest_digest,
-                 status, degradations_json)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
+                 status, degradations_json, config_json)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
             params![
                 generation_manifest.generation_id,
                 generation_manifest.schema_version,
@@ -1492,6 +1547,7 @@ pub(crate) fn rebuild_turbo_quant_artifacts(
                 generation_manifest.status,
                 serde_json::to_string(&generation_manifest.degradations)
                     .map_err(|err| MemoryError::Other(err.to_string()))?,
+                codebook_json,
             ],
         )?;
         for row in &pending {
@@ -1516,6 +1572,369 @@ pub(crate) fn rebuild_turbo_quant_artifacts(
         created_at: Utc::now(),
         degradations,
     })
+}
+
+#[cfg(feature = "per-dim-codec")]
+pub(crate) fn rebuild_per_dim_artifacts(
+    conn: &Connection,
+    dim: usize,
+    bits: u8,
+) -> Result<VectorArtifactBuildReceiptV1, MemoryError> {
+    use crate::vector_codec::{PerDimCodec, VectorCodec};
+
+    let started = std::time::Instant::now();
+    let codec = PerDimCodec::new(dim, bits)?;
+    let codebook_json = codec.config_json()?;
+    let codec_profile_digest = codec.profile().digest();
+    let generation_id = uuid::Uuid::new_v4().to_string();
+    let mut source_row_count = 0usize;
+    let mut artifact_count = 0usize;
+    let mut skipped_row_count = 0usize;
+    let mut degradations = Vec::new();
+
+    let mut stmt = conn.prepare(
+        "SELECT 'fact:' || id AS item_key, embedding FROM facts WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'chunk:' || id AS item_key, embedding FROM chunks WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'msg:' || id AS item_key, embedding FROM messages WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'episode:' || episode_id AS item_key, embedding FROM episodes WHERE embedding IS NOT NULL",
+    )?;
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+    })?;
+
+    let mut pending = Vec::new();
+    for row in rows {
+        let (item_key, blob) = row?;
+        source_row_count += 1;
+        let embedding = match decode_f32_le(&blob, dim) {
+            Ok(embedding) => embedding,
+            Err(err) => {
+                skipped_row_count += 1;
+                degradations.push(format!(
+                    "skipped {item_key}: invalid authoritative embedding: {err}"
+                ));
+                continue;
+            }
+        };
+        let artifact = match codec.encode(&embedding) {
+            Ok(artifact) => artifact,
+            Err(err) => {
+                skipped_row_count += 1;
+                degradations.push(format!("skipped {item_key}: encode failed: {err}"));
+                continue;
+            }
+        };
+        pending.push(DerivedVectorArtifactRow {
+            item_key,
+            generation_id: Some(generation_id.clone()),
+            codec_family: "per_dim".to_string(),
+            codec_profile_digest: codec_profile_digest.clone(),
+            source_embedding_digest: source_embedding_digest(&blob, dim)?,
+            encoded_digest: artifact.artifact_digest,
+            encoding: "per_dim_wire_v1".to_string(),
+            dim,
+            status: "active".to_string(),
+            encoded: artifact.encoded,
+            // V23 governance columns — populated by encode_governed path; existing
+            // turbo-quant build path leaves these as None (nullable).
+            codec_governance_receipt_id: None,
+            codec_profile: None,
+            degradation_budget: None,
+            raw_source_artifact_id: None,
+        });
+    }
+    drop(stmt);
+
+    let build_receipt_id = uuid::Uuid::new_v4().to_string();
+    let source_snapshot_digest = source_snapshot_digest(&pending, dim);
+    let artifact_manifest_digest = derived_artifact_manifest_digest(&pending);
+    let source_tables = vec![
+        "facts".to_string(),
+        "chunks".to_string(),
+        "messages".to_string(),
+        "episodes".to_string(),
+    ];
+    let generation_manifest = DerivedVectorArtifactGenerationV1 {
+        schema_version: "derived_vector_artifact_generation_v1".to_string(),
+        generation_id: generation_id.clone(),
+        codec_family: "per_dim".to_string(),
+        codec_profile_digest: codec_profile_digest.clone(),
+        source_snapshot_digest: source_snapshot_digest.clone(),
+        source_row_count,
+        artifact_count: pending.len(),
+        source_tables,
+        dim,
+        encoding: "per_dim_wire_v1".to_string(),
+        created_at: Utc::now(),
+        build_receipt_id: Some(build_receipt_id.clone()),
+        artifact_manifest_digest: artifact_manifest_digest.clone(),
+        status: if skipped_row_count == 0 {
+            "active".to_string()
+        } else {
+            "failed".to_string()
+        },
+        degradations: degradations.clone(),
+    };
+
+    with_transaction(conn, |tx| {
+        tx.execute(
+            "UPDATE derived_vector_artifact_generations
+             SET status = 'superseded'
+             WHERE codec_family = ?1 AND codec_profile_digest = ?2 AND status = 'active'",
+            params!["per_dim", &codec_profile_digest],
+        )?;
+        tx.execute(
+            "DELETE FROM derived_vector_artifacts
+             WHERE codec_family = ?1 AND codec_profile_digest = ?2",
+            params!["per_dim", &codec_profile_digest],
+        )?;
+        tx.execute(
+            "INSERT INTO derived_vector_artifact_generations
+                (generation_id, schema_version, codec_family, codec_profile_digest,
+                 source_snapshot_digest, source_row_count, artifact_count, source_tables_json,
+                 dim, encoding, created_at, build_receipt_id, artifact_manifest_digest,
+                 status, degradations_json, config_json)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
+            params![
+                generation_manifest.generation_id,
+                generation_manifest.schema_version,
+                generation_manifest.codec_family,
+                generation_manifest.codec_profile_digest,
+                generation_manifest.source_snapshot_digest,
+                i64::try_from(generation_manifest.source_row_count).map_err(|err| {
+                    MemoryError::Other(format!("source row count overflow: {err}"))
+                })?,
+                i64::try_from(generation_manifest.artifact_count).map_err(|err| {
+                    MemoryError::Other(format!("artifact count overflow: {err}"))
+                })?,
+                serde_json::to_string(&generation_manifest.source_tables)
+                    .map_err(|err| MemoryError::Other(err.to_string()))?,
+                i64::try_from(generation_manifest.dim)
+                    .map_err(|err| MemoryError::Other(format!("artifact dim overflow: {err}")))?,
+                generation_manifest.encoding,
+                generation_manifest.created_at.to_rfc3339(),
+                generation_manifest.build_receipt_id,
+                generation_manifest.artifact_manifest_digest,
+                generation_manifest.status,
+                serde_json::to_string(&generation_manifest.degradations)
+                    .map_err(|err| MemoryError::Other(err.to_string()))?,
+                codebook_json,
+            ],
+        )?;
+        for row in &pending {
+            upsert_derived_vector_artifact(tx, row)?;
+            artifact_count += 1;
+        }
+        Ok(())
+    })?;
+
+    Ok(VectorArtifactBuildReceiptV1 {
+        schema_version: "vector_artifact_build_receipt_v1".to_string(),
+        codec_family: "per_dim".to_string(),
+        codec_profile_digest,
+        source_row_count,
+        artifact_count,
+        generation_id: Some(generation_id),
+        source_snapshot_digest: Some(source_snapshot_digest),
+        artifact_manifest_digest: Some(artifact_manifest_digest),
+        build_receipt_id: Some(build_receipt_id),
+        skipped_row_count,
+        elapsed_ms: started.elapsed().as_millis(),
+        created_at: Utc::now(),
+        degradations,
+    })
+}
+
+#[cfg(feature = "fib-quant-codec")]
+pub(crate) fn rebuild_fib_quant_artifacts(
+    conn: &Connection,
+    dim: usize,
+    block_count: usize,
+) -> Result<VectorArtifactBuildReceiptV1, MemoryError> {
+    use crate::vector_codec::{FibQuantCodec, VectorCodec};
+
+    let started = std::time::Instant::now();
+    let codec = FibQuantCodec::new(dim, block_count, 8)?;
+    let codebook_json = serde_json::to_string(codec.codebook())
+        .map_err(|e| MemoryError::QuantizationError(format!("serialize codebook: {e}")))?;
+    let codec_profile_digest = codec.profile().digest();
+    let generation_id = uuid::Uuid::new_v4().to_string();
+    let mut source_row_count = 0usize;
+    let mut artifact_count = 0usize;
+    let mut skipped_row_count = 0usize;
+    let mut degradations = Vec::new();
+
+    let mut stmt = conn.prepare(
+        "SELECT 'fact:' || id AS item_key, embedding FROM facts WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'chunk:' || id AS item_key, embedding FROM chunks WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'msg:' || id AS item_key, embedding FROM messages WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'episode:' || episode_id AS item_key, embedding FROM episodes WHERE embedding IS NOT NULL",
+    )?;
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+    })?;
+
+    let mut pending = Vec::new();
+    for row in rows {
+        let (item_key, blob) = row?;
+        source_row_count += 1;
+        let embedding = match decode_f32_le(&blob, dim) {
+            Ok(embedding) => embedding,
+            Err(err) => {
+                skipped_row_count += 1;
+                degradations.push(format!(
+                    "skipped {item_key}: invalid authoritative embedding: {err}"
+                ));
+                continue;
+            }
+        };
+        let artifact = match codec.encode(&embedding) {
+            Ok(artifact) => artifact,
+            Err(err) => {
+                skipped_row_count += 1;
+                degradations.push(format!("skipped {item_key}: encode failed: {err}"));
+                continue;
+            }
+        };
+        pending.push(DerivedVectorArtifactRow {
+            item_key,
+            generation_id: Some(generation_id.clone()),
+            codec_family: "fib_quant".to_string(),
+            codec_profile_digest: codec_profile_digest.clone(),
+            source_embedding_digest: source_embedding_digest(&blob, dim)?,
+            encoded_digest: artifact.artifact_digest,
+            encoding: "fib_code_wire_v1".to_string(),
+            dim,
+            status: "active".to_string(),
+            encoded: artifact.encoded,
+            // V23 governance columns — populated by encode_governed path; existing
+            // turbo-quant build path leaves these as None (nullable).
+            codec_governance_receipt_id: None,
+            codec_profile: None,
+            degradation_budget: None,
+            raw_source_artifact_id: None,
+        });
+    }
+    drop(stmt);
+
+    let build_receipt_id = uuid::Uuid::new_v4().to_string();
+    let source_snapshot_digest = source_snapshot_digest(&pending, dim);
+    let artifact_manifest_digest = derived_artifact_manifest_digest(&pending);
+    let source_tables = vec![
+        "facts".to_string(),
+        "chunks".to_string(),
+        "messages".to_string(),
+        "episodes".to_string(),
+    ];
+    let generation_manifest = DerivedVectorArtifactGenerationV1 {
+        schema_version: "derived_vector_artifact_generation_v1".to_string(),
+        generation_id: generation_id.clone(),
+        codec_family: "fib_quant".to_string(),
+        codec_profile_digest: codec_profile_digest.clone(),
+        source_snapshot_digest: source_snapshot_digest.clone(),
+        source_row_count,
+        artifact_count: pending.len(),
+        source_tables,
+        dim,
+        encoding: "fib_code_wire_v1".to_string(),
+        created_at: Utc::now(),
+        build_receipt_id: Some(build_receipt_id.clone()),
+        artifact_manifest_digest: artifact_manifest_digest.clone(),
+        status: if skipped_row_count == 0 {
+            "active".to_string()
+        } else {
+            "failed".to_string()
+        },
+        degradations: degradations.clone(),
+    };
+
+    with_transaction(conn, |tx| {
+        tx.execute(
+            "UPDATE derived_vector_artifact_generations
+             SET status = 'superseded'
+             WHERE codec_family = ?1 AND codec_profile_digest = ?2 AND status = 'active'",
+            params!["fib_quant", &codec_profile_digest],
+        )?;
+        tx.execute(
+            "DELETE FROM derived_vector_artifacts
+             WHERE codec_family = ?1 AND codec_profile_digest = ?2",
+            params!["fib_quant", &codec_profile_digest],
+        )?;
+        tx.execute(
+            "INSERT INTO derived_vector_artifact_generations
+                (generation_id, schema_version, codec_family, codec_profile_digest,
+                 source_snapshot_digest, source_row_count, artifact_count, source_tables_json,
+                 dim, encoding, created_at, build_receipt_id, artifact_manifest_digest,
+                 status, degradations_json, config_json)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
+            params![
+                generation_manifest.generation_id,
+                generation_manifest.schema_version,
+                generation_manifest.codec_family,
+                generation_manifest.codec_profile_digest,
+                generation_manifest.source_snapshot_digest,
+                i64::try_from(generation_manifest.source_row_count).map_err(|err| {
+                    MemoryError::Other(format!("source row count overflow: {err}"))
+                })?,
+                i64::try_from(generation_manifest.artifact_count).map_err(|err| {
+                    MemoryError::Other(format!("artifact count overflow: {err}"))
+                })?,
+                serde_json::to_string(&generation_manifest.source_tables)
+                    .map_err(|err| MemoryError::Other(err.to_string()))?,
+                i64::try_from(generation_manifest.dim)
+                    .map_err(|err| MemoryError::Other(format!("artifact dim overflow: {err}")))?,
+                generation_manifest.encoding,
+                generation_manifest.created_at.to_rfc3339(),
+                generation_manifest.build_receipt_id,
+                generation_manifest.artifact_manifest_digest,
+                generation_manifest.status,
+                serde_json::to_string(&generation_manifest.degradations)
+                    .map_err(|err| MemoryError::Other(err.to_string()))?,
+                codebook_json,
+            ],
+        )?;
+        for row in &pending {
+            upsert_derived_vector_artifact(tx, row)?;
+            artifact_count += 1;
+        }
+        Ok(())
+    })?;
+
+    Ok(VectorArtifactBuildReceiptV1 {
+        schema_version: "vector_artifact_build_receipt_v1".to_string(),
+        codec_family: "fib_quant".to_string(),
+        codec_profile_digest,
+        source_row_count,
+        artifact_count,
+        generation_id: Some(generation_id),
+        source_snapshot_digest: Some(source_snapshot_digest),
+        artifact_manifest_digest: Some(artifact_manifest_digest),
+        build_receipt_id: Some(build_receipt_id),
+        skipped_row_count,
+        elapsed_ms: started.elapsed().as_millis(),
+        created_at: Utc::now(),
+        degradations,
+    })
+}
+
+#[cfg(feature = "fib-quant-codec")]
+pub(crate) fn load_fib_codebook(
+    conn: &Connection,
+    profile_digest: &str,
+) -> Result<fib_quant::FibCodebookV1, MemoryError> {
+    let json: String = conn.query_row(
+        "SELECT config_json FROM derived_vector_artifact_generations WHERE codec_family='fib_quant' AND codec_profile_digest=?1 AND status='active' ORDER BY created_at DESC LIMIT 1",
+        [profile_digest],
+        |row| row.get(0),
+    )?;
+    serde_json::from_str(&json)
+        .map_err(|e| MemoryError::QuantizationError(format!("deserialize codebook: {e}")))
 }
 
 fn receipt_count_to_u64(value: usize, field: &'static str) -> Result<u64, MemoryError> {

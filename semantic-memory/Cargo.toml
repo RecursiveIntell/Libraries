@@ -1,6 +1,6 @@
 [package]
 name = "semantic-memory"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 rust-version = "1.75"
 description = "Hybrid semantic search with SQLite, FTS5, and HNSW — built for AI agents"
@@ -17,7 +17,9 @@ hnsw = ["dep:hnsw_rs"]
 brute-force = []
 testing = []
 turbo-quant-codec = ["dep:turbo-quant", "dep:quant-governor", "dep:scr-runtime-compression"]
+fib-quant-codec = ["dep:fib-quant", "dep:scr-runtime-compression"]
 poly-kv-codec = ["dep:poly-kv"]
+per-dim-codec = ["dep:compressed-scorer"]
 
 [dependencies]
 bytemuck = { version = "1", features = ["derive"] }
@@ -42,11 +44,34 @@ turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
 quant-governor = { path = "../quant-governor", optional = true }
 scr-runtime-compression = { path = "../scr-runtime-compression", optional = true }
 poly-kv = { version = "0.1.0-alpha.1", path = "../poly-kv/crates/poly-kv", optional = true }
+fib-quant = { path = "../fib-quant", optional = true }
+compressed-scorer = { version = "0.1.0", optional = true }
+
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 tempfile = { workspace = true }
 semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
+
+[[example]]
+name = "verify_fib_quant"
+required-features = ["fib-quant-codec"]
+
+[[example]]
+name = "verify_per_dim"
+required-features = ["per-dim-codec"]
+
+[[example]]
+name = "verify_per_dim_fast"
+required-features = ["per-dim-codec"]
+
+[[example]]
+name = "gen_fib_artifacts"
+required-features = ["fib-quant-codec"]
+
+[[example]]
+name = "gen_per_dim"
+required-features = ["per-dim-codec"]
 
 # LIB-005: inherit workspace lint policy
 [lints]

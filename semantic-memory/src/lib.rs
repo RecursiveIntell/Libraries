@@ -91,6 +91,8 @@ mod projection_legacy_compat;
 pub(crate) mod projection_storage;
 pub mod quantize;
 pub mod quantize_governed;
+#[cfg(feature = "fib-quant-codec")]
+pub mod scoring;
 pub mod search;
 pub mod storage;
 mod store_support;
@@ -113,6 +115,8 @@ pub use projection_lane::{
     ProjectionImportFailureReceiptEntry, ProjectionImportLogEntry, ProjectionImportResult,
 };
 pub use quantize::{pack_quantized, unpack_quantized, QuantizedVector, Quantizer};
+#[cfg(feature = "fib-quant-codec")]
+pub use scoring::fib_scorer::{FibGramScorer, PreparedFibQuery};
 pub use storage::StoragePaths;
 pub use tokenizer::{EstimateTokenCounter, TokenCounter};
 pub use types::{
@@ -128,6 +132,8 @@ pub use types::{
 };
 #[cfg(feature = "turbo-quant-codec")]
 pub use vector_codec::TurboQuantCodec;
+#[cfg(feature = "fib-quant-codec")]
+pub use vector_codec::{FibQuantCodec, FibQuantPreparedQuery};
 pub use vector_codec::{
     RawF32Codec, Sq8Codec, VectorArtifactV1, VectorCodec, VectorCodecProfileV1,
 };
@@ -750,6 +756,41 @@ impl MemoryStore {
                 search.turbo_quant_projections,
                 search.turbo_quant_seed,
             )
+        })
+        .await
+    }
+
+    /// Rebuild PerDim artifacts directly against an existing SQLite database.
+    #[cfg(feature = "per-dim-codec")]
+    pub fn rebuild_per_dim_artifacts_at(
+        path: &std::path::Path,
+        dim: usize,
+        bits: u8,
+    ) -> Result<VectorArtifactBuildReceiptV1, MemoryError> {
+        let conn = rusqlite::Connection::open(path)?;
+        db::rebuild_per_dim_artifacts(&conn, dim, bits)
+    }
+
+    /// Rebuild FibQuant artifacts directly against an existing SQLite database.
+    #[cfg(feature = "fib-quant-codec")]
+    pub fn rebuild_fib_quant_artifacts_at(
+        path: &std::path::Path,
+        dim: usize,
+        block_count: usize,
+    ) -> Result<VectorArtifactBuildReceiptV1, MemoryError> {
+        let conn = rusqlite::Connection::open(path)?;
+        db::rebuild_fib_quant_artifacts(&conn, dim, block_count)
+    }
+
+    /// Rebuild feature-gated FibQuant artifacts from authoritative SQLite f32 embeddings.
+    #[cfg(feature = "fib-quant-codec")]
+    pub async fn rebuild_fib_quant_artifacts(
+        &self,
+    ) -> Result<VectorArtifactBuildReceiptV1, MemoryError> {
+        let dim = self.inner.config.embedding.dimensions;
+        let search = self.inner.config.search.clone();
+        self.with_write_conn(move |conn| {
+            db::rebuild_fib_quant_artifacts(conn, dim, search.fib_quant_block_count)
         })
         .await
     }
