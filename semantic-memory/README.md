@@ -114,7 +114,7 @@ let store = MemoryStore::open(config)?;
 
 ```toml
 [dependencies]
-semantic-memory = "0.5"
+semantic-memory = "0.6"
 ```
 
 ### Feature Flags
