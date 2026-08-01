@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1.7"]
+build-backend = "maturin"
+
+[project]
+name = "llm-pipeline"
+version = "0.1.0"
+description = "Python bindings for llm-pipeline"
+requires-python = ">=3.9"
+
+[tool.maturin]
+module-name = "llm_pipeline._native"
+python-source = "python"
