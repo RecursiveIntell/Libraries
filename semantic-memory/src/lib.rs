@@ -64,6 +64,7 @@ pub mod db;
 pub(crate) mod documents;
 pub mod embedder;
 pub(crate) mod episodes;
+pub use episodes::EpisodeAsOfRow;
 pub mod error;
 mod graph;
 #[cfg(feature = "hnsw")]
@@ -72,11 +73,11 @@ pub mod hnsw;
 mod hnsw_ops;
 mod json_compat_import;
 pub(crate) mod knowledge;
+#[cfg(feature = "poly-kv-codec")]
+pub mod poly_kv_bridge;
 mod pool;
 mod projection_batch;
 mod projection_derivation;
-#[cfg(feature = "poly-kv-codec")]
-pub mod poly_kv_bridge;
 /// Compatibility-only legacy import surface.
 ///
 /// This module exists only for migration compatibility with pre-V11 import paths.
