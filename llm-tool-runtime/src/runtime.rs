@@ -41,7 +41,7 @@ impl ApprovalPolicy for StaticApprovalPolicy {
                 format!("tool {} requires an execution permit", descriptor.name),
             )
         })?;
-        if !execution_permit_authorizes(permit, ctx, call) {
+        if !execution_permit_authorizes(permit, ctx, call, &Utc::now().to_rfc3339()) {
             return Err(ToolError::new(
                 ToolErrorClass::Denied,
                 format!("execution permit does not cover tool {}", descriptor.name),
@@ -81,7 +81,22 @@ fn execution_permit_authorizes(
     permit: &ToolExecutionPermit,
     ctx: &crate::ToolCtx,
     call: &ToolCall,
+    evaluated_at: &str,
 ) -> bool {
+    // GRPH-003: wildcard authority is never honored. A permit scope must be a
+    // concrete namespace/target; "*" (or any wildcard marker) authorizes
+    // nothing.
+    if permit.scope().namespace() == "*" || permit.scope().target_key() == "*" {
+        return false;
+    }
+    // GRPH-003: stale authority. An expired permit is refused even if its
+    // scope matches.
+    if permit
+        .expires_at()
+        .is_some_and(|expires_at| expires_at <= evaluated_at)
+    {
+        return false;
+    }
     let Some(scope) = ctx.scope.as_ref() else {
         return false;
     };
@@ -1223,6 +1238,125 @@ mod tests {
         let error = execution.result.unwrap_err();
 
         assert_eq!(error.class, ToolErrorClass::Denied);
+    }
+
+    #[tokio::test]
+    async fn runtime_rejects_wildcard_execution_permit_for_write_tools() {
+        // GRPH-003: wildcard authority is never honored. A permit scoped to
+        // "*" must authorize nothing, even when namespace matches.
+        let mut registry = ToolRegistry::new();
+        let mut descriptor = echo_descriptor();
+        descriptor.name = "submit_patch".into();
+        descriptor.read_only = false;
+        descriptor.side_effect_class = crate::ToolSideEffectClass::Write;
+        descriptor.approval_kind = ToolApprovalKind::UserRequired;
+        descriptor.receipt_persistence = ToolReceiptPersistence::Ephemeral;
+        descriptor.input_schema = json!({
+            "type": "object",
+            "required": ["target", "message"],
+            "properties": {
+                "target": {"type": "string"},
+                "message": {"type": "string"}
+            },
+            "additionalProperties": false
+        });
+        registry.register(EchoTool { descriptor });
+        let runtime = ToolRuntime::new(registry);
+        let call = ToolCall::new(
+            "submit_patch",
+            "1.0.0",
+            json!({"target": "src/lib.rs", "message": "hello"}),
+            ToolOriginKind::Test,
+        );
+        let mut ctx = tool_ctx();
+        ctx.scope = Some(stack_ids::ScopeKey::namespace_only("runtime-tests"));
+        let permit = crate::ToolExecutionPermit::new(
+            stack_ids::ExecutionPermitId::generate(),
+            stack_ids::PolicyDecisionId::generate(),
+            None,
+            "runtime-tests",
+            "*",
+        );
+
+        let execution = runtime.execute(&ctx, &call, Some(&permit), None).await;
+        let error = execution.result.unwrap_err();
+
+        assert_eq!(error.class, ToolErrorClass::Denied);
+    }
+
+    #[tokio::test]
+    async fn runtime_rejects_expired_execution_permit_for_write_tools() {
+        // GRPH-003: stale authority is refused even when scope matches.
+        let mut registry = ToolRegistry::new();
+        let mut descriptor = echo_descriptor();
+        descriptor.name = "submit_patch".into();
+        descriptor.read_only = false;
+        descriptor.side_effect_class = crate::ToolSideEffectClass::Write;
+        descriptor.approval_kind = ToolApprovalKind::UserRequired;
+        descriptor.receipt_persistence = ToolReceiptPersistence::Ephemeral;
+        descriptor.input_schema = json!({
+            "type": "object",
+            "required": ["target", "message"],
+            "properties": {
+                "target": {"type": "string"},
+                "message": {"type": "string"}
+            },
+            "additionalProperties": false
+        });
+        registry.register(EchoTool { descriptor });
+        let runtime = ToolRuntime::new(registry);
+        let call = ToolCall::new(
+            "submit_patch",
+            "1.0.0",
+            json!({"target": "src/lib.rs", "message": "hello"}),
+            ToolOriginKind::Test,
+        );
+        let mut ctx = tool_ctx();
+        ctx.scope = Some(stack_ids::ScopeKey::namespace_only("runtime-tests"));
+        let permit = execution_permit_for("src/lib.rs").with_expiration("2000-01-01T00:00:00Z");
+
+        let execution = runtime.execute(&ctx, &call, Some(&permit), None).await;
+        let error = execution.result.unwrap_err();
+
+        assert_eq!(error.class, ToolErrorClass::Denied);
+    }
+
+    #[tokio::test]
+    async fn runtime_accepts_unexpired_matching_permit_and_requests_approval() {
+        // GRPH-003 regression: a matching, unexpired permit still passes the
+        // permit gate; the next gate (approval) correctly asks for approval.
+        let mut registry = ToolRegistry::new();
+        let mut descriptor = echo_descriptor();
+        descriptor.name = "submit_patch".into();
+        descriptor.read_only = false;
+        descriptor.side_effect_class = crate::ToolSideEffectClass::Write;
+        descriptor.approval_kind = ToolApprovalKind::UserRequired;
+        descriptor.receipt_persistence = ToolReceiptPersistence::Ephemeral;
+        descriptor.input_schema = json!({
+            "type": "object",
+            "required": ["target", "message"],
+            "properties": {
+                "target": {"type": "string"},
+                "message": {"type": "string"}
+            },
+            "additionalProperties": false
+        });
+        registry.register(EchoTool { descriptor });
+        let runtime = ToolRuntime::new(registry);
+        let call = ToolCall::new(
+            "submit_patch",
+            "1.0.0",
+            json!({"target": "src/lib.rs", "message": "hello"}),
+            ToolOriginKind::Test,
+        );
+        let mut ctx = tool_ctx();
+        ctx.scope = Some(stack_ids::ScopeKey::namespace_only("runtime-tests"));
+        let permit = execution_permit_for("src/lib.rs").with_expiration("2999-01-01T00:00:00Z");
+
+        let execution = runtime.execute(&ctx, &call, Some(&permit), None).await;
+        let error = execution.result.unwrap_err();
+
+        assert_eq!(error.class, ToolErrorClass::ApprovalRequired);
     }
 
     #[tokio::test]

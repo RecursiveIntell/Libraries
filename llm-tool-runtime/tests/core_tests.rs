@@ -492,6 +492,20 @@ async fn test_starter_tool_invalid_input() {
 
     let err = tool.invoke(&ctx, &call).await.unwrap_err();
     assert_eq!(err.class, ToolErrorClass::InvalidArguments);
+    // An empty artifact id is rejected at ID validation (typed failure, never
+    // a constructor panic); the port is never reached with an invalid id.
+    assert!(err.message.contains("invalid artifact id"));
+
+    // A well-formed id still reaches the reader, whose typed error passes
+    // through unchanged.
+    let valid_call = ToolCall::new(
+        "read_artifact",
+        "1.0.0",
+        json!({"artifact_id": "v1:artifact:missing-0001"}),
+        ToolOriginKind::Test,
+    );
+    let err = tool.invoke(&ctx, &valid_call).await.unwrap_err();
+    assert_eq!(err.class, ToolErrorClass::InvalidArguments);
     assert!(err.message.contains("artifact not found"));
 }
 

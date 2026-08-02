@@ -219,7 +219,15 @@ where
             .get("artifact_id")
             .and_then(|value| value.as_str())
             .unwrap_or_default();
-        let content = self.port.read(&ArtifactId::new(artifact_id)).await?;
+        // Fail typed: an invalid/empty artifact id must produce a structured
+        // InvalidArguments error, never a constructor panic.
+        let artifact_id = stack_ids::ArtifactId::try_new(artifact_id).map_err(|error| {
+            ToolError::new(
+                crate::ToolErrorClass::InvalidArguments,
+                format!("invalid artifact id: {error}"),
+            )
+        })?;
+        let content = self.port.read(&artifact_id).await?;
         Ok(ToolResult::text(content.content))
     }
 }

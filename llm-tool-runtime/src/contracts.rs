@@ -36,6 +36,7 @@ pub struct ToolExecutionPermit {
     decision_id: PolicyDecisionId,
     approval_record_id: Option<ApprovalRecordId>,
     scope: ToolExecutionPermitScope,
+    expires_at: Option<String>,
 }
 
 impl ToolExecutionPermit {
@@ -55,7 +56,20 @@ impl ToolExecutionPermit {
                 namespace: namespace.into(),
                 target_key: target_key.into(),
             },
+            expires_at: None,
         }
+    }
+
+    /// Attach an RFC3339 expiry instant. After this instant the permit is
+    /// stale and effect dispatch must refuse it (GRPH-003 stale authority).
+    pub fn with_expiration(mut self, expires_at: impl Into<String>) -> Self {
+        self.expires_at = Some(expires_at.into());
+        self
+    }
+
+    /// Returns the optional RFC3339 expiry instant of this permit.
+    pub fn expires_at(&self) -> Option<&str> {
+        self.expires_at.as_deref()
     }
 
     /// Returns the execution permit identifier.
