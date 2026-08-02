@@ -100,6 +100,18 @@ pub struct GovernancePolicy {
 
     /// Policy name for debugging
     name: String,
+
+    /// Codec profiles admitted by this policy (CMP-001 admission contract).
+    admitted_codecs: Vec<CodecProfile>,
+
+    /// Maximum accepted content size in bytes (None = unbounded).
+    byte_budget: Option<u64>,
+
+    /// Recorded corpus this admission contract applies to.
+    corpus: String,
+
+    /// Recorded exact baseline digest (optional).
+    exact_baseline: Option<String>,
 }
 
 impl Default for GovernancePolicy {
@@ -109,6 +121,12 @@ impl Default for GovernancePolicy {
             small_content_threshold: 256,
             raw_min_accuracy: 0.99,
             name: "default".to_string(),
+            // CMP-001: honest default — only Raw has a registered decoder in
+            // this workspace until CMP-003 registers real codec decoders.
+            admitted_codecs: vec![CodecProfile::Raw],
+            byte_budget: None,
+            corpus: "unregistered".to_string(),
+            exact_baseline: None,
         }
     }
 }
@@ -121,6 +139,10 @@ impl GovernancePolicy {
             small_content_threshold,
             raw_min_accuracy,
             name: "custom".to_string(),
+            admitted_codecs: vec![CodecProfile::Raw],
+            byte_budget: None,
+            corpus: "unregistered".to_string(),
+            exact_baseline: None,
         }
     }
 
@@ -131,6 +153,10 @@ impl GovernancePolicy {
             small_content_threshold: 512,
             raw_min_accuracy: 0.90,
             name: "storage_efficient".to_string(),
+            admitted_codecs: vec![CodecProfile::Raw, CodecProfile::Q8, CodecProfile::Q4],
+            byte_budget: None,
+            corpus: "storage_bench".to_string(),
+            exact_baseline: None,
         }
     }
 
@@ -141,6 +167,10 @@ impl GovernancePolicy {
             small_content_threshold: 1024,
             raw_min_accuracy: 0.92,
             name: "low_latency".to_string(),
+            admitted_codecs: vec![CodecProfile::Raw, CodecProfile::Q8, CodecProfile::Turbo],
+            byte_budget: None,
+            corpus: "latency_bench".to_string(),
+            exact_baseline: None,
         }
     }
 
@@ -151,11 +181,25 @@ impl GovernancePolicy {
             small_content_threshold: 128,
             raw_min_accuracy: 0.999,
             name: "accuracy_oriented".to_string(),
+            admitted_codecs: vec![CodecProfile::Raw, CodecProfile::Q8, CodecProfile::Fib],
+            byte_budget: None,
+            corpus: "accuracy_bench".to_string(),
+            exact_baseline: None,
         }
     }
 
     /// Evaluate a governance request and produce a codec decision.
     pub fn evaluate(&self, request: GovernanceRequest) -> Result<CodecDecision, GovernorError> {
+        // CMP-001: byte budget is enforced before any routing.
+        if let Some(budget) = self.byte_budget {
+            if request.size_bytes > budget {
+                return Err(GovernorError::ByteBudgetExceeded {
+                    requested_bytes: request.size_bytes,
+                    budget_bytes: budget,
+                });
+            }
+        }
+
         // Small content bypass
         if request.size_bytes <= self.small_content_threshold
             && request.admissibility != AdmissibilityClass::Critical
@@ -175,6 +219,29 @@ impl GovernancePolicy {
 
         // Select codec based on content type and requirements
         let codec = self.select_codec(&request)?;
+
+        // CMP-001: admission gate — a selected codec without a registered/
+        // admitted decoder is rejected with a typed error, never silently
+        // substituted with raw or another codec.
+        if !self.admitted_codecs.contains(&codec) {
+            return Err(GovernorError::UnsupportedCodec {
+                profile: codec,
+                policy: self.name.clone(),
+                reason: "codec has no registered decoder admitted by this policy".to_string(),
+            });
+        }
+
+        // CMP-001: latency budget — a selected codec whose declared latency
+        // estimate exceeds the request tolerance is rejected.
+        let estimated_ms = codec.estimated_latency_ms();
+        if estimated_ms > request.latency_tolerance_ms {
+            return Err(GovernorError::LatencyBudgetExceeded {
+                profile: codec,
+                requested_ms: request.latency_tolerance_ms,
+                estimated_ms,
+            });
+        }
+
         let degradation = codec.default_degradation_threshold();
 
         Ok(CodecDecision::direct(codec, degradation))
@@ -263,6 +330,50 @@ impl GovernancePolicy {
     pub fn max_degradation(&self) -> f64 {
         self.max_degradation
     }
+
+    /// Returns the codec profiles admitted by this policy (CMP-001).
+    pub fn admitted_codecs(&self) -> &[CodecProfile] {
+        &self.admitted_codecs
+    }
+
+    /// Builder: admit the given codec profiles (registered decoders).
+    pub fn with_admitted_codecs<I: IntoIterator<Item = CodecProfile>>(mut self, codecs: I) -> Self {
+        self.admitted_codecs = codecs.into_iter().collect();
+        self
+    }
+
+    /// Returns the configured byte budget (None = unbounded).
+    pub fn byte_budget(&self) -> Option<u64> {
+        self.byte_budget
+    }
+
+    /// Builder: set the maximum accepted content size in bytes.
+    pub fn with_byte_budget(mut self, budget: u64) -> Self {
+        self.byte_budget = Some(budget);
+        self
+    }
+
+    /// Returns the recorded corpus for this admission contract.
+    pub fn corpus(&self) -> &str {
+        &self.corpus
+    }
+
+    /// Builder: record the corpus this admission contract applies to.
+    pub fn with_corpus(mut self, corpus: impl Into<String>) -> Self {
+        self.corpus = corpus.into();
+        self
+    }
+
+    /// Returns the recorded exact baseline digest (optional).
+    pub fn exact_baseline(&self) -> Option<&str> {
+        self.exact_baseline.as_deref()
+    }
+
+    /// Builder: record the exact baseline digest.
+    pub fn with_exact_baseline(mut self, baseline: impl Into<String>) -> Self {
+        self.exact_baseline = Some(baseline.into());
+        self
+    }
 }
 
 #[cfg(test)]
@@ -306,7 +417,9 @@ mod tests {
 
     #[test]
     fn image_content_routing() {
-        let policy = GovernancePolicy::default();
+        // CMP-001: routing to Q4 requires an admitting policy (registered
+        // decoder); storage_efficient admits Raw/Q8/Q4 explicitly.
+        let policy = GovernancePolicy::storage_efficient();
 
         // Large image with lower accuracy gets Q4
         let request = GovernanceRequest {
@@ -318,6 +431,117 @@ mod tests {
 
         let decision = policy.evaluate(request).unwrap();
         assert_eq!(decision.codec, CodecProfile::Q4);
+    }
+
+    #[test]
+    fn default_policy_rejects_unadmitted_codec() {
+        // CMP-001 RED: the default policy admits only Raw; a request that
+        // routes to Turbo must be rejected with a typed UnsupportedCodec,
+        // never silently substituted.
+        let policy = GovernancePolicy::default();
+        let request = GovernanceRequest {
+            content_type: ContentType::Text,
+            size_bytes: 2_000_000,
+            accuracy_requirement: 0.9,
+            ..Default::default()
+        };
+
+        let err = policy.evaluate(request).unwrap_err();
+        match err {
+            GovernorError::UnsupportedCodec { profile, .. } => {
+                assert_eq!(profile, CodecProfile::Turbo);
+            }
+            other => panic!("expected UnsupportedCodec, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn admitted_codec_is_selected_when_explicitly_admitted() {
+        // CMP-001: explicitly admitting Turbo makes the same request succeed.
+        let policy = GovernancePolicy::default().with_admitted_codecs([
+            CodecProfile::Raw,
+            CodecProfile::Q8,
+            CodecProfile::Turbo,
+        ]);
+        let request = GovernanceRequest {
+            content_type: ContentType::Text,
+            size_bytes: 2_000_000,
+            accuracy_requirement: 0.9,
+            ..Default::default()
+        };
+
+        let decision = policy.evaluate(request).unwrap();
+        assert_eq!(decision.codec, CodecProfile::Turbo);
+    }
+
+    #[test]
+    fn latency_budget_exceeded_rejected_typed() {
+        // CMP-001: Q8 declares 5ms latency; a 1ms tolerance must reject.
+        let policy =
+            GovernancePolicy::default().with_admitted_codecs([CodecProfile::Raw, CodecProfile::Q8]);
+        let request = GovernanceRequest {
+            content_type: ContentType::Text,
+            size_bytes: 100_000,
+            accuracy_requirement: 0.9,
+            latency_tolerance_ms: 1,
+            ..Default::default()
+        };
+
+        let err = policy.evaluate(request).unwrap_err();
+        match err {
+            GovernorError::LatencyBudgetExceeded {
+                profile,
+                requested_ms,
+                estimated_ms,
+            } => {
+                assert_eq!(profile, CodecProfile::Q8);
+                assert_eq!(requested_ms, 1);
+                assert_eq!(estimated_ms, 5);
+            }
+            other => panic!("expected LatencyBudgetExceeded, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn byte_budget_exceeded_rejected_typed() {
+        // CMP-001: content larger than the byte budget is rejected before
+        // any routing.
+        let policy = GovernancePolicy::default().with_byte_budget(1000);
+        let request = GovernanceRequest {
+            size_bytes: 2000,
+            ..Default::default()
+        };
+
+        let err = policy.evaluate(request).unwrap_err();
+        match err {
+            GovernorError::ByteBudgetExceeded {
+                requested_bytes,
+                budget_bytes,
+            } => {
+                assert_eq!(requested_bytes, 2000);
+                assert_eq!(budget_bytes, 1000);
+            }
+            other => panic!("expected ByteBudgetExceeded, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn admission_contract_records_corpus_baseline_and_budgets() {
+        // CMP-001: the admission contract records supported codecs, corpus,
+        // exact baseline, and budgets — all queryable.
+        let policy = GovernancePolicy::default()
+            .with_admitted_codecs([CodecProfile::Raw, CodecProfile::Q8])
+            .with_corpus("beir-nfcorpus")
+            .with_exact_baseline("sha256:deadbeef")
+            .with_byte_budget(64 * 1024 * 1024);
+
+        assert_eq!(
+            policy.admitted_codecs(),
+            &[CodecProfile::Raw, CodecProfile::Q8]
+        );
+        assert_eq!(policy.corpus(), "beir-nfcorpus");
+        assert_eq!(policy.exact_baseline(), Some("sha256:deadbeef"));
+        assert_eq!(policy.byte_budget(), Some(64 * 1024 * 1024));
     }
 
     #[test]

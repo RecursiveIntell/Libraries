@@ -58,7 +58,12 @@ fn model_critical_selects_raw() {
 /// Test 4: degradation_budget_accounted — degradation budget consumed in receipt.
 #[test]
 fn degradation_budget_accounted() {
-    let policy = GovernancePolicy::default();
+    // CMP-001: Q4 routing requires explicit admission (registered decoder).
+    let policy = GovernancePolicy::default().with_admitted_codecs([
+        CodecProfile::Raw,
+        CodecProfile::Q8,
+        CodecProfile::Q4,
+    ]);
     let request = GovernanceRequest {
         content_type: ContentType::Image,
         size_bytes: 10_000_000,
@@ -77,7 +82,15 @@ fn degradation_budget_accounted() {
 /// Test 5: content_type_routing_matrix — verify all 7 content types route correctly.
 #[test]
 fn content_type_routing_matrix() {
-    let policy = GovernancePolicy::default();
+    // CMP-001: the routing matrix deliberately admits every routed codec so
+    // it can prove routing decisions; the default policy alone admits Raw.
+    let policy = GovernancePolicy::default().with_admitted_codecs([
+        CodecProfile::Raw,
+        CodecProfile::Q8,
+        CodecProfile::Q4,
+        CodecProfile::Turbo,
+        CodecProfile::Fib,
+    ]);
 
     // Text — high accuracy gets Raw
     let text_req = GovernanceRequest {

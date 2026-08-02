@@ -7,7 +7,7 @@ use crate::degradation::DegradationReceipt;
 use crate::receipt::ExactFallbackReceipt;
 
 /// Codec profiles available for governance selection.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CodecProfile {
     /// Uncompressed representation
@@ -47,6 +47,20 @@ impl CodecProfile {
             CodecProfile::Q4 => 4.0,
             CodecProfile::Turbo => 3.0,
             CodecProfile::Fib => 2.5,
+        }
+    }
+
+    /// Returns the recorded latency estimate (ms) for this profile.
+    ///
+    /// CMP-001: these are admission-contract estimates used for the
+    /// latency-budget check; they are declared, not measured.
+    pub fn estimated_latency_ms(&self) -> u64 {
+        match self {
+            CodecProfile::Raw => 0,
+            CodecProfile::Q8 => 5,
+            CodecProfile::Q4 => 10,
+            CodecProfile::Turbo => 2,
+            CodecProfile::Fib => 8,
         }
     }
 }
