@@ -73,7 +73,7 @@ llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
 mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
 recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
 remote-oracle-admission = { version = "0.1.0", path = "../remote-oracle-admission" }
-semantic-memory = { version = "0.5.0", path = "../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory = { version = "0.6.0", path = "../semantic-memory", default-features = false, features = ["brute-force"] }
 semantic-memory-forge = { version = "0.1.0", path = "../semantic-memory-forge" }
 stack-ids = { version = "0.1.0", path = "../stack-ids" }
 verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
