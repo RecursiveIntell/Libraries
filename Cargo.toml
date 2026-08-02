@@ -96,7 +96,6 @@ default-members = [
     "knowledge-runtime",
     "living-memory/living-memory",
     "llm-output-parser",
-    "claim-ledger",
     "llm-pipeline",
     "llm-tool-runtime",
     "mechanism-runtime",
