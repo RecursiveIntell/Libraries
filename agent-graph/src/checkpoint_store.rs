@@ -75,6 +75,28 @@ pub enum RunStatus {
     Cancelled,
 }
 
+/// Material identity of a checkpoint attempt: the canonical
+/// `(run_id, node_id, attempt)` triple.
+///
+/// Attempt record IDs (`CheckpointAttemptId`) are explicitly NON-MATERIAL:
+/// each invocation mints a distinct random handle via [`mint_attempt_id`].
+/// Deterministic replay of identical input therefore creates a distinct
+/// record and never overwrites a prior record. Anything that requires
+/// replay-safe, deterministic identity MUST use this triple — never the
+/// random attempt ID.
+pub fn material_attempt_identity(run_id: &str, node_id: &str, attempt: u32) -> String {
+    format!("{run_id}:{node_id}:{attempt}")
+}
+
+/// Mint a non-material attempt record ID for a domain.
+///
+/// The returned ID is a random UUID handle with a `v1:{domain}:` prefix; it
+/// is unique per invocation and must not be treated as material or
+/// replay-safe. Material identity is [`material_attempt_identity`].
+pub fn mint_attempt_id(domain: &str) -> String {
+    stack_ids::GraphCheckpointAttemptId::random(domain).to_string()
+}
+
 /// Granular checkpoint store for per-attempt recording.
 ///
 /// This trait uses boxed futures instead of async-trait for forward compat.
@@ -278,8 +300,7 @@ impl CheckpointStore for InMemoryCheckpointStore {
         let node_id = node_id.to_string();
         let input = input.clone();
         Box::pin(async move {
-            let attempt_id =
-                stack_ids::GraphCheckpointAttemptId::random("agent-graph-checkpoint").to_string();
+            let attempt_id = mint_attempt_id("agent-graph-checkpoint");
             let now = chrono::Utc::now();
             let record = AttemptRecord {
                 attempt_id: attempt_id.clone(),
