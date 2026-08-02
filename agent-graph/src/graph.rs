@@ -124,6 +124,12 @@ impl AgentGraph {
                     actual: current_hash,
                 });
             }
+        } else {
+            // Fail closed: without a graph hash the topology cannot be
+            // verified. Unsupported resume stays typed/degraded rather than
+            // being silently advertised as available. Callers that accept
+            // unverified resumption must use `resume_force` explicitly.
+            return Err(AgentGraphError::UnverifiedCheckpoint);
         }
         self.execute_with_config(&checkpoint.resume_node, state, config)
             .await

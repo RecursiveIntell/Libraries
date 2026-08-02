@@ -57,6 +57,12 @@ pub enum AgentGraphError {
     #[error("Checkpoint graph mismatch: expected hash '{expected}', got '{actual}'")]
     CheckpointMismatch { expected: String, actual: String },
 
+    /// A checkpoint carries no graph hash, so topology drift cannot be
+    /// verified. Resume is refused (fail-closed); `resume_force` is the
+    /// explicit bypass for callers that accept unverified resumption.
+    #[error("checkpoint carries no graph hash; unverified resume refused (use resume_force to explicitly bypass)")]
+    UnverifiedCheckpoint,
+
     #[error("run not found: {0}")]
     RunNotFound(String),
     #[error("attempt not found: {0}")]
@@ -110,6 +116,7 @@ impl AgentGraphError {
             Self::CheckpointError(_) => "checkpoint",
             Self::CheckpointStore { .. } => "checkpoint_store",
             Self::CheckpointMismatch { .. } => "checkpoint_mismatch",
+            Self::UnverifiedCheckpoint => "unverified_checkpoint",
             Self::RunNotFound(_) => "run_not_found",
             Self::AttemptNotFound(_) => "attempt_not_found",
             Self::AttemptRunMismatch { .. } => "attempt_run_mismatch",

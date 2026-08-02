@@ -193,7 +193,9 @@ async fn test_resume_after_interrupt() {
         resume_before: true,
         iteration: 1,
         active_nodes: vec!["step2".to_string()],
-        graph_hash: None,
+        // GRAPH-002: resume is fail-closed without a graph hash; production
+        // checkpoints always carry the hash, so the test does too.
+        graph_hash: Some(resume_graph.compute_graph_hash()),
     };
 
     let result = resume_graph
