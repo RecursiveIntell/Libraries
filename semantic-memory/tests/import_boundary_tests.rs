@@ -104,12 +104,12 @@ fn make_multi_record_envelope(id: &str) -> ImportEnvelope {
 
 #[tokio::test]
 async fn rejects_empty_envelope_id() {
-    let (store, _dir) = test_store();
-    let mut env = make_envelope("", "ns");
-    env.envelope_id = EnvelopeId::new("");
-    let err = store.import_envelope(&env).await.unwrap_err();
-    assert_eq!(err.kind(), "import_invalid");
-    assert!(err.to_string().contains("envelope_id"));
+    // stack-ids forbids empty IDs at the type boundary (validate_id rejects
+    // empty/whitespace), so an empty envelope_id can never reach the importer;
+    // the fence lives in the constructor and the deserializer.
+    assert!(EnvelopeId::try_new("").is_err());
+    assert!(serde_json::from_str::<EnvelopeId>("\"\"").is_err());
+    assert!(EnvelopeId::from_legacy("").is_err());
 }
 
 #[tokio::test]
@@ -722,6 +722,11 @@ fn make_canonical_batch(envelope_id: &str, claim_id: &str, content: &str) -> Str
     make_canonical_batch_value(envelope_id, claim_id, content).to_string()
 }
 
+/// Valid 64-hex content digest for hand-built batches (stack-ids enforces the format).
+fn valid_digest(input: &str) -> String {
+    ContentDigest::compute_str(input).to_string()
+}
+
 fn make_evidence_bundle(id: &str) -> EvidenceBundle {
     let mut bundle = EvidenceBundle::new(
         CausalQuestion {
@@ -1114,7 +1119,7 @@ async fn canonical_batch_reports_historical_digest_migration_conflict_explicitly
     assert_eq!(imported.status, "complete");
 
     let mut replay = make_canonical_batch_value("cb-migrate", "claim-migrate", "Migration content");
-    replay["content_digest"] = serde_json::json!("digest-cb-migrate-historical");
+    replay["content_digest"] = serde_json::json!(valid_digest("cb-migrate-historical"));
 
     let err = store
         .import_projection_batch_json_compat(&replay.to_string())
@@ -1123,6 +1128,9 @@ async fn canonical_batch_reports_historical_digest_migration_conflict_explicitly
     assert_eq!(err.kind(), "import_migration_required");
     assert!(format!("{err}").contains("projection_import_log drift"));
 
+    // Failed attempts are durably receipted in the projection import log with
+    // an explicit "failed" status and an explanatory failure_reason, and are
+    // mirrored into the dedicated failure store.
     let logs = store
         .query_projection_imports(Some("canonical-ns"), 100)
         .await
@@ -1131,7 +1139,7 @@ async fn canonical_batch_reports_historical_digest_migration_conflict_explicitly
         .iter()
         .find(|entry| {
             entry.source_envelope_id == "cb-migrate"
-                && entry.content_digest == "digest-cb-migrate-historical"
+                && entry.content_digest == valid_digest("cb-migrate-historical")
         })
         .expect("historical replay should leave an explicit failed receipt");
     assert_eq!(failed.status, "failed");
@@ -1141,6 +1149,75 @@ async fn canonical_batch_reports_historical_digest_migration_conflict_explicitly
             .as_deref()
             .is_some_and(|reason| reason.contains("historical digest migration replay")),
         "failure receipt should explain the digest migration seam explicitly"
+    );
+
+    let failures = store
+        .query_projection_import_failures(Some("canonical-ns"), 100)
+        .await
+        .unwrap();
+    let failed_receipt = failures
+        .iter()
+        .find(|entry| {
+            entry.source_envelope_id == "cb-migrate"
+                && entry.content_digest == valid_digest("cb-migrate-historical")
+        })
+        .expect("failure store should mirror the explicit failed receipt");
+    assert_eq!(failed_receipt.error_kind, "import_migration_required");
+
+    // The original successful import must still be logged as complete.
+    assert!(
+        logs.iter()
+            .any(|entry| entry.source_envelope_id == "cb-migrate" && entry.status == "complete"),
+        "the original import must remain logged as complete"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRUTH-002 importer-side authority fences
+// ═══════════════════════════════════════════════════════════════
+
+/// Storage-time ownership: `recorded_at` on imported rows is assigned by the
+/// semantic-memory importer's wall clock — never bridge/export metadata.
+#[tokio::test]
+async fn importer_assigns_recorded_at_not_bridge_metadata() {
+    let (store, _dir) = test_store();
+    let batch = make_canonical_batch("cb-rt-fence", "claim-rt-fence", "recorded-at fence");
+    store
+        .import_projection_batch_json_compat(&batch)
+        .await
+        .unwrap();
+
+    let scope = ScopeKey::namespace_only("canonical-ns");
+    let rows = store
+        .query_claim_versions(semantic_memory::ProjectionQuery {
+            claim_id: Some(ClaimId::new("claim-rt-fence")),
+            limit: 10,
+            ..semantic_memory::ProjectionQuery::new(scope)
+        })
+        .await
+        .unwrap();
+    let row = rows
+        .iter()
+        .find(|r| r.claim_version_id.as_str() == "claim-rt-fence-v1")
+        .expect("imported claim version must be queryable");
+
+    assert!(
+        !row.recorded_at.is_empty(),
+        "importer must assign recorded_at"
+    );
+    assert_ne!(
+        row.recorded_at, "2026-03-07T00:00:01Z",
+        "recorded_at must be the importer clock, not the bridge transformed_at"
+    );
+    let recorded = chrono::DateTime::parse_from_rfc3339(&row.recorded_at)
+        .expect("recorded_at must be RFC3339")
+        .with_timezone(&chrono::Utc);
+    let age_min = chrono::Utc::now()
+        .signed_duration_since(recorded)
+        .num_minutes();
+    assert!(
+        age_min.abs() < 5,
+        "recorded_at must be the importer wall clock (age {age_min} min)"
     );
 }
 
@@ -1443,7 +1520,7 @@ async fn canonical_batch_rejects_overlapping_preferred_claims_in_batch() {
         "source_envelope_id": "cb-pref-overlap-batch",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
-        "content_digest": "digest-pref-overlap-batch",
+        "content_digest": valid_digest("cb-pref-overlap-batch"),
         "source_authority": "forge",
         "scope_key": { "namespace": "canonical-ns" },
         "source_exported_at": "2026-03-07T00:00:00Z",
@@ -1509,7 +1586,7 @@ async fn canonical_batch_rejects_overlapping_preferred_claim_with_existing_prefe
         "source_envelope_id": "cb-pref-existing-base",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
-        "content_digest": "digest-pref-existing-base",
+        "content_digest": valid_digest("cb-pref-existing-base"),
         "source_authority": "forge",
         "scope_key": { "namespace": "canonical-ns" },
         "source_exported_at": "2026-03-07T00:00:00Z",
@@ -1545,7 +1622,7 @@ async fn canonical_batch_rejects_overlapping_preferred_claim_with_existing_prefe
         "source_envelope_id": "cb-pref-existing-overlap",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
-        "content_digest": "digest-pref-existing-overlap",
+        "content_digest": valid_digest("cb-pref-existing-overlap"),
         "source_authority": "forge",
         "scope_key": { "namespace": "canonical-ns" },
         "source_exported_at": "2026-03-08T00:00:00Z",
@@ -1588,7 +1665,7 @@ async fn canonical_batch_rejects_overlapping_preferred_relations_in_batch() {
         "source_envelope_id": "cb-pref-rel-overlap-batch",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
-        "content_digest": "digest-pref-rel-overlap-batch",
+        "content_digest": valid_digest("cb-pref-rel-overlap-batch"),
         "source_authority": "forge",
         "scope_key": { "namespace": "canonical-ns" },
         "source_exported_at": "2026-03-07T00:00:00Z",

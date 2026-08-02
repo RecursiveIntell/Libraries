@@ -6,7 +6,7 @@ use semantic_memory::{
     EpisodeMeta, EpisodeOutcome, MemoryConfig, MemoryStore, MockEmbedder, ProjectionQuery, Role,
     VerificationStatus,
 };
-use stack_ids::ScopeKey;
+use stack_ids::{ContentDigest, ScopeKey};
 use tempfile::TempDir;
 
 fn projection_batch_json(namespace: &str) -> String {
@@ -15,7 +15,7 @@ fn projection_batch_json(namespace: &str) -> String {
         "source_envelope_id": "env-delete-ns",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
-        "content_digest": format!("digest-{namespace}"),
+        "content_digest": ContentDigest::compute_str(&format!("digest-{namespace}")).to_string(),
         "source_authority": "test",
         "scope_key": { "namespace": namespace },
         "source_exported_at": "2026-03-07T00:00:00Z",
