@@ -219,7 +219,14 @@ impl AgentGraphServer {
         data_dir: Option<PathBuf>,
         integrity_key_path: Option<PathBuf>,
     ) -> Result<Self, String> {
-        Self::new_with_checkpoint_db(base_url, default_model, api_key, data_dir, integrity_key_path, None)
+        Self::new_with_checkpoint_db(
+            base_url,
+            default_model,
+            api_key,
+            data_dir,
+            integrity_key_path,
+            None,
+        )
     }
 
     pub fn new_with_checkpoint_db(
@@ -544,6 +551,7 @@ mod tests {
             spec,
             "http://localhost".into(),
             "test-model".into(),
+            None,
         )
         .expect("execution completes");
 
@@ -574,6 +582,7 @@ mod tests {
         let server = AgentGraphServer::new(
             "http://localhost".into(),
             "test-model".into(),
+            None,
             Some(temp.path().to_owned()),
             None,
         )

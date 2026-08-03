@@ -728,7 +728,15 @@ impl RunManager {
     ) where
         F: FnOnce(RunRecord) + Send + 'static,
     {
-        self.start_with_completion_with_store(run_id, spec, base_url, model, None, None, on_completion);
+        self.start_with_completion_with_store(
+            run_id,
+            spec,
+            base_url,
+            model,
+            None,
+            None,
+            on_completion,
+        );
     }
 
     pub fn start_with_completion_with_store<F>(
@@ -745,7 +753,9 @@ impl RunManager {
     {
         let manager = self.clone();
         std::thread::spawn(move || {
-            if let Err(error) = manager.execute_with_store(&run_id, spec, base_url, model, api_key, store) {
+            if let Err(error) =
+                manager.execute_with_store(&run_id, spec, base_url, model, api_key, store)
+            {
                 let _ = manager.update(&run_id, |r| {
                     r.status = "failed".into();
                     r.success = Some(false);
