@@ -1,11 +1,9 @@
 use crate::PolyKvError;
 use quant_codec_core::{ArtifactDigest, KvRole, KvTensorShape, LayerId, VectorCodec};
 
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ExactKvBlock {
     pub role: KvRole,
     pub layer: LayerId,
@@ -59,8 +57,7 @@ impl ExactKvBlock {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ExactFallback {
     pub blocks: Vec<ExactKvBlock>,
 }

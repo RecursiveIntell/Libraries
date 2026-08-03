@@ -1,0 +1,374 @@
+
+=== cargo fmt --all -- --check ===
+GATE_EXIT 0
+
+=== cargo check --all-features ===
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/Libraries/Cargo.toml
+ Downloading crates ...
+  Downloaded anndists v0.1.4
+  Downloaded cpu-time v1.0.0
+  Downloaded anstream v0.6.21
+  Downloaded anstyle-parse v0.2.7
+  Downloaded enum-as-inner v0.6.1
+  Downloaded env_filter v1.0.0
+  Downloaded env_logger v0.11.9
+  Downloaded foldhash v0.1.5
+  Downloaded combine v4.6.7
+  Downloaded mmap-rs v0.7.0
+  Downloaded sysctl v0.6.0
+  Downloaded hashbrown v0.15.5
+  Downloaded hnsw_rs v0.3.4
+  Downloaded nix v0.30.1
+  Downloaded jiff v0.2.23
+    Blocking waiting for file lock on build directory
+   Compiling libc v0.2.189
+    Checking futures-util v0.3.32
+    Checking raw-cpuid v11.6.0
+    Checking icu_normalizer v2.1.1
+    Checking schemars v0.8.22
+    Checking time v0.3.47
+    Checking tracing-subscriber v0.3.23
+    Checking digest v0.10.7
+    Checking countio v0.3.0
+    Checking unicode-normalization-alignments v0.1.12
+   Compiling cfg_aliases v0.2.1
+    Checking anstyle-parse v0.2.7
+   Compiling enum-as-inner v0.6.1
+    Checking env_filter v1.0.0
+    Checking safetensors v0.7.0
+   Compiling nix v0.30.1
+    Checking jiff v0.2.23
+    Checking sha2 v0.10.9
+    Checking anstream v0.6.21
+    Checking bit-vec v0.8.0
+    Checking idna_adapter v1.2.1
+    Checking combine v4.6.7
+    Checking foldhash v0.1.5
+    Checking bit-set v0.8.0
+    Checking idna v1.1.0
+    Checking hashbrown v0.15.5
+    Checking schemars v1.2.1
+    Checking bitemporal-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/bitemporal-runtime)
+    Checking fancy-regex v0.17.0
+   Compiling rmcp-macros v1.8.0
+    Checking llm-output-parser v0.2.0 (/home/sikmindz/Coding/Libraries/llm-output-parser)
+    Checking url v2.5.8
+   Compiling jobserver v0.1.35
+   Compiling cc v1.2.56
+    Checking pulp v0.22.3
+    Checking tracing-appender v0.2.5
+    Checking getrandom v0.3.4
+    Checking getrandom v0.2.17
+    Checking socket2 v0.6.3
+    Checking mio v1.1.1
+    Checking getrandom v0.4.2
+    Checking dirs-sys v0.5.0
+    Checking whoami v2.1.2
+    Checking sysinfo v0.38.4
+    Checking num_cpus v1.17.0
+    Checking memmap2 v0.9.11
+    Checking cpu-time v1.0.0
+    Checking dirs v6.0.0
+    Checking parking_lot_core v0.9.12
+    Checking rand_core v0.6.4
+    Checking rand_core v0.9.5
+    Checking ahash v0.8.12
+    Checking uuid v1.22.0
+    Checking rand v0.10.2
+    Checking shellexpand v3.1.2
+    Checking tempfile v3.27.0
+    Checking rand_chacha v0.3.1
+   Compiling cmake v0.1.58
+    Checking rand_chacha v0.9.0
+    Checking tokio v1.50.0
+   Compiling cxx-build v1.0.198
+    Checking hashbrown v0.14.5
+    Checking sysctl v0.6.0
+    Checking parking_lot v0.12.5
+    Checking rand v0.8.6
+    Checking rand v0.9.2
+    Checking futures-executor v0.3.32
+    Checking futures v0.3.32
+   Compiling blake3 v1.8.3
+   Compiling aws-lc-sys v0.43.0
+   Compiling ring v0.17.14
+   Compiling link-cplusplus v1.0.12
+   Compiling openssl-sys v0.9.116
+   Compiling onig_sys v69.9.3
+   Compiling cxx v1.0.198
+   Compiling turbo-quant v0.2.0 (/home/sikmindz/Coding/Libraries/turbo-quant)
+   Compiling libsqlite3-sys v0.30.1
+    Checking rand_distr v0.5.1
+    Checking env_logger v0.11.9
+    Checking hashlink v0.9.1
+    Checking rand_distr v0.4.3
+    Checking anndists v0.1.4
+    Checking ulid v1.2.1
+   Compiling openssl v0.10.80
+   Compiling native-tls v0.2.18
+    Checking nalgebra v0.32.6
+    Checking half v2.7.1
+    Checking rusqlite v0.32.1
+    Checking stack-ids v0.1.3 (/home/sikmindz/Coding/Libraries/stack-ids)
+    Checking quant-codec-core v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core)
+    Checking float8 v0.7.0
+    Checking quant-governor v0.1.0 (/home/sikmindz/Coding/Libraries/quant-governor)
+    Checking boundary-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/boundary-compiler)
+    Checking mmap-rs v0.7.0
+    Checking gemm-common v0.19.0
+   Compiling usearch v2.26.0
+   Compiling semantic-memory v0.5.14 (/home/sikmindz/Coding/Libraries/semantic-memory)
+    Checking hnsw_rs v0.3.4
+    Checking gemm-f32 v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-c64 v0.19.0
+    Checking gemm-f16 v0.19.0
+    Checking onig v6.5.3
+    Checking gemm v0.19.0
+    Checking tokenizers v0.22.2
+    Checking tokenizers v0.23.1
+    Checking tokio-util v0.7.18
+    Checking tower v0.5.3
+    Checking tokio-retry v0.3.2
+    Checking claim-ledger v0.2.1 (/home/sikmindz/Coding/Libraries/claim-ledger)
+    Checking h2 v0.4.14
+    Checking tower-http v0.6.8
+    Checking rmcp v1.8.0
+    Checking tokio-native-tls v0.3.1
+    Checking semantic-memory-forge v0.1.1 (/home/sikmindz/Coding/Libraries/semantic-memory-forge)
+    Checking recursive-kernel-core v0.1.0 (/home/sikmindz/Coding/Libraries/recursive-kernel-core)
+    Checking hyper v1.8.1
+    Checking candle-core v0.10.2
+    Checking statrs v0.17.1
+    Checking hyper-util v0.1.20
+   Compiling aws-lc-rs v1.17.3
+    Checking fib-quant v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/fib-quant)
+   Compiling rustls v0.23.37
+    Checking hyper-tls v0.6.0
+    Checking rustls-webpki v0.103.9
+    Checking scr-runtime-compression v0.1.0 (/home/sikmindz/Coding/Libraries/scr-runtime-compression)
+    Checking poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+    Checking candle-nn v0.10.2
+    Checking forge-memory-bridge v0.1.1 (/home/sikmindz/Coding/Libraries/forge-memory-bridge)
+    Checking candle-transformers v0.10.2
+    Checking constraint-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/constraint-compiler)
+    Checking kernel-execution v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-execution)
+    Checking tokio-rustls v0.26.4
+    Checking rustls-platform-verifier v0.7.0
+    Checking hyper-rustls v0.27.7
+    Checking kernel-oracles v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-oracles)
+    Checking reqwest v0.13.4
+    Checking reqwest v0.12.28
+    Checking xet-runtime v1.5.4
+    Checking reqwest-middleware v0.5.2
+    Checking xet-core-structures v1.5.4
+    Checking xet-client v1.5.4
+    Checking xet-data v1.5.4
+    Checking hf-xet v1.5.4
+    Checking hf-hub v1.0.0
+    Checking knowledge-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/knowledge-runtime)
+    Checking semantic-memory-mcp v0.5.6 (/home/sikmindz/Coding/Libraries/semantic-memory-mcp)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 59s
+GATE_EXIT 0
+
+=== cargo test --features full ===
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/Libraries/Cargo.toml
+    Blocking waiting for file lock on build directory
+   Compiling tokio v1.50.0
+   Compiling aws-lc-sys v0.43.0
+   Compiling futures-util v0.3.32
+   Compiling uuid v1.22.0
+   Compiling icu_normalizer v2.1.1
+   Compiling raw-cpuid v11.6.0
+   Compiling schemars v0.8.22
+   Compiling tracing-subscriber v0.3.23
+   Compiling time v0.3.47
+   Compiling digest v0.10.7
+   Compiling onig v6.5.3
+   Compiling countio v0.3.0
+   Compiling unicode-normalization-alignments v0.1.12
+   Compiling tempfile v3.27.0
+   Compiling openssl v0.10.80
+   Compiling safetensors v0.7.0
+   Compiling bit-vec v0.8.0
+   Compiling sha2 v0.10.9
+   Compiling bit-set v0.8.0
+   Compiling idna_adapter v1.2.1
+   Compiling fib-quant v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/fib-quant)
+   Compiling idna v1.1.0
+   Compiling tokenizers v0.22.2
+   Compiling fancy-regex v0.17.0
+   Compiling quant-governor v0.1.0 (/home/sikmindz/Coding/Libraries/quant-governor)
+   Compiling semantic-memory v0.5.14 (/home/sikmindz/Coding/Libraries/semantic-memory)
+   Compiling tokenizers v0.23.1
+   Compiling url v2.5.8
+   Compiling stack-ids v0.1.3 (/home/sikmindz/Coding/Libraries/stack-ids)
+   Compiling turbo-quant v0.2.0 (/home/sikmindz/Coding/Libraries/turbo-quant)
+   Compiling pulp v0.22.3
+   Compiling tracing-appender v0.2.5
+   Compiling rusqlite v0.32.1
+   Compiling bitemporal-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/bitemporal-runtime)
+   Compiling boundary-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/boundary-compiler)
+   Compiling schemars v1.2.1
+   Compiling futures-executor v0.3.32
+   Compiling futures v0.3.32
+   Compiling native-tls v0.2.18
+   Compiling rmcp-macros v1.8.0
+   Compiling claim-ledger v0.2.1 (/home/sikmindz/Coding/Libraries/claim-ledger)
+   Compiling clap v4.6.1
+   Compiling llm-output-parser v0.2.0 (/home/sikmindz/Coding/Libraries/llm-output-parser)
+   Compiling poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+   Compiling scr-runtime-compression v0.1.0 (/home/sikmindz/Coding/Libraries/scr-runtime-compression)
+   Compiling tokio-util v0.7.18
+   Compiling tower v0.5.3
+   Compiling tokio-retry v0.3.2
+   Compiling tokio-native-tls v0.3.1
+   Compiling gemm-common v0.19.0
+   Compiling tower-http v0.6.8
+   Compiling h2 v0.4.14
+   Compiling rmcp v1.8.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f16 v0.19.0
+   Compiling semantic-memory-forge v0.1.1 (/home/sikmindz/Coding/Libraries/semantic-memory-forge)
+   Compiling gemm v0.19.0
+   Compiling candle-core v0.10.2
+   Compiling recursive-kernel-core v0.1.0 (/home/sikmindz/Coding/Libraries/recursive-kernel-core)
+   Compiling hyper v1.8.1
+   Compiling hyper-util v0.1.20
+   Compiling hyper-tls v0.6.0
+   Compiling forge-memory-bridge v0.1.1 (/home/sikmindz/Coding/Libraries/forge-memory-bridge)
+   Compiling aws-lc-rs v1.17.3
+   Compiling rustls v0.23.37
+   Compiling candle-nn v0.10.2
+   Compiling constraint-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/constraint-compiler)
+   Compiling rustls-webpki v0.103.9
+   Compiling kernel-execution v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-execution)
+   Compiling candle-transformers v0.10.2
+   Compiling kernel-oracles v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-oracles)
+   Compiling tokio-rustls v0.26.4
+   Compiling rustls-platform-verifier v0.7.0
+   Compiling hyper-rustls v0.27.7
+   Compiling reqwest v0.13.4
+   Compiling reqwest v0.12.28
+   Compiling xet-runtime v1.5.4
+   Compiling reqwest-middleware v0.5.2
+   Compiling xet-core-structures v1.5.4
+   Compiling xet-client v1.5.4
+   Compiling xet-data v1.5.4
+   Compiling hf-xet v1.5.4
+   Compiling hf-hub v1.0.0
+   Compiling knowledge-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/knowledge-runtime)
+   Compiling semantic-memory-mcp v0.5.6 (/home/sikmindz/Coding/Libraries/semantic-memory-mcp)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7m 44s
+     Running unittests src/lib.rs (/home/sikmindz/Coding/Libraries/target/debug/deps/semantic_memory_mcp-82cbfe383e54a01e)
+
+running 41 tests
+test http_server::connection_slot_tests::rerank_limits_use_utf8_bytes_and_bound_search_candidates ... ok
+test profile::tests::agent_profile_admits_only_the_governed_fact_capture_write ... ok
+test profile::tests::stable_profile_remains_read_only ... ok
+test http_server::connection_slot_tests::connection_slot_is_released_when_handler_unwinds ... ok
+test server::correctness_contract_tests::benchmark_failures_are_explicit_and_not_quality_eligible ... ok
+test server::correctness_contract_tests::closed_admission_enums_reject_noncanonical_spellings ... ok
+test server::correctness_contract_tests::graph_path_outcomes_do_not_conflate_exhaustion_and_budget ... ok
+test server::correctness_contract_tests::sanitize_factor_graph_iterations_is_bounded ... ok
+test server::correctness_contract_tests::sanitize_graph_depth_is_bounded ... ok
+test server::correctness_contract_tests::interrupted_compaction_files_leave_old_ledger_usable ... ok
+test server::correctness_contract_tests::sanitize_offset_is_bounded ... ok
+test server::correctness_contract_tests::sanitize_projection_limit_is_bounded ... ok
+test server::correctness_contract_tests::sanitize_subgraph_prune_count_is_bounded ... ok
+test server::correctness_contract_tests::claim_ledger_startup_rebuilds_from_verified_snapshot_and_tail ... ok
+test server::correctness_contract_tests::every_registered_tool_declares_object_output_schema ... ok
+test http_server::connection_slot_tests::rerank_failure_preserves_original_order_and_scores ... ok
+test server::correctness_contract_tests::parser_tools_reject_oversized_input_before_parsing ... ok
+test server::correctness_contract_tests::assertion_decision_rejects_untrusted_caller_carried_delegation ... ok
+test server::correctness_contract_tests::structured_output_preserves_object_shape_and_populates_protocol_field ... ok
+test server::correctness_contract_tests::community_summarization_fails_closed_without_transform_receipt ... ok
+test server::correctness_contract_tests::structured_output_wraps_non_object_values ... ok
+test server::correctness_contract_tests::tampered_active_snapshot_disables_claim_trust ... ok
+test server::correctness_contract_tests::sm_add_fact_fails_closed_without_trusted_authority_issuer ... ok
+test server::correctness_contract_tests::sm_add_fact_containment_applies_to_keyed_and_unkeyed_requests ... ok
+test server::correctness_contract_tests::parse_number_rejects_non_finite_values_without_panicking ... ok
+test server::correctness_contract_tests::sm_delete_fact_fails_closed_without_trusted_authority_issuer ... ok
+test tools::add_fact_param_tests::add_fact_idempotency_key_is_optional_and_backward_compatible ... ok
+test server::correctness_contract_tests::sm_add_fact_preserves_ephemeral_evidence_refs_admission_rule ... ok
+test server::correctness_contract_tests::compact_claim_ledger_defaults_to_dry_run_without_writes ... ok
+test server::correctness_contract_tests::recall_authority_does_not_imply_assertion_or_action_authority_and_denials_omit_content ... ok
+test server::correctness_contract_tests::action_decision_rejects_untrusted_caller_carried_elevation ... ok
+test server::correctness_contract_tests::sm_search_tool_returns_only_current_supersession_head ... ok
+test server::correctness_contract_tests::sm_search_witnessed_accepts_general_retrieval_modes ... ok
+test server::correctness_contract_tests::sm_search_witnessed_exposes_authority_state_and_vector_evidence ... ok
+test server::correctness_contract_tests::routing_feedback_batch_persists_and_survives_restart ... ok
+test server::correctness_contract_tests::verify_claim_never_promotes_without_executed_verification_receipts ... ok
+test server::correctness_contract_tests::witnessed_search_omits_noninjectible_fact_without_source ... ok
+test server::correctness_contract_tests::witnessed_search_hydrates_complete_honest_fact_provenance ... ok
+test server::correctness_contract_tests::witnessed_search_bounds_admitted_results_to_requested_top_k ... ok
+test server::correctness_contract_tests::witnessed_search_opt_in_enables_complete_replay ... ok
+test server::correctness_contract_tests::rebuild_vector_artifacts_tool_returns_exact_rerank_receipt ... ok
+
+test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.23s
+
+     Running unittests src/main.rs (/home/sikmindz/Coding/Libraries/target/debug/deps/semantic_memory_mcp-bf35646c9fc3b151)
+
+running 7 tests
+test tests::exactly_empty_explicit_token_falls_back_to_file ... ok
+test tests::explicit_token_precedes_token_file ... ok
+test tests::explicit_token_rejects_unicode_internal_whitespace ... ok
+test tests::missing_token_sources_resolve_to_none ... ok
+test tests::token_file_trims_surrounding_whitespace ... ok
+test tests::unknown_profile_is_rejected_by_clap ... ok
+test tests::token_file_rejects_internal_whitespace ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration.rs (/home/sikmindz/Coding/Libraries/target/debug/deps/integration-b7218934c3520e36)
+
+running 27 tests
+test bridge_tests::bridge_parses_embedder_variants ... ok
+test bridge_tests::bridge_rejects_unknown_embedder_string ... ok
+test bridge_tests::bridge_opens_with_mock_embedder ... ok
+test http_server_tests::occupied_http_port_fails_synchronously ... ok
+test agent_profile_is_bounded_and_exposes_only_governed_fact_capture_write ... ok
+test http_server_tests::http_rejects_request_with_wrong_token ... ok
+test http_server_tests::health_endpoint_returns_ok ... ok
+test http_server_tests::http_rejects_request_without_authorization ... ok
+test http_server_tests::search_with_empty_query_returns_400 ... ok
+test http_server_tests::http_rejects_lookalike_host ... ok
+test http_server_tests::lean_http_exposes_only_safe_manifest_routes ... ok
+test http_server_tests::http_search_rejects_unbounded_top_k_and_does_not_claim_verification ... ok
+test http_server_tests::unknown_path_returns_404 ... ok
+test http_server_tests::http_search_returns_current_supersession_head_only ... ok
+test http_server_tests::http_add_fails_closed_without_trusted_authority_issuer ... ok
+test http_server_tests::routing_feedback_response_is_mutating_proxy_label ... ok
+test http_server_tests::stats_endpoint_returns_counts ... ok
+test lifecycle_tests::add_and_search_fact ... ok
+test lifecycle_tests::add_and_list_graph_edges ... ok
+test lifecycle_tests::add_facts_in_multiple_namespaces_and_filter ... ok
+test lifecycle_tests::stats_returns_counts ... ok
+test lifecycle_tests::list_namespaces_returns_all ... ok
+test lifecycle_tests::delete_fact_removes_it ... ok
+test routing_feedback_is_declared_mutating ... ok
+test lifecycle_tests::supersede_fact_via_graph_edge ... ok
+test profile_tests::standard_is_exactly_the_lean_alias ... ok
+test autonomous_profiles_expose_witnessed_search_and_stored_replay ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.13s
+
+   Doc-tests semantic_memory_mcp
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+GATE_EXIT 0
+
+=== python3 integrations/tests/validate_integrations.py ===
+integration assets: valid
+GATE_EXIT 0

@@ -1,6 +1,6 @@
 //! Python bindings for context-governor — context compaction for Hermes.
 use context_governor::{
-    compact_context, CompactionPolicy, CompactRequest, ContextCompactionReceiptV1, Message,
+    compact_context, CompactRequest, CompactionPolicy, ContextCompactionReceiptV1, Message,
 };
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
@@ -26,8 +26,14 @@ struct PyCompactResult {
 }
 
 #[pyfunction]
-#[pyo3(signature = (messages_json, session_id, target_tokens))]
-fn compact(messages_json: &str, session_id: &str, target_tokens: usize) -> PyResult<String> {
+#[pyo3(signature = (messages_json, session_id, target_tokens, protect_first_n=None, protect_last_n=None))]
+fn compact(
+    messages_json: &str,
+    session_id: &str,
+    target_tokens: usize,
+    protect_first_n: Option<usize>,
+    protect_last_n: Option<usize>,
+) -> PyResult<String> {
     let py_msgs: Vec<PyMessage> = serde_json::from_str(messages_json)
         .map_err(|e| PyRuntimeError::new_err(format!("invalid messages JSON: {e}")))?;
 
@@ -42,6 +48,12 @@ fn compact(messages_json: &str, session_id: &str, target_tokens: usize) -> PyRes
 
     let mut policy = CompactionPolicy::default();
     policy.target_tokens = target_tokens;
+    if let Some(value) = protect_first_n {
+        policy.protect_first_n = value;
+    }
+    if let Some(value) = protect_last_n {
+        policy.protect_last_n = value;
+    }
 
     let request = CompactRequest {
         session_id: session_id.to_string(),
@@ -50,8 +62,7 @@ fn compact(messages_json: &str, session_id: &str, target_tokens: usize) -> PyRes
         focus: None,
     };
 
-    let response =
-        compact_context(request).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+    let response = compact_context(request).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
 
     let receipt: &ContextCompactionReceiptV1 = &response.receipt;
 

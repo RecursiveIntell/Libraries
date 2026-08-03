@@ -1,0 +1,518 @@
+
+=== cargo fmt --all -- --check ===
+GATE_EXIT 0
+
+=== cargo test -p poly-kv --no-default-features --all-targets ===
+    Blocking waiting for file lock on package cache
+   Compiling poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.40s
+     Running unittests src/lib.rs (target/debug/deps/poly_kv-c1a9886814f82cc8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/codec_profile_contract.rs (target/debug/deps/codec_profile_contract-4e59e4f7d0212277)
+
+running 1 test
+test built_in_codecs_expose_non_panicking_consistent_profiles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/deterministic_replay.rs (target/debug/deps/deterministic_replay-58df3acf7a28be18)
+
+running 2 tests
+test build_receipt_is_deterministic_for_reordered_input ... ok
+test build_receipt_is_deterministic_for_same_fixture ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/fibquant_adapter.rs (target/debug/deps/fibquant_adapter-6e4c59319aa0c5f8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fibquant_pool.rs (target/debug/deps/fibquant_pool-8c834965033ba9df)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/live_shared_prefix.rs (target/debug/deps/live_shared_prefix-be486fefdb09f47e)
+
+running 7 tests
+test branch_isolation_under_mutation ... ok
+test fork_with_initial_tokens ... ok
+test append_increases_seq_len ... ok
+test interleaved_branch_stability ... ok
+test fork_rejects_empty_agent_id ... ok
+test shared_prefix_across_two_branches ... ok
+test shared_prefix_len_matches_shape ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/memory_accounting.rs (target/debug/deps/memory_accounting-36dff9b1f96dd5e9)
+
+running 2 tests
+test memory_accounting_reader_attach_does_not_duplicate_encoded_pool_bytes ... ok
+test memory_accounting_tracks_mixed_reader_scratch_budgets ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pool_persistence.rs (target/debug/deps/pool_persistence-2e2c9ab9323efc83)
+
+running 13 tests
+test delete_pool_and_relist ... ok
+test concurrent_readers_during_persistence ... ok
+test gc_preserves_referenced ... ok
+test persistence_receipt_agrees_with_pool_receipt ... ok
+test missing_or_corrupt_fallback_is_unavailable ... ok
+test owner_bundle_roundtrip_preserves_manifest_receipt_and_readability ... ok
+test persist_and_reload_pool ... ok
+test manifest_profile_shape_and_accounting_mismatch_is_rejected ... ok
+test restart_recovery_replay ... ok
+test substituted_manifest_rejected ... ok
+test swapped_block_key_map_is_rejected ... ok
+test truncated_block_rejected ... ok
+test gc_removes_unreferenced ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/receipt_roundtrip.rs (target/debug/deps/receipt_roundtrip-e241e768cc63631e)
+
+running 2 tests
+test manifest_memory_uses_canonical_serialized_length ... ok
+test manifests_and_receipts_roundtrip_through_serde ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/shape_rejection.rs (target/debug/deps/shape_rejection-6b2103b8bcd9a48e)
+
+running 2 tests
+test malformed_token_span_is_rejected ... ok
+test mismatched_shape_is_rejected ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/synthetic_roundtrip.rs (target/debug/deps/synthetic_roundtrip-ea93dea8081430c2)
+
+running 4 tests
+test builder_can_derive_exact_fallback_from_input_blocks ... ok
+test synthetic_decode_layer_returns_key_and_value ... ok
+test synthetic_q8_key_drift_is_bounded_and_finite ... ok
+test synthetic_exact_fallback_roundtrip ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/transformers_adapter.rs (target/debug/deps/transformers_adapter-8e9e9fe88654faa6)
+
+running 8 tests
+test exact_restoration_logit_parity ... ok
+test interleaved_branch_stability ... ok
+test shape_mismatch_rejected ... ok
+test token_output_same_after_restore ... ok
+test branch_isolation_no_cross_mutation ... ok
+test wrong_dtype_rejected ... ok
+test wrong_model_revision_rejected ... ok
+test wrong_tokenizer_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+GATE_EXIT 0
+
+=== cargo test -p poly-kv --no-default-features --features fibquant-adapter --all-targets ===
+   Compiling poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.85s
+     Running unittests src/lib.rs (target/debug/deps/poly_kv-6bcc4cd9dbd26009)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/codec_profile_contract.rs (target/debug/deps/codec_profile_contract-e2b0a430c1bb6d81)
+
+running 1 test
+test built_in_codecs_expose_non_panicking_consistent_profiles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/deterministic_replay.rs (target/debug/deps/deterministic_replay-26f0c47f5802194b)
+
+running 2 tests
+test build_receipt_is_deterministic_for_reordered_input ... ok
+test build_receipt_is_deterministic_for_same_fixture ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fibquant_adapter.rs (target/debug/deps/fibquant_adapter-ec61a3228b00878e)
+
+running 4 tests
+test fibquant_value_codec_rejects_wrong_dimension_and_corrupt_payload ... ok
+test fibquant_value_codec_requires_explicit_quality_budget_to_pass ... ok
+test fibquant_value_codec_rejects_cross_profile_payload ... ok
+test fibquant_value_codec_round_trips_with_receipt_backed_eval ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests/fibquant_pool.rs (target/debug/deps/fibquant_pool-28872c3dfb8a8231)
+
+running 3 tests
+test compressed_scoring_uses_the_admitted_encoded_profile ... ok
+test fibquant_is_reachable_through_pool_builder_and_reader ... ok
+test fibquant_owner_bundle_reload_preserves_profile_and_candidate_indices ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+
+     Running tests/live_shared_prefix.rs (target/debug/deps/live_shared_prefix-8a0cf20c0b0b481b)
+
+running 7 tests
+test append_increases_seq_len ... ok
+test branch_isolation_under_mutation ... ok
+test fork_rejects_empty_agent_id ... ok
+test fork_with_initial_tokens ... ok
+test interleaved_branch_stability ... ok
+test shared_prefix_across_two_branches ... ok
+test shared_prefix_len_matches_shape ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/memory_accounting.rs (target/debug/deps/memory_accounting-8cdea984d08b5d0e)
+
+running 2 tests
+test memory_accounting_reader_attach_does_not_duplicate_encoded_pool_bytes ... ok
+test memory_accounting_tracks_mixed_reader_scratch_budgets ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pool_persistence.rs (target/debug/deps/pool_persistence-d3ead05a6ad39ee1)
+
+running 13 tests
+test persistence_receipt_agrees_with_pool_receipt ... ok
+test restart_recovery_replay ... ok
+test substituted_manifest_rejected ... ok
+test concurrent_readers_during_persistence ... ok
+test persist_and_reload_pool ... ok
+test owner_bundle_roundtrip_preserves_manifest_receipt_and_readability ... ok
+test swapped_block_key_map_is_rejected ... ok
+test missing_or_corrupt_fallback_is_unavailable ... ok
+test manifest_profile_shape_and_accounting_mismatch_is_rejected ... ok
+test delete_pool_and_relist ... ok
+test gc_removes_unreferenced ... ok
+test truncated_block_rejected ... ok
+test gc_preserves_referenced ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/receipt_roundtrip.rs (target/debug/deps/receipt_roundtrip-18ea27b52052ad13)
+
+running 2 tests
+test manifest_memory_uses_canonical_serialized_length ... ok
+test manifests_and_receipts_roundtrip_through_serde ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/shape_rejection.rs (target/debug/deps/shape_rejection-c00aa56691e0c6ab)
+
+running 2 tests
+test mismatched_shape_is_rejected ... ok
+test malformed_token_span_is_rejected ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/synthetic_roundtrip.rs (target/debug/deps/synthetic_roundtrip-0ef430aa01913b8c)
+
+running 4 tests
+test builder_can_derive_exact_fallback_from_input_blocks ... ok
+test synthetic_decode_layer_returns_key_and_value ... ok
+test synthetic_q8_key_drift_is_bounded_and_finite ... ok
+test synthetic_exact_fallback_roundtrip ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/transformers_adapter.rs (target/debug/deps/transformers_adapter-02979f03b9ae4015)
+
+running 8 tests
+test exact_restoration_logit_parity ... ok
+test interleaved_branch_stability ... ok
+test branch_isolation_no_cross_mutation ... ok
+test shape_mismatch_rejected ... ok
+test wrong_model_revision_rejected ... ok
+test wrong_tokenizer_rejected ... ok
+test token_output_same_after_restore ... ok
+test wrong_dtype_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+GATE_EXIT 0
+
+=== cargo test -p poly-kv --all-features --all-targets ===
+ Downloading crates ...
+  Downloaded rayon v1.12.0
+   Compiling crossbeam-utils v0.8.21
+   Compiling once_cell v1.21.4
+   Compiling rayon-core v1.13.0
+   Compiling either v1.15.0
+   Compiling plotters-backend v0.3.7
+   Compiling clap_lex v1.1.0
+   Compiling anstyle v1.0.14
+   Compiling ciborium-io v0.2.2
+   Compiling regex-automata v0.4.14
+   Compiling cast v0.3.0
+   Compiling same-file v1.0.6
+   Compiling tinytemplate v1.2.1
+   Compiling is-terminal v0.4.17
+   Compiling oorandom v11.1.5
+   Compiling anes v0.1.6
+   Compiling poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+   Compiling ciborium-ll v0.2.2
+   Compiling tempfile v3.27.0
+   Compiling plotters-svg v0.3.7
+   Compiling walkdir v2.5.0
+   Compiling itertools v0.10.5
+   Compiling clap_builder v4.6.0
+   Compiling plotters v0.3.7
+   Compiling ciborium v0.2.2
+   Compiling rusty-fork v0.3.1
+   Compiling proptest v1.11.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling regex v1.12.3
+   Compiling criterion-plot v0.5.0
+   Compiling crossbeam-deque v0.8.6
+   Compiling clap v4.6.1
+   Compiling rayon v1.12.0
+   Compiling criterion v0.5.1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.00s
+     Running unittests src/lib.rs (target/debug/deps/poly_kv-f13671bcd991de3f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/codec_profile_contract.rs (target/debug/deps/codec_profile_contract-0691e4dd03349f4c)
+
+running 1 test
+test built_in_codecs_expose_non_panicking_consistent_profiles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/deterministic_replay.rs (target/debug/deps/deterministic_replay-37054a9cc2c85084)
+
+running 2 tests
+test build_receipt_is_deterministic_for_reordered_input ... ok
+test build_receipt_is_deterministic_for_same_fixture ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fibquant_adapter.rs (target/debug/deps/fibquant_adapter-987d9966eb64cff5)
+
+running 4 tests
+test fibquant_value_codec_rejects_wrong_dimension_and_corrupt_payload ... ok
+test fibquant_value_codec_rejects_cross_profile_payload ... ok
+test fibquant_value_codec_round_trips_with_receipt_backed_eval ... ok
+test fibquant_value_codec_requires_explicit_quality_budget_to_pass ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running tests/fibquant_pool.rs (target/debug/deps/fibquant_pool-a7a4f4b4d2492721)
+
+running 3 tests
+test fibquant_is_reachable_through_pool_builder_and_reader ... ok
+test compressed_scoring_uses_the_admitted_encoded_profile ... ok
+test fibquant_owner_bundle_reload_preserves_profile_and_candidate_indices ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+
+     Running tests/live_shared_prefix.rs (target/debug/deps/live_shared_prefix-a5ab6d46721e15b0)
+
+running 7 tests
+test append_increases_seq_len ... ok
+test fork_with_initial_tokens ... ok
+test shared_prefix_across_two_branches ... ok
+test interleaved_branch_stability ... ok
+test branch_isolation_under_mutation ... ok
+test fork_rejects_empty_agent_id ... ok
+test shared_prefix_len_matches_shape ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/memory_accounting.rs (target/debug/deps/memory_accounting-5941970bcd2960eb)
+
+running 2 tests
+test memory_accounting_tracks_mixed_reader_scratch_budgets ... ok
+test memory_accounting_reader_attach_does_not_duplicate_encoded_pool_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pool_persistence.rs (target/debug/deps/pool_persistence-5a22f218fdb36b9e)
+
+running 13 tests
+test manifest_profile_shape_and_accounting_mismatch_is_rejected ... ok
+test persist_and_reload_pool ... ok
+test delete_pool_and_relist ... ok
+test missing_or_corrupt_fallback_is_unavailable ... ok
+test concurrent_readers_during_persistence ... ok
+test substituted_manifest_rejected ... ok
+test persistence_receipt_agrees_with_pool_receipt ... ok
+test owner_bundle_roundtrip_preserves_manifest_receipt_and_readability ... ok
+test gc_removes_unreferenced ... ok
+test truncated_block_rejected ... ok
+test swapped_block_key_map_is_rejected ... ok
+test restart_recovery_replay ... ok
+test gc_preserves_referenced ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/receipt_roundtrip.rs (target/debug/deps/receipt_roundtrip-b428607345492dd2)
+
+running 2 tests
+test manifest_memory_uses_canonical_serialized_length ... ok
+test manifests_and_receipts_roundtrip_through_serde ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/shape_rejection.rs (target/debug/deps/shape_rejection-5c9d129f08bcb3e6)
+
+running 2 tests
+test malformed_token_span_is_rejected ... ok
+test mismatched_shape_is_rejected ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/synthetic_roundtrip.rs (target/debug/deps/synthetic_roundtrip-5add46dc90a7a421)
+
+running 4 tests
+test synthetic_decode_layer_returns_key_and_value ... ok
+test builder_can_derive_exact_fallback_from_input_blocks ... ok
+test synthetic_q8_key_drift_is_bounded_and_finite ... ok
+test synthetic_exact_fallback_roundtrip ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/transformers_adapter.rs (target/debug/deps/transformers_adapter-73ad1759b61033ab)
+
+running 8 tests
+test branch_isolation_no_cross_mutation ... ok
+test wrong_dtype_rejected ... ok
+test interleaved_branch_stability ... ok
+test token_output_same_after_restore ... ok
+test shape_mismatch_rejected ... ok
+test exact_restoration_logit_parity ... ok
+test wrong_model_revision_rejected ... ok
+test wrong_tokenizer_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running benches/fibquant_paths.rs (target/debug/deps/fibquant_paths-25d5e6d24a8fc5fd)
+Gnuplot not found, using plotters backend
+fibquant-path-accounting raw_payload=256 json_candidate=26392 framed_wire=16409 exact_fallback_payload=256 hybrid_resident=17552 hybrid_manifest=16485 
+Testing fibquant_raw_encode
+Success
+
+Testing fibquant_raw_decode
+Success
+
+Testing fibquant_json_decode_candidate
+Success
+
+Testing fibquant_wire_decode
+Success
+
+Testing pool_raw_reader_decode
+Success
+
+Testing pool_hybrid_reader_decode
+Success
+
+Testing pool_hybrid_exact_fallback_decode
+Success
+
+     Running benches/synthetic_pool.rs (target/debug/deps/synthetic_pool-c75f12626302861c)
+Gnuplot not found, using plotters backend
+Testing synthetic_pool_build_mha
+Success
+
+GATE_EXIT 0
+
+=== cargo clippy -p poly-kv --all-features --all-targets -- -D warnings ===
+    Checking crossbeam-utils v0.8.21
+    Checking either v1.15.0
+    Checking once_cell v1.21.4
+    Checking ciborium-io v0.2.2
+    Checking anstyle v1.0.14
+    Checking clap_lex v1.1.0
+    Checking plotters-backend v0.3.7
+    Checking regex-automata v0.4.14
+    Checking same-file v1.0.6
+    Checking cast v0.3.0
+    Checking tinytemplate v1.2.1
+    Checking is-terminal v0.4.17
+    Checking oorandom v11.1.5
+    Checking anes v0.1.6
+   Compiling poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+    Checking ciborium-ll v0.2.2
+    Checking walkdir v2.5.0
+    Checking tempfile v3.27.0
+    Checking rusty-fork v0.3.1
+    Checking clap_builder v4.6.0
+    Checking ciborium v0.2.2
+    Checking plotters-svg v0.3.7
+    Checking itertools v0.10.5
+    Checking proptest v1.11.0
+    Checking crossbeam-epoch v0.9.18
+    Checking plotters v0.3.7
+    Checking crossbeam-deque v0.8.6
+    Checking rayon-core v1.13.0
+    Checking rayon v1.12.0
+    Checking regex v1.12.3
+    Checking criterion-plot v0.5.0
+    Checking clap v4.6.1
+    Checking criterion v0.5.1
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 20.39s
+GATE_EXIT 0
+
+=== cargo doc --workspace --no-deps --all-features ===
+   Compiling target-lexicon v0.13.5
+   Compiling syn v2.0.117
+    Checking regex-syntax v0.8.10
+   Compiling heck v0.5.0
+   Compiling pyo3-build-config v0.28.3
+    Checking regex-automata v0.4.14
+   Compiling pyo3-macros-backend v0.28.3
+   Compiling pyo3-ffi v0.28.3
+   Compiling pyo3 v0.28.3
+    Checking regex v1.12.3
+   Compiling serde_derive v1.0.228
+   Compiling zerocopy-derive v0.8.48
+   Compiling nalgebra-macros v0.2.2
+   Compiling thiserror-impl v1.0.69
+    Checking zerocopy v0.8.48
+    Checking thiserror v1.0.69
+    Checking serde v1.0.228
+    Checking num-complex v0.4.6
+    Checking bincode v1.3.3
+    Checking tinytemplate v1.2.1
+    Checking quant-codec-core v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core)
+    Checking bincode v2.0.1
+ Documenting quant-codec-core v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core)
+    Checking simba v0.8.1
+    Checking simba v0.9.1
+   Compiling pyo3-macros v0.28.3
+    Checking ppv-lite86 v0.2.21
+    Checking half v2.7.1
+    Checking ciborium-ll v0.2.2
+    Checking rand_chacha v0.3.1
+    Checking ciborium v0.2.2
+    Checking rand v0.8.7
+    Checking criterion v0.5.1
+    Checking rand_distr v0.4.3
+    Checking nalgebra v0.33.3
+    Checking nalgebra v0.32.6
+    Checking statrs v0.17.1
+    Checking fib-quant v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/fib-quant)
+    Checking poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+ Documenting poly-kv v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv)
+ Documenting poly-kv-python v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv-python)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 49.90s
+   Generated /home/sikmindz/Coding/Libraries/poly-kv/target/doc/poly_kv/index.html and 2 other files
+GATE_EXIT 0

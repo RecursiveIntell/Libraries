@@ -29,7 +29,6 @@ fn main() {
         } else {
             println!("cargo:warning=nvcc not found — CUDA kernels will not be compiled");
             println!("cargo:warning=Install CUDA toolkit: sudo dnf install cuda-toolkit-12-8");
-            return;
         }
     } else {
         compile_with_nvcc(&nvcc);

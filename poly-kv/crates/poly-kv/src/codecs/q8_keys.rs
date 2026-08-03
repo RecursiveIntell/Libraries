@@ -1,11 +1,9 @@
 use crate::{metrics, PolyKvError};
 use quant_codec_core::{CodecId, CodecProfile, CodecProfileDigest, EvalReport, VectorCodec};
 
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Q8KeyBlock {
     pub scale: f32,
     pub original_len: u64,

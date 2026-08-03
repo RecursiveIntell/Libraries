@@ -125,10 +125,9 @@ fn truncated_block_rejected() {
     store.persist(&pool).unwrap();
 
     // Truncate one block file.
-    for entry in fs::read_dir(dir.join("blocks")).unwrap() {
+    if let Some(entry) = fs::read_dir(dir.join("blocks")).unwrap().next() {
         let path = entry.unwrap().path();
         fs::write(&path, b"x").unwrap(); // truncate to 1 byte
-        break;
     }
 
     let result = store.load(&digest);
@@ -190,7 +189,7 @@ fn gc_removes_unreferenced() {
     // pool1 and pool2 share identical block content in content-addressed
     // storage, so GC with only pool1 kept should still preserve shared blocks.
     // The test verifies that GC doesn't crash and pool1 remains loadable.
-    let removed = store.gc_unreferenced(&keep).unwrap();
+    let _removed = store.gc_unreferenced(&keep).unwrap();
     // GC behavior is correct either way for content-addressed storage.
     store.load(&pool1.manifest().manifest_digest).unwrap();
 }
@@ -217,6 +216,105 @@ fn gc_preserves_referenced() {
     // Both should still be loadable.
     store.load(&pool1.manifest().manifest_digest).unwrap();
     store.load(&pool2.manifest().manifest_digest).unwrap();
+}
+
+#[test]
+fn swapped_block_key_map_is_rejected() {
+    let dir = temp_dir();
+    let (pool, _) = build_pool();
+    let store = KvPoolStore::open(&dir).unwrap();
+    store.persist(&pool).unwrap();
+    let digest = pool.manifest().manifest_digest;
+    let index_path = dir.join("manifests").join(format!("{digest}.blocks.json"));
+    let mut names: Vec<String> = serde_json::from_slice(&fs::read(&index_path).unwrap()).unwrap();
+    names.swap(0, 1);
+    fs::write(index_path, serde_json::to_vec(&names).unwrap()).unwrap();
+    assert!(
+        store.load(&digest).is_err(),
+        "key-map substitution must fail closed"
+    );
+}
+
+#[test]
+fn manifest_profile_shape_and_accounting_mismatch_is_rejected() {
+    let dir = temp_dir();
+    let (pool, _) = build_pool();
+    let store = KvPoolStore::open(&dir).unwrap();
+    store.persist(&pool).unwrap();
+    let old = pool.manifest().manifest_digest;
+    let old_path = dir.join("manifests").join(format!("{old}.json"));
+    let mut manifest: serde_json::Value =
+        serde_json::from_slice(&fs::read(&old_path).unwrap()).unwrap();
+    manifest["shape"]["seq_len"] = serde_json::json!(99);
+    let typed: poly_kv::KvPoolManifestV1 = serde_json::from_value(manifest).unwrap();
+    let new_digest = typed.canonical_digest_without_self();
+    let mut rewritten = serde_json::to_value(typed).unwrap();
+    rewritten["manifest_digest"] = serde_json::json!(new_digest.to_string());
+    fs::write(
+        dir.join("manifests").join(format!("{new_digest}.json")),
+        serde_json::to_vec(&rewritten).unwrap(),
+    )
+    .unwrap();
+    fs::rename(
+        dir.join("manifests").join(format!("{old}.blocks.json")),
+        dir.join("manifests")
+            .join(format!("{new_digest}.blocks.json")),
+    )
+    .unwrap();
+    assert!(
+        store.load(&new_digest).is_err(),
+        "shape/profile/accounting mismatch must fail closed"
+    );
+}
+
+#[test]
+fn missing_or_corrupt_fallback_is_unavailable() {
+    let dir = temp_dir();
+    let (pool, _) = build_pool();
+    let store = KvPoolStore::open(&dir).unwrap();
+    store.persist(&pool).unwrap();
+    let digest = pool.manifest().manifest_digest;
+    fs::remove_file(dir.join("fallbacks").join(digest.to_string())).unwrap();
+    assert!(store.load_fallback(&digest).is_err());
+}
+
+#[test]
+fn persistence_receipt_agrees_with_pool_receipt() {
+    let dir = temp_dir();
+    let (pool, _) = build_pool();
+    let persisted = KvPoolStore::open(&dir).unwrap().persist(&pool).unwrap();
+    let receipt = pool.build_receipt();
+    assert_eq!(persisted.manifest.manifest_digest, receipt.manifest_digest);
+    assert_eq!(persisted.manifest.encoded_bytes, receipt.encoded_bytes);
+    assert_eq!(
+        persisted.manifest.exact_fallback_bytes,
+        receipt.exact_fallback_bytes
+    );
+    assert_eq!(persisted.manifest.blocks.len() as u64, receipt.block_count);
+}
+
+#[test]
+fn owner_bundle_roundtrip_preserves_manifest_receipt_and_readability() {
+    let (pool, _) = build_pool();
+    let payload = poly_kv::encode_pool_bundle(&pool).expect("encode owner bundle");
+    let loaded =
+        poly_kv::decode_pool_bundle_with_value_codec(&payload, poly_kv::RawExactValueCodec)
+            .expect("decode owner bundle");
+
+    assert_eq!(loaded.manifest(), pool.manifest());
+    assert_eq!(loaded.build_receipt(), pool.build_receipt());
+    let original = pool
+        .attach_reader(Default::default())
+        .unwrap()
+        .decode_layer(LayerId(0))
+        .unwrap();
+    let reloaded = loaded
+        .attach_reader(Default::default())
+        .unwrap()
+        .decode_layer(LayerId(0))
+        .unwrap();
+    assert_eq!(reloaded.key.data, original.key.data);
+    assert_eq!(reloaded.value.data, original.value.data);
 }
 
 #[test]

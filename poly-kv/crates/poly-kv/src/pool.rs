@@ -547,7 +547,10 @@ fn extract_slice(
     Ok(out)
 }
 
-fn validate_block_set(shape: &KvTensorShape, blocks: &[ExactKvBlock]) -> Result<(), PolyKvError> {
+pub(crate) fn validate_block_set(
+    shape: &KvTensorShape,
+    blocks: &[ExactKvBlock],
+) -> Result<(), PolyKvError> {
     let expected_count = (shape.layers as usize) * 2;
     if blocks.len() != expected_count {
         return Err(PolyKvError::Manifest(format!(
@@ -577,7 +580,7 @@ fn validate_block_set(shape: &KvTensorShape, blocks: &[ExactKvBlock]) -> Result<
     Ok(())
 }
 
-fn digest_encoded_q8(block: &ExactKvBlock, encoded: &Q8KeyBlock) -> ArtifactDigest {
+pub(crate) fn digest_encoded_q8(block: &ExactKvBlock, encoded: &Q8KeyBlock) -> ArtifactDigest {
     let mut bytes = Vec::new();
     bytes.extend_from_slice(block.artifact_digest().to_string().as_bytes());
     bytes.extend_from_slice(&encoded.scale.to_bits().to_le_bytes());
@@ -588,14 +591,14 @@ fn digest_encoded_q8(block: &ExactKvBlock, encoded: &Q8KeyBlock) -> ArtifactDige
     ArtifactDigest::from_canonical_bytes(&bytes)
 }
 
-fn digest_encoded_raw(block: &ExactKvBlock, encoded: &[u8]) -> ArtifactDigest {
+pub(crate) fn digest_encoded_raw(block: &ExactKvBlock, encoded: &[u8]) -> ArtifactDigest {
     let mut bytes = Vec::new();
     bytes.extend_from_slice(block.artifact_digest().to_string().as_bytes());
     bytes.extend_from_slice(encoded);
     ArtifactDigest::from_canonical_bytes(&bytes)
 }
 
-fn combined_profile_digest(
+pub(crate) fn combined_profile_digest(
     key_codec: &Q8KeyCodec,
     value_codec: &dyn ValueCodec,
 ) -> quant_codec_core::CodecProfileDigest {
@@ -648,6 +651,7 @@ pub struct PreparedCompressedIndex {
     pub value_codes: Vec<fib_quant::FibCodeV1>,
     pub scorer: fib_quant::FibScorer,
     pub num_tokens: usize,
+    pub fib_profile_digest: String,
 }
 
 #[cfg(feature = "fibquant-adapter")]
@@ -676,8 +680,18 @@ impl SharedKvPool {
         }
         let num_tokens = shape.seq_len as usize;
 
-        // Decode FibCodeV1 codes from encoded value blocks.
-        let adapter = crate::adapters::fibquant::FibQuantValueCodec::new(head_dim, 4, 32, 42)?;
+        // Decode with the exact admitted codec retained by the pool. Rebuilding
+        // a hard-coded codec here can silently change profile/codebook identity.
+        let adapter = self
+            .inner
+            .value_codec
+            .as_any()
+            .downcast_ref::<crate::adapters::fibquant::FibQuantValueCodec>()
+            .ok_or_else(|| {
+                PolyKvError::Codec(
+                    "compressed FibQuant scoring requires the admitted FibQuant value codec".into(),
+                )
+            })?;
         let mut value_codes: Vec<fib_quant::FibCodeV1> = Vec::new();
         for block in &self.inner.encoded_blocks {
             if block.role == KvRole::Value {
@@ -693,8 +707,8 @@ impl SharedKvPool {
             ));
         }
 
-        // Build scorer and score candidates for this head.
-        let scorer = adapter.build_scorer(42)?;
+        // Build scorer from the same admitted profile used for encoding.
+        let scorer = adapter.build_scorer()?;
         let prepared = scorer
             .prepare_query(query)
             .map_err(|e| PolyKvError::Codec(format!("fib prepare: {e}")))?;
@@ -746,7 +760,7 @@ impl SharedKvPool {
             codec_used: "fibquant-adapter".into(),
             timestamp: now,
         };
-        receipt.validate().map_err(|e| PolyKvError::Manifest(e))?;
+        receipt.validate().map_err(PolyKvError::Manifest)?;
         Ok(CompressedAttentionSelection { hits, receipt })
     }
 
@@ -758,7 +772,6 @@ impl SharedKvPool {
     ) -> Result<PreparedCompressedIndex, PolyKvError> {
         let shape = &self.inner.manifest.shape;
         let num_tokens = shape.seq_len as usize;
-        let head_dim = shape.head_dim as usize;
         let num_heads = shape.key_heads as usize;
         if head_idx >= num_heads {
             return Err(PolyKvError::InvalidShape {
@@ -766,8 +779,17 @@ impl SharedKvPool {
             });
         }
 
-        let adapter = crate::adapters::fibquant::FibQuantValueCodec::new(head_dim, 4, 32, 42)?;
-        let scorer = adapter.build_scorer(42)?;
+        let adapter = self
+            .inner
+            .value_codec
+            .as_any()
+            .downcast_ref::<crate::adapters::fibquant::FibQuantValueCodec>()
+            .ok_or_else(|| {
+                PolyKvError::Codec(
+                    "prepared FibQuant scoring requires the admitted FibQuant value codec".into(),
+                )
+            })?;
+        let scorer = adapter.build_scorer()?;
 
         let mut value_codes: Vec<fib_quant::FibCodeV1> = Vec::new();
         for block in &self.inner.encoded_blocks {
@@ -785,6 +807,7 @@ impl SharedKvPool {
             value_codes,
             scorer,
             num_tokens,
+            fib_profile_digest: adapter.fib_profile_digest().to_string(),
         })
     }
 
@@ -857,7 +880,7 @@ impl SharedKvPool {
             codec_used: "fibquant-adapter-prepared".into(),
             timestamp: now,
         };
-        receipt.validate().map_err(|e| PolyKvError::Manifest(e))?;
+        receipt.validate().map_err(PolyKvError::Manifest)?;
         Ok(CompressedAttentionSelection { hits, receipt })
     }
 }

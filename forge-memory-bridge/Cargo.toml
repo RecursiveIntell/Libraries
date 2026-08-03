@@ -7,6 +7,10 @@ description = "Transform Forge export envelopes into projection import batches f
 license = "Apache-2.0"
 readme = "README.md"
 
+[[bin]]
+name = "forge-memory-bridge"
+path = "src/main.rs"
+
 [dependencies]
 semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
 stack-ids = { version = "0.1.1", path = "../stack-ids" }

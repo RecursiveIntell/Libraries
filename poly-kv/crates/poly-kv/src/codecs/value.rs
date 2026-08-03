@@ -1,5 +1,6 @@
 use crate::PolyKvError;
 use quant_codec_core::{CodecId, CodecProfile, CodecProfileDigest, EvalReport, VectorCodec};
+use std::any::Any;
 
 /// Object-safe value-codec boundary used by [`crate::PoolBuilder`].
 ///
@@ -7,6 +8,8 @@ use quant_codec_core::{CodecId, CodecProfile, CodecProfileDigest, EvalReport, Ve
 /// retain one codec instance and dispatch decode without backend-specific
 /// storage variants.
 pub trait ValueCodec: CodecProfile + std::fmt::Debug + Send + Sync {
+    /// Expose the concrete admitted codec to owner-controlled scoring paths.
+    fn as_any(&self) -> &dyn Any;
     fn encode_values(&self, input: &[f32]) -> Result<Vec<u8>, PolyKvError>;
     fn decode_values(&self, block: &[u8], out: &mut [f32]) -> Result<(), PolyKvError>;
     fn eval_values(&self, exact: &[f32], block: &[u8]) -> Result<EvalReport, PolyKvError>;
@@ -81,6 +84,10 @@ impl VectorCodec for RawExactValueCodec {
 }
 
 impl ValueCodec for RawExactValueCodec {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
     fn encode_values(&self, input: &[f32]) -> Result<Vec<u8>, PolyKvError> {
         if !input.iter().all(|v| v.is_finite()) {
             return Err(PolyKvError::Codec(

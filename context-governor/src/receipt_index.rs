@@ -1,0 +1,659 @@
+use crate::{CompactResponse, ContextGovernorError};
+use rusqlite::{params, Connection, OptionalExtension, TransactionBehavior};
+use std::collections::{BTreeMap, HashSet};
+use std::fs::{self, File};
+use std::path::{Path, PathBuf};
+
+pub(crate) const INDEX_FILE_NAME: &str = ".receipt-index.sqlite3";
+pub(crate) const LEGACY_INDEX_FILE_NAME: &str = ".receipt-index.json";
+const INDEX_SCHEMA: &str = "ReceiptTrigramSignatureIndexV3";
+const TRIGRAM_ALGORITHM: &str = "fnv1a64-unicode-lowercase-scalar-trigram-v1";
+const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+const FNV_PRIME: u64 = 0x100000001b3;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ReceiptFingerprint {
+    pub receipt_id: String,
+    pub path: PathBuf,
+    pub file_bytes: u64,
+    pub modified_ns: i64,
+    pub changed_ns: i64,
+}
+
+#[derive(Debug)]
+struct IndexedReceipt {
+    receipt_id: String,
+    created_utc: String,
+    file_bytes: u64,
+    modified_ns: i64,
+    changed_ns: i64,
+    trigram_hashes: Vec<u8>,
+    trigram_hashes_blake3: String,
+}
+
+pub(crate) fn index_path(root: &Path) -> PathBuf {
+    root.join(INDEX_FILE_NAME)
+}
+
+pub(crate) fn scan_fingerprints(
+    root: &Path,
+) -> Result<Vec<ReceiptFingerprint>, ContextGovernorError> {
+    if !root.exists() {
+        return Ok(Vec::new());
+    }
+    let mut out = Vec::new();
+    for entry in fs::read_dir(root)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.extension().and_then(|value| value.to_str()) != Some("json") {
+            continue;
+        }
+        if path.file_name().and_then(|value| value.to_str()) == Some(LEGACY_INDEX_FILE_NAME) {
+            continue;
+        }
+        let Some(receipt_id) = path.file_stem().and_then(|value| value.to_str()) else {
+            continue;
+        };
+        if !receipt_id.starts_with("ctxr_") && !receipt_id.starts_with("rehydrated-") {
+            continue;
+        }
+        let metadata = entry.metadata()?;
+        out.push(ReceiptFingerprint {
+            receipt_id: receipt_id.to_string(),
+            path,
+            file_bytes: metadata.len(),
+            modified_ns: modified_ns(&metadata),
+            changed_ns: changed_ns(&metadata),
+        });
+    }
+    out.sort_by(|left, right| left.receipt_id.cmp(&right.receipt_id));
+    Ok(out)
+}
+
+pub(crate) fn fingerprint_for_path(
+    receipt_id: &str,
+    path: &Path,
+) -> Result<ReceiptFingerprint, ContextGovernorError> {
+    let metadata = fs::metadata(path)?;
+    Ok(ReceiptFingerprint {
+        receipt_id: receipt_id.to_string(),
+        path: path.to_path_buf(),
+        file_bytes: metadata.len(),
+        modified_ns: modified_ns(&metadata),
+        changed_ns: changed_ns(&metadata),
+    })
+}
+
+/// A cheap readiness check. It validates the application schema and compares
+/// receipt metadata, but deliberately does not run PRAGMA quick_check: SQLite
+/// documents quick_check as O(N), which makes it unsuitable for a query hot path.
+pub(crate) fn index_is_valid(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+) -> Result<bool, ContextGovernorError> {
+    let path = index_path(root);
+    if !path.exists() {
+        return Ok(false);
+    }
+    let connection = match open_read_only(&path) {
+        Ok(connection) => connection,
+        Err(_) => return Ok(false),
+    };
+    validate_connection(&connection, fingerprints)
+}
+
+/// Make the derived index match the authoritative receipt files. A healthy
+/// index is reconciled incrementally; only a missing, corrupt, or incompatible
+/// database is rebuilt from the full corpus.
+pub(crate) fn ensure_index(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+) -> Result<(), ContextGovernorError> {
+    if index_path(root).exists() {
+        match reconcile_index(root, fingerprints) {
+            Ok(true) => return Ok(()),
+            Ok(false) | Err(_) => remove_index_files(root)?,
+        }
+    }
+    rebuild_index(root, fingerprints)
+}
+
+/// Update one receipt only when a query-ready index already exists. The JSON
+/// receipt is authoritative and must be published first; a crash between that
+/// rename and this transaction is repaired by ensure_index on the next search.
+pub(crate) fn upsert_if_present(
+    root: &Path,
+    fingerprint: &ReceiptFingerprint,
+    response: &CompactResponse,
+) -> Result<bool, ContextGovernorError> {
+    let path = index_path(root);
+    if !path.exists() {
+        return Ok(false);
+    }
+    let mut connection = open_writable(&path)?;
+    if !schema_is_current(&connection)? {
+        return Ok(false);
+    }
+    let row = indexed_receipt(fingerprint, response)?;
+    let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    upsert_row(&transaction, &row)?;
+    transaction.commit()?;
+    Ok(true)
+}
+
+pub(crate) fn remove_if_present(
+    root: &Path,
+    receipt_ids: &[String],
+) -> Result<bool, ContextGovernorError> {
+    if receipt_ids.is_empty() || !index_path(root).exists() {
+        return Ok(index_path(root).exists());
+    }
+    let mut connection = open_writable(&index_path(root))?;
+    if !schema_is_current(&connection)? {
+        return Ok(false);
+    }
+    let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    {
+        let mut statement = transaction.prepare("DELETE FROM receipts WHERE receipt_id = ?1")?;
+        for receipt_id in receipt_ids {
+            statement.execute(params![receipt_id])?;
+        }
+    }
+    transaction.commit()?;
+    Ok(true)
+}
+
+pub(crate) fn ordered_receipt_ids(root: &Path) -> Result<Vec<String>, ContextGovernorError> {
+    let connection = open_read_only(&index_path(root))?;
+    let mut statement =
+        connection.prepare("SELECT receipt_id FROM receipts ORDER BY created_utc, receipt_id")?;
+    let rows = statement.query_map([], |row| row.get(0))?;
+    Ok(rows.collect::<Result<Vec<_>, _>>()?)
+}
+
+/// Return a complete candidate superset for the existing case-insensitive
+/// substring contract. Hash collisions can only add false positives. Queries
+/// shorter than three Unicode scalar values fall back to the authoritative scan.
+pub(crate) fn candidate_receipts(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+    query: &str,
+) -> Result<Option<Vec<String>>, ContextGovernorError> {
+    let connection = match open_read_only(&index_path(root)) {
+        Ok(connection) => connection,
+        Err(_) => return Ok(None),
+    };
+    if !validate_connection(&connection, fingerprints)? {
+        return Ok(None);
+    }
+    if query.is_empty() {
+        return Ok(Some(ordered_receipt_ids_from_connection(&connection)?));
+    }
+    let query_hashes = trigram_hashes(query);
+    if query_hashes.is_empty() {
+        return Ok(None);
+    }
+
+    let mut statement = connection.prepare(
+        "SELECT receipt_id, trigram_hashes, trigram_hashes_blake3
+         FROM receipts ORDER BY created_utc, receipt_id",
+    )?;
+    let rows = statement.query_map([], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, Vec<u8>>(1)?,
+            row.get::<_, String>(2)?,
+        ))
+    })?;
+    let mut candidates = Vec::new();
+    let mut corrupt_signature = false;
+    for row in rows {
+        let (receipt_id, encoded, expected_digest) = row?;
+        if encoded.len() % 8 != 0 || blake3::hash(&encoded).to_hex().as_str() != expected_digest {
+            corrupt_signature = true;
+            break;
+        }
+        if contains_all_hashes(&encoded, &query_hashes) {
+            candidates.push(receipt_id);
+        }
+    }
+    drop(statement);
+    drop(connection);
+    if corrupt_signature {
+        remove_index_files(root)?;
+        return Ok(None);
+    }
+    Ok(Some(candidates))
+}
+
+pub(crate) fn invalidate(root: &Path) -> Result<(), ContextGovernorError> {
+    remove_index_files(root)
+}
+
+fn reconcile_index(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+) -> Result<bool, ContextGovernorError> {
+    let path = index_path(root);
+    let mut connection = open_writable(&path)?;
+    if !schema_is_current(&connection)? {
+        return Ok(false);
+    }
+
+    let stored = stored_fingerprints(&connection)?;
+    let expected = fingerprints
+        .iter()
+        .map(|fingerprint| (fingerprint.receipt_id.clone(), fingerprint))
+        .collect::<BTreeMap<_, _>>();
+    let removed = stored
+        .keys()
+        .filter(|receipt_id| !expected.contains_key(*receipt_id))
+        .cloned()
+        .collect::<Vec<_>>();
+    let changed = fingerprints
+        .iter()
+        .filter(|fingerprint| {
+            stored.get(&fingerprint.receipt_id).map_or(true, |stored| {
+                *stored
+                    != (
+                        fingerprint.file_bytes,
+                        fingerprint.modified_ns,
+                        fingerprint.changed_ns,
+                    )
+            })
+        })
+        .map(load_indexed_receipt)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if removed.is_empty() && changed.is_empty() {
+        return Ok(true);
+    }
+
+    let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    {
+        let mut delete = transaction.prepare("DELETE FROM receipts WHERE receipt_id = ?1")?;
+        for receipt_id in removed {
+            delete.execute(params![receipt_id])?;
+        }
+    }
+    for row in &changed {
+        upsert_row(&transaction, row)?;
+    }
+    transaction.commit()?;
+    Ok(true)
+}
+
+fn rebuild_index(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+) -> Result<(), ContextGovernorError> {
+    fs::create_dir_all(root)?;
+    let temporary_path = root.join(format!(
+        ".receipt-index.{}.sqlite3.tmp",
+        uuid::Uuid::new_v4()
+    ));
+    let rows = load_indexed_receipts_parallel(fingerprints)?;
+
+    let build_result = (|| -> Result<(), ContextGovernorError> {
+        let mut connection = Connection::open(&temporary_path)?;
+        connection.busy_timeout(std::time::Duration::from_secs(30))?;
+        connection.execute_batch(
+            "PRAGMA journal_mode=DELETE;
+             PRAGMA synchronous=FULL;
+             CREATE TABLE metadata (
+                 key TEXT PRIMARY KEY,
+                 value TEXT NOT NULL
+             ) WITHOUT ROWID;
+             CREATE TABLE receipts (
+                 receipt_id TEXT PRIMARY KEY,
+                 created_utc TEXT NOT NULL,
+                 file_bytes INTEGER NOT NULL,
+                 modified_ns INTEGER NOT NULL,
+                 changed_ns INTEGER NOT NULL,
+                 trigram_hashes BLOB NOT NULL,
+                 trigram_hashes_blake3 TEXT NOT NULL
+             ) WITHOUT ROWID;
+             CREATE INDEX receipts_created ON receipts(created_utc, receipt_id);",
+        )?;
+        let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+        transaction.execute(
+            "INSERT INTO metadata(key, value) VALUES('schema', ?1)",
+            params![INDEX_SCHEMA],
+        )?;
+        transaction.execute(
+            "INSERT INTO metadata(key, value) VALUES('trigram_algorithm', ?1)",
+            params![TRIGRAM_ALGORITHM],
+        )?;
+        for row in &rows {
+            upsert_row(&transaction, row)?;
+        }
+        transaction.commit()?;
+        drop(connection);
+        File::open(&temporary_path)?.sync_all()?;
+        fs::rename(&temporary_path, index_path(root))?;
+        sync_directory(root)?;
+        if !index_is_valid(root, fingerprints)? {
+            return Err(ContextGovernorError::Sqlite(
+                "receipt index failed post-publication verification".into(),
+            ));
+        }
+        Ok(())
+    })();
+
+    if build_result.is_err() {
+        let _ = fs::remove_file(&temporary_path);
+    }
+    build_result
+}
+
+fn load_indexed_receipt(
+    fingerprint: &ReceiptFingerprint,
+) -> Result<IndexedReceipt, ContextGovernorError> {
+    let bytes = fs::read(&fingerprint.path)?;
+    let response: CompactResponse = serde_json::from_slice(&bytes)?;
+    indexed_receipt(fingerprint, &response)
+}
+
+fn load_indexed_receipts_parallel(
+    fingerprints: &[ReceiptFingerprint],
+) -> Result<Vec<IndexedReceipt>, ContextGovernorError> {
+    if fingerprints.len() <= 1 {
+        return fingerprints.iter().map(load_indexed_receipt).collect();
+    }
+    let workers = std::thread::available_parallelism()
+        .map(usize::from)
+        .unwrap_or(1)
+        .min(4)
+        .min(fingerprints.len());
+    let chunk_size = fingerprints.len().div_ceil(workers);
+    std::thread::scope(|scope| {
+        let handles = fingerprints
+            .chunks(chunk_size)
+            .map(|chunk| {
+                scope.spawn(move || {
+                    chunk
+                        .iter()
+                        .map(load_indexed_receipt)
+                        .collect::<Result<Vec<_>, _>>()
+                })
+            })
+            .collect::<Vec<_>>();
+        let mut rows = Vec::with_capacity(fingerprints.len());
+        for handle in handles {
+            let chunk = handle.join().map_err(|_| {
+                ContextGovernorError::Io(std::io::Error::other(
+                    "receipt-index build worker panicked",
+                ))
+            })??;
+            rows.extend(chunk);
+        }
+        Ok(rows)
+    })
+}
+
+fn indexed_receipt(
+    fingerprint: &ReceiptFingerprint,
+    response: &CompactResponse,
+) -> Result<IndexedReceipt, ContextGovernorError> {
+    if response.receipt.receipt_id != fingerprint.receipt_id {
+        return Err(ContextGovernorError::ReceiptNotFound(format!(
+            "receipt identity mismatch: path={} payload={}",
+            fingerprint.receipt_id, response.receipt.receipt_id
+        )));
+    }
+    let mut hashes = HashSet::new();
+    for item in &response.exact_store {
+        add_trigram_hashes(&item.content, &mut hashes);
+    }
+    for message in &response.compacted_messages {
+        add_trigram_hashes(&message.content, &mut hashes);
+    }
+    add_trigram_hashes(&serde_json::to_string(&response.receipt)?, &mut hashes);
+    let mut hashes = hashes.into_iter().collect::<Vec<_>>();
+    hashes.sort_unstable();
+    let encoded = encode_hashes(&hashes);
+    let digest = blake3::hash(&encoded).to_hex().to_string();
+    Ok(IndexedReceipt {
+        receipt_id: fingerprint.receipt_id.clone(),
+        created_utc: response.receipt.created_utc.to_rfc3339(),
+        file_bytes: fingerprint.file_bytes,
+        modified_ns: fingerprint.modified_ns,
+        changed_ns: fingerprint.changed_ns,
+        trigram_hashes: encoded,
+        trigram_hashes_blake3: digest,
+    })
+}
+
+fn upsert_row(
+    transaction: &rusqlite::Transaction<'_>,
+    row: &IndexedReceipt,
+) -> Result<(), ContextGovernorError> {
+    transaction.execute(
+        "INSERT INTO receipts(
+             receipt_id, created_utc, file_bytes, modified_ns, changed_ns,
+             trigram_hashes, trigram_hashes_blake3
+         ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7)
+         ON CONFLICT(receipt_id) DO UPDATE SET
+             created_utc = excluded.created_utc,
+             file_bytes = excluded.file_bytes,
+             modified_ns = excluded.modified_ns,
+             changed_ns = excluded.changed_ns,
+             trigram_hashes = excluded.trigram_hashes,
+             trigram_hashes_blake3 = excluded.trigram_hashes_blake3",
+        params![
+            &row.receipt_id,
+            &row.created_utc,
+            row.file_bytes as i64,
+            row.modified_ns,
+            row.changed_ns,
+            &row.trigram_hashes,
+            &row.trigram_hashes_blake3,
+        ],
+    )?;
+    Ok(())
+}
+
+fn open_read_only(path: &Path) -> Result<Connection, ContextGovernorError> {
+    let connection = Connection::open_with_flags(
+        path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    )?;
+    connection.busy_timeout(std::time::Duration::from_secs(30))?;
+    Ok(connection)
+}
+
+fn open_writable(path: &Path) -> Result<Connection, ContextGovernorError> {
+    let connection = Connection::open(path)?;
+    connection.busy_timeout(std::time::Duration::from_secs(30))?;
+    // This index is derived from fsync'd JSON receipts. WAL+NORMAL preserves
+    // database consistency while avoiding a sync on every incremental update;
+    // a lost final index transaction is detected from receipt fingerprints.
+    connection.execute_batch(
+        "PRAGMA journal_mode=WAL;
+         PRAGMA synchronous=NORMAL;",
+    )?;
+    Ok(connection)
+}
+
+fn schema_is_current(connection: &Connection) -> Result<bool, ContextGovernorError> {
+    let schema = connection
+        .query_row(
+            "SELECT value FROM metadata WHERE key = 'schema'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional();
+    let Ok(Some(schema)) = schema else {
+        return Ok(false);
+    };
+    if schema != INDEX_SCHEMA {
+        return Ok(false);
+    }
+    let algorithm = connection
+        .query_row(
+            "SELECT value FROM metadata WHERE key = 'trigram_algorithm'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional();
+    Ok(matches!(algorithm, Ok(Some(value)) if value == TRIGRAM_ALGORITHM))
+}
+
+fn validate_connection(
+    connection: &Connection,
+    fingerprints: &[ReceiptFingerprint],
+) -> Result<bool, ContextGovernorError> {
+    if !schema_is_current(connection)? {
+        return Ok(false);
+    }
+    let stored = match stored_fingerprints(connection) {
+        Ok(stored) => stored,
+        Err(_) => return Ok(false),
+    };
+    if stored.len() != fingerprints.len() {
+        return Ok(false);
+    }
+    Ok(fingerprints.iter().all(|fingerprint| {
+        stored.get(&fingerprint.receipt_id)
+            == Some(&(
+                fingerprint.file_bytes,
+                fingerprint.modified_ns,
+                fingerprint.changed_ns,
+            ))
+    }))
+}
+
+fn stored_fingerprints(
+    connection: &Connection,
+) -> Result<BTreeMap<String, (u64, i64, i64)>, ContextGovernorError> {
+    let mut statement = connection.prepare(
+        "SELECT receipt_id, file_bytes, modified_ns, changed_ns
+         FROM receipts ORDER BY receipt_id",
+    )?;
+    let rows = statement.query_map([], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            (
+                row.get::<_, u64>(1)?,
+                row.get::<_, i64>(2)?,
+                row.get::<_, i64>(3)?,
+            ),
+        ))
+    })?;
+    Ok(rows.collect::<Result<BTreeMap<_, _>, _>>()?)
+}
+
+fn ordered_receipt_ids_from_connection(
+    connection: &Connection,
+) -> Result<Vec<String>, ContextGovernorError> {
+    let mut statement =
+        connection.prepare("SELECT receipt_id FROM receipts ORDER BY created_utc, receipt_id")?;
+    let rows = statement.query_map([], |row| row.get(0))?;
+    Ok(rows.collect::<Result<Vec<_>, _>>()?)
+}
+
+fn trigram_hashes(text: &str) -> Vec<u64> {
+    let mut hashes = HashSet::new();
+    add_trigram_hashes(text, &mut hashes);
+    let mut hashes = hashes.into_iter().collect::<Vec<_>>();
+    hashes.sort_unstable();
+    hashes
+}
+
+fn add_trigram_hashes(text: &str, hashes: &mut HashSet<u64>) {
+    let mut lowered = text.chars().flat_map(char::to_lowercase);
+    let Some(mut first) = lowered.next() else {
+        return;
+    };
+    let Some(mut second) = lowered.next() else {
+        return;
+    };
+    for third in lowered {
+        hashes.insert(hash_trigram(first, second, third));
+        first = second;
+        second = third;
+    }
+}
+
+fn hash_trigram(first: char, second: char, third: char) -> u64 {
+    let mut hash = FNV_OFFSET_BASIS;
+    let mut buffer = [0u8; 4];
+    for character in [first, second, third] {
+        for byte in character.encode_utf8(&mut buffer).as_bytes() {
+            hash ^= u64::from(*byte);
+            hash = hash.wrapping_mul(FNV_PRIME);
+        }
+    }
+    hash
+}
+
+fn encode_hashes(hashes: &[u64]) -> Vec<u8> {
+    let mut encoded = Vec::with_capacity(hashes.len().saturating_mul(8));
+    for hash in hashes {
+        encoded.extend_from_slice(&hash.to_le_bytes());
+    }
+    encoded
+}
+
+fn contains_all_hashes(encoded: &[u8], query_hashes: &[u64]) -> bool {
+    query_hashes
+        .iter()
+        .all(|query_hash| contains_hash(encoded, *query_hash))
+}
+
+fn contains_hash(encoded: &[u8], query_hash: u64) -> bool {
+    let mut left = 0usize;
+    let mut right = encoded.len() / 8;
+    while left < right {
+        let middle = left + (right - left) / 2;
+        let start = middle * 8;
+        let mut bytes = [0u8; 8];
+        bytes.copy_from_slice(&encoded[start..start + 8]);
+        match u64::from_le_bytes(bytes).cmp(&query_hash) {
+            std::cmp::Ordering::Less => left = middle + 1,
+            std::cmp::Ordering::Greater => right = middle,
+            std::cmp::Ordering::Equal => return true,
+        }
+    }
+    false
+}
+
+fn remove_index_files(root: &Path) -> Result<(), ContextGovernorError> {
+    for suffix in ["", "-journal", "-wal", "-shm"] {
+        let path = PathBuf::from(format!("{}{}", index_path(root).display(), suffix));
+        match fs::remove_file(path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+    }
+    Ok(())
+}
+
+fn modified_ns(metadata: &fs::Metadata) -> i64 {
+    metadata
+        .modified()
+        .ok()
+        .and_then(|modified| modified.duration_since(std::time::UNIX_EPOCH).ok())
+        .and_then(|duration| i64::try_from(duration.as_nanos()).ok())
+        .unwrap_or_default()
+}
+
+#[cfg(unix)]
+fn changed_ns(metadata: &fs::Metadata) -> i64 {
+    use std::os::unix::fs::MetadataExt;
+    metadata
+        .ctime()
+        .saturating_mul(1_000_000_000)
+        .saturating_add(metadata.ctime_nsec())
+}
+
+#[cfg(not(unix))]
+fn changed_ns(metadata: &fs::Metadata) -> i64 {
+    modified_ns(metadata)
+}
+
+fn sync_directory(path: &Path) -> Result<(), ContextGovernorError> {
+    File::open(path)?.sync_all()?;
+    Ok(())
+}

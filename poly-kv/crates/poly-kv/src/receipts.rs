@@ -1,11 +1,9 @@
 use crate::{MemoryAccounting, QualityGateResultV1};
 use quant_codec_core::{ArtifactDigest, EvalReport, KvRole, KvSliceRequest};
 
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PoolBuildReceiptV1 {
     pub schema_version: u16,
     pub manifest_digest: ArtifactDigest,
@@ -18,8 +16,7 @@ pub struct PoolBuildReceiptV1 {
     pub memory: MemoryAccounting,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ReaderInjectionReceiptV1 {
     pub schema_version: u16,
     pub reader_id: u64,
@@ -29,8 +26,7 @@ pub struct ReaderInjectionReceiptV1 {
     pub reader_count_after_attach: u64,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FallbackReceiptV1 {
     pub schema_version: u16,
     pub reason: String,
@@ -40,8 +36,7 @@ pub struct FallbackReceiptV1 {
     pub manifest_digest: ArtifactDigest,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DecodeReceiptV1 {
     pub schema_version: u16,
     pub request: KvSliceRequest,
@@ -55,8 +50,7 @@ pub struct DecodeReceiptV1 {
     pub fallback: Option<FallbackReceiptV1>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CompressionEvalReceiptV1 {
     pub schema_version: u16,
     pub role: KvRole,
@@ -69,8 +63,7 @@ pub struct CompressionEvalReceiptV1 {
 
 pub const COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA: u16 = 1;
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CompressedAttentionSelectionReceipt {
     pub schema_version: u16,
     pub pool_id: String,

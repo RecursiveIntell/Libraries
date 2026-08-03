@@ -1,0 +1,56 @@
+[package]
+name = "context-governor"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.75"
+license = "Apache-2.0"
+authors = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/context-governor"
+homepage = "https://github.com/RecursiveIntell/context-governor"
+documentation = "https://docs.rs/context-governor"
+description = "Crate-agnostic governed context compaction with receipts, exact fallback references, and recall quality filters"
+keywords = ["context", "compaction", "agents", "memory", "receipts"]
+categories = ["text-processing", "data-structures", "development-tools"]
+include = [
+    "Cargo.toml",
+    "Cargo.lock",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "src/**",
+    "tests/**",
+    "examples/**",
+    "scripts/*.py",
+    "docs/**",
+]
+
+[workspace]
+
+[lib]
+name = "context_governor"
+path = "src/lib.rs"
+
+[[bin]]
+name = "context-governor"
+path = "src/main.rs"
+
+[dependencies]
+blake3 = "1"
+sha2 = "0.10"
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[dependencies.rusqlite]
+version = "0.32"
+features = ["bundled", "serde_json"]
+
+[features]
+default = []
+sqlite-store = []
+
+[dev-dependencies]
+tempfile = "3"

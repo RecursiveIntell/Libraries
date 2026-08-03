@@ -1,0 +1,1143 @@
+    Blocking waiting for file lock on package cache
+ Downloading crates ...
+  Downloaded rustc-hash v2.1.2
+  Downloaded toml_write v0.1.2
+  Downloaded zerofrom v0.1.7
+  Downloaded toml_datetime v0.6.11
+  Downloaded tokio-macros v2.7.0
+  Downloaded rustls-pki-types v1.14.1
+  Downloaded yoke v0.8.2
+  Downloaded diff v0.1.13
+  Downloaded serde_yaml v0.9.34+deprecated
+  Downloaded toml v0.8.23
+  Downloaded tinyvec v1.11.0
+  Downloaded unsafe-libyaml v0.2.11
+  Downloaded toml_edit v0.22.27
+  Downloaded uuid v1.23.1
+  Downloaded yansi v1.0.1
+  Downloaded pretty_assertions v1.4.1
+  Downloaded mio v1.2.0
+  Downloaded cc v1.2.61
+  Downloaded hashbrown v0.17.0
+  Downloaded hyper v1.9.0
+  Downloaded iri-string v0.7.12
+  Downloaded webpki-roots v1.0.7
+  Downloaded rustls v0.23.39
+  Downloaded tokio v1.52.1
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling cfg-if v1.0.4
+   Compiling libc v0.2.186
+   Compiling find-msvc-tools v0.1.9
+   Compiling shlex v1.3.0
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.0
+   Compiling zmij v1.0.21
+   Compiling serde_json v1.0.149
+   Compiling getrandom v0.4.2
+   Compiling autocfg v1.5.0
+   Compiling iana-time-zone v0.1.65
+   Compiling thiserror v2.0.18
+   Compiling once_cell v1.21.4
+   Compiling cc v1.2.61
+   Compiling pin-project-lite v0.2.17
+   Compiling constant_time_eq v0.4.2
+   Compiling schemars v0.8.22
+   Compiling arrayvec v0.7.6
+   Compiling cpufeatures v0.3.0
+   Compiling arrayref v0.3.9
+   Compiling dyn-clone v1.0.20
+   Compiling tracing-core v0.1.36
+   Compiling bytes v1.11.1
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.0
+   Compiling equivalent v1.0.2
+   Compiling smallvec v1.15.1
+   Compiling zerocopy v0.8.48
+   Compiling hashbrown v0.17.0
+   Compiling cpufeatures v0.2.17
+   Compiling num-traits v0.2.19
+   Compiling stable_deref_trait v1.2.1
+   Compiling bitflags v2.11.1
+   Compiling vcpkg v0.2.15
+   Compiling pkg-config v0.3.33
+   Compiling futures-core v0.3.32
+   Compiling generic-array v0.14.7
+   Compiling ahash v0.8.12
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling utf8_iter v1.0.4
+   Compiling indexmap v2.14.0
+   Compiling http v1.4.0
+   Compiling zeroize v1.8.2
+   Compiling icu_properties_data v2.2.0
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling fallible-iterator v0.3.0
+   Compiling icu_normalizer_data v2.2.0
+   Compiling untrusted v0.9.0
+   Compiling rustls-pki-types v1.14.1
+   Compiling syn v2.0.117
+   Compiling syn v3.0.3
+   Compiling percent-encoding v2.3.2
+   Compiling scratch v1.0.9
+   Compiling httparse v1.10.1
+   Compiling futures-task v0.3.32
+   Compiling slab v0.4.12
+   Compiling unicode-width v0.2.2
+   Compiling errno v0.3.14
+   Compiling socket2 v0.6.3
+   Compiling mio v1.2.0
+   Compiling blake3 v1.8.5
+   Compiling libsqlite3-sys v0.30.1
+   Compiling signal-hook-registry v1.4.8
+   Compiling ring v0.17.14
+   Compiling getrandom v0.2.17
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling link-cplusplus v1.0.12
+   Compiling http-body v1.0.1
+   Compiling futures-util v0.3.32
+   Compiling digest v0.10.7
+   Compiling ryu v1.0.23
+   Compiling rustls v0.23.39
+   Compiling cxxbridge-flags v1.0.198
+   Compiling try-lock v0.2.5
+   Compiling termcolor v1.4.1
+   Compiling sha2 v0.10.9
+   Compiling tower-service v0.3.3
+   Compiling want v0.3.1
+   Compiling cxx v1.0.198
+   Compiling codespan-reporting v0.13.1
+   Compiling futures-channel v0.3.32
+   Compiling subtle v2.6.1
+   Compiling atomic-waker v1.1.2
+   Compiling foldhash v0.2.0
+   Compiling form_urlencoded v1.2.2
+   Compiling sync_wrapper v1.0.2
+   Compiling ipnet v2.12.0
+   Compiling tower-layer v0.3.3
+   Compiling base64 v0.22.1
+   Compiling webpki-roots v1.0.7
+   Compiling iri-string v0.7.12
+   Compiling http-body-util v0.1.3
+   Compiling log v0.4.29
+   Compiling allocator-api2 v0.2.21
+   Compiling anyhow v1.0.102
+   Compiling rustix v1.1.4
+   Compiling uuid v1.23.1
+   Compiling linux-raw-sys v0.12.1
+   Compiling fastrand v2.4.1
+   Compiling glob v0.3.3
+   Compiling same-file v1.0.6
+   Compiling aidens-budget-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-budget-kit)
+   Compiling walkdir v2.5.0
+   Compiling hashbrown v0.16.1
+   Compiling getrandom v0.3.4
+   Compiling toml_write v0.1.2
+   Compiling winnow v0.7.15
+   Compiling unsafe-libyaml v0.2.11
+   Compiling similar v2.7.0
+   Compiling check-runner-sys v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner-sys)
+   Compiling fixedbitset v0.4.2
+   Compiling aho-corasick v1.1.4
+   Compiling regex-syntax v0.8.10
+   Compiling rand_core v0.9.5
+   Compiling lru v0.16.4
+   Compiling petgraph v0.6.5
+   Compiling utf8parse v0.2.2
+   Compiling hex v0.4.3
+   Compiling anstyle-parse v1.0.0
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling anstyle v1.0.14
+   Compiling rustls-webpki v0.103.13
+   Compiling cxx-build v1.0.198
+   Compiling anstyle-query v1.1.5
+   Compiling colorchoice v1.0.5
+   Compiling anstream v1.0.0
+   Compiling heck v0.5.0
+   Compiling tempfile v3.27.0
+   Compiling ppv-lite86 v0.2.21
+   Compiling strsim v0.11.1
+   Compiling serde_derive_internals v0.29.1
+   Compiling synstructure v0.13.2
+   Compiling hashbrown v0.14.5
+   Compiling rand_chacha v0.9.0
+   Compiling regex-automata v0.4.14
+   Compiling clap_lex v1.1.0
+   Compiling rand v0.9.4
+   Compiling clap_builder v4.6.0
+   Compiling aidens-integration-tests v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-integration-tests)
+   Compiling yansi v1.0.1
+   Compiling diff v0.1.13
+   Compiling aidens-profile-desktop v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-desktop)
+   Compiling cxxbridge-macro v1.0.198
+   Compiling aidens-profile-memory v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-memory)
+   Compiling hashlink v0.9.1
+   Compiling aidens-profile-research v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-research)
+   Compiling aidens-profile-daemon v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-daemon)
+   Compiling rusqlite v0.32.1
+   Compiling ulid v1.2.1
+   Compiling pretty_assertions v1.4.1
+   Compiling serde_derive v1.0.228
+   Compiling thiserror-impl v2.0.18
+   Compiling schemars_derive v0.8.22
+   Compiling tracing-attributes v0.1.31
+   Compiling tokio-macros v2.7.0
+   Compiling async-trait v0.1.89
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling displaydoc v0.2.5
+   Compiling usearch v2.26.0
+   Compiling tokio v1.52.1
+   Compiling bytemuck_derive v1.10.2
+   Compiling regex v1.12.3
+   Compiling clap_derive v4.6.1
+   Compiling zerofrom v0.1.7
+   Compiling yoke v0.8.2
+   Compiling zerovec v0.11.6
+   Compiling tracing v0.1.44
+   Compiling zerotrie v0.2.4
+   Compiling bytemuck v1.25.0
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.2.0
+   Compiling icu_locale_core v2.2.0
+   Compiling clap v4.6.1
+   Compiling chrono v0.4.44
+   Compiling serde_urlencoded v0.7.1
+   Compiling boundary-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/boundary-compiler)
+   Compiling forge-policy v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/forge-policy)
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling effect-signature v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/effect-signature)
+   Compiling bincode v1.3.3
+   Compiling mindstate-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/mindstate-core)
+   Compiling semantic-memory v0.5.14 (/home/sikmindz/Coding/Libraries/semantic-memory)
+   Compiling toml_edit v0.22.27
+   Compiling sandbox-workspace v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace)
+   Compiling icu_provider v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling icu_properties v2.2.0
+   Compiling bitemporal-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/bitemporal-runtime)
+   Compiling aidens-agency-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-agency-kit)
+   Compiling claim-ledger v0.2.1 (/home/sikmindz/Coding/Libraries/claim-ledger)
+   Compiling toml v0.8.23
+   Compiling hyper v1.9.0
+   Compiling tower v0.5.3
+   Compiling tokio-rustls v0.26.4
+   Compiling typed-patch v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/typed-patch)
+   Compiling check-runner v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner)
+   Compiling stack-ids v0.1.3 (/home/sikmindz/Coding/Libraries/stack-ids)
+   Compiling boundary-compiler-core v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/boundary-compiler-core)
+   Compiling idna_adapter v1.2.1
+   Compiling idna v1.1.0
+   Compiling tower-http v0.6.8
+   Compiling assurance-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/assurance-runtime)
+   Compiling authority-delegation v0.1.0 (/home/sikmindz/Coding/Libraries/authority-delegation)
+   Compiling cea-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-core)
+   Compiling url v2.5.8
+   Compiling stabilizer-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/stabilizer-core)
+   Compiling continuity-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/continuity-runtime)
+   Compiling hyper-util v0.1.20
+   Compiling cea-store v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-store)
+   Compiling cea-sqlite v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-sqlite)
+   Compiling hyper-rustls v0.27.9
+   Compiling reqwest v0.12.28
+   Compiling semantic-memory-forge v0.1.1 (/home/sikmindz/Coding/Libraries/semantic-memory-forge)
+   Compiling recursive-kernel-core v0.1.0 (/home/sikmindz/Coding/Libraries/recursive-kernel-core)
+   Compiling mechanism-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/mechanism-runtime)
+   Compiling federated-settlement v0.1.0 (/home/sikmindz/Coding/Libraries/federated-settlement)
+   Compiling attestation-exchange v0.1.0 (/home/sikmindz/Coding/Libraries/attestation-exchange)
+   Compiling constitutional-memory v0.1.0 (/home/sikmindz/Coding/Libraries/constitutional-memory)
+   Compiling discovery-portfolio v0.1.0 (/home/sikmindz/Coding/Libraries/discovery-portfolio)
+   Compiling spec-execution v0.1.0 (/home/sikmindz/Coding/Libraries/spec-execution)
+   Compiling effect-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/effect-runtime)
+   Compiling remote-oracle-admission v0.1.0 (/home/sikmindz/Coding/Libraries/remote-oracle-admission)
+   Compiling llm-tool-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/llm-tool-runtime)
+   Compiling forge-memory-bridge v0.1.1 (/home/sikmindz/Coding/Libraries/forge-memory-bridge)
+   Compiling aidens-arbiter-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-arbiter-kit)
+   Compiling constraint-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/constraint-compiler)
+   Compiling verification-control v0.1.0 (/home/sikmindz/Coding/Libraries/verification-control)
+   Compiling aidens-security-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-security-kit)
+   Compiling kernel-execution v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-execution)
+   Compiling kernel-oracles v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-oracles)
+   Compiling verification-policy v0.1.0 (/home/sikmindz/Coding/Libraries/verification-policy)
+   Compiling verification-calibration v0.1.0 (/home/sikmindz/Coding/Libraries/verification-calibration)
+   Compiling aidens-receipts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts)
+   Compiling aidens-repair-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-repair-kit)
+   Compiling verification-adjudication v0.1.0 (/home/sikmindz/Coding/Libraries/verification-adjudication)
+   Compiling profile-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/profile-runtime)
+   Compiling aidens-contracts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts)
+   Compiling aidens-governance-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-governance-kit)
+   Compiling knowledge-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/knowledge-runtime)
+   Compiling forge-engine v0.2.0 (/home/sikmindz/Coding/Libraries/living-memory/living-memory)
+   Compiling aidens-permit-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit)
+   Compiling aidens-boundary-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit)
+   Compiling aidens-provider-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit)
+   Compiling aidens-config v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config)
+   Compiling aidens-plan-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-plan-kit)
+   Compiling aidens-testkit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit)
+   Compiling aidens-wake-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit)
+   Compiling aidens-schedule-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit)
+   Compiling aidens-queue-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit)
+   Compiling aidens-capability-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit)
+   Compiling aidens-profile-coding v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-coding)
+   Compiling aidens-memory-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-memory-kit)
+   Compiling kernel-conformance v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-conformance)
+   Compiling aidens-tool-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit)
+   Compiling aidens-daemon-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit)
+   Compiling aidens-kernel-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-kernel-kit)
+   Compiling aidens-runner v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner)
+   Compiling forge-pilot v0.1.0 (/home/sikmindz/Coding/Libraries/forge-pilot)
+   Compiling aidens-app-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit)
+   Compiling aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+   Compiling aidens v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens)
+   Compiling contract-schema-gen v0.1.0 (/home/sikmindz/Coding/Libraries/contract-schema-gen)
+   Compiling aidens-cli v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 56s
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens-999c280b22115e1a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_agency_kit-6b52969ede836f7f)
+
+running 2 tests
+test tests::semantic_paraphrase_nudges_share_budget_key ... ok
+test tests::agency_eval_cases_drive_policy_and_receipts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_app_kit-3818af304e0ddfd8)
+
+running 10 tests
+test tests::p28_profile_expansion_is_result_bearing_not_panic_based ... ok
+test tests::coding_profile_expands_to_visible_plan_without_dangerous_auto_grants ... ok
+test tests::from_plan_requires_explicit_provider_for_provider_required_plan ... ok
+test tests::from_plan_rejects_disabled_provider_for_provider_required_plan ... ok
+test tests::product_profile_catalog_marks_partial_surfaces ... ok
+test tests::runtime_defaults_are_visible_receipt_first_and_permit_gated ... ok
+test tests::builder_rejects_unknown_profile_without_fallback ... ok
+test tests::explicit_builder_tool_registry_is_preserved_over_config_bundles ... ok
+test tests::builder_loads_provider_from_config_file ... ok
+test tests::from_plan_honors_bound_provider_and_plan_tools ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/next_app_plan_facade.rs (AiDENs/target/debug/deps/next_app_plan_facade-36eeb3a2452173f2)
+
+running 1 test
+test app_from_explicit_mock_config_runs_through_facade ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/phase_06_runner_vertical_slice.rs (AiDENs/target/debug/deps/phase_06_runner_vertical_slice-b5ea7b24af5e705c)
+
+running 1 test
+test phase_06_config_to_runner_mock_tool_receipts_audit_slice ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_arbiter_kit-34398c514acfa2ff)
+
+running 1 test
+test tests::validates_canonical_contradiction_witness ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_boundary_kit-50fbc2e3af55ef7c)
+
+running 20 tests
+test tests::default_boundary_policy_rejects_repairable_wrappers ... ok
+test tests::display_digest_is_stable_across_key_order_and_whitespace ... ok
+test tests::duplicate_key_scanner_handles_unicode_and_nested_objects ... ok
+test tests::json_substring_extract_is_receipt_bearing ... ok
+test tests::local_schema_ref_and_format_are_semantic_not_silent ... ok
+test tests::markdown_fence_repair_is_receipt_bearing ... ok
+test tests::p28_boundary_compile_receipt_rejects_duplicate_keys ... ok
+test tests::memory_claim_input_validation_blocks_missing_bitemporal_fields ... ok
+test tests::repair_warns_when_treatment_critical_fields_are_unverifiable ... ok
+test tests::p28_treatment_integrity_receipt_blocks_silent_treatment_change ... ok
+test tests::strict_json_accepts_valid_input ... ok
+test tests::resource_ceiling_rejects_excessive_depth_before_acceptance ... ok
+test tests::strict_json_rejects_duplicate_object_keys ... ok
+test tests::schema_invalid_input_is_blocked_by_compile_outcome ... ok
+test tests::strict_json_rejects_invalid_input ... ok
+test tests::supported_schema_array_and_additional_property_object_are_enforced ... ok
+test tests::treatment_integrity_warning_can_hard_fail_repair ... ok
+test tests::unsupported_schema_keyword_fails_closed ... ok
+test tests::treatment_critical_json_pointer_paths_are_honored ... ok
+test tests::boundary_repair_matches_reference_interpreter ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_budget_kit-839cfd5d792daf55)
+
+running 2 tests
+test tests::deadline_check_is_explicit ... ok
+test tests::tool_call_budget_is_cumulative ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_capability_kit-874d8468dabbf7e1)
+
+running 3 tests
+test tests::can_represent_registered_exposed_executable_degraded_and_blocked ... ok
+test tests::disabled_is_not_healthy ... ok
+test tests::gate_decision_requires_exposed_lifecycle_to_expose ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_cli-0b2bfbfadc4761a6)
+
+running 48 tests
+test tests::boundary_compile_cli_rejects_duplicate_keys ... ok
+test tests::boundary_compile_cli_reports_schema_failure ... ok
+test tests::boundary_compile_cli_rejects_unsupported_schema_keywords ... ok
+test tests::doctor_fails_memory_required_without_memory_store ... ok
+test tests::new_app_scaffold_refuses_overwrite_and_preserves_existing_content ... ok
+test tests::list_tools_exposes_safe_tools_only ... ok
+test tests::doctor_reports_provider_capability_matrix_without_cloud_or_native_overclaims ... ok
+test tests::doctor_reports_optional_memory_without_store_as_degraded ... ok
+test tests::doctor_reports_scaffold_crates_as_deferred_not_healthy ... ok
+test tests::doctor_without_config_reports_disabled_provider ... ok
+test tests::phase13_inspect_run_bundle_rejects_duplicate_keys_before_schema_use ... ok
+test tests::permit_commands_emit_typed_approval_and_permit_artifacts ... ok
+test tests::p30_agent_run_fallback_attempt_family_id_is_material_derived ... ok
+test tests::inspect_tools_reports_registered_vs_executable ... ok
+test tests::p30_cli_source_does_not_reference_legacy_generated_artifact_id_api ... ok
+test tests::phase13_permit_json_rejects_duplicate_keys ... ok
+test tests::p11_daemon_commands_suppress_duplicates_persist_cancel_and_safe_mode ... ok
+test tests::provider_check_reports_configured_cloud_providers_as_unavailable ... ok
+test tests::package_examples_manifest_covers_public_profiles_honestly ... ok
+test tests::profile_commands_report_truthful_surface_statuses ... ok
+test tests::provider_check_reports_missing_api_key_without_claiming_executable ... ok
+test tests::provider_check_reports_ollama_chat_without_native_tool_loop ... ok
+test tests::provider_route_does_not_claim_native_when_backend_is_unavailable ... ok
+test tests::plan_commands_accept_test_agent_sources_without_fake_runner_path ... ok
+test tests::plan_validate_rejects_unknown_profile_without_fallback ... ok
+test tests::run_fails_memory_required_without_memory_store ... ok
+test tests::sanitize_rejects_empty_names ... ok
+test tests::receipts_commands_inspect_restart_visible_run ... ok
+test tests::p10_coding_commands_read_propose_apply_and_packetize ... ok
+test tests::new_app_scaffold_contains_safe_config_and_tests ... ok
+test tests::staged_scaffold_write_is_create_new_and_rejects_path_escape ... ok
+test tests::phase13_agent_validate_schema_checks_and_rejects_duplicate_keys ... ok
+test tests::new_user_mock_flow_reaches_receipt_inspection ... ok
+test tests::status_reports_blocked_modes_without_hiding_degradation ... ok
+test tests::package_readiness_blocks_scaffold_completion_claims ... ok
+test tests::agent_run_persists_v3_bundle_in_receipt_store_and_inspects_after_restart ... ok
+test tests::run_test_agent_writes_bundle_and_receipts_through_runner ... ok
+test tests::run_coding_agent_writes_v2_bundle_and_blocks_unapproved_write ... ok
+test tests::run_coding_agent_records_failed_checks_with_admin_permit ... ok
+test tests::phase11_schemas_check_rejects_case_folded_path_collisions ... ok
+test tests::memory_seam_fixture_imports_and_queries_canonical_stack ... ok
+test tests::schemas_check_fails_on_same_major_schema_drift ... ok
+test tests::phase13_schemas_check_rejects_duplicate_keys_in_schema_files ... ok
+test tests::schemas_check_fails_on_unregistered_artifact_family ... ok
+test tests::view_query_cli_uses_canonical_runtime ... ok
+test tests::schemas_generate_is_deterministic_and_check_passes ... ok
+test tests::run_coding_agent_applies_patch_and_runs_successful_check_with_scoped_permits ... ok
+test tests::package_completion_audit_reports_deferred_horizon_without_healthy_claims ... ok
+
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.27s
+
+     Running unittests src/main.rs (AiDENs/target/debug/deps/aidens_cli-d5d385962e32072c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_cli_plan_doctor.rs (AiDENs/target/debug/deps/next_cli_plan_doctor-22773a7029ebe0f8)
+
+running 5 tests
+test profile_explain_coding_agent_is_visible_and_non_magical ... ok
+test plan_validate_rejects_disabled_provider_when_provider_is_required ... ok
+test plan_validate_rejects_memory_required_without_memory_store ... ok
+test plan_validate_doctor_and_compile_accept_memory_required_with_store ... ok
+test plan_validate_compile_and_doctor_accept_explicit_mock_config ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_config-4fb0aa32aee146f4)
+
+running 9 tests
+test tests::redacted_json_hides_adversarial_secret_keys_and_values ... ok
+test tests::redacted_json_hides_secret_values_and_url_auth ... ok
+test tests::provider_secrets_and_endpoint_credentials_are_rejected ... ok
+test tests::safe_default_is_valid_and_provider_disabled ... ok
+test tests::safe_default_plan_config_matches_reference_interpreter ... ok
+test tests::unsafe_write_or_network_defaults_are_rejected ... ok
+test tests::redacts_api_key ... ok
+test tests::dangerous_unknown_secret_fields_are_rejected_before_deserialize_ignore ... ok
+test tests::config_round_trips_through_toml_file ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_contracts-ae6fb51c1fccd66f)
+
+running 90 tests
+test tests::dangerous_auto_approval_is_rejected_by_default ... ok
+test tests::execution_context_exposes_stack_trace_and_attempt ... ok
+test tests::memory_required_is_valid_as_a_plan_but_config_gates_store_presence ... ok
+test tests::p00_scaffold_report_allows_markers_only_for_scaffold_status ... ok
+test tests::p00_source_basis_lock_names_current_snapshot ... ok
+test tests::p00_super_pass_status_blocks_on_fake_ready_findings ... ok
+test tests::p00_source_basis_golden_fixture_deserializes ... ok
+test tests::p01_api_honesty_receipt_distinguishes_honored_and_blocked_inputs ... ok
+test tests::p01_parity_report_exposes_mismatches ... ok
+test tests::artifact_id_roundtrips_through_canonical_stack_id ... ok
+test tests::p02_backend_matrix_blocks_native_claims_without_executable_status ... ok
+test tests::p02_provider_certification_fixture_records_expected_truth ... ok
+test tests::p02_provider_readiness_receipt_is_receipt_bearing ... ok
+test tests::p01_golden_fixtures_deserialize ... ok
+test tests::p02_provider_route_v2_distinguishes_ollama_chat_from_native_loop ... ok
+test tests::p02_golden_fixtures_deserialize ... ok
+test tests::p03_tool_invocation_receipt_links_run_attempt_and_digests ... ok
+test tests::p04_gate_decision_carries_approval_or_permit_evidence ... ok
+test tests::p03_turn_receipt_records_stop_budget_and_tool_evidence ... ok
+test tests::p04_permit_scope_requires_risk_tool_sandbox_and_execution_family ... ok
+test tests::p04_unscoped_permit_does_not_match_any_tool_or_root ... ok
+test tests::p03_golden_fixtures_deserialize ... ok
+test tests::p05_display_json_digest_is_stack_owned_and_stable_across_json_layout ... ok
+test tests::p05_remaining_artifact_constructors_produce_linkable_shapes ... ok
+test tests::p05_golden_fixtures_deserialize ... ok
+test tests::p06_boundary_contracts_are_receipt_bearing_and_cryptographic ... ok
+test tests::p04_golden_fixtures_deserialize ... ok
+test tests::p07_golden_fixtures_deserialize ... ok
+test tests::p08_reference_artifact_constructors_are_typed ... ok
+test tests::p06_golden_fixtures_deserialize ... ok
+test tests::p08_golden_fixtures_deserialize ... ok
+test tests::p10_right_graph_misuse_blocks_retrieval_and_control_kernel_execution ... ok
+test tests::p10_coding_artifact_constructors_are_receipt_bearing_and_sandboxed ... ok
+test tests::p10_minimal_v11b_region_seed_covers_failure_repair_support_and_oracle_diff ... ok
+test tests::p09_proof_debt_is_queryable_and_expired_waiver_escalates ... ok
+test tests::p11_queue_daemon_artifact_constructors_preserve_idempotency_and_safe_mode ... ok
+test tests::p09_semantic_state_blocks_exactness_for_contradiction_and_execution_contamination ... ok
+test tests::p13_golden_fixtures_deserialize ... ok
+test tests::p14_release_artifact_constructors_block_on_false_public_docs ... ok
+test tests::p12_operator_invocation_authorization_requires_effects_manifests_receipts_and_finite_taxonomy ... ok
+test tests::p17_attestation_and_settlement_names_are_canonical_reexports ... ok
+test tests::p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules ... ok
+test tests::p11_golden_fixtures_deserialize ... ok
+test tests::p16_subtraction_artifacts_block_support_loss_and_record_compaction ... ok
+test tests::p07_migration_path_keeps_old_fixtures_readable ... ok
+test tests::p15_golden_fixtures_deserialize ... ok
+test tests::p10_golden_fixtures_deserialize ... ok
+test tests::p14_operator_status_exposes_degraded_modes ... ok
+test tests::p14_golden_fixtures_deserialize ... ok
+test tests::p17_canonical_reexport_shapes_roundtrip ... ok
+test tests::p13_view_artifact_constructors_disclose_policy_events ... ok
+test tests::p18_canonical_reexport_shapes_roundtrip ... ok
+test tests::p16_golden_fixtures_deserialize ... ok
+test tests::p18_mechanism_names_are_canonical_reexports ... ok
+test tests::p26_agent_spec_v1_fixture_is_valid ... ok
+test tests::p26_agent_spec_v1_fixture_rejects_invalid_policy ... ok
+test tests::p28_convergence_degrades_when_residual_or_oscillation_breaks_exactness ... ok
+test tests::p24_run_bundle_v2_fixture_deserializes_with_canonical_context ... ok
+test tests::p28_artifact_lifecycle_requires_receipted_transitions_and_blocks_early_promotion ... ok
+test tests::p28_degraded_release_surface_blocks_readiness ... ok
+test tests::p28_empty_known_limitations_register_does_not_block_completion ... ok
+test tests::p26_run_bundle_v3_fixture_deserializes_with_evidence_fields ... ok
+test tests::p28_artifact_manifest_records_inputs_outputs_and_missing_refs ... ok
+test tests::p28_generated_artifact_ids_are_not_random_uuids_and_stable_material_ids_are_replayable ... ok
+test tests::p19_completion_audit_discloses_deferred_horizon_and_blocks_release_bar ... ok
+test tests::p28_history_preservation_uses_invariant_evidence_not_digest_equality ... ok
+test tests::p28_learned_or_advisory_system_cannot_promote_truth_or_waive_proof ... ok
+test tests::p19_golden_fixtures_deserialize ... ok
+test tests::p28_proof_evidence_satisfies_profile_and_allows_promotion ... ok
+test tests::p28_proof_waiver_is_not_proof_and_debt_blocks_promotion ... ok
+test tests::p28_material_operator_registry_blocks_undeclared_effects ... ok
+test tests::p28_timeout_tool_receipt_marks_partial_output ... ok
+test tests::p28_required_material_operator_contracts_are_registered ... ok
+test tests::p28_material_done_requires_execution_context_manifests_and_receipts ... ok
+test tests::p28_v11c_external_admission_defaults_to_quarantine ... ok
+test tests::p28_waiver_does_not_satisfy_blocked_traceability_row_unless_state_is_waived ... ok
+test tests::p28_semantic_state_degradation_cannot_answer_as_exact ... ok
+test tests::p29_execution_context_fingerprint_is_environment_scoped ... ok
+test tests::p28_v11b_region_and_subtraction_surfaces_remain_reserved_or_advisory ... ok
+test tests::p29_lawful_subtraction_seed_blocks_support_loss_and_allows_safe_dry_run ... ok
+test tests::p29_region_boundary_message_and_receipt_are_executable_seed_only ... ok
+test tests::p29_residual_syndrome_convergence_seed_stays_receipt_bearing ... ok
+test tests::p29_right_graph_misuse_is_blocked_for_storage_or_unbounded_regions ... ok
+test tests::plan_has_visible_risk_summary ... ok
+test tests::provider_route_labels_are_exact ... ok
+test tests::stack_digest_is_exposed_as_non_authoritative_display_digest ... ok
+test tests::p30_legacy_process_local_generated_artifact_id_api_is_absent ... ok
+test tests::p29_repeated_identical_tool_calls_get_distinct_receipts ... ok
+test tests::p11_schema_governance_quarantines_external_families_and_classifies_compatibility ... ok
+test tests::p07_registry_manifest_and_migration_constructors_are_typed ... ok
+
+test result: ok. 90 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_daemon_kit-f170a9b7ea11c0db)
+
+running 3 tests
+test tests::repeated_schedule_occurrence_suppresses_duplicate_job ... ok
+test tests::daemon_restart_preserves_jobs_and_cancelled_state ... ok
+test tests::safe_mode_blocks_risky_wake_and_allows_drain ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_delegation_kit-c98bd4c791935d41)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_governance_kit-5a5b0ed7f3a1ba84)
+
+running 1 test
+test tests::creates_canonical_control_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_integration_tests-37d684bdeffd8272)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/conformance_run_receipt.rs (AiDENs/target/debug/deps/conformance_run_receipt-4c1ab83005e63a47)
+
+running 3 tests
+test conformance_run_receipt_all_passes ... ok
+test conformance_run_receipt_serializes_round_trip ... ok
+test conformance_run_receipt_records_all_fixture_results ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_no_fake_completion.rs (AiDENs/target/debug/deps/next_no_fake_completion-025dc45bb79b0b6d)
+
+running 1 test
+test no_runtime_placeholder_completion_strings_remain ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/p20_2_test_agent_vertical_slice.rs (AiDENs/target/debug/deps/p20_2_test_agent_vertical_slice-9c2fec92b070c2df)
+
+running 1 test
+test test_agent_vertical_slice ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/p28_adversarial_conformance.rs (AiDENs/target/debug/deps/p28_adversarial_conformance-8e3c3b1afd34bd27)
+
+running 5 tests
+test p28_adversarial_boundary_fixtures_fail_closed ... ok
+test p28_adversarial_manifest_declares_expected_semantics_for_every_fixture ... ok
+test p28_adversarial_receipt_proof_degradation_and_temporal_fixtures_hold ... ok
+test p28_adversarial_reserved_horizon_and_agency_fixtures_do_not_promote_truth ... ok
+test p28_adversarial_tool_sandbox_blocks_symlink_and_dirty_patch_paths ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_00_source_truth.rs (AiDENs/target/debug/deps/phase_00_source_truth-5e96c7e8c832d3ee)
+
+running 2 tests
+test docs_updated_for_current_dependencies ... ok
+test source_paths_verified ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/phase_01_contract_collapse.rs (AiDENs/target/debug/deps/phase_01_contract_collapse-ce2fa6c2eadc6b9f)
+
+running 2 tests
+test canonical_id_roundtrip ... ok
+test contract_owner_proof ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_02_adapter_delegation.rs (AiDENs/target/debug/deps/phase_02_adapter_delegation-894c8662b0693da1)
+
+running 1 test
+test adapter_delegation_proof ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_03_golden_vertical_slice.rs (AiDENs/target/debug/deps/phase_03_golden_vertical_slice-1ad70e1384fe91ff)
+
+running 1 test
+test golden_vertical_slice ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/phase_04_failure_honesty.rs (AiDENs/target/debug/deps/phase_04_failure_honesty-6400dc864f1c1805)
+
+running 4 tests
+test denied_tool_requires_approval ... ok
+test provider_route_unavailable ... ok
+test malformed_tool_call_degrades ... ok
+test budget_exhaustion_receipt ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/phase_05_memory_runtime_hardening.rs (AiDENs/target/debug/deps/phase_05_memory_runtime_hardening-6ab23d13d49c390b)
+
+running 3 tests
+test query_widening_disclosure ... ok
+test import_atomicity ... ok
+test bitemporal_asof_query ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests/phase_06_governance_promotion.rs (AiDENs/target/debug/deps/phase_06_governance_promotion-b5aebd3a9a84f17e)
+
+running 3 tests
+test promotion_denies_without_verification ... ok
+test repair_record_backpointer ... ok
+test approval_required_for_side_effect ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_07_canonical_adapter_proof.rs (AiDENs/target/debug/deps/phase_07_canonical_adapter_proof-008317f2509d7240)
+
+running 4 tests
+test repair_adapter_delegates_boundary_repair_and_forge_retraction ... ok
+test verification_adapter_delegates_control_policy_calibration_adjudication ... ok
+test kernel_adapter_delegates_compiler_execution_oracle_conformance ... ok
+test memory_adapter_delegates_forge_bridge_memory_runtime ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/phase_07_daemon_queue_schedule_wake.rs (AiDENs/target/debug/deps/phase_07_daemon_queue_schedule_wake-ca98c267f10aed38)
+
+running 3 tests
+test daemon_namespace_isolated ... ok
+test restart_does_not_reenqueue_completed_jobs ... ok
+test schedule_no_duplicate_storm ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/phase_07_recall_extraction.rs (AiDENs/target/debug/deps/phase_07_recall_extraction-2c5297d40258f714)
+
+running 4 tests
+test recall_extraction_reports_and_templates_exist ... ok
+test recall_templates_do_not_embed_app_specific_runtime_assumptions ... ok
+test recall_extraction_does_not_add_recall_dependencies ... ok
+test recall_extraction_configs_are_operator_usable ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/phase_08_kernel_oracle_integration.rs (AiDENs/target/debug/deps/phase_08_kernel_oracle_integration-732ef154b0056424)
+
+running 2 tests
+test kernel_exact_small_slice ... ok
+test loopy_nonconvergence_degrades ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_08_run_bundle_store.rs (AiDENs/target/debug/deps/phase_08_run_bundle_store-0e91bb573b6423e6)
+
+running 1 test
+test phase_08_run_bundle_store_survives_cli_reopen ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/phase_09_daemon_smoke.rs (AiDENs/target/debug/deps/phase_09_daemon_smoke-6b9a94a2311020be)
+
+running 1 test
+test daemon_smoke_blocks_risky_wake_but_keeps_read_only_workflow_usable ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/phase_09_provider_path_e2e.rs (AiDENs/target/debug/deps/phase_09_provider_path_e2e-dcfe2b1eddb42677)
+
+running 1 test
+test phase_09_mock_plan_act_verify_e2e_stores_exact_supported_local_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/phase_09_reference_hostile_tests.rs (AiDENs/target/debug/deps/phase_09_reference_hostile_tests-409e845855d5dcfa)
+
+running 9 tests
+test boundary_repair_hard_fails_unverifiable_treatment_change ... ok
+test repair_records_preserve_canonical_invariants_and_reject_empty_reason ... ok
+test proof_semantic_and_view_reference_cases_match_contract_runtime_dtos ... ok
+test provider_capability_truth_rejects_fallback_as_support ... ok
+test temporal_reference_interpreter_is_executable ... ok
+test agency_eval_cases_match_decision_semantics_and_required_receipts ... ok
+test runtime_widening_disclosure_is_explicit_on_degraded_temporal_query ... ok
+test bridge_digest_backpointer_atomicity_has_failure_receipt ... ok
+test temporal_asof_reference_matches_canonical_memory_runtime ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests/phase_09_release_audit.rs (AiDENs/target/debug/deps/phase_09_release_audit-06e73338307f1079)
+
+running 1 test
+test release_truth_audit ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/phase_10_minimal_v11b_region.rs (AiDENs/target/debug/deps/phase_10_minimal_v11b_region-fd7f3faa0441f5da)
+
+running 2 tests
+test minimal_v11b_region_failure_slice_is_degraded_and_non_promotable ... ok
+test minimal_v11b_region_seed_blocks_wrong_graphs_and_discloses_boundary_outcomes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stack_import_smoke.rs (AiDENs/target/debug/deps/stack_import_smoke-a2a384810f99e93b)
+
+running 1 test
+test stack_import_smoke ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_kernel_kit-32bada6117f88b25)
+
+running 1 test
+test tests::exposes_canonical_kernel_operators ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_memory_kit-b5869203da188f04)
+
+running 4 tests
+test tests::memory_grounding_evidence_does_not_hide_proof_debt_or_contradictions_in_scalar_status ... ok
+test tests::memory_grounding_evidence_labels_degradation_without_promoting_truth ... ok
+test tests::memory_grounding_evidence_declares_canonical_owners_and_no_local_truth ... ok
+test tests::opens_canonical_memory_stack_with_mock_embedder ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_permit_kit-7f8992313af526b7)
+
+running 6 tests
+test tests::approval_request_for_context_marks_missing_ids_explicitly ... ok
+test tests::scoped_permit_requires_matching_tool_and_sandbox ... ok
+test tests::explicit_permit_allows_matching_risk ... ok
+test tests::side_effect_risks_request_approval ... ok
+test tests::write_requires_approval_by_default ... ok
+test tests::default_permit_policy_matches_reference_interpreter ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_plan_kit-eafc993c9fd52f8f)
+
+running 3 tests
+test tests::assembles_app_layer_plan_only ... ok
+test tests::rejects_dangerous_auto_approval ... ok
+test tests::rejects_empty_identity ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_profile_coding-2f4f4074d5a7abbc)
+
+running 1 test
+test tests::coding_profile_does_not_auto_grant_dangerous_capabilities ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_profile_daemon-20ba4c315b5caaa5)
+
+running 1 test
+test tests::daemon_profile_discloses_safe_mode_only ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_profile_desktop-a1fc7e5ca7438f64)
+
+running 1 test
+test tests::desktop_profile_is_status_only ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_profile_memory-0e2c164f666e1a6d)
+
+running 1 test
+test tests::memory_profile_discloses_partial_non_owner_status ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_profile_research-93ed7fd1285ebf98)
+
+running 1 test
+test tests::research_profile_is_not_marked_product_ready ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_provider_kit-7fca12a023207dd4)
+
+running 19 tests
+test tests::api_provider_with_key_is_boundary_unavailable_without_native_loop ... ok
+test tests::api_provider_without_key_is_configured_but_not_executable ... ok
+test tests::mock_provider_has_explicit_route ... ok
+test tests::executable_provider_capabilities_do_not_promote_cloud_or_native_tools ... ok
+test tests::disabled_provider_is_absent_not_fallback ... ok
+test tests::ollama_chat_route_is_not_native_tool_loop ... ok
+test tests::no_executable_chat_boundary_is_unavailable ... ok
+test tests::openrouter_is_unavailable_without_executable_boundary ... ok
+test tests::parser_fallback_is_degraded_and_receipt_bearing_when_chat_is_executable ... ok
+test tests::provider_backend_matrix_lists_p02_backends ... ok
+test tests::p20_provider_capability_matrix_matches_executable_truth ... ok
+test tests::disabled_provider_does_not_answer ... ok
+test tests::local_provider_is_unavailable_not_mock_alias ... ok
+test tests::mock_provider_returns_only_configured_text ... ok
+test tests::unknown_provider_is_unavailable_not_native_compatible ... ok
+test tests::p20_provider_fixture_does_not_overclaim_native_or_cloud_support ... ok
+test tests::provider_certification_fixtures_cover_p02_matrix_and_scenarios ... ok
+test tests::provider_readiness_matches_reference_interpreter ... ok
+test tests::ollama_chat_boundary_executes_against_http_fixture_without_native_tools ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_queue_kit-dd05ba58b7ecca9e)
+
+running 9 tests
+test tests::duplicate_schedule_occurrence_is_suppressed_by_idempotency_key ... ok
+test tests::restart_preserves_queued_and_cancelled_jobs_without_resurrection ... ok
+test tests::late_completion_after_ttl_is_rejected_and_job_stays_leased ... ok
+test tests::entering_safe_mode_quarantines_existing_risky_jobs ... ok
+test tests::expired_lease_can_be_stolen_once_without_duplicate_job ... ok
+test tests::safe_mode_blocks_risky_jobs_and_allows_inspection_and_drain ... ok
+test tests::stale_lease_cannot_complete_after_lease_is_stolen ... ok
+test tests::concurrent_lease_acquisition_grants_one_active_lease ... ok
+test tests::concurrent_enqueue_is_single_writer_and_idempotent ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_receipts-0db1a7455205064c)
+
+running 6 tests
+test tests::phase01_duplicate_receipt_ids_are_rejected ... ok
+test tests::canonical_log_persists_owner_labeled_records ... ok
+test tests::run_bundle_store_persists_v3_operator_evidence ... ok
+test tests::p28_canonical_log_digest_chain_detects_tampering ... ok
+test tests::phase01_corrupt_trailing_record_is_quarantined_not_history_poisoning ... ok
+test tests::phase01_concurrent_canonical_appends_keep_single_digest_chain ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_repair_kit-fddb75e5f7f777f6)
+
+running 2 tests
+test tests::creates_canonical_boundary_repair_record ... ok
+test tests::boundary_repair_admission_accepts_rejects_and_quarantines ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_runner-93e316ea940825df)
+
+running 41 tests
+test tests::p26_map_agent_tools_rejects_run_replay_alias ... ok
+test tests::p26_map_agent_tools_to_ids_supports_extended_coding_surface ... ok
+test tests::looks_like_tool_call_payload_requires_strict_json_shape ... ok
+test tests::completion_request_serializes_tool_results_without_empty_substitution ... ok
+test tests::canonical_log_records_provider_unavailable_report ... ok
+test tests::canonical_log_records_tool_and_boundary_failure_report ... ok
+test tests::canonical_log_reopens_runner_report_after_process_boundary ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_check_requires_permit ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_rejects_unsupported_alias_with_repair ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_rejects_duplicate_json_tool_call_payload ... ok
+test tests::disabled_provider_records_receipt_and_fails ... ok
+test tests::default_runner_failure_is_report_rich_with_durable_store ... ok
+test tests::budget_exhaustion_blocks_without_dispatch_loop ... ok
+test tests::p26_plan_act_verify_loop_provider_config_must_be_present ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_rejects_invalid_patch_without_success ... ok
+test tests::p30_run_report_ledger_recovers_from_poisoned_lock ... ok
+test tests::parser_fallback_blocks_repaired_tool_call_payloads ... ok
+test tests::parser_fallback_rejects_malformed_entries_without_dropping_them ... ok
+test tests::parser_fallback_valid_call_carries_degradation_on_request ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_rejects_invalid_tool_schema_output ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_requires_permit_for_patch_apply ... ok
+test tests::mock_provider_can_request_repo_read_and_receive_result ... ok
+test tests::runtime_view_disclosure_is_receipt_only_not_a_truth_store ... ok
+test tests::p26_plan_act_verify_loop_canonical_memory_no_results_abstains ... ok
+test tests::unavailable_api_provider_never_claims_native_tool_loop ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_reads_from_sandbox_root ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_lists_from_sandbox_root ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_proposes_patch_in_sandbox_root ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_applies_with_scoped_permit ... ok
+test tests::p10_runner_can_apply_patch_with_scoped_permit ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_inspect_alias_maps_to_checks_with_permit ... ok
+test tests::unexposed_tool_call_is_blocked_before_dispatch ... ok
+test tests::p30_agency_nudge_ledger_poison_recovery_is_receipted ... ok
+test tests::run_exposes_only_safe_registered_tools_by_default ... ok
+test tests::run_always_appends_completed_receipt_on_success ... ok
+test tests::phase06_local_policy_mock_fixture_is_receipt_disclosed ... ok
+test tests::p26_plan_act_verify_loop_memory_disabled_skips_grounding_evidence ... ok
+test tests::p26_plan_act_verify_loop_support_claim_failure_causes_abstention_with_repair ... ok
+test tests::p26_plan_act_verify_loop_coding_toolchain_searches_from_sandbox_root ... ok
+test tests::schema_invalid_tool_call_stops_before_tool_invocation ... ok
+test tests::p26_plan_act_verify_loop_canonical_memory_grounding_collects_evidence ... ok
+
+test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests/next_runner_provider_contract.rs (AiDENs/target/debug/deps/next_runner_provider_contract-e6b484f8a24bb463)
+
+running 2 tests
+test disabled_provider_does_not_produce_answer ... ok
+test explicit_mock_provider_returns_configured_text_not_placeholder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/next_turn_executor.rs (AiDENs/target/debug/deps/next_turn_executor-23719e4e0ed8f9c5)
+
+running 2 tests
+test public_runner_records_budget_exhaustion_as_blocked_turn ... ok
+test public_runner_executes_mock_repo_read_turn_loop ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/phase_06_agency_v02.rs (AiDENs/target/debug/deps/phase_06_agency_v02-1052ad2a9a404c5a)
+
+running 2 tests
+test runner_gates_memory_personalized_final_output_with_receipts ... ok
+test runner_counts_repeated_nudges_across_turns_and_blocks_over_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/phase_08_agency_gate.rs (AiDENs/target/debug/deps/phase_08_agency_gate-b7a534551bd0c0b4)
+
+running 2 tests
+test runner_gates_high_impact_single_path_before_final_output ... ok
+test runner_classifies_tool_output_persuasion_risk_before_followup_generation ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_schedule_kit-7c4ed9ae4cca96a1)
+
+running 2 tests
+test tests::occurrence_identity_includes_schedule_key_and_payload_digest ... ok
+test tests::empty_occurrence_key_is_rejected_before_recurring_logic_exists ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_security_kit-d671d76e7ec37637)
+
+running 2 tests
+test tests::side_effects_require_canonical_permit_classification ... ok
+test tests::path_safety_rejects_traversal_and_sensitive_prefixes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_testkit-27da23858991eb04)
+
+running 6 tests
+test tests::mismatch_report_has_human_readable_diff ... ok
+test tests::p09_proof_semantic_and_view_reference_cases_are_semantic_not_marker_checks ... ok
+test tests::safe_coding_exposure_case_interprets_expected ... ok
+test tests::p28_bitemporal_reference_fixture_matrix_interprets_required_cases ... ok
+test tests::temporal_query_reference_case_interprets_as_of_semantics ... ok
+test tests::reference_cases_cover_required_catalogs ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/reference_self_check.rs (AiDENs/target/debug/deps/reference_self_check-c53c8711c12a21ba)
+
+running 1 test
+test generated_reference_cases_match_the_reference_interpreter ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_tool_kit-fac0b759fcb2b5b3)
+
+running 32 tests
+test tests::disabled_tool_is_absent ... ok
+test tests::exposure_policy_can_bound_tool_count ... ok
+test tests::disabled_means_absent_at_registration_exposure_and_invocation ... ok
+test tests::p10_run_checks_requires_shell_permit_and_blocks_unallowed_commands ... ok
+test tests::declared_registered_executable_hidden_and_blocked_are_distinct ... ok
+test tests::p28_repo_list_reports_symlinks_without_following_targets ... ok
+test tests::p28_patch_apply_rejects_symlink_write_targets ... ok
+test tests::exposure_receipt_matches_provider_tool_schema ... ok
+test tests::p28_file_stat_fails_on_unreadable_digest_input ... ok
+test tests::p10_read_inspect_search_and_patch_propose_are_read_only ... ok
+test tests::p28_patch_apply_missing_parent_leaves_no_dirty_directory ... ok
+test tests::p28_repo_list_truncation_discloses_total_and_full_digest ... ok
+test tests::patch_propose_is_executable_and_non_mutating ... ok
+test tests::p28_repo_search_skips_denied_components_anywhere_in_path ... ok
+test tests::safe_coding_registry_does_not_register_dangerous_tools ... ok
+test tests::repo_read_rejects_traversal ... ok
+test tests::side_effect_invocation_without_permit_is_receipt_bearing_denial ... ok
+test tests::p10_patch_apply_check_only_validates_without_mutation ... ok
+test tests::phase04_patch_apply_multifile_records_before_after_digests ... ok
+test tests::side_effect_tool_requires_permit ... ok
+test tests::phase05_run_checks_rejects_string_commands_and_caps_output ... ok
+test tests::p10_patch_apply_requires_permit_and_then_writes_receipt ... ok
+test tests::side_effect_descriptors_require_durable_runtime_receipts ... ok
+test tests::p10_patch_apply_ambiguous_diff_fails_closed_with_receipt ... ok
+test tests::safe_coding_registry_for_current_dir_fallback_is_degraded ... ok
+test tests::safe_coding_exposure_matches_reference_interpreter ... ok
+test tests::schema_invalid_tool_input_is_blocked_before_executor ... ok
+test tests::side_effect_tool_without_sandbox_root_fails_closed_without_wildcard_scope ... ok
+test tests::read_only_default_exposes_only_read_only_executable_tools ... ok
+test tests::p28_command_timeout_wait_uses_adaptive_backoff ... ok
+test tests::p30_command_timeout_terminates_process_group ... ok
+test tests::p28_run_command_timeout_marks_partial_execution ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/next_repo_read_dispatch.rs (AiDENs/target/debug/deps/next_repo_read_dispatch-1d7181f369e5e2f5)
+
+running 1 test
+test repo_read_tool_executes_and_emits_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p30_tool_hardening.rs (AiDENs/target/debug/deps/p30_tool_hardening-9777dd3e1dfbe1e5)
+
+running 3 tests
+test p30_patch_apply_missing_file_fails_closed_instead_of_empty_input ... ok
+test p30_tool_exposure_id_is_content_derived ... ok
+test p30_run_checks_uses_fixed_executable_paths_without_ambient_path ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/aidens_wake_kit-09bddd9d6766dfb3)
+
+running 2 tests
+test tests::empty_signal_key_is_rejected ... ok
+test tests::wake_signal_identity_uses_source_key_and_payload ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (AiDENs/target/debug/deps/boundary_compiler_core-dece25cd1dd900ea)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/json_boundary_fixtures.rs (AiDENs/target/debug/deps/json_boundary_fixtures-02f0d97a2fddf9cd)
+
+running 28 tests
+test accepted_and_rejected_results_both_have_receipts ... ok
+test duplicate_key_is_rejected_or_quarantined ... ok
+test duplicate_key_with_treatment_path_emits_integrity_receipt ... ok
+test duplicate_key_policy_can_quarantine_ambiguous_json ... ok
+test duplicate_key_is_not_silently_last_write_wins ... ok
+test canonical_bytes_are_stable_sorted_json_v1 ... ok
+test canonical_digest_is_stable_for_equivalent_object_ordering ... ok
+test function_argument_treatment_paths_override_profile_paths ... ok
+test json_pointer_escaping_is_honored_for_treatment_paths ... ok
+test malformed_json_with_treatment_path_emits_integrity_receipt ... ok
+test compile_results_are_serializable_receipt_artifacts ... ok
+test malformed_json_is_rejected_with_parse_receipt ... ok
+test raw_digest_is_sha256_over_original_bytes_even_on_reject ... ok
+test no_repair_policy_never_emits_fake_repair_accept ... ok
+test resource_ceiling_rejects_deep_input ... ok
+test post_parse_rejections_keep_receipt_canonical_digest_but_no_value ... ok
+test no_repair_policy_never_emits_repair_receipts_across_terminal_decisions ... ok
+test resource_ceiling_large_input_with_treatment_path_emits_integrity_receipt ... ok
+test resource_ceiling_rejects_too_many_object_keys ... ok
+test schema_properties_provide_allowed_fields_and_types ... ok
+test resource_ceiling_rejects_large_input ... ok
+test treatment_critical_missing_path_requires_integrity_receipt ... ok
+test string_number_coercion_is_rejected_by_default ... ok
+test treatment_critical_unknown_field_marks_integrity_changed ... ok
+test unknown_field_policy_can_quarantine_surprise_structure ... ok
+test treatment_critical_type_mismatch_marks_integrity_changed ... ok
+test valid_minimal_json_is_accepted_and_gets_canonical_digest ... ok
+test unknown_field_policy_rejects_surprise_structure ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

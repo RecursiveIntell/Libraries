@@ -4,11 +4,9 @@ use quant_codec_core::{KvSliceRequest, LayerId};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReaderConfig {
     pub reader_label: Option<String>,
     pub scratch_budget_bytes: u64,

@@ -7,12 +7,13 @@ rust-version = "1.75"
 description = "Shared compressed KV-cache pool infrastructure for Rust experiments."
 
 [dependencies]
-quant-codec-core = { path = "../quant-codec-core" }
+quant-codec-core = { path = "../quant-codec-core", features = ["serde"] }
 fib-quant = { path = "../../../fib-quant", optional = true, features = ["kv"] }
-serde = { version = "1", features = ["derive"], optional = true }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "1"
 blake3 = "1"
+bincode = { version = "2", features = ["serde"] }
 criterion = { version = "0.5", optional = true }
 
 [dev-dependencies]
@@ -20,7 +21,7 @@ proptest = "1"
 
 [features]
 default = ["serde"]
-serde = ["dep:serde", "quant-codec-core/serde"]
+serde = ["quant-codec-core/serde"]
 turbo-quant-adapter = []
 fibquant-adapter = ["dep:fib-quant", "serde"]
 bench = ["dep:criterion"]

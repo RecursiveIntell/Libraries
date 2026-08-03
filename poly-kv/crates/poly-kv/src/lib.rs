@@ -28,6 +28,10 @@ pub use receipts::{
     FallbackReceiptV1, PoolBuildReceiptV1, ReaderInjectionReceiptV1,
     COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA,
 };
-pub use store::{KvPoolStore, PersistedPool};
+#[cfg(feature = "fibquant-adapter")]
+pub use store::decode_fibquant_pool_bundle;
+pub use store::{
+    decode_pool_bundle_with_value_codec, encode_pool_bundle, KvPoolStore, PersistedPool,
+};
 
 pub use quant_codec_core::*;

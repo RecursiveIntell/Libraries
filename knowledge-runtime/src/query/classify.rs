@@ -4,10 +4,6 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Parsing error for query mode operations (test-only).
-#[cfg(test)]
-use thiserror::Error;
-
 /// Intent classification for an incoming query.
 ///
 /// The classifier maps raw query text to a `QueryMode` that determines

@@ -3,11 +3,9 @@ use quant_codec_core::{
     TokenizerFingerprint,
 };
 
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QualityGateResultV1 {
     pub passed: bool,
     pub max_key_mse: f64,
@@ -30,8 +28,7 @@ impl QualityGateResultV1 {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CompressionPolicyV1 {
     pub profile_digest: CodecProfileDigest,
     pub key_codec_id: CodecId,
@@ -60,8 +57,7 @@ impl CompressionPolicyV1 {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BlockManifestEntryV1 {
     pub role: KvRole,
     pub layer: u32,
@@ -74,8 +70,7 @@ pub struct BlockManifestEntryV1 {
     pub artifact_digest: ArtifactDigest,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KvPoolManifestV1 {
     pub schema_version: u16,
     pub model_fingerprint: ModelFingerprint,

@@ -92,21 +92,84 @@ impl FibQuantValueCodec {
         Ok(self)
     }
 
+    /// Restore the admitted codec/profile directly from a persisted FQKV value block.
+    ///
+    /// The wire decoder validates framing first; `decode_envelope` then binds the
+    /// embedded profile to this adapter before the codec is admitted.
+    pub fn from_encoded_wire(wire_bytes: &[u8], max_mse: f64) -> Result<Self, PolyKvError> {
+        if wire_bytes.len() as u64 > MAX_ADAPTER_ENCODED_BYTES {
+            return Err(PolyKvError::Codec(format!(
+                "fibquant payload exceeds {MAX_ADAPTER_ENCODED_BYTES} byte limit"
+            )));
+        }
+        let encoded = decode_kv_wire(wire_bytes).map_err(fib_error)?;
+        if encoded.shape.role != KvRole::Value
+            || encoded.shape.attention_kind != KvAttentionKind::Mha
+            || encoded.shape.batch != 1
+            || encoded.shape.layers != 1
+            || encoded.shape.kv_heads != 1
+            || encoded.shape.query_heads != 1
+        {
+            return Err(PolyKvError::ShapeMismatch {
+                reason: "persisted FibQuant wire is not an admitted value profile".to_string(),
+            });
+        }
+        let head_dim =
+            usize::try_from(encoded.shape.head_dim).map_err(|error| PolyKvError::InvalidShape {
+                reason: error.to_string(),
+            })?;
+        let canonical_shape = KvTensorShapeV1::new(
+            KvRole::Value,
+            KvAttentionKind::Mha,
+            1,
+            1,
+            1,
+            1,
+            1,
+            encoded.shape.head_dim,
+            KvDType::F32,
+            KvRopeState::NotApplicable,
+        );
+        let raw_bytes = encoded
+            .shape
+            .head_dim
+            .checked_mul(4)
+            .and_then(|bytes| bytes.checked_add(1024))
+            .ok_or_else(|| PolyKvError::InvalidShape {
+                reason: "encoded block reservation overflow".to_string(),
+            })?;
+        let profile = KvCompressionProfileV1::from_parts(
+            encoded.profile.profile_id.clone(),
+            &canonical_shape,
+            encoded.profile.fib_profile.clone(),
+            encoded.profile.codebook_digest.clone(),
+            encoded.profile.axis_policy,
+            KvPageGeometryV1::new(1, canonical_shape.head_dim, raw_bytes),
+        )
+        .map_err(fib_error)?;
+        let profile_digest = profile.digest(&canonical_shape).map_err(fib_error)?;
+        let codec = Self {
+            head_dim,
+            shape: canonical_shape,
+            profile,
+            profile_digest,
+            max_mse: None,
+        }
+        .with_max_mse(max_mse)?;
+        codec.decode_envelope(wire_bytes)?;
+        Ok(codec)
+    }
+
     /// Return the canonical FibQuant KV profile digest.
     pub fn fib_profile_digest(&self) -> &str {
         &self.profile_digest
     }
 
-    /// Build a FibScorer for compressed-domain attention scoring.
+    /// Build a FibScorer for compressed-domain attention scoring from the
+    /// exact profile that encoded the admitted value blocks.
     #[cfg(feature = "fibquant-adapter")]
-    pub fn build_scorer(&self, seed: u64) -> Result<fib_quant::FibScorer, PolyKvError> {
-        let fib_profile =
-            FibQuantProfileV1::paper_default(self.head_dim, 4, 32, seed).map_err(fib_error)?;
-        let mut fp = fib_profile;
-        fp.training_samples = 128;
-        fp.lloyd_restarts = 1;
-        fp.lloyd_iterations = 2;
-        let quantizer = FibQuantizer::new(fp).map_err(fib_error)?;
+    pub fn build_scorer(&self) -> Result<fib_quant::FibScorer, PolyKvError> {
+        let quantizer = FibQuantizer::new(self.profile.fib_profile.clone()).map_err(fib_error)?;
         fib_quant::FibScorer::new(quantizer)
             .map_err(|e| PolyKvError::Codec(format!("fib scorer build: {e}")))
     }
@@ -307,6 +370,10 @@ impl VectorCodec for FibQuantValueCodec {
 }
 
 impl crate::codecs::value::ValueCodec for FibQuantValueCodec {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn encode_values(&self, input: &[f32]) -> Result<Vec<u8>, PolyKvError> {
         let encoded = self.encode_envelope(input)?;
         let bytes = encode_kv_wire(&encoded).map_err(fib_error)?;
