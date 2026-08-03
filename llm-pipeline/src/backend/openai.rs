@@ -437,7 +437,10 @@ mod tests {
         assert_eq!(body["max_tokens"], 2048);
         assert_eq!(body["stream"], false);
 
-        let messages = body["messages"].as_array().expect("messages");
+        let messages = match body["messages"].as_array() {
+            Some(messages) => messages,
+            None => panic!("messages"),
+        };
         assert_eq!(messages.len(), 2);
         assert_eq!(messages[0]["role"], "system");
         assert_eq!(messages[0]["content"], "You are a helpful assistant.");
@@ -454,7 +457,10 @@ mod tests {
         request.config.json_mode = true;
 
         let body = OpenAiBackend::build_body(&request, false, None);
-        let rf = body.get("response_format").expect("response_format");
+        let rf = match body.get("response_format") {
+            Some(rf) => rf,
+            None => panic!("response_format"),
+        };
         assert_eq!(rf["type"], "json_object");
     }
 
@@ -463,7 +469,10 @@ mod tests {
         let request = test_request();
         let body = OpenAiBackend::build_body(&request, false, None);
 
-        let messages = body["messages"].as_array().expect("messages");
+        let messages = match body["messages"].as_array() {
+            Some(messages) => messages,
+            None => panic!("messages"),
+        };
         assert_eq!(messages.len(), 1);
         assert_eq!(messages[0]["role"], "user");
     }
@@ -498,7 +507,7 @@ mod tests {
 
         let client = Client::new();
         let body = json!({"test": true});
-        let req = backend
+        let req = match backend
             .build_http_request(
                 &client,
                 "https://api.openai.com/v1/chat/completions",
@@ -506,15 +515,21 @@ mod tests {
                 None,
             )
             .build()
-            .expect("build request");
+        {
+            Ok(req) => req,
+            Err(err) => panic!("build request: {err}"),
+        };
 
-        let auth = req.headers().get("Authorization").expect("auth header");
+        let auth = match req.headers().get("Authorization") {
+            Some(auth) => auth,
+            None => panic!("auth header"),
+        };
         assert_eq!(auth, "Bearer sk-test123");
 
-        let org = req
-            .headers()
-            .get("OpenAI-Organization")
-            .expect("org header");
+        let org = match req.headers().get("OpenAI-Organization") {
+            Some(org) => org,
+            None => panic!("org header"),
+        };
         assert_eq!(org, "org-abc");
     }
 
@@ -524,7 +539,7 @@ mod tests {
 
         let client = Client::new();
         let body = json!({"test": true});
-        let req = backend
+        let req = match backend
             .build_http_request(
                 &client,
                 "https://api.openai.com/v1/chat/completions",
@@ -532,7 +547,10 @@ mod tests {
                 None,
             )
             .build()
-            .expect("build request");
+        {
+            Ok(req) => req,
+            Err(err) => panic!("build request: {err}"),
+        };
 
         assert!(req.headers().get("Authorization").is_none());
         assert!(req.headers().get("OpenAI-Organization").is_none());
@@ -565,7 +583,10 @@ mod tests {
         ];
 
         let body = OpenAiBackend::build_body(&request, false, None);
-        let messages = body["messages"].as_array().expect("messages");
+        let messages = match body["messages"].as_array() {
+            Some(messages) => messages,
+            None => panic!("messages"),
+        };
         // system + 3 history messages
         assert_eq!(messages.len(), 4);
         assert_eq!(messages[0]["role"], "system");

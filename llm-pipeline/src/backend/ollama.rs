@@ -464,7 +464,10 @@ mod tests {
         assert_eq!(body["model"], "llama3.2");
         assert_eq!(body["stream"], false);
 
-        let messages = body["messages"].as_array().expect("messages array");
+        let messages = match body["messages"].as_array() {
+            Some(messages) => messages,
+            None => panic!("messages array"),
+        };
         assert_eq!(messages.len(), 2);
         assert_eq!(messages[0]["role"], "system");
         assert_eq!(messages[0]["content"], "You are a helpful assistant.");
@@ -549,7 +552,10 @@ mod tests {
         ];
 
         let body = OllamaBackend::build_chat_body(&request, false);
-        let messages = body["messages"].as_array().expect("messages");
+        let messages = match body["messages"].as_array() {
+            Some(messages) => messages,
+            None => panic!("messages"),
+        };
         // system + 3 history messages (no extra user message since messages is non-empty)
         assert_eq!(messages.len(), 4);
         assert_eq!(messages[0]["role"], "system");

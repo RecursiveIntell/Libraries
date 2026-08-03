@@ -983,9 +983,10 @@ mod tests {
     fn canned_fetcher(responses: Vec<Value>) -> impl FnMut(Value) -> JsonFetchFuture<'static> {
         let mut responses = VecDeque::from(responses);
         move |_body: Value| {
-            let response = responses
-                .pop_front()
-                .expect("canned provider response should be available");
+            let response = match responses.pop_front() {
+                Some(response) => response,
+                None => panic!("canned provider response should be available"),
+            };
             Box::pin(async move { Ok(response) })
         }
     }
@@ -1099,10 +1100,11 @@ mod tests {
         assert_eq!(output.invocations.len(), 1);
 
         let receipt_id = &output.invocations[0].receipt.receipt_id;
-        let stored = store
-            .get_tool_receipt(receipt_id)
-            .unwrap()
-            .expect("receipt should persist to Forge");
+        let stored = match store.get_tool_receipt(receipt_id) {
+            Ok(Some(stored)) => stored,
+            Ok(None) => panic!("receipt should persist to Forge"),
+            Err(err) => panic!("receipt lookup should succeed: {err}"),
+        };
 
         assert_eq!(stored.tool_name, "add");
         assert_eq!(stored.tool_version, "1.0.0");

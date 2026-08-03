@@ -575,8 +575,10 @@ fn test_preflight_rejects_unsupported_constraint() {
         constraint: GenerationConstraint::Regex("^hello$".into()),
     };
 
-    let err = LlmCall::preflight_constraint(&ctx, &request)
-        .expect_err("regex should be unsupported on ollama");
+    let err = match LlmCall::preflight_constraint(&ctx, &request) {
+        Ok(_) => panic!("regex should be unsupported on ollama"),
+        Err(err) => err,
+    };
     assert!(matches!(
         err,
         crate::PipelineError::UnsupportedConstraint { .. }
@@ -657,7 +659,7 @@ async fn test_token_budget_passes_when_under_budget() {
 
 #[tokio::test]
 async fn test_best_of_n_picks_successful_parse() {
-    use crate::retry::{BestOfNExhaustion, RetryConfig, RetryStrategy};
+    use crate::retry::{BestOfNExhaustion, RetryConfig};
 
     // First two responses are invalid JSON, third is valid.
     let ctx = ExecCtx::builder("http://localhost:11434")
