@@ -56,6 +56,9 @@ impl CompressionPolicyV1 {
     }
 }
 
+/// CMP-002: the only manifest schema version this crate can restore.
+pub const CURRENT_SCHEMA_VERSION: u16 = 1;
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct BlockManifestEntryV1 {

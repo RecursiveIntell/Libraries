@@ -35,6 +35,11 @@ pub enum PolyKvError {
         adapter: &'static str,
         reason: String,
     },
+
+    /// CMP-002: a manifest from an unsupported schema version cannot be
+    /// restored; fail closed with a typed error, never a silent default.
+    #[error("unsupported manifest schema version {got}; expected {expected}")]
+    UnsupportedSchemaVersion { got: u16, expected: u16 },
 }
 
 impl From<QuantCodecError> for PolyKvError {

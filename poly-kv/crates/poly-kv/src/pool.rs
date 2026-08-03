@@ -170,6 +170,40 @@ impl PoolBuilder {
         self
     }
 
+    /// CMP-002: restore a pool from a persisted manifest plus its exact
+    /// blocks (crash/reload path).
+    ///
+    /// Fails closed on:
+    /// - unsupported `schema_version` (typed `UnsupportedSchemaVersion`);
+    /// - manifest digest corruption (typed `Manifest` error);
+    /// - any build-time validation failure (shape/block-set/fallback digest).
+    pub fn restore_from_manifest(
+        manifest: &crate::manifest::KvPoolManifestV1,
+        blocks: Vec<ExactKvBlock>,
+    ) -> Result<SharedKvPool, PolyKvError> {
+        if manifest.schema_version != crate::manifest::CURRENT_SCHEMA_VERSION {
+            return Err(PolyKvError::UnsupportedSchemaVersion {
+                got: manifest.schema_version,
+                expected: crate::manifest::CURRENT_SCHEMA_VERSION,
+            });
+        }
+        if manifest.manifest_digest != manifest.canonical_digest_without_self() {
+            return Err(PolyKvError::Manifest(
+                "restored manifest digest does not match its content (corruption)".to_string(),
+            ));
+        }
+
+        Self::default()
+            .model_fingerprint(manifest.model_fingerprint.clone())
+            .tokenizer_fingerprint(manifest.tokenizer_fingerprint.clone())
+            .shape(manifest.shape.clone())
+            .policy(manifest.policy.clone())
+            .exact_fallback(ExactFallback::from_blocks(blocks.clone()))
+            .key_codec(Q8KeyCodec::symmetric_per_block())
+            .value_codec(RawExactValueCodec)
+            .build_from_blocks(blocks)
+    }
+
     pub fn build_from_blocks(self, blocks: Vec<ExactKvBlock>) -> Result<SharedKvPool, PolyKvError> {
         let shape = self
             .shape
