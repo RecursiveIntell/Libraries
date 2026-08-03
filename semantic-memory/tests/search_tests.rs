@@ -1675,3 +1675,57 @@ async fn test_vector_search_completes_with_many_rows() {
         "Search should complete successfully with many rows"
     );
 }
+
+// CMP-004: when the turbo-quant-codec feature is disabled, requesting the
+// candidate backend must fail closed with a typed config error (visibly
+// degraded, never silently approximate), and the default exact-f32 path
+// stays authoritative.
+#[cfg(not(feature = "turbo-quant-codec"))]
+mod turbo_quant_disabled_path {
+    use super::*;
+    use semantic_memory::{DerivedVectorBackendPolicy, MemoryError};
+
+    #[tokio::test]
+    async fn disabled_candidate_path_fails_closed_at_config() {
+        let tmp = TempDir::new().unwrap();
+        let mut config = MemoryConfig {
+            base_dir: tmp.path().to_path_buf(),
+            ..Default::default()
+        };
+        config.search.derived_vector_backend = DerivedVectorBackendPolicy::TurboQuantCandidateOnly;
+        let embedder = Box::new(MockEmbedder::new(768));
+
+        let err = match MemoryStore::open_with_embedder(config, embedder) {
+            Ok(_) => panic!("expected InvalidConfig when turbo-quant-codec is disabled"),
+            Err(e) => e,
+        };
+        match err {
+            MemoryError::InvalidConfig { field, reason } => {
+                assert_eq!(field, "search.derived_vector_backend");
+                assert!(
+                    reason.contains("turbo-quant-codec feature"),
+                    "reason must name the feature gate: {reason}"
+                );
+            }
+            other => panic!("expected InvalidConfig, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn default_exact_f32_path_stays_authoritative_when_disabled() {
+        let (store, _tmp) = test_store();
+        store
+            .add_fact("general", "exact path fixture", None, None)
+            .await
+            .unwrap();
+
+        let results = store
+            .search("exact path fixture", None, None, None)
+            .await
+            .unwrap();
+        assert!(
+            !results.is_empty(),
+            "exact f32 search remains authoritative"
+        );
+    }
+}
