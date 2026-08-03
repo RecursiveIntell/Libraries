@@ -219,6 +219,12 @@ where
             .get("artifact_id")
             .and_then(|value| value.as_str())
             .unwrap_or_default();
+        if artifact_id.is_empty() {
+            return Err(ToolError::new(
+                crate::ToolErrorClass::InvalidArguments,
+                "artifact_id must not be empty",
+            ));
+        }
         let content = self.port.read(&ArtifactId::new(artifact_id)).await?;
         Ok(ToolResult::text(content.content))
     }

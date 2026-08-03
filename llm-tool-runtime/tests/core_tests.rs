@@ -492,7 +492,7 @@ async fn test_starter_tool_invalid_input() {
 
     let err = tool.invoke(&ctx, &call).await.unwrap_err();
     assert_eq!(err.class, ToolErrorClass::InvalidArguments);
-    assert!(err.message.contains("artifact not found"));
+    assert!(err.message.contains("artifact_id must not be empty"));
 }
 
 // ===========================================================================
