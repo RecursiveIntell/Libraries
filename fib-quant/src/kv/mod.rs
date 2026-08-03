@@ -15,6 +15,7 @@ pub mod profile;
 pub mod quality;
 pub mod receipt;
 pub mod shape;
+pub mod wire;
 
 pub use attention_ref::{
     compare_attention_fixture, reference_attention_logits, reference_value_aggregation,
@@ -37,3 +38,6 @@ pub use receipt::{
     kv_tensor_digest, KvCompressionReceiptV1, KvDecodeReceiptV1, KvEvalReceiptV1, KvOperationKindV1,
 };
 pub use shape::{KvAttentionKind, KvDType, KvRole, KvRopeState, KvTensorShapeV1};
+pub use wire::{
+    decode_kv_wire, encode_kv_wire, KV_WIRE_HEADER_LEN, KV_WIRE_MAGIC, KV_WIRE_VERSION,
+};

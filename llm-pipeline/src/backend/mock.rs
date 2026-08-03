@@ -18,6 +18,7 @@ use reqwest::Client;
 
 use super::{Backend, LlmRequest, LlmResponse};
 use crate::error::Result;
+use crate::payload::TokenUsage;
 
 /// A test backend that returns canned responses in order.
 ///
@@ -27,6 +28,7 @@ use crate::error::Result;
 pub struct MockBackend {
     responses: Vec<String>,
     index: AtomicUsize,
+    total_tokens: Option<u32>,
 }
 
 impl MockBackend {
@@ -41,12 +43,22 @@ impl MockBackend {
         Self {
             responses,
             index: AtomicUsize::new(0),
+            total_tokens: None,
         }
     }
 
     /// Create a mock that always returns the same response.
     pub fn fixed(response: impl Into<String>) -> Self {
         Self::new(vec![response.into()])
+    }
+
+    /// Create a mock that returns `response` and reports the given token usage.
+    pub fn with_usage(response: impl Into<String>, total_tokens: u32) -> Self {
+        Self {
+            responses: vec![response.into()],
+            index: AtomicUsize::new(0),
+            total_tokens: Some(total_tokens),
+        }
     }
 
     fn next_response(&self) -> String {
@@ -64,10 +76,22 @@ impl Backend for MockBackend {
         _request: &LlmRequest,
     ) -> Result<LlmResponse> {
         let text = self.next_response();
+        let token_usage = self.total_tokens.map(|total| TokenUsage {
+            prompt_tokens: 0,
+            completion_tokens: total,
+            total_tokens: total,
+            cache_read_tokens: None,
+            cache_write_tokens: None,
+        });
         Ok(LlmResponse {
             text,
             status: 200,
             metadata: Default::default(),
+            provider_meta: Default::default(),
+            token_usage,
+            finish_reason: None,
+            ttft_ms: None,
+            cache_hit: false,
         })
     }
 
@@ -79,11 +103,23 @@ impl Backend for MockBackend {
         on_token: &mut (dyn FnMut(String) + Send),
     ) -> Result<LlmResponse> {
         let text = self.next_response();
+        let token_usage = self.total_tokens.map(|total| TokenUsage {
+            prompt_tokens: 0,
+            completion_tokens: total,
+            total_tokens: total,
+            cache_read_tokens: None,
+            cache_write_tokens: None,
+        });
         on_token(text.clone());
         Ok(LlmResponse {
             text,
             status: 200,
             metadata: Default::default(),
+            provider_meta: Default::default(),
+            token_usage,
+            finish_reason: None,
+            ttft_ms: None,
+            cache_hit: false,
         })
     }
 
@@ -106,6 +142,8 @@ mod tests {
             prompt: "test".to_string(),
             messages: vec![],
             config: Default::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: false,
             request_timeout: None,
         };
@@ -127,6 +165,8 @@ mod tests {
             prompt: "test".to_string(),
             messages: vec![],
             config: Default::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: false,
             request_timeout: None,
         };
@@ -157,6 +197,8 @@ mod tests {
             prompt: "test".to_string(),
             messages: vec![],
             config: Default::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: true,
             request_timeout: None,
         };

@@ -14,7 +14,9 @@ use rmcp::{
 };
 use serde_json::Value;
 
+use agent_graph::checkpoint_store::SqliteCheckpointStore;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use crate::evidence::{digest, validate_witness_capture, WitnessCapture, WitnessError};
 use crate::run_manager::{initial_state_for_input, RunBudgets, RunManager};
@@ -195,6 +197,7 @@ pub struct AgentGraphServer {
     tool_router: ToolRouter<Self>,
     base_url: String,
     default_model: String,
+    api_key: Option<String>,
     graphs: Mutex<HashMap<String, RegisteredGraph>>,
     runs: Mutex<RunManager>,
     store: Option<PersistentStore>,
@@ -212,8 +215,20 @@ impl AgentGraphServer {
     pub fn new(
         base_url: String,
         default_model: String,
+        api_key: Option<String>,
         data_dir: Option<PathBuf>,
         integrity_key_path: Option<PathBuf>,
+    ) -> Result<Self, String> {
+        Self::new_with_checkpoint_db(base_url, default_model, api_key, data_dir, integrity_key_path, None)
+    }
+
+    pub fn new_with_checkpoint_db(
+        base_url: String,
+        default_model: String,
+        api_key: Option<String>,
+        data_dir: Option<PathBuf>,
+        integrity_key_path: Option<PathBuf>,
+        checkpoint_db_path: Option<PathBuf>,
     ) -> Result<Self, String> {
         let store = match data_dir {
             Some(ref dir) => Some(PersistentStore::open_with_integrity_key(
@@ -225,15 +240,30 @@ impl AgentGraphServer {
         if let Some(ref store) = store {
             store.recover_incomplete_executions()?;
         }
+        let checkpoint_store = checkpoint_db_path
+            .map(|path| SqliteCheckpointStore::new(path.to_string_lossy().as_ref()).map(Arc::new))
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        if checkpoint_store.is_some() {
+            tracing::info!(
+                "SQLite checkpoint store initialized; interrupted runs recovered on startup"
+            );
+        }
 
-        let server = Self {
-            base_url,
-            default_model,
-            graphs: Mutex::new(HashMap::new()),
-            runs: Mutex::new(RunManager::default()),
-            store,
-            tool_router: Self::tool_router(),
-        };
+        let server =
+            Self {
+                base_url,
+                default_model,
+                api_key,
+                graphs: Mutex::new(HashMap::new()),
+                runs: Mutex::new(RunManager::default().with_checkpoint_store(
+                    checkpoint_store.clone().map(|store| {
+                        store as Arc<dyn agent_graph::checkpoint_store::CheckpointStore>
+                    }),
+                )),
+                store,
+                tool_router: Self::tool_router(),
+            };
 
         // Restore persisted graphs on startup
         if let Some(ref store) = server.store {
@@ -929,6 +959,7 @@ impl AgentGraphServer {
                 graph.spec,
                 self.base_url.clone(),
                 self.default_model.clone(),
+                self.api_key.clone(),
                 self.store.clone(),
                 move |record| {
                     Self::persist_terminal_and_mark(completion_runs, terminal_store, record)
@@ -965,6 +996,7 @@ impl AgentGraphServer {
             graph.spec,
             self.base_url.clone(),
             self.default_model.clone(),
+            self.api_key.clone(),
             self.store.clone(),
             move |record| Self::persist_terminal_and_mark(completion_runs, terminal_store, record),
         );
@@ -1547,6 +1579,7 @@ impl AgentGraphServer {
             graph.spec,
             self.base_url.clone(),
             self.default_model.clone(),
+            self.api_key.clone(),
             self.store.clone(),
             move |record| Self::persist_terminal_and_mark(completion_runs, terminal_store, record),
         );
@@ -1976,6 +2009,7 @@ impl AgentGraphServer {
             spec,
             self.base_url.clone(),
             self.default_model.clone(),
+            self.api_key.clone(),
             self.store.clone(),
             move |record| Self::persist_terminal_and_mark(completion_runs, terminal_store, record),
         );

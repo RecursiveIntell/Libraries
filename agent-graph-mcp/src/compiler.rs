@@ -1,5 +1,6 @@
 use std::sync::{atomic::AtomicBool, Arc, Mutex};
 
+use agent_graph::checkpoint_store::CheckpointStore;
 use agent_graph::event_sink::{EventSink, GraphEvent};
 use agent_graph::join::JoinNode;
 use agent_graph::reducer::{AddReducer, AppendReducer, LastWriteWins, MergeReducer};
@@ -16,9 +17,11 @@ use crate::spec::{GraphSpec, NodeType, ReducerKind};
 pub struct CompileContext {
     pub base_url: String,
     pub default_model: String,
+    pub api_key: Option<String>,
     pub cancelled: Arc<AtomicBool>,
     pub cancellation: Arc<Notify>,
     pub events: Arc<Mutex<Vec<GraphEvent>>>,
+    pub checkpoint_store: Option<Arc<dyn CheckpointStore>>,
 }
 
 struct Collector(Arc<Mutex<Vec<GraphEvent>>>);
@@ -42,6 +45,9 @@ pub fn compile(spec: &GraphSpec, cx: CompileContext) -> Result<AgentGraph, Strin
         .with_max_iterations(spec.max_iterations.unwrap_or(64))
         .with_cycle_detection(false)
         .with_event_sink(Arc::new(Collector(cx.events)));
+    if let Some(store) = cx.checkpoint_store {
+        builder = builder.with_checkpoint_store(store);
+    }
     for node in &spec.nodes {
         GraphSpec::executable_node_type(&node.node_type)
             .map_err(|error| format!("node '{}': {error}", node.id))?;
@@ -64,6 +70,7 @@ pub fn compile(spec: &GraphSpec, cx: CompileContext) -> Result<AgentGraph, Strin
                     id: node.id.clone(),
                     base_url: cx.base_url.clone(),
                     default_model: cx.default_model.clone(),
+                    api_key: cx.api_key.clone(),
                     prompt: node
                         .prompt
                         .clone()
@@ -85,6 +92,29 @@ pub fn compile(spec: &GraphSpec, cx: CompileContext) -> Result<AgentGraph, Strin
                         .unwrap_or(120_000),
                     input_key,
                     output_key,
+                    cost_model: None,
+                    token_budget: node
+                        .config
+                        .get("token_budget")
+                        .and_then(|v| v.as_u64())
+                        .map(|v| v as u32),
+                    best_of_n: node
+                        .config
+                        .get("best_of_n")
+                        .and_then(|v| v.as_u64())
+                        .map(|v| v as u32),
+                    best_of_n_temperatures: node
+                        .config
+                        .get("best_of_n_temperatures")
+                        .and_then(|v| v.as_array())
+                        .map(|a| a.iter().filter_map(|v| v.as_f64()).collect())
+                        .unwrap_or_default(),
+                    constraint_schema: node
+                        .config
+                        .get("constraint_schema")
+                        .and_then(|v| v.as_str())
+                        .map(str::to_owned),
+                    integrity_key: None,
                     ctx: run.clone(),
                 })
             }

@@ -1,0 +1,2329 @@
+    Checking boundary-compiler-core v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/boundary-compiler-core)
+    Checking aidens-contracts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts)
+    Checking aidens-security-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-security-kit)
+    Checking aidens-governance-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-governance-kit)
+    Checking aidens-receipts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts)
+    Checking aidens-agency-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-agency-kit)
+    Checking aidens-budget-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-budget-kit)
+    Checking knowledge-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/knowledge-runtime)
+    Checking aidens-repair-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-repair-kit)
+    Checking aidens-integration-tests v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-integration-tests)
+    Checking forge-engine v0.2.0 (/home/sikmindz/Coding/Libraries/living-memory/living-memory)
+    Checking aidens-arbiter-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-arbiter-kit)
+    Checking aidens-profile-research v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-research)
+    Checking aidens-profile-daemon v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-daemon)
+    Checking aidens-profile-desktop v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-desktop)
+    Checking aidens-profile-memory v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-memory)
+    Checking aidens-memory-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-memory-kit)
+    Checking kernel-conformance v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-conformance)
+    Checking aidens-kernel-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-kernel-kit)
+    Checking forge-pilot v0.1.0 (/home/sikmindz/Coding/Libraries/forge-pilot)
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/artifact.rs:247:72
+    |
+247 |                 &format!("{ref_id}|{reason}|{}", degradation_record_id.0),
+    |                                                                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/artifact.rs:307:26
+    |
+307 |             artifact_ref.0,
+    |                          ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/boundary.rs:132:32
+    |
+132 |             profile.profile_id.0, repair_kind, treatment.receipt_id.0
+    |                                ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/boundary.rs:132:69
+    |
+132 |             profile.profile_id.0, repair_kind, treatment.receipt_id.0
+    |                                                                     ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/boundary.rs:184:32
+    |
+184 |             profile.profile_id.0, input_digest.digest, output_digest.digest
+    |                                ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/boundary.rs:209:32
+    |
+209 |             profile.profile_id.0, input_digest.digest
+    |                                ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/boundary.rs:281:24
+    |
+281 |             profile_id.0,
+    |                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/capability_turn.rs:260:40
+    |
+260 |             self.scope, context.run_id.0, context.attempt_id.0
+    |                                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/capability_turn.rs:260:62
+    |
+260 |             self.scope, context.run_id.0, context.attempt_id.0
+    |                                                              ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/capability_turn.rs:368:40
+    |
+368 |             self.scope, context.run_id.0, context.attempt_id.0
+    |                                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/capability_turn.rs:368:62
+    |
+368 |             self.scope, context.run_id.0, context.attempt_id.0
+    |                                                              ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/daemon_queue.rs:84:46
+   |
+84 |             format!("{}|{}|{}", namespace_id.0, idempotency_key, payload_digest);
+   |                                              ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/daemon_queue.rs:159:30
+    |
+159 |             job.namespace_id.0, job.job_id.0, owner, acquired_at_material
+    |                              ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/daemon_queue.rs:159:44
+    |
+159 |             job.namespace_id.0, job.job_id.0, owner, acquired_at_material
+    |                                            ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/daemon_queue.rs:210:26
+    |
+210 |             namespace_id.0, schedule_id, occurrence_key, payload_digest
+    |                          ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/daemon_queue.rs:266:26
+    |
+266 |             namespace_id.0, source, signal_key, payload_digest
+    |                          ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/execution.rs:76:31
+   |
+76 |             attempt_family_id.0,
+   |                               ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/execution.rs:82:77
+   |
+82 |             span_id: generated_artifact_id_from_material("span", &material).0,
+   |                                                                             ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/execution.rs:87:73
+   |
+87 |                 &format!("retry|{}|{}", operation_id, attempt_family_id.0),
+   |                                                                         ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/execution.rs:183:34
+    |
+183 |             context.execution_id.0,
+    |                                  ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/execution.rs:253:34
+    |
+253 |             context.execution_id.0,
+    |                                  ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/execution.rs:254:40
+    |
+254 |             input_manifest.manifest_id.0,
+    |                                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/execution.rs:255:41
+    |
+255 |             output_manifest.manifest_id.0
+    |                                         ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/operator.rs:239:42
+    |
+239 |                     registry.registry_id.0,
+    |                                          ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/proof.rs:70:56
+   |
+70 |             .map(|obligation| obligation.obligation_id.0.clone())
+   |                                                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/proof.rs:165:52
+    |
+165 |                     &format!("{}|{}", artifact_ref.0, obligation.obligation_id.0),
+    |                                                    ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/proof.rs:165:80
+    |
+165 |                     &format!("{}|{}", artifact_ref.0, obligation.obligation_id.0),
+    |                                                                                ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/proof.rs:190:38
+    |
+190 |             .map(|item| item.debt_id.0.clone())
+    |                                      ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/proof.rs:263:52
+    |
+263 |                 &format!("{}|{}|{}", obligation_id.0, approver, rationale),
+    |                                                    ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/proof.rs:298:34
+    |
+298 |                     artifact_ref.0, profile.profile_id.0, debt.ledger_id.0
+    |                                  ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/proof.rs:298:56
+    |
+298 |                     artifact_ref.0, profile.profile_id.0, debt.ledger_id.0
+    |                                                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/proof.rs:298:74
+    |
+298 |                     artifact_ref.0, profile.profile_id.0, debt.ledger_id.0
+    |                                                                          ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/reserved_v11.rs:371:30
+    |
+371 |             source_region_id.0,
+    |                              ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/reserved_v11.rs:372:35
+    |
+372 |             destination_region_id.0,
+    |                                   ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/reserved_v11.rs:374:25
+    |
+374 |             payload_ref.0,
+    |                         ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/reserved_v11.rs:444:77
+    |
+444 |         let material = format!("{}|accepted={accepted}", message.message_id.0);
+    |                                                                             ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/reserved_v11.rs:482:78
+    |
+482 |         let material = format!("{}|quarantined|{reason}", message.message_id.0);
+    |                                                                              ^ private field
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+   --> crates/aidens-contracts/src/schema_catalog.rs:385:26
+    |
+385 |             registry_id: ArtifactId("artifact-family-registry:v1".into()),
+    |                          ^^^^^^^^^^
+    |
+note: constructor is not visible here due to private fields
+   --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+    |
+ 52 |           pub struct $name(String);
+    |                            ^^^^^^ private field
+...
+143 | / define_id!(
+144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+145 | |     ///
+146 | |     /// Assigned by the artifact store. Stable across reads.
+147 | |     ArtifactId
+148 | | );
+    | |_- in this macro invocation
+    = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+    |
+385 -             registry_id: ArtifactId("artifact-family-registry:v1".into()),
+385 +             registry_id: ArtifactId::new(_),
+    |
+385 -             registry_id: ArtifactId("artifact-family-registry:v1".into()),
+385 +             registry_id: ArtifactId::random(_),
+    |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+   --> crates/aidens-contracts/src/schema_catalog.rs:517:26
+    |
+517 |             manifest_id: ArtifactId("generated-schema-manifest:v1".into()),
+    |                          ^^^^^^^^^^
+    |
+note: constructor is not visible here due to private fields
+   --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+    |
+ 52 |           pub struct $name(String);
+    |                            ^^^^^^ private field
+...
+143 | / define_id!(
+144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+145 | |     ///
+146 | |     /// Assigned by the artifact store. Stable across reads.
+147 | |     ArtifactId
+148 | | );
+    | |_- in this macro invocation
+    = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+    |
+517 -             manifest_id: ArtifactId("generated-schema-manifest:v1".into()),
+517 +             manifest_id: ArtifactId::new(_),
+    |
+517 -             manifest_id: ArtifactId("generated-schema-manifest:v1".into()),
+517 +             manifest_id: ArtifactId::random(_),
+    |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+   --> crates/aidens-contracts/src/schema_catalog.rs:723:24
+    |
+723 |             report_id: ArtifactId("schema-compatibility-report:v1".into()),
+    |                        ^^^^^^^^^^
+    |
+note: constructor is not visible here due to private fields
+   --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+    |
+ 52 |           pub struct $name(String);
+    |                            ^^^^^^ private field
+...
+143 | / define_id!(
+144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+145 | |     ///
+146 | |     /// Assigned by the artifact store. Stable across reads.
+147 | |     ArtifactId
+148 | | );
+    | |_- in this macro invocation
+    = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+    |
+723 -             report_id: ArtifactId("schema-compatibility-report:v1".into()),
+723 +             report_id: ArtifactId::new(_),
+    |
+723 -             report_id: ArtifactId("schema-compatibility-report:v1".into()),
+723 +             report_id: ArtifactId::random(_),
+    |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+   --> crates/aidens-contracts/src/schema_catalog.rs:769:22
+    |
+769 |             plan_id: ArtifactId("migration-plan:v1".into()),
+    |                      ^^^^^^^^^^
+    |
+note: constructor is not visible here due to private fields
+   --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+    |
+ 52 |           pub struct $name(String);
+    |                            ^^^^^^ private field
+...
+143 | / define_id!(
+144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+145 | |     ///
+146 | |     /// Assigned by the artifact store. Stable across reads.
+147 | |     ArtifactId
+148 | | );
+    | |_- in this macro invocation
+    = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+    |
+769 -             plan_id: ArtifactId("migration-plan:v1".into()),
+769 +             plan_id: ArtifactId::new(_),
+    |
+769 -             plan_id: ArtifactId("migration-plan:v1".into()),
+769 +             plan_id: ArtifactId::random(_),
+    |
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/semantic.rs:46:91
+   |
+46 |             state_id: generated_artifact_id_from_material("semantic-state", &artifact_ref.0),
+   |                                                                                           ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/semantic.rs:151:26
+    |
+151 |             artifact_ref.0,
+    |                          ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/semantic.rs:154:30
+    |
+154 |                 .map(|id| id.0.clone())
+    |                              ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/semantic.rs:204:34
+    |
+204 |                     artifact_ref.0, execution_context_ref.0, reason_code
+    |                                  ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/semantic.rs:204:59
+    |
+204 |                     artifact_ref.0, execution_context_ref.0, reason_code
+    |                                                           ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/semantic.rs:283:51
+    |
+283 |                 &format!("{}|{}|{}", artifact_ref.0, reason_code, guarantee_weakened),
+    |                                                   ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/view_runtime.rs:476:31
+    |
+476 |                 .all(|id| !id.0.is_empty())
+    |                               ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/view_runtime.rs:477:63
+    |
+477 |             && self.degradation_event_ids.iter().all(|id| !id.0.is_empty())
+    |                                                               ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/lib.rs:261:52
+    |
+261 |         StackTraceCtx::from_trace_id(self.trace_id.0.clone())
+    |                                                    ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/lib.rs:265:45
+    |
+265 |         StackAttemptId::new(self.attempt_id.0.clone())
+    |                                             ^ private field
+
+    Checking contract-schema-gen v0.1.0 (/home/sikmindz/Coding/Libraries/contract-schema-gen)
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/tests.rs:30:19
+   |
+30 |     assert!(first.0.starts_with("receipt:local-process-seq-"));
+   |                   ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/tests.rs:31:20
+   |
+31 |     assert!(second.0.starts_with("receipt:local-process-seq-"));
+   |                    ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/tests.rs:33:20
+   |
+33 |     assert!(!first.0.contains('-') || !first.0.contains("0000-"));
+   |                    ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/tests.rs:33:46
+   |
+33 |     assert!(!first.0.contains('-') || !first.0.contains("0000-"));
+   |                                              ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/tests.rs:53:69
+   |
+53 |     assert_eq!(context.stack_trace_ctx().trace_id, context.trace_id.0);
+   |                                                                     ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+  --> crates/aidens-contracts/src/tests.rs:54:72
+   |
+54 |     assert_eq!(context.stack_attempt_id().as_str(), context.attempt_id.0);
+   |                                                                        ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+   --> crates/aidens-contracts/src/tests.rs:878:37
+    |
+878 |     assert_eq!(manifest.manifest_id.0, "generated-schema-manifest:v1");
+    |                                     ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+    --> crates/aidens-contracts/src/tests.rs:1205:26
+     |
+1205 |         report.report_id.0.split(':').next(),
+     |                          ^ private field
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1271:14
+     |
+1271 |         Some(ArtifactId("permit:fixture".into())),
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1271 -         Some(ArtifactId("permit:fixture".into())),
+1271 +         Some(ArtifactId::new(_)),
+     |
+1271 -         Some(ArtifactId("permit:fixture".into())),
+1271 +         Some(ArtifactId::random(_)),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1272:14
+     |
+1272 |         Some(ArtifactId("permit-use:fixture".into())),
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1272 -         Some(ArtifactId("permit-use:fixture".into())),
+1272 +         Some(ArtifactId::new(_)),
+     |
+1272 -         Some(ArtifactId("permit-use:fixture".into())),
+1272 +         Some(ArtifactId::random(_)),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1277:14
+     |
+1277 |         Some(ArtifactId("permit:fixture".into())),
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1277 -         Some(ArtifactId("permit:fixture".into())),
+1277 +         Some(ArtifactId::new(_)),
+     |
+1277 -         Some(ArtifactId("permit:fixture".into())),
+1277 +         Some(ArtifactId::random(_)),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1278:14
+     |
+1278 |         Some(ArtifactId("permit-use:fixture".into())),
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1278 -         Some(ArtifactId("permit-use:fixture".into())),
+1278 +         Some(ArtifactId::new(_)),
+     |
+1278 -         Some(ArtifactId("permit-use:fixture".into())),
+1278 +         Some(ArtifactId::random(_)),
+     |
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+    --> crates/aidens-contracts/src/tests.rs:1397:35
+     |
+1397 |     assert!(job.attempt_family_id.0.starts_with("attempt-family:"));
+     |                                   ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+    --> crates/aidens-contracts/src/tests.rs:1401:26
+     |
+1401 |         job.namespace_id.0,
+     |                          ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+    --> crates/aidens-contracts/src/tests.rs:1402:20
+     |
+1402 |         job.job_id.0,
+     |                    ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+    --> crates/aidens-contracts/src/tests.rs:1412:68
+     |
+1412 |     let fallback_material = format!("{}|{}|{}|0", job.namespace_id.0, job.job_id.0, "daemon-a");
+     |                                                                    ^ private field
+
+error[E0616]: field `0` of struct `stack_ids::ArtifactId` is private
+    --> crates/aidens-contracts/src/tests.rs:1412:82
+     |
+1412 |     let fallback_material = format!("{}|{}|{}|0", job.namespace_id.0, job.job_id.0, "daemon-a");
+     |                                                                                  ^ private field
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1484:14
+     |
+1484 |         vec![ArtifactId("episode:p13".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1484 -         vec![ArtifactId("episode:p13".into())],
+1484 +         vec![ArtifactId::new(_)],
+     |
+1484 -         vec![ArtifactId("episode:p13".into())],
+1484 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1485:14
+     |
+1485 |         vec![ArtifactId("claim:p13".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1485 -         vec![ArtifactId("claim:p13".into())],
+1485 +         vec![ArtifactId::new(_)],
+     |
+1485 -         vec![ArtifactId("claim:p13".into())],
+1485 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1486:14
+     |
+1486 |         vec![ArtifactId("evidence:p13".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1486 -         vec![ArtifactId("evidence:p13".into())],
+1486 +         vec![ArtifactId::new(_)],
+     |
+1486 -         vec![ArtifactId("evidence:p13".into())],
+1486 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1496:14
+     |
+1496 |         vec![ArtifactId("claim:p13".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1496 -         vec![ArtifactId("claim:p13".into())],
+1496 +         vec![ArtifactId::new(_)],
+     |
+1496 -         vec![ArtifactId("claim:p13".into())],
+1496 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1656:20
+     |
+1656 |     let graph_id = ArtifactId("compiled-region-graph:test".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1656 -     let graph_id = ArtifactId("compiled-region-graph:test".into());
+1656 +     let graph_id = ArtifactId::new(_);
+     |
+1656 -     let graph_id = ArtifactId("compiled-region-graph:test".into());
+1656 +     let graph_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1657:19
+     |
+1657 |     let claim_a = ArtifactId("claim:a".into());
+     |                   ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1657 -     let claim_a = ArtifactId("claim:a".into());
+1657 +     let claim_a = ArtifactId::new(_);
+     |
+1657 -     let claim_a = ArtifactId("claim:a".into());
+1657 +     let claim_a = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1658:19
+     |
+1658 |     let claim_b = ArtifactId("claim:b".into());
+     |                   ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1658 -     let claim_b = ArtifactId("claim:b".into());
+1658 +     let claim_b = ArtifactId::new(_);
+     |
+1658 -     let claim_b = ArtifactId("claim:b".into());
+1658 +     let claim_b = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1679:21
+     |
+1679 |     let region_id = ArtifactId("region:test".into());
+     |                     ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1679 -     let region_id = ArtifactId("region:test".into());
+1679 +     let region_id = ArtifactId::new(_);
+     |
+1679 -     let region_id = ArtifactId("region:test".into());
+1679 +     let region_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1731:9
+     |
+1731 |         ArtifactId("contradiction-witness:test".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1731 -         ArtifactId("contradiction-witness:test".into()),
+1731 +         ArtifactId::new(_),
+     |
+1731 -         ArtifactId("contradiction-witness:test".into()),
+1731 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1772:20
+     |
+1772 |     let graph_id = ArtifactId("region-graph:p28".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1772 -     let graph_id = ArtifactId("region-graph:p28".into());
+1772 +     let graph_id = ArtifactId::new(_);
+     |
+1772 -     let graph_id = ArtifactId("region-graph:p28".into());
+1772 +     let graph_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1852:26
+     |
+1852 |     let accepted_claim = ArtifactId("claim:accepted".into());
+     |                          ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1852 -     let accepted_claim = ArtifactId("claim:accepted".into());
+1852 +     let accepted_claim = ArtifactId::new(_);
+     |
+1852 -     let accepted_claim = ArtifactId("claim:accepted".into());
+1852 +     let accepted_claim = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1853:20
+     |
+1853 |     let evidence = ArtifactId("evidence:accepted".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1853 -     let evidence = ArtifactId("evidence:accepted".into());
+1853 +     let evidence = ArtifactId::new(_);
+     |
+1853 -     let evidence = ArtifactId("evidence:accepted".into());
+1853 +     let evidence = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1919:26
+     |
+1919 |     let accepted_claim = ArtifactId("claim:p28".into());
+     |                          ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1919 -     let accepted_claim = ArtifactId("claim:p28".into());
+1919 +     let accepted_claim = ArtifactId::new(_);
+     |
+1919 -     let accepted_claim = ArtifactId("claim:p28".into());
+1919 +     let accepted_claim = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:1939:14
+     |
+1939 |         vec![ArtifactId("query-receipt:p28".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+1939 -         vec![ArtifactId("query-receipt:p28".into())],
+1939 +         vec![ArtifactId::new(_)],
+     |
+1939 -         vec![ArtifactId("query-receipt:p28".into())],
+1939 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2282:18
+     |
+2282 |             Some(ArtifactId("execution-context:p28".into())),
+     |                  ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2282 -             Some(ArtifactId("execution-context:p28".into())),
+2282 +             Some(ArtifactId::new(_)),
+     |
+2282 -             Some(ArtifactId("execution-context:p28".into())),
+2282 +             Some(ArtifactId::random(_)),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2391:9
+     |
+2391 |         ArtifactId("degradation:p12-missing-ref".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2391 -         ArtifactId("degradation:p12-missing-ref".into()),
+2391 +         ArtifactId::new(_),
+     |
+2391 -         ArtifactId("degradation:p12-missing-ref".into()),
+2391 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2397:9
+     |
+2397 |         ArtifactId("degradation:p12-missing-ref".into())
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2397 -         ArtifactId("degradation:p12-missing-ref".into())
+2397 +         ArtifactId::new(_)
+     |
+2397 -         ArtifactId("degradation:p12-missing-ref".into())
+2397 +         ArtifactId::random(_)
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2405:9
+     |
+2405 |         ArtifactId("attempt-family:p28".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2405 -         ArtifactId("attempt-family:p28".into()),
+2405 +         ArtifactId::new(_),
+     |
+2405 -         ArtifactId("attempt-family:p28".into()),
+2405 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2451:9
+     |
+2451 |         ArtifactId("degradation:p12-repo-root".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2451 -         ArtifactId("degradation:p12-repo-root".into()),
+2451 +         ArtifactId::new(_),
+     |
+2451 -         ArtifactId("degradation:p12-repo-root".into()),
+2451 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2458:14
+     |
+2458 |         vec![ArtifactId("tool-call:p12".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2458 -         vec![ArtifactId("tool-call:p12".into())],
+2458 +         vec![ArtifactId::new(_)],
+     |
+2458 -         vec![ArtifactId("tool-call:p12".into())],
+2458 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2490:9
+     |
+2490 |         ArtifactId("attempt-family:p28-timeout".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2490 -         ArtifactId("attempt-family:p28-timeout".into()),
+2490 +         ArtifactId::new(_),
+     |
+2490 -         ArtifactId("attempt-family:p28-timeout".into()),
+2490 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2514:9
+     |
+2514 |         ArtifactId("attempt-family:p29-fingerprint".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2514 -         ArtifactId("attempt-family:p29-fingerprint".into()),
+2514 +         ArtifactId::new(_),
+     |
+2514 -         ArtifactId("attempt-family:p29-fingerprint".into()),
+2514 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2535:9
+     |
+2535 |         ArtifactId("attempt-family:p29-tool-receipt".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2535 -         ArtifactId("attempt-family:p29-tool-receipt".into()),
+2535 +         ArtifactId::new(_),
+     |
+2535 -         ArtifactId("attempt-family:p29-tool-receipt".into()),
+2535 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2666:15
+     |
+2666 |             &[ArtifactId("tool-call:p12".into())],
+     |               ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2666 -             &[ArtifactId("tool-call:p12".into())],
+2666 +             &[ArtifactId::new(_)],
+     |
+2666 -             &[ArtifactId("tool-call:p12".into())],
+2666 +             &[ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2697:11
+     |
+2697 |         &[ArtifactId("tool-call:p12".into())],
+     |           ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2697 -         &[ArtifactId("tool-call:p12".into())],
+2697 +         &[ArtifactId::new(_)],
+     |
+2697 -         &[ArtifactId("tool-call:p12".into())],
+2697 +         &[ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2704:9
+     |
+2704 |         ArtifactId("degradation:p12-operator".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2704 -         ArtifactId("degradation:p12-operator".into()),
+2704 +         ArtifactId::new(_),
+     |
+2704 -         ArtifactId("degradation:p12-operator".into()),
+2704 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2712:11
+     |
+2712 |         &[ArtifactId("tool-call:p12".into())],
+     |           ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2712 -         &[ArtifactId("tool-call:p12".into())],
+2712 +         &[ArtifactId::new(_)],
+     |
+2712 -         &[ArtifactId("tool-call:p12".into())],
+2712 +         &[ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2722:11
+     |
+2722 |         &[ArtifactId("tool-call:p12".into())],
+     |           ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2722 -         &[ArtifactId("tool-call:p12".into())],
+2722 +         &[ArtifactId::new(_)],
+     |
+2722 -         &[ArtifactId("tool-call:p12".into())],
+2722 +         &[ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2737:24
+     |
+2737 |     let artifact_ref = ArtifactId("artifact:p28-proof".into());
+     |                        ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2737 -     let artifact_ref = ArtifactId("artifact:p28-proof".into());
+2737 +     let artifact_ref = ArtifactId::new(_);
+     |
+2737 -     let artifact_ref = ArtifactId("artifact:p28-proof".into());
+2737 +     let artifact_ref = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2766:15
+     |
+2766 |         .push(ArtifactId("proof-waiver:phase09".into()));
+     |               ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2766 -         .push(ArtifactId("proof-waiver:phase09".into()));
+2766 +         .push(ArtifactId::new(_));
+     |
+2766 -         .push(ArtifactId("proof-waiver:phase09".into()));
+2766 +         .push(ArtifactId::random(_));
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2768:24
+     |
+2768 |     let artifact_ref = ArtifactId("artifact:p09-proof-debt".into());
+     |                        ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2768 -     let artifact_ref = ArtifactId("artifact:p09-proof-debt".into());
+2768 +     let artifact_ref = ArtifactId::new(_);
+     |
+2768 -     let artifact_ref = ArtifactId("artifact:p09-proof-debt".into());
+2768 +     let artifact_ref = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2787:15
+     |
+2787 |         .push(ArtifactId("test-log:p28".into()));
+     |               ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2787 -         .push(ArtifactId("test-log:p28".into()));
+2787 +         .push(ArtifactId::new(_));
+     |
+2787 -         .push(ArtifactId("test-log:p28".into()));
+2787 +         .push(ArtifactId::random(_));
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2789:24
+     |
+2789 |     let artifact_ref = ArtifactId("artifact:p28-proof-pass".into());
+     |                        ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2789 -     let artifact_ref = ArtifactId("artifact:p28-proof-pass".into());
+2789 +     let artifact_ref = ArtifactId::new(_);
+     |
+2789 -     let artifact_ref = ArtifactId("artifact:p28-proof-pass".into());
+2789 +     let artifact_ref = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2832:24
+     |
+2832 |     let artifact_ref = ArtifactId("artifact:p28-semantic".into());
+     |                        ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2832 -     let artifact_ref = ArtifactId("artifact:p28-semantic".into());
+2832 +     let artifact_ref = ArtifactId::new(_);
+     |
+2832 -     let artifact_ref = ArtifactId("artifact:p28-semantic".into());
+2832 +     let artifact_ref = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2841:14
+     |
+2841 |         Some(ArtifactId("view-report:p28".into())),
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2841 -         Some(ArtifactId("view-report:p28".into())),
+2841 +         Some(ArtifactId::new(_)),
+     |
+2841 -         Some(ArtifactId("view-report:p28".into())),
+2841 +         Some(ArtifactId::random(_)),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2856:24
+     |
+2856 |     let artifact_ref = ArtifactId("artifact:p09-semantic".into());
+     |                        ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2856 -     let artifact_ref = ArtifactId("artifact:p09-semantic".into());
+2856 +     let artifact_ref = ArtifactId::new(_);
+     |
+2856 -     let artifact_ref = ArtifactId("artifact:p09-semantic".into());
+2856 +     let artifact_ref = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2859:14
+     |
+2859 |         vec![ArtifactId("witness:p09".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2859 -         vec![ArtifactId("witness:p09".into())],
+2859 +         vec![ArtifactId::new(_)],
+     |
+2859 -         vec![ArtifactId("witness:p09".into())],
+2859 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2864:9
+     |
+2864 |         ArtifactId("execution-context:p09".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2864 -         ArtifactId("execution-context:p09".into()),
+2864 +         ArtifactId::new(_),
+     |
+2864 -         ArtifactId("execution-context:p09".into()),
+2864 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2884:20
+     |
+2884 |     let graph_id = ArtifactId("graph:p28-reserved".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2884 -     let graph_id = ArtifactId("graph:p28-reserved".into());
+2884 +     let graph_id = ArtifactId::new(_);
+     |
+2884 -     let graph_id = ArtifactId("graph:p28-reserved".into());
+2884 +     let graph_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2885:21
+     |
+2885 |     let region_id = ArtifactId("region:p28-reserved".into());
+     |                     ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2885 -     let region_id = ArtifactId("region:p28-reserved".into());
+2885 +     let region_id = ArtifactId::new(_);
+     |
+2885 -     let region_id = ArtifactId("region:p28-reserved".into());
+2885 +     let region_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2919:26
+     |
+2919 |     let accepted_claim = ArtifactId("claim:p28-accepted".into());
+     |                          ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2919 -     let accepted_claim = ArtifactId("claim:p28-accepted".into());
+2919 +     let accepted_claim = ArtifactId::new(_);
+     |
+2919 -     let accepted_claim = ArtifactId("claim:p28-accepted".into());
+2919 +     let accepted_claim = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2952:20
+     |
+2952 |     let graph_id = ArtifactId("graph:p29-right-graph".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2952 -     let graph_id = ArtifactId("graph:p29-right-graph".into());
+2952 +     let graph_id = ArtifactId::new(_);
+     |
+2952 -     let graph_id = ArtifactId("graph:p29-right-graph".into());
+2952 +     let graph_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2956:9
+     |
+2956 |         ArtifactId("region:p29-right-graph".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2956 -         ArtifactId("region:p29-right-graph".into()),
+2956 +         ArtifactId::new(_),
+     |
+2956 -         ArtifactId("region:p29-right-graph".into()),
+2956 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2990:24
+     |
+2990 |         let graph_id = ArtifactId(format!("graph:p10-{graph_kind}"));
+     |                        ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2990 -         let graph_id = ArtifactId(format!("graph:p10-{graph_kind}"));
+2990 +         let graph_id = ArtifactId::new(_);
+     |
+2990 -         let graph_id = ArtifactId(format!("graph:p10-{graph_kind}"));
+2990 +         let graph_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:2994:13
+     |
+2994 |             ArtifactId(format!("region:p10-{graph_kind}")),
+     |             ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+2994 -             ArtifactId(format!("region:p10-{graph_kind}")),
+2994 +             ArtifactId::new(_),
+     |
+2994 -             ArtifactId(format!("region:p10-{graph_kind}")),
+2994 +             ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3031:9
+     |
+3031 |         ArtifactId("region:p29-source".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3031 -         ArtifactId("region:p29-source".into()),
+3031 +         ArtifactId::new(_),
+     |
+3031 -         ArtifactId("region:p29-source".into()),
+3031 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3032:9
+     |
+3032 |         ArtifactId("region:p29-destination".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3032 -         ArtifactId("region:p29-destination".into()),
+3032 +         ArtifactId::new(_),
+     |
+3032 -         ArtifactId("region:p29-destination".into()),
+3032 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3034:9
+     |
+3034 |         ArtifactId("artifact:p29-payload".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3034 -         ArtifactId("artifact:p29-payload".into()),
+3034 +         ArtifactId::new(_),
+     |
+3034 -         ArtifactId("artifact:p29-payload".into()),
+3034 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3081:20
+     |
+3081 |     let graph_id = ArtifactId("graph:p10-minimal-region".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3081 -     let graph_id = ArtifactId("graph:p10-minimal-region".into());
+3081 +     let graph_id = ArtifactId::new(_);
+     |
+3081 -     let graph_id = ArtifactId("graph:p10-minimal-region".into());
+3081 +     let graph_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3082:21
+     |
+3082 |     let region_id = ArtifactId("region:p10-minimal-region".into());
+     |                     ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3082 -     let region_id = ArtifactId("region:p10-minimal-region".into());
+3082 +     let region_id = ArtifactId::new(_);
+     |
+3082 -     let region_id = ArtifactId("region:p10-minimal-region".into());
+3082 +     let region_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3083:26
+     |
+3083 |     let accepted_claim = ArtifactId("claim:p10-accepted".into());
+     |                          ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3083 -     let accepted_claim = ArtifactId("claim:p10-accepted".into());
+3083 +     let accepted_claim = ArtifactId::new(_);
+     |
+3083 -     let accepted_claim = ArtifactId("claim:p10-accepted".into());
+3083 +     let accepted_claim = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3149:9
+     |
+3149 |         ArtifactId("witness:p10-contradiction".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3149 -         ArtifactId("witness:p10-contradiction".into()),
+3149 +         ArtifactId::new(_),
+     |
+3149 -         ArtifactId("witness:p10-contradiction".into()),
+3149 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3200:20
+     |
+3200 |     let graph_id = ArtifactId("graph:p29-kernel".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3200 -     let graph_id = ArtifactId("graph:p29-kernel".into());
+3200 +     let graph_id = ArtifactId::new(_);
+     |
+3200 -     let graph_id = ArtifactId("graph:p29-kernel".into());
+3200 +     let graph_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3201:21
+     |
+3201 |     let region_id = ArtifactId("region:p29-kernel".into());
+     |                     ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3201 -     let region_id = ArtifactId("region:p29-kernel".into());
+3201 +     let region_id = ArtifactId::new(_);
+     |
+3201 -     let region_id = ArtifactId("region:p29-kernel".into());
+3201 +     let region_id = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3216:9
+     |
+3216 |         ArtifactId("witness:p29-contradiction".into()),
+     |         ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3216 -         ArtifactId("witness:p29-contradiction".into()),
+3216 +         ArtifactId::new(_),
+     |
+3216 -         ArtifactId("witness:p29-contradiction".into()),
+3216 +         ArtifactId::random(_),
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3217:14
+     |
+3217 |         vec![ArtifactId("claim:p29-affected".into())],
+     |              ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3217 -         vec![ArtifactId("claim:p29-affected".into())],
+3217 +         vec![ArtifactId::new(_)],
+     |
+3217 -         vec![ArtifactId("claim:p29-affected".into())],
+3217 +         vec![ArtifactId::random(_)],
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3242:26
+     |
+3242 |     let accepted_claim = ArtifactId("claim:p29-accepted".into());
+     |                          ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3242 -     let accepted_claim = ArtifactId("claim:p29-accepted".into());
+3242 +     let accepted_claim = ArtifactId::new(_);
+     |
+3242 -     let accepted_claim = ArtifactId("claim:p29-accepted".into());
+3242 +     let accepted_claim = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3243:20
+     |
+3243 |     let evidence = ArtifactId("evidence:p29-accepted".into());
+     |                    ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3243 -     let evidence = ArtifactId("evidence:p29-accepted".into());
+3243 +     let evidence = ArtifactId::new(_);
+     |
+3243 -     let evidence = ArtifactId("evidence:p29-accepted".into());
+3243 +     let evidence = ArtifactId::random(_);
+     |
+
+error[E0423]: cannot initialize a tuple struct which contains private fields
+    --> crates/aidens-contracts/src/tests.rs:3298:18
+     |
+3298 |     let source = ArtifactId("external-artifact:p28".into());
+     |                  ^^^^^^^^^^
+     |
+note: constructor is not visible here due to private fields
+    --> /home/sikmindz/Coding/Libraries/stack-ids/src/ids.rs:52:26
+     |
+  52 |           pub struct $name(String);
+     |                            ^^^^^^ private field
+...
+ 143 | / define_id!(
+ 144 | |     /// Opaque identifier for a stored artifact (patch, snapshot, file).
+ 145 | |     ///
+ 146 | |     /// Assigned by the artifact store. Stable across reads.
+ 147 | |     ArtifactId
+ 148 | | );
+     | |_- in this macro invocation
+     = note: this error originates in the macro `define_id` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to use an associated function to build this type
+     |
+3298 -     let source = ArtifactId("external-artifact:p28".into());
+3298 +     let source = ArtifactId::new(_);
+     |
+3298 -     let source = ArtifactId("external-artifact:p28".into());
+3298 +     let source = ArtifactId::random(_);
+     |
+
+Some errors have detailed explanations: E0423, E0616.
+For more information about an error, try `rustc --explain E0423`.
+error: could not compile `aidens-contracts` (lib) due to 51 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `aidens-contracts` (lib test) due to 127 previous errors

@@ -1,0 +1,346 @@
+
+running 104 tests
+test chunker::tests::test_all_strategies_empty_input ... ok
+test chunker::tests::test_chunking_strategy_serde ... ok
+test chunker::tests::test_code_empty_string ... ok
+test chunker::tests::test_markdown_empty_string ... ok
+test authority_contracts::tests::bounded_number_serde_round_trips_boundaries ... ok
+test chunker::tests::test_chunking_config_default_strategy ... ok
+test chunker::tests::test_plain_default_strategy_is_plain ... ok
+test chunker::tests::test_plain_empty_string ... ok
+test chunker::tests::test_code_brace_matching_with_strings ... ok
+test chunker::tests::test_code_async_function_detection ... ok
+test chunker::tests::test_code_brace_matching_with_comments ... ok
+test chunker::tests::test_plain_short_text_single_chunk ... ok
+test chunker::tests::test_sentence_empty_string ... ok
+test authority_contracts::tests::bounded_numbers_reject_non_finite_and_out_of_range ... ok
+test chunker::tests::test_markdown_header_level_detection ... ok
+test chunker::tests::test_code_falls_back_to_plain_for_non_code ... ok
+test chunker::tests::test_code_python_function_not_split ... ok
+test chunker::tests::test_plain_backward_compatible_output ... ok
+test chunker::tests::test_code_typescript_function_not_split ... ok
+test chunker::tests::test_markdown_no_headers_returns_single_chunk ... ok
+test chunker::tests::test_markdown_section_grouping ... ok
+test chunker::tests::test_plain_unicode_safe ... ok
+test chunker::tests::test_code_rust_function_not_split ... ok
+test chunker::tests::test_markdown_nested_headers ... ok
+test chunker::tests::test_all_strategies_handle_unicode ... ok
+test chunker::tests::test_sentence_no_split_on_abbreviations ... ok
+test chunker::tests::test_markdown_splits_on_headers ... ok
+test chunker::tests::test_sentence_paragraph_break ... ok
+test chunker::tests::test_sentence_no_split_on_decimals ... ok
+test chunker::tests::test_sentence_short_text_single_chunk ... ok
+test chunker::tests::test_plain_paragraph_split ... ok
+test chunker::tests::test_sentence_splits_on_boundaries ... ok
+test embedder::bge_m3_tests::bge_m3_embed_batch_multi_live ... ignored, requires Ollama running with bge-m3 model pulled
+test embedder::bge_m3_tests::bge_m3_embed_multi_live ... ignored, requires Ollama running with bge-m3 model pulled
+test chunker::tests::test_sentence_with_overlap ... ok
+test embedder::bge_m3_tests::bge_m3_embedder_as_standard_embedder_live ... ignored, requires Ollama running with bge-m3 model pulled
+test chunker::tests::test_token_counts_use_counter ... ok
+test embedder::bge_m3_tests::derive_config_default_values ... ok
+test embedder::bge_m3_tests::multi_function_embedding_holds_all_three ... ok
+test embedder::bge_m3_tests::multi_vec_from_dense_chunked ... ok
+test embedder::bge_m3_tests::multi_vec_consistent_chunk_sizes ... ok
+test embedder::bge_m3_tests::multi_vec_from_dense_chunked_empty ... ok
+test embedder::bge_m3_tests::multi_vec_from_dense_chunked_with_padding ... ok
+test embedder::bge_m3_tests::multi_vec_from_dense_chunked_zero_tokens ... ok
+test embedder::bge_m3_tests::multi_vec_from_token_vectors ... ok
+test embedder::bge_m3_tests::sparse_dot_product ... ok
+test embedder::bge_m3_tests::sparse_dot_product_no_overlap ... ok
+test embedder::bge_m3_tests::sparse_dot_product_self ... ok
+test embedder::bge_m3_tests::sparse_from_dense_empty_input ... ok
+test embedder::bge_m3_tests::sparse_from_dense_filters_below_threshold ... ok
+test embedder::bge_m3_tests::sparse_from_dense_keeps_top_k_by_abs_weight ... ok
+test embedder::bge_m3_tests::sparse_from_dense_truncates_to_top_k ... ok
+test embedder::bge_m3_tests::sparse_from_entries_sorts_by_abs_weight ... ok
+test embedder::bge_m3_tests::bge_m3_embedder_try_new_from_config ... ok
+test embedder::bge_m3_tests::derive_multi_function_empty_input ... ok
+test embedder::bge_m3_tests::bge_m3_embedder_with_params_constructs ... ok
+test embedder::bge_m3_tests::bge_m3_embedder_try_new_with_custom_derive ... ok
+test embedder::bge_m3_tests::derive_multi_function_handles_multiple_inputs ... ok
+test embedder::bge_m3_tests::derive_multi_function_produces_correct_lengths ... ok
+test hubness::tests::central_vector_has_higher_or_equal_hubness ... ok
+test hubness::tests::cosine_orthogonal_vectors ... ok
+test hubness::tests::cosine_identical_vectors ... ok
+test hubness::tests::cosine_rejects_dimension_mismatch ... ok
+test hubness::tests::cosine_rejects_empty ... ok
+test hubness::tests::cosine_rejects_zero_vector ... ok
+test hubness::tests::deterministic_tie_ordering ... ok
+test hubness::tests::cosine_matches_archived_rust_reference ... ok
+test hubness::tests::dimension_mismatch_is_skipped_not_panicked ... ok
+test hubness::tests::empty_input_returns_empty ... ok
+test hubness::tests::normalized_score_bounded ... ok
+test hubness::tests::single_item_returns_zero_hits ... ok
+test hubness::tests::top_k_zero_returns_zero_hits ... ok
+test reinstatement::tests::reinstatement_entity_only ... ok
+test reinstatement::tests::reinstatement_episode_only ... ok
+test reinstatement::tests::reinstatement_full_match_is_one ... ok
+test reinstatement::tests::reinstatement_namespace_only ... ok
+test reinstatement::tests::reinstatement_no_match_is_zero ... ok
+test reinstatement::tests::reinstatement_score_bounded ... ok
+test search::digest_tests::query_embedding_digest_includes_dimension_and_bytes ... ok
+test search::tests::timestamp_parser_accepts_sql_fractional_and_rfc3339_and_warns_by_returning_none ... ok
+test search::tests::vector_scan_hard_limit_blocks_before_unbounded_scan ... ok
+test tests::compress_search_results_empty_content ... ok
+test tests::compress_search_results_preserves_first_sentence ... ok
+test tests::compress_search_results_preserves_short_content ... ok
+test tests::compress_search_results_shortens_long_content ... ok
+test vector_backend::tests::config_default_matches_hnsw_default ... ok
+test vector_backend::tests::vector_hit_parse_key_invalid ... ok
+test vector_backend::tests::vector_hit_parse_key_valid ... ok
+test vector_backend::tests::vector_hit_similarity_below_zero_clamps_to_zero ... ok
+test vector_backend::tests::vector_hit_similarity_normal ... ok
+test db::provekv_pool_generation_db_tests::provekv_pool_generation_roundtrips_and_cascades_item_map ... ok
+test graph_edges::tests::graph_edges_as_of_rejects_invalid_timestamp ... ok
+test graph_edges::tests::graph_edges_have_bitemporal_columns_after_migration ... ok
+test graph_edges::tests::graph_edges_as_of_filters_valid_and_recorded_time ... ok
+test knowledge::state_view_regression_tests::current_view_accepts_canonical_entity_edge_serialization ... ok
+test graph_edges::tests::graph_edges_as_of_handles_mixed_timestamp_formats ... ok
+test knowledge::state_view_regression_tests::multiple_active_heads_fail_closed ... ok
+test knowledge::state_view_regression_tests::historical_view_excludes_future_fact_and_reconstructs_pre_supersession_head ... ok
+test knowledge::state_view_regression_tests::current_view_excludes_superseded_fact ... ok
+test knowledge::state_view_regression_tests::historical_view_preserves_pre_adjudication_conflict ... ok
+test projection_derivation::tests::bounded_invalidation_targets_expected_derived_rows ... ok
+test pool::tests::writer_mutex_poison_recovery_rolls_back_open_txn ... ok
+test projection_derivation::tests::import_projection_batch_inserts_broad_derivation_edges ... ok
+test pool::tests::reader_timeout_is_typed_and_recorded_in_pool_health ... ok
+
+test result: ok. 101 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 2.54s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test duplicate_external_chunk_id_rejected_before_insert ... ok
+test too_many_manifest_chunks_rejected ... ok
+test empty_chunk_rejected_before_insert ... ok
+test ingest_chunk_manifest_returns_exact_mapping ... ok
+test namespace_isolation_preserved ... ok
+test search_chunk_result_uses_returned_sm_chunk_id ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+
+running 14 tests
+test empty_input_returns_empty_vec ... ok
+test final_small_tail_merges_into_previous_chunk ... ok
+test chunk_indices_are_sequential ... ok
+test paragraph_separated_text_splits_on_paragraph_break ... ok
+test long_single_word_force_splits ... ok
+test short_text_returns_single_chunk ... ok
+test sentence_splitting_works ... ok
+test text_under_max_size_single_chunk ... ok
+test token_count_estimate_is_reasonable ... ok
+test overlap_between_chunks ... ok
+test whitespace_only_returns_empty_vec ... ok
+test splitting_preserves_separator_content ... ok
+test unicode_cjk_no_panic ... ok
+test unicode_emoji_no_panic ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test clone_store_shares_state_across_tasks ... ok
+test concurrent_multiple_inserters ... ok
+test concurrent_insert_and_search_no_panic ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+
+running 5 tests
+test non_embedded_message_is_searchable_via_fts ... ok
+test session_id_filtering ... ok
+test embedded_message_is_searchable ... ok
+test message_fts_cleanup_on_session_delete ... ok
+test mixed_source_type_search ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+
+running 11 tests
+test create_session_and_list ... ok
+test message_count_on_list_sessions ... ok
+test delete_nonexistent_session_returns_error ... ok
+test token_budget_null_tokens_always_included ... ok
+test session_token_count ... ok
+test get_recent_messages_with_limit ... ok
+test delete_session_cascades_messages ... ok
+test add_messages_and_retrieve ... ok
+test token_budget_limiting ... ok
+test add_message_to_nonexistent_session_returns_error ... ok
+test session_isolation ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.72s
+
+
+running 15 tests
+test test_bytes_to_embedding_invalid_length ... ok
+test test_bytes_to_embedding_empty ... ok
+test test_bytes_to_embedding_rejects_non_finite ... ok
+test test_bytes_to_embedding_valid ... ok
+test test_decode_f32_le_rejects_wrong_dimension ... ok
+test test_bytes_to_embedding_roundtrip_large ... ok
+test test_ollama_http_error_preserves_body_read_failure ... ok
+test test_parse_multiple_embeddings ... ok
+test test_parse_rejects_non_numeric ... ok
+test test_parse_valid_embedding ... ok
+test test_parse_wrong_dimensions ... ok
+test test_role_display ... ok
+test test_role_from_str ... ok
+test test_fresh_db_not_dirty ... ok
+test migration_creates_derived_vector_artifacts_table ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.83s
+
+
+running 1 test
+test writes_use_document_queries_use_query_and_cache_keys_do_not_alias ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.12s
+
+
+running 11 tests
+test canonical_episode_node_does_not_fallback_from_document_id ... ok
+test update_one_episode_does_not_touch_siblings ... ok
+test reembed_preserves_sibling_episode_identity ... ok
+test causal_edges_use_episode_id_not_document_id ... ok
+test document_graph_node_resolves_to_all_episodes ... ok
+test canonical_episode_node_uses_episode_id ... ok
+test legacy_document_keyed_update_touches_only_primary_episode ... ok
+test episode_hnsw_keys_use_episode_id ... ok
+test legacy_ep0_migration_then_add_sibling ... ok
+test reembed_does_not_collapse_multiple_episodes_per_document ... ok
+test integrity_surfaces_episode_level_drift ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.39s
+
+
+running 5 tests
+test graph_view_exposes_document_chunk_and_episode_causal_links ... ok
+test episodes_participate_in_generic_search_and_explanations ... ok
+test explainable_search_matches_configured_rrf_math ... ok
+test graph_semantic_candidates_uses_sql_limit ... ok
+test graph_traversal_respects_node_budget ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.93s
+
+
+running 18 tests
+test embedder_try_new_returns_result ... ok
+test pool_respects_configured_timeout ... ok
+test multiple_episodes_per_document ... ok
+test graph_episode_node_has_causal_and_document_edges ... ok
+test graph_document_links_all_episodes ... ok
+test update_episode_outcome_by_id ... ok
+test search_episodes_filters_by_effect_and_outcome ... ok
+test create_episode_with_explicit_id ... ok
+test ingest_episode_upserts_on_repeat ... ok
+test episode_search_results_include_episode_id ... ok
+test graph_causal_backlinks_use_normalized_table ... ok
+test get_episode_by_id ... ok
+test get_episode_returns_none_for_missing ... ok
+test legacy_update_episode_outcome_by_document_id ... ok
+test verify_integrity_after_episodes ... ok
+test ingest_episode_returns_episode_id ... ok
+test reconcile_fts_rebuilds_episode_indexes ... ok
+test verify_integrity_on_clean_store ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.53s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test empty_receipt_never_passes ... ok
+test not_tested_is_excluded_and_counts_are_self_consistent ... ok
+test perfect_tested_receipt_meets_predeclared_threshold ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 42 tests
+test canonical_batch_is_idempotent ... ok
+test canonical_batch_rejects_unknown_schema_version ... ok
+test envelope_id_display_and_equality ... ok
+test envelope_validate_catches_all_invalid_states ... ok
+test canonical_batch_rejects_overlapping_preferred_relations_in_batch ... FAILED
+test canonical_batch_rejects_overlapping_preferred_claim_with_existing_preferred ... ok
+test canonical_batch_rejects_claim_missing_subject ... ok
+test canonical_v2_batch_failure_receipt_preserves_evidence_bundle_receipts ... ok
+test import_status_serialization_roundtrip ... ok
+test canonical_batch_rejects_overlapping_preferred_claims_in_batch ... FAILED
+test canonical_batch_preferred_open_uniqueness_enforced ... ok
+test canonical_batch_rejects_invalid_preferred_temporal_order ... ok
+test canonical_batch_trace_id_preserved_in_log ... ok
+test canonical_batch_reports_historical_digest_migration_conflict_explicitly ... ok
+test canonical_batch_imports_successfully ... ok
+test projection_freshness_variants_are_distinct ... ok
+test canonical_v2_batch_import_preserves_export_meta_receipts ... ok
+test rejects_empty_envelope_id - should panic ... ok
+test canonical_batch_records_distinct_import_and_export_schema_versions ... ok
+test canonical_batch_rollback_on_second_bad_record ... ok
+test canonical_batch_trace_ctx_extra_fields_are_not_durably_persisted ... ok
+test canonical_v3_batch_import_preserves_kernel_payload_receipts ... ok
+test import_status_empty_for_unknown_envelope ... ok
+test rejects_empty_content_digest ... ok
+test last_import_at_tracks_namespace ... ok
+test failed_import_does_not_leave_partial_facts ... ok
+test import_status_returns_receipts ... ok
+test list_imports_returns_recent ... ok
+test import_namespace_isolation ... ok
+test rejects_empty_namespace ... ok
+test multiple_envelopes_are_independent ... ok
+test imported_facts_carry_provenance_metadata ... ok
+test imports_single_fact_envelope ... ok
+test rejects_empty_records ... ok
+test imports_multi_record_envelope_atomically ... ok
+test rejects_empty_schema_version ... ok
+test rejects_empty_source_authority ... ok
+test rejects_fact_with_empty_content ... ok
+test repeated_import_is_idempotent ... ok
+test trace_id_preserved_in_import_receipt ... ok
+test same_envelope_id_different_schema_version_imports_separately ... ok
+test same_envelope_id_different_digest_imports_separately ... ok
+
+failures:
+
+---- canonical_batch_rejects_overlapping_preferred_relations_in_batch stdout ----
+
+thread 'canonical_batch_rejects_overlapping_preferred_relations_in_batch' (632655) panicked at semantic-memory/tests/import_boundary_tests.rs:1639:5:
+assertion failed: format!("{err}").contains("overlap")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- canonical_batch_rejects_overlapping_preferred_claims_in_batch stdout ----
+
+thread 'canonical_batch_rejects_overlapping_preferred_claims_in_batch' (632654) panicked at semantic-memory/tests/import_boundary_tests.rs:1500:5:
+assertion failed: format!("{err}").contains("overlap")
+
+
+failures:
+    canonical_batch_rejects_overlapping_preferred_claims_in_batch
+    canonical_batch_rejects_overlapping_preferred_relations_in_batch
+
+test result: FAILED. 40 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.39s
+

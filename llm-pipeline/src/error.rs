@@ -76,6 +76,24 @@ pub enum PipelineError {
         limit_ms: u64,
     },
 
+    /// Requested a structured-generation constraint the backend cannot satisfy.
+    #[error("Unsupported constraint for backend '{backend}': {constraint}")]
+    UnsupportedConstraint {
+        /// Backend name.
+        backend: String,
+        /// Human-readable constraint summary.
+        constraint: String,
+    },
+
+    /// Token budget exceeded for this pipeline context.
+    #[error("Token budget exceeded: used {used} tokens, limit {limit} tokens")]
+    BudgetExceeded {
+        /// Tokens already consumed in the context.
+        used: u32,
+        /// Configured token budget.
+        limit: u32,
+    },
+
     /// Catch-all for other errors.
     #[error("{0}")]
     Other(String),
@@ -95,6 +113,8 @@ impl PipelineError {
             Self::ResponseTooLarge { .. } => "response_too_large",
             Self::StreamIdle { .. } => "stream_idle",
             Self::Timeout { .. } => "timeout",
+            Self::UnsupportedConstraint { .. } => "unsupported_constraint",
+            Self::BudgetExceeded { .. } => "budget_exceeded",
             Self::Other(_) => "other",
         }
     }

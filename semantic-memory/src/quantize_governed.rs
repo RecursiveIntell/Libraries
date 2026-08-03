@@ -1,102 +1,82 @@
 //! Governed compression pipeline integration for semantic-memory.
 //!
-//! This module provides the `encode_governed` function that routes embedding
-//! vectors through the quant-governor policy evaluation + scr-runtime-compression
-//! adapter pipeline. It is only available when the `turbo-quant-codec` feature
-//! is enabled.
+//! This module evaluates `quant-governor` policy and produces an artifact only
+//! when the selected runtime codec has a real encoder. It never relabels raw
+//! bytes as a compressed representation.
 
 #[cfg(feature = "turbo-quant-codec")]
 pub mod governed {
     use quant_governor::{
         AdmissibilityClass, CodecProfile, ContentType, GovernancePolicy, GovernanceRequest,
     };
-    use scr_runtime_compression::{build_adapter, CodecDispatch};
 
-    /// Result of governed encoding — compressed bytes plus pipeline metadata.
+    /// Result of governed encoding — encoded bytes plus policy metadata.
     #[derive(Debug, Clone)]
     pub struct GovernedEncodeResult {
-        /// Compressed byte representation of the embedding.
+        /// Bytes in the representation selected by `codec_profile`.
         pub compressed_bytes: Vec<u8>,
-        /// Which codec profile was selected by the governance policy.
+        /// Codec profile selected by the governance policy.
         pub codec_profile: CodecProfile,
-        /// Governance receipt ID for audit trail.
+        /// Governance receipt ID for the audit trail.
         pub governance_receipt_id: String,
         /// Allowed degradation budget from the policy decision.
         pub degradation_budget: f64,
     }
 
+    /// Encode only profiles backed by a concrete runtime encoder.
+    ///
+    /// `scr-runtime-compression` currently provides strict decode adapters but
+    /// no registered TurboQuant/FibQuant encoder. Returning an error for those
+    /// profiles preserves artifact truth: callers cannot mistake raw f32 bytes
+    /// for a compressed representation.
+    pub(super) fn encode_selected_profile(
+        embedding: &[f32],
+        profile: &CodecProfile,
+    ) -> Result<Vec<u8>, String> {
+        match profile {
+            CodecProfile::Raw => Ok(bytemuck::cast_slice(embedding).to_vec()),
+            CodecProfile::Q8 => Err("governed q8 encoding is not implemented".to_string()),
+            CodecProfile::Q4 => Err("governed q4 encoding is not implemented".to_string()),
+            CodecProfile::Turbo => Err(
+                "governed turbo-quant encoding is unavailable: no runtime encoder is registered"
+                    .to_string(),
+            ),
+            CodecProfile::Fib => Err(
+                "governed fib-quant encoding is unavailable: no runtime encoder is registered"
+                    .to_string(),
+            ),
+        }
+    }
+
     /// Encode an embedding vector through the governed compression pipeline.
     ///
-    /// The pipeline:
-    /// 1. Evaluates the governance policy against the embedding's size and
-    ///    accuracy requirements to select an appropriate codec profile.
-    /// 2. Routes the raw bytes through the compression adapter selected by
-    ///    the governance decision.
-    /// 3. Returns the compressed bytes plus governance metadata for storage
-    ///    alongside the artifact.
-    ///
-    /// # Errors
-    ///
-    /// Returns a string error if policy evaluation fails or the codec adapter
-    /// returns an error during encoding.
+    /// The caller receives bytes only when their representation is truthful.
+    /// Unsupported compression decisions fail explicitly instead of silently
+    /// substituting the uncompressed representation.
     pub fn encode_governed(
         embedding: &[f32],
         policy: &GovernancePolicy,
     ) -> Result<GovernedEncodeResult, String> {
-        let raw_bytes: Vec<u8> = bytemuck::cast_slice(embedding).to_vec();
         let request = GovernanceRequest {
             content_type: ContentType::Structured,
-            size_bytes: raw_bytes.len() as u64,
+            size_bytes: (embedding.len() * std::mem::size_of::<f32>()) as u64,
             accuracy_requirement: 0.99,
             latency_tolerance_ms: 500,
             admissibility: AdmissibilityClass::Standard,
         };
 
         let decision = policy.evaluate(request).map_err(|e| e.to_string())?;
-
-        // CMP-001: Build adapter from the governance decision's selected codec.
-        // Q8/Q4 are not real codecs and will error during decode.
-        let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(match decision.codec {
-            CodecProfile::Raw => scr_runtime_compression::CodecId::Uncompressed,
-            CodecProfile::Q8 | CodecProfile::Q4 => {
-                // CMP-001: Q8/Q4 have no real decoder. Return error.
-                return Err(format!(
-                    "codec profile {:?} is not implemented - no real decoder available",
-                    decision.codec
-                ));
-            }
-            CodecProfile::Turbo => scr_runtime_compression::CodecId::TurboQuant,
-            CodecProfile::Fib => scr_runtime_compression::CodecId::FibQuant,
-        }));
-
-        // Encode through the adapter.
-        let compressed = adapter
-            .decode_exact(
-                match decision.codec {
-                    CodecProfile::Raw => scr_runtime_compression::CodecId::Uncompressed,
-                    CodecProfile::Q8 | CodecProfile::Q4 => {
-                        // Already handled above — this is unreachable.
-                        return Err("unreachable: Q8/Q4 handled above".to_string());
-                    }
-                    CodecProfile::Turbo => scr_runtime_compression::CodecId::TurboQuant,
-                    CodecProfile::Fib => scr_runtime_compression::CodecId::FibQuant,
-                },
-                &raw_bytes,
-            )
-            .map_err(|e| format!("encode failed: {e}"))?;
+        let encoded = encode_selected_profile(embedding, &decision.codec)?;
 
         Ok(GovernedEncodeResult {
-            compressed_bytes: compressed,
+            compressed_bytes: encoded,
             codec_profile: decision.codec,
             governance_receipt_id: format!("gr-{}", uuid::Uuid::new_v4()),
             degradation_budget: decision.degradation_budget,
         })
     }
 
-    /// Encode with governance using a default policy.
-    ///
-    /// Convenience wrapper that uses `GovernancePolicy::default()` for cases
-    /// where custom policy tuning is not required.
+    /// Encode with governance using the default policy.
     pub fn encode_governed_default(embedding: &[f32]) -> Result<GovernedEncodeResult, String> {
         encode_governed(embedding, &GovernancePolicy::default())
     }
@@ -105,10 +85,6 @@ pub mod governed {
 #[cfg(not(feature = "turbo-quant-codec"))]
 pub mod governed {
     //! Stub module when `turbo-quant-codec` is not enabled.
-    //!
-    //! All functions in this module return errors indicating the feature is disabled.
-    //! Note: we intentionally avoid quant_governor types here so this stub compiles
-    //! even when the optional dep is not available.
 
     /// Stub result type — codec_profile is a string when feature is disabled.
     #[derive(Debug, Clone)]
@@ -133,5 +109,37 @@ pub mod governed {
     }
 }
 
-// Re-export for convenience
 pub use governed::{encode_governed, encode_governed_default, GovernedEncodeResult};
+
+#[cfg(all(test, feature = "turbo-quant-codec"))]
+mod tests {
+    use super::governed::{encode_governed_default, encode_selected_profile};
+    use quant_governor::CodecProfile;
+
+    #[test]
+    fn raw_governed_encoding_preserves_f32_wire_bytes() {
+        let embedding = vec![1.25_f32, -2.5, 0.0, 4.75];
+        let result = encode_governed_default(&embedding).expect("default policy selects raw");
+        assert_eq!(result.codec_profile, CodecProfile::Raw);
+        assert_eq!(
+            result.compressed_bytes,
+            bytemuck::cast_slice::<f32, u8>(&embedding)
+        );
+        assert!(result.governance_receipt_id.starts_with("gr-"));
+    }
+
+    #[test]
+    fn unavailable_compression_profiles_fail_closed() {
+        let embedding = vec![0.25_f32; 16];
+        for profile in [
+            CodecProfile::Q8,
+            CodecProfile::Q4,
+            CodecProfile::Turbo,
+            CodecProfile::Fib,
+        ] {
+            let error = encode_selected_profile(&embedding, &profile)
+                .expect_err("unsupported profile must not be relabeled as raw bytes");
+            assert!(error.contains("encoding"));
+        }
+    }
+}

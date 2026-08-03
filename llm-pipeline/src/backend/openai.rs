@@ -8,8 +8,10 @@
 //! Streaming: SSE with `data: {"choices": [{"delta": {"content": "token"}}]}`.
 
 use super::sse::SseDecoder;
-use super::{Backend, LlmRequest, LlmResponse, Role};
+use super::{Backend, LlmRequest, LlmResponse, ProviderMeta, Role};
+use crate::constraints::GenerationConstraint;
 use crate::error::Result;
+use crate::payload::TokenUsage;
 use crate::PipelineError;
 use async_trait::async_trait;
 use futures::StreamExt;
@@ -116,12 +118,15 @@ impl OpenAiBackend {
     }
 
     /// Build the request body for `/v1/chat/completions`.
-    fn build_body(request: &LlmRequest, stream: bool) -> Value {
+    fn build_body(request: &LlmRequest, stream: bool, max_tokens_limit: Option<u32>) -> Value {
+        let max_tokens = max_tokens_limit
+            .map(|limit| request.config.max_tokens.min(limit))
+            .unwrap_or(request.config.max_tokens);
         let mut body = json!({
             "model": request.model,
             "messages": Self::build_messages(request),
             "temperature": request.config.temperature,
-            "max_tokens": request.config.max_tokens,
+            "max_tokens": max_tokens,
             "stream": stream,
         });
 
@@ -129,8 +134,26 @@ impl OpenAiBackend {
             body["response_format"] = json!({"type": "json_object"});
         }
 
-        // Note: `thinking` / `extended_thinking` are skipped silently for OpenAI.
-        // Custom options are also skipped — they're Ollama-specific.
+        match &request.constraint {
+            GenerationConstraint::None => {}
+            GenerationConstraint::JsonSchema(schema) => {
+                body["response_format"] = json!({
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "structured_output",
+                        "schema": schema,
+                        "strict": true,
+                    },
+                });
+            }
+            GenerationConstraint::Grammar(_grammar) => {
+                // OpenAI does not expose grammar constraints; ignore silently
+                // so higher layers can decide to error via preflight.
+            }
+            GenerationConstraint::Regex(_regex) => {
+                // OpenAI does not expose regex constraints; ignore silently.
+            }
+        }
 
         body
     }
@@ -184,6 +207,35 @@ impl OpenAiBackend {
             Some(Value::Object(meta))
         }
     }
+
+    /// Extract normalized token usage from an OpenAI response.
+    fn extract_token_usage(json_resp: &Value) -> Option<TokenUsage> {
+        let usage = json_resp.get("usage")?;
+        let prompt_tokens = usage.get("prompt_tokens").and_then(|v| v.as_u64())? as u32;
+        let completion_tokens = usage.get("completion_tokens").and_then(|v| v.as_u64())? as u32;
+        let cache_read_tokens = usage.get("prompt_tokens_details").and_then(|d| {
+            d.get("cached_tokens")
+                .and_then(|v| v.as_u64())
+                .map(|n| n as u32)
+        });
+        Some(TokenUsage {
+            prompt_tokens,
+            completion_tokens,
+            total_tokens: prompt_tokens + completion_tokens,
+            cache_read_tokens,
+            cache_write_tokens: None,
+        })
+    }
+
+    /// Extract finish reason from the first OpenAI choice.
+    fn extract_finish_reason(json_resp: &Value) -> Option<String> {
+        json_resp
+            .get("choices")
+            .and_then(|c| c.get(0))
+            .and_then(|c| c.get("finish_reason"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+    }
 }
 
 impl Default for OpenAiBackend {
@@ -202,7 +254,7 @@ impl Backend for OpenAiBackend {
     ) -> Result<LlmResponse> {
         let base = base_url.trim_end_matches('/');
         let url = format!("{}/v1/chat/completions", base);
-        let body = Self::build_body(request, false);
+        let body = Self::build_body(request, false, None);
 
         let resp = self
             .build_http_request(client, &url, &body, request.request_timeout)
@@ -243,6 +295,11 @@ impl Backend for OpenAiBackend {
             text,
             status,
             metadata: Self::extract_metadata(&json_resp),
+            provider_meta: ProviderMeta::default(),
+            token_usage: Self::extract_token_usage(&json_resp),
+            finish_reason: Self::extract_finish_reason(&json_resp),
+            ttft_ms: None,
+            cache_hit: false,
         })
     }
 
@@ -255,7 +312,7 @@ impl Backend for OpenAiBackend {
     ) -> Result<LlmResponse> {
         let base = base_url.trim_end_matches('/');
         let url = format!("{}/v1/chat/completions", base);
-        let body = Self::build_body(request, true);
+        let body = Self::build_body(request, true, None);
 
         let resp = self
             .build_http_request(client, &url, &body, request.request_timeout)
@@ -323,11 +380,28 @@ impl Backend for OpenAiBackend {
             text: accumulated,
             status,
             metadata: None,
+            provider_meta: ProviderMeta::default(),
+            token_usage: None,
+            finish_reason: None,
+            ttft_ms: None,
+            cache_hit: false,
         })
     }
 
     fn name(&self) -> &'static str {
         "openai"
+    }
+
+    fn supports_streaming(&self) -> bool {
+        true
+    }
+
+    fn supports_json_schema(&self) -> bool {
+        true
+    }
+
+    fn supports_tools(&self) -> bool {
+        true
     }
 }
 
@@ -344,6 +418,8 @@ mod tests {
             prompt: "Why is the sky blue?".into(),
             messages: Vec::new(),
             config: LlmConfig::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: false,
             request_timeout: None,
         }
@@ -354,7 +430,7 @@ mod tests {
         let mut request = test_request();
         request.system_prompt = Some("You are a helpful assistant.".into());
 
-        let body = OpenAiBackend::build_body(&request, false);
+        let body = OpenAiBackend::build_body(&request, false, None);
 
         assert_eq!(body["model"], "gpt-4o");
         assert_eq!(body["temperature"], 0.7);
@@ -377,7 +453,7 @@ mod tests {
         let mut request = test_request();
         request.config.json_mode = true;
 
-        let body = OpenAiBackend::build_body(&request, false);
+        let body = OpenAiBackend::build_body(&request, false, None);
         let rf = body.get("response_format").expect("response_format");
         assert_eq!(rf["type"], "json_object");
     }
@@ -385,7 +461,7 @@ mod tests {
     #[test]
     fn test_openai_backend_no_system() {
         let request = test_request();
-        let body = OpenAiBackend::build_body(&request, false);
+        let body = OpenAiBackend::build_body(&request, false, None);
 
         let messages = body["messages"].as_array().expect("messages");
         assert_eq!(messages.len(), 1);
@@ -397,7 +473,7 @@ mod tests {
         let mut request = test_request();
         request.config.thinking = true;
 
-        let body = OpenAiBackend::build_body(&request, false);
+        let body = OpenAiBackend::build_body(&request, false, None);
         // thinking/extended_thinking should NOT appear in the body
         assert!(body.get("thinking").is_none());
         assert!(body.get("extended_thinking").is_none());
@@ -408,7 +484,7 @@ mod tests {
         let mut request = test_request();
         request.config.options = Some(json!({"top_p": 0.9}));
 
-        let body = OpenAiBackend::build_body(&request, false);
+        let body = OpenAiBackend::build_body(&request, false, None);
         // Custom Ollama options should not appear
         assert!(body.get("options").is_none());
         assert!(body.get("top_p").is_none());
@@ -465,7 +541,7 @@ mod tests {
     #[test]
     fn test_openai_backend_streaming_body() {
         let request = test_request();
-        let body = OpenAiBackend::build_body(&request, true);
+        let body = OpenAiBackend::build_body(&request, true, None);
         assert_eq!(body["stream"], true);
     }
 
@@ -488,7 +564,7 @@ mod tests {
             },
         ];
 
-        let body = OpenAiBackend::build_body(&request, false);
+        let body = OpenAiBackend::build_body(&request, false, None);
         let messages = body["messages"].as_array().expect("messages");
         // system + 3 history messages
         assert_eq!(messages.len(), 4);

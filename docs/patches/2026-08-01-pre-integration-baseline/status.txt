@@ -1,0 +1,21 @@
+ M fib-quant/Cargo.toml
+ M fib-quant/README.md
+ M fib-quant/src/kv/codec.rs
+ M fib-quant/src/kv/mod.rs
+ M fib-quant/src/kv/page.rs
+ M fib-quant/src/kv/profile.rs
+ M fib-quant/src/kv/receipt.rs
+ M fib-quant/tests/kv_corruption_rejection.rs
+ M poly-kv/Cargo.lock
+ M poly-kv/crates/poly-kv/Cargo.toml
+ M poly-kv/crates/poly-kv/src/adapters/fibquant.rs
+ M poly-kv/crates/poly-kv/src/codecs/q8_keys.rs
+ M poly-kv/crates/poly-kv/src/codecs/value.rs
+ M poly-kv/crates/poly-kv/src/manifest.rs
+ M poly-kv/crates/poly-kv/src/pool.rs
+?? fib-quant/src/kv/wire.rs
+?? fib-quant/tests/kv_wire_accounting.rs
+?? poly-kv/crates/poly-kv/benches/fibquant_paths.rs
+?? poly-kv/crates/poly-kv/tests/codec_profile_contract.rs
+?? poly-kv/crates/poly-kv/tests/fibquant_adapter.rs
+?? poly-kv/crates/poly-kv/tests/fibquant_pool.rs

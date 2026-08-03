@@ -1,0 +1,14 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (target/debug/deps/poly_kv-3cdd0290bbb2341a)
+     Running tests/deterministic_replay.rs (target/debug/deps/deterministic_replay-866b5cfa4fdb977c)
+     Running tests/memory_accounting.rs (target/debug/deps/memory_accounting-0782dbd21b280152)
+     Running tests/receipt_roundtrip.rs (target/debug/deps/receipt_roundtrip-772b056447fc7b68)
+     Running tests/shape_rejection.rs (target/debug/deps/shape_rejection-b447bf15013321b1)
+     Running tests/synthetic_roundtrip.rs (target/debug/deps/synthetic_roundtrip-63ee6f8a63856ede)
+     Running benches/synthetic_pool.rs (target/debug/deps/synthetic_pool-20a4cdc15e4b9171)
+Gnuplot not found, using plotters backend
+     Running unittests src/lib.rs (target/debug/deps/_native-c7bd3f9a699a1502)
+     Running unittests src/lib.rs (target/debug/deps/quant_codec_core-b464e29a1fc3ce51)
+     Running tests/digest_stability.rs (target/debug/deps/digest_stability-006e50836d673b9e)
+     Running tests/serde_roundtrip.rs (target/debug/deps/serde_roundtrip-ee9f6e50fd41c8ee)
+     Running tests/shape_validation.rs (target/debug/deps/shape_validation-ed751cd78306a6a8)

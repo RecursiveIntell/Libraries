@@ -1,0 +1,1912 @@
+diff --git a/fib-quant/Cargo.toml b/fib-quant/Cargo.toml
+index 65b1e17..42f5c96 100644
+--- a/fib-quant/Cargo.toml
++++ b/fib-quant/Cargo.toml
+@@ -33,6 +33,7 @@ kv = []
+ 
+ [dependencies]
+ blake3 = "1.8.3"
++bincode = "1.3.3"
+ half = "2"
+ nalgebra = { version = "0.33", features = ["serde-serialize"] }
+ rand = "0.8"
+diff --git a/fib-quant/README.md b/fib-quant/README.md
+index f1b636c..20d3f71 100644
+--- a/fib-quant/README.md
++++ b/fib-quant/README.md
+@@ -4,11 +4,13 @@
+ [![Docs.rs](https://docs.rs/fib-quant/badge.svg)](https://docs.rs/fib-quant)
+ [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+ 
+-**The cold tier. 50× compression. 100% recall.**
++**Experimental CPU-first vector and KV artifact codec.**
++
++This crate is an alpha research implementation. It does not claim production KV-cache serving, paper-benchmark reproduction, universal compression ratios, or retrieval guarantees.
+ 
+ > Based on Namyoon Lee and Yongjune Kim, "FibQuant: Universal Vector Quantization for Random-Access KV-Cache Compression", arXiv:2605.11478.
+ 
+-fib-quant compresses KV-cache vectors by decomposing them into spherical blocks, quantizing each block against a Fibonacci-optimized codebook, and storing only the codebook indices. The result: a 768-dim f32 vector (3,072 bytes) becomes ~860 bytes in JSON — or ~64 bytes with binary packing. And it still finds the right document at rank 1.
++fib-quant provides CPU reference paths for spherical-block quantization, deterministic profiles, authenticated receipts, and an optional typed KV artifact contract. Size and quality outcomes depend on the tensor shape, profile, fallback policy, and metadata overhead.
+ 
+ ## Where It Fits
+ 
+@@ -16,10 +18,9 @@ fib-quant is the **cold-tier codec** in poly-kv. It handles shared context that'
+ 
+ ```
+ ┌──────────────────────────────────┐
+-│    SHARED POOL — fib-quant       │  ← you are here
+-│    System prompts, few-shot      │
+-│    examples, shared docs         │
+-│    50× compression, cos 0.863    │
++│    CPU reference KV artifacts     │  ← optional `kv` feature
++│    Typed shape, profile, receipt   │
++│    No production serving claim     │
+ └──────────┬──────────┬────────────┘
+            │          │
+       ┌────▼───┐ ┌───▼────┐
+@@ -27,19 +28,18 @@ fib-quant is the **cold-tier codec** in poly-kv. It handles shared context that'
+       └────────┘ └────────┘
+ ```
+ 
+-## Benchmarked (2026-06-01)
++## Local accounting smoke fixture (2026-08-01)
++
++This is one small synthetic KV tensor, not a representative benchmark or a paper reproduction:
+ 
+-| Metric | Result |
+-|---|---|
+-| Recall@1 (8 queries, compressed) | **1.000** |
+-| Recall@1 (10 agents, shared pool) | **1.000** |
+-| Cosine fidelity (768-dim) | 0.863 |
+-| Rank drift vs exact scan | 0.33 |
+-| JSON compression (single 768d vector) | 3.6× (3,072b → 860b) |
+-| Projected binary compression | ~48× (3,072b → ~64b) |
+-| Batch compression (160 docs, cold tier) | 480 KB → 133 KB (3.6× JSON) |
++| Representation | Total bytes |
++|---|---:|
++| Raw f32 values | 16 |
++| JSON logical envelope | 4,256 |
++| Framed binary wire | 2,339 |
++| Framed-wire header | 44 |
+ 
+-**Key insight:** 100% recall even at 0.863 fidelity. The target document stays at rank 1 while secondary rankings shift. For a cold tier that's accessed occasionally, this is the right tradeoff.
++The framed wire was smaller than JSON for this fixture, but larger than raw f32 because profile, codebook, page, and receipt metadata dominate at this size. Do not extrapolate these values to production workloads.
+ 
+ ## Quick Start
+ 
+@@ -83,35 +83,24 @@ fn main() -> fib_quant::Result<()> {
+ 
+ The codebook is built from spherical-Beta source samples, Fibonacci-optimized direction vectors, and radial quantile estimation. Training is deterministic from the seed.
+ 
+-## The Binary Wire Gap
+-
+-Current compression is JSON-serialized. A single codebook index (5 bits) becomes a JSON integer (~4 bytes). At scale, this overhead dwarfs the payload. The `packed` module exists for exactly this — direct bit-level encoding. When integrated:
++## Framed binary wire
+ 
+-| | 1 vector (768d) | 100 vectors | 10,000 vectors |
+-|---|---|---|---|
+-| JSON | 860 bytes (3.6×) | 86 KB (3.6×) | 8.6 MB (3.6×) |
+-| Binary | ~64 bytes (48×) | ~6 KB (48×) | ~640 KB (48×) |
++The optional `kv` feature owns a versioned `FQKV` frame with explicit flags, checked payload length, BLAKE3 payload digest, bounded deserialization, and exact trailing-byte rejection. The payload contains the typed shape, layout, profile, pages, and receipts. The wire is an experimental local contract; compatibility migrations and durable restart/recovery are not claimed.
+ 
+ ## Integration with poly-kv
+ 
+-```rust
+-use poly_kv::{SharedKVPool, KvTensorShape, AttentionType};
+-
+-// fib-quant is auto-selected for cold-tier compression
+-let (pool, receipt) = SharedKVPool::build(&corpus, &shape, 42)?;
+-// receipt.compression_ratio tells you how well it compressed
+-// receipt.pool_digest is a blake3 hash of all layer digests
+-```
++PolyKV can opt into the `fibquant-adapter` feature and select `FibQuantValueCodec` through `PoolBuilder::value_codec`. The integration is CPU-only and experimental. It requires an explicit finite value-quality budget and retains exact fallback separately; it does not auto-select compression or claim persistence/recovery.
+ 
+ ## What's Implemented
+ 
+-- Fixed-rate block quantization (k=4, N=32 benchmarked)
++- Fixed-rate block quantization
+ - Deterministic stored rotations (Fibonacci/random/Roberts-Kronecker)
+ - Spherical-Beta source sampling for codebook initialization
+ - Lloyd-Max refinement with non-worsening fallback
+ - Fixed-width bit packing for indices
+ - Fail-closed digests and compression receipts
+-- Optional `kv` feature for typed KV-cache contracts
++- Versioned `FQKV` framed wire under the optional `kv` feature
++- Optional typed KV-cache contracts
+ 
+ ## What's Not Claimed
+ 
+diff --git a/fib-quant/src/kv/codec.rs b/fib-quant/src/kv/codec.rs
+index 4dfe51d..5c59fce 100644
+--- a/fib-quant/src/kv/codec.rs
++++ b/fib-quant/src/kv/codec.rs
+@@ -156,6 +156,12 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
+     encoded.layout.validate_for_shape(&encoded.shape)?;
+     encoded.profile.validate_for_shape(&encoded.shape)?;
+     encoded.receipt.validate()?;
++    let shape_digest = encoded.shape.digest()?;
++    if encoded.receipt.shape_digest != shape_digest {
++        return Err(FibQuantError::CorruptPayload(
++            "kv compression receipt shape digest mismatch".into(),
++        ));
++    }
+     let profile_digest = encoded.profile.digest(&encoded.shape)?;
+     if encoded.receipt.profile_digest != profile_digest {
+         return Err(FibQuantError::ProfileDigestMismatch {
+@@ -163,11 +169,65 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
+             actual: encoded.receipt.profile_digest.clone(),
+         });
+     }
++    if encoded.receipt.codebook_digest != encoded.profile.codebook_digest {
++        return Err(FibQuantError::CodebookDigestMismatch {
++            expected: encoded.profile.codebook_digest.clone(),
++            actual: encoded.receipt.codebook_digest.clone(),
++        });
++    }
++    if encoded.receipt.rotation_digest != encoded.profile.rotation_digest {
++        return Err(FibQuantError::RotationDigestMismatch {
++            expected: encoded.profile.rotation_digest.clone(),
++            actual: encoded.receipt.rotation_digest.clone(),
++        });
++    }
++    let expected_page_count = encoded.profile.page_geometry.page_count(&encoded.shape)?;
++    if encoded.pages.len() != expected_page_count as usize
++        || encoded.receipt.encoded_pages != expected_page_count
++    {
++        return Err(FibQuantError::CorruptPayload(
++            "encoded kv pages do not completely cover the declared shape".into(),
++        ));
++    }
+     let quantizer = build_quantizer(&encoded.profile)?;
+     let mut values = vec![0.0; encoded.shape.element_count()?];
+     let mut page_digests = Vec::with_capacity(encoded.pages.len());
++    let mut compressed_blocks = 0u32;
+     let mut raw_fallback_blocks = 0u32;
+-    for page in &encoded.pages {
++    let mut fallback_reasons = Vec::new();
++    for (page_index, page) in encoded.pages.iter().enumerate() {
++        let expected_page_id = u32::try_from(page_index).map_err(|_| {
++            FibQuantError::ResourceLimitExceeded("kv page index exceeds u32".into())
++        })?;
++        let expected_token_start = expected_page_id
++            .checked_mul(encoded.profile.page_geometry.tokens_per_page)
++            .ok_or_else(|| {
++                FibQuantError::ResourceLimitExceeded("kv page token start overflow".into())
++            })?;
++        let expected_token_end = expected_token_start
++            .checked_add(encoded.profile.page_geometry.tokens_per_page)
++            .ok_or_else(|| {
++                FibQuantError::ResourceLimitExceeded("kv page token end overflow".into())
++            })?
++            .min(encoded.shape.tokens);
++        if page.page_id != expected_page_id
++            || page.token_start != expected_token_start
++            || page.token_count != expected_token_end - expected_token_start
++        {
++            return Err(FibQuantError::CorruptPayload(
++                "kv pages must provide canonical complete token coverage".into(),
++            ));
++        }
++        if page.page_geometry != encoded.profile.page_geometry {
++            return Err(FibQuantError::CorruptPayload(
++                "kv page geometry does not match compression profile".into(),
++            ));
++        }
++        if page.source_tensor_digest != encoded.receipt.source_digest {
++            return Err(FibQuantError::CorruptPayload(
++                "kv page source digest does not match compression receipt".into(),
++            ));
++        }
+         page.validate(&encoded.shape)?;
+         if page.profile_digest != encoded.receipt.profile_digest {
+             return Err(FibQuantError::ProfileDigestMismatch {
+@@ -175,6 +235,11 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
+                 actual: page.profile_digest.clone(),
+             });
+         }
++        if encoded.receipt.page_digests[page_index] != page.page_digest {
++            return Err(FibQuantError::CorruptPayload(
++                "kv page digest does not match compression receipt".into(),
++            ));
++        }
+         page_digests.push(page.page_digest.clone());
+         for block in &page.encoded_blocks {
+             if block.batch >= encoded.shape.batch
+@@ -188,10 +253,24 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
+             }
+             let decoded = match &block.encoding {
+                 KvBlockEncodingV1::RawF32 { values } => {
+-                    raw_fallback_blocks += 1;
++                    raw_fallback_blocks = raw_fallback_blocks.checked_add(1).ok_or_else(|| {
++                        FibQuantError::ResourceLimitExceeded(
++                            "raw fallback block count overflow".into(),
++                        )
++                    })?;
++                    if !fallback_reasons.contains(&block.reason) {
++                        fallback_reasons.push(block.reason.clone());
++                    }
+                     values.clone()
+                 }
+-                KvBlockEncodingV1::FibQuant { code } => quantizer.decode(code)?,
++                KvBlockEncodingV1::FibQuant { code } => {
++                    compressed_blocks = compressed_blocks.checked_add(1).ok_or_else(|| {
++                        FibQuantError::ResourceLimitExceeded(
++                            "compressed block count overflow".into(),
++                        )
++                    })?;
++                    quantizer.decode(code)?
++                }
+             };
+             if decoded.len() != encoded.shape.head_dim as usize {
+                 return Err(FibQuantError::CorruptPayload(
+@@ -209,6 +288,15 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
+             out.copy_from_slice(&decoded);
+         }
+     }
++    if page_digests != encoded.receipt.page_digests
++        || compressed_blocks != encoded.receipt.compressed_blocks
++        || raw_fallback_blocks != encoded.receipt.raw_fallback_blocks
++        || fallback_reasons != encoded.receipt.fallback_reasons
++    {
++        return Err(FibQuantError::CorruptPayload(
++            "kv compression receipt does not match realized pages and blocks".into(),
++        ));
++    }
+     let decoded_digest = kv_tensor_digest(&values)?;
+     Ok(KvDecodedTensorV1 {
+         values,
+diff --git a/fib-quant/src/kv/mod.rs b/fib-quant/src/kv/mod.rs
+index cf9c3c5..01ca74f 100644
+--- a/fib-quant/src/kv/mod.rs
++++ b/fib-quant/src/kv/mod.rs
+@@ -15,6 +15,7 @@ pub mod profile;
+ pub mod quality;
+ pub mod receipt;
+ pub mod shape;
++pub mod wire;
+ 
+ pub use attention_ref::{
+     compare_attention_fixture, reference_attention_logits, reference_value_aggregation,
+@@ -37,3 +38,6 @@ pub use receipt::{
+     kv_tensor_digest, KvCompressionReceiptV1, KvDecodeReceiptV1, KvEvalReceiptV1, KvOperationKindV1,
+ };
+ pub use shape::{KvAttentionKind, KvDType, KvRole, KvRopeState, KvTensorShapeV1};
++pub use wire::{
++    decode_kv_wire, encode_kv_wire, KV_WIRE_HEADER_LEN, KV_WIRE_MAGIC, KV_WIRE_VERSION,
++};
+diff --git a/fib-quant/src/kv/page.rs b/fib-quant/src/kv/page.rs
+index c3c2fa5..4b76fd0 100644
+--- a/fib-quant/src/kv/page.rs
++++ b/fib-quant/src/kv/page.rs
+@@ -5,7 +5,7 @@ use crate::{digest::json_digest, FibQuantError, Result};
+ use super::{
+     block::KvEncodedBlockV1,
+     layout::KvPageGeometryV1,
+-    shape::{KvTensorShapeV1, KV_SHAPE_SCHEMA},
++    shape::{checked_product, KvTensorShapeV1, KV_SHAPE_SCHEMA},
+ };
+ 
+ pub const KV_PAGE_SCHEMA: &str = "fib_quant_kv_encoded_page_v1";
+@@ -94,7 +94,13 @@ impl KvEncodedPageV1 {
+                 "invalid kv page token span".into(),
+             ));
+         }
+-        if self.token_start + self.token_count > shape.tokens {
++        let token_end = self
++            .token_start
++            .checked_add(self.token_count)
++            .ok_or_else(|| {
++                FibQuantError::ResourceLimitExceeded("kv page token span overflow".into())
++            })?;
++        if token_end > shape.tokens {
+             return Err(FibQuantError::CorruptPayload(
+                 "kv page token span exceeds shape tokens".into(),
+             ));
+@@ -104,6 +110,18 @@ impl KvEncodedPageV1 {
+                 "kv page token_count exceeds geometry".into(),
+             ));
+         }
++        let expected_blocks = checked_product(&[
++            shape.batch as usize,
++            shape.layers as usize,
++            shape.kv_heads as usize,
++            self.token_count as usize,
++        ])?;
++        if self.encoded_blocks.len() != expected_blocks {
++            return Err(FibQuantError::CorruptPayload(format!(
++                "kv page has {} blocks, expected {expected_blocks}",
++                self.encoded_blocks.len()
++            )));
++        }
+         let expected_raw = self
+             .encoded_blocks
+             .iter()
+@@ -114,18 +132,36 @@ impl KvEncodedPageV1 {
+                 "kv page raw fallback count mismatch".into(),
+             ));
+         }
+-        for (idx, block) in self.encoded_blocks.iter().enumerate() {
+-            block.validate(shape.head_dim)?;
+-            if block.block_id as usize != idx {
+-                return Err(FibQuantError::CorruptPayload(
+-                    "kv page block ids must be contiguous".into(),
+-                ));
+-            }
+-            if block.token < self.token_start || block.token >= self.token_start + self.token_count
+-            {
+-                return Err(FibQuantError::CorruptPayload(
+-                    "kv page block token outside page span".into(),
+-                ));
++        let mut block_index = 0usize;
++        for batch in 0..shape.batch {
++            for layer in 0..shape.layers {
++                for kv_head in 0..shape.kv_heads {
++                    for token in self.token_start..token_end {
++                        let block = &self.encoded_blocks[block_index];
++                        block.validate(shape.head_dim)?;
++                        if block.block_id as usize != block_index {
++                            return Err(FibQuantError::CorruptPayload(
++                                "kv page block ids must be contiguous".into(),
++                            ));
++                        }
++                        if block.batch != batch
++                            || block.layer != layer
++                            || block.kv_head != kv_head
++                            || block.token != token
++                        {
++                            return Err(FibQuantError::CorruptPayload(
++                                "kv page blocks must provide canonical complete coordinate coverage"
++                                    .into(),
++                            ));
++                        }
++                        if block.fixed_size_bytes != self.page_geometry.encoded_block_bytes {
++                            return Err(FibQuantError::CorruptPayload(
++                                "kv block reservation does not match page geometry".into(),
++                            ));
++                        }
++                        block_index += 1;
++                    }
++                }
+             }
+         }
+         let expected_digest = self.compute_digest(shape)?;
+diff --git a/fib-quant/src/kv/profile.rs b/fib-quant/src/kv/profile.rs
+index 9f419b8..b817f7e 100644
+--- a/fib-quant/src/kv/profile.rs
++++ b/fib-quant/src/kv/profile.rs
+@@ -288,6 +288,28 @@ impl KvCompressionProfileV1 {
+         self.page_geometry.validate_for_shape(shape)?;
+         self.protected_policy.validate_for_shape(shape)?;
+         self.quality_budget.validate()?;
++
++        let has_protected_regions = self.protected_policy.first_tokens_raw > 0
++            || self.protected_policy.last_tokens_raw > 0
++            || !self.protected_policy.raw_layers.is_empty()
++            || !self.protected_policy.raw_heads.is_empty();
++        let policy_can_emit_raw = self.axis_policy == KvAxisPolicyV1::Raw
++            || has_protected_regions
++            || self.fallback_policy.mode == KvFallbackModeV1::KeepRaw
++            || (self.quality_budget.has_any_metric()
++                && self.quality_budget.fallback_on_violation == KvFallbackModeV1::KeepRaw);
++        if policy_can_emit_raw && !self.fallback_policy.raw_fallback_available {
++            return Err(FibQuantError::CorruptPayload(
++                "kv profile can emit raw blocks but raw fallback is unavailable".into(),
++            ));
++        }
++        if policy_can_emit_raw
++            && self.page_geometry.encoded_block_bytes < self.page_geometry.raw_vector_bytes
++        {
++            return Err(FibQuantError::CorruptPayload(
++                "encoded_block_bytes cannot hold the declared raw fallback vector".into(),
++            ));
++        }
+         Ok(())
+     }
+ 
+diff --git a/fib-quant/src/kv/receipt.rs b/fib-quant/src/kv/receipt.rs
+index 2a5a521..ae34a73 100644
+--- a/fib-quant/src/kv/receipt.rs
++++ b/fib-quant/src/kv/receipt.rs
+@@ -107,6 +107,36 @@ impl KvCompressionReceiptV1 {
+                 "invalid kv compression receipt".into(),
+             ));
+         }
++        for (name, value) in [
++            ("source_digest", self.source_digest.as_str()),
++            ("profile_digest", self.profile_digest.as_str()),
++            ("shape_digest", self.shape_digest.as_str()),
++            ("codebook_digest", self.codebook_digest.as_str()),
++            ("rotation_digest", self.rotation_digest.as_str()),
++        ] {
++            if value.is_empty() {
++                return Err(FibQuantError::CorruptPayload(format!(
++                    "kv compression receipt {name} must be nonempty"
++                )));
++            }
++        }
++        if self.encoded_pages == 0 || self.page_digests.len() != self.encoded_pages as usize {
++            return Err(FibQuantError::CorruptPayload(
++                "kv compression receipt page count mismatch".into(),
++            ));
++        }
++        if self.page_digests.iter().any(String::is_empty) {
++            return Err(FibQuantError::CorruptPayload(
++                "kv compression receipt page digest must be nonempty".into(),
++            ));
++        }
++        self.compressed_blocks
++            .checked_add(self.raw_fallback_blocks)
++            .ok_or_else(|| {
++                FibQuantError::ResourceLimitExceeded(
++                    "kv compression receipt block count overflow".into(),
++                )
++            })?;
+         Ok(())
+     }
+ }
+diff --git a/fib-quant/tests/kv_corruption_rejection.rs b/fib-quant/tests/kv_corruption_rejection.rs
+index f1ffb03..f456297 100644
+--- a/fib-quant/tests/kv_corruption_rejection.rs
++++ b/fib-quant/tests/kv_corruption_rejection.rs
+@@ -2,12 +2,12 @@
+ 
+ use fib_quant::kv::{
+     decode_kv_pages, encode_kv_tensor, KvAttentionKind, KvAxisPolicyV1, KvCacheLayoutV1,
+-    KvCompressionProfileV1, KvDType, KvPageGeometryV1, KvRole, KvRopeState, KvTensorShapeV1,
++    KvCompressionProfileV1, KvDType, KvEncodedTensorV1, KvFallbackModeV1, KvPageGeometryV1, KvRole,
++    KvRopeState, KvTensorShapeV1,
+ };
+ use fib_quant::{FibQuantProfileV1, FibQuantizer};
+ 
+-#[test]
+-fn page_digest_tamper_rejects_decode() {
++fn fixture(tokens_per_page: u32) -> KvEncodedTensorV1 {
+     let shape = KvTensorShapeV1::new(
+         KvRole::Value,
+         KvAttentionKind::Mha,
+@@ -15,7 +15,7 @@ fn page_digest_tamper_rejects_decode() {
+         1,
+         1,
+         1,
+-        2,
++        4,
+         8,
+         KvDType::F32,
+         KvRopeState::NotApplicable,
+@@ -32,13 +32,97 @@ fn page_digest_tamper_rejects_decode() {
+         fib_profile,
+         quantizer.codebook().codebook_digest.clone(),
+         KvAxisPolicyV1::PerToken,
+-        KvPageGeometryV1::new(2, 8, 64),
++        KvPageGeometryV1::new(tokens_per_page, 8, 64),
+     )
+     .unwrap();
+     let values: Vec<f32> = (0..shape.element_count().unwrap())
+         .map(|idx| idx as f32 * 0.05 + 0.5)
+         .collect();
+-    let mut encoded = encode_kv_tensor(shape, layout, profile, &values).unwrap();
++    encode_kv_tensor(shape, layout, profile, &values).unwrap()
++}
++
++fn refresh_page_digest(encoded: &mut KvEncodedTensorV1, page_index: usize) {
++    let digest = encoded.pages[page_index]
++        .compute_digest(&encoded.shape)
++        .unwrap();
++    encoded.pages[page_index].page_digest = digest.clone();
++    encoded.receipt.page_digests[page_index] = digest;
++}
++
++#[test]
++fn page_digest_tamper_rejects_decode() {
++    let mut encoded = fixture(2);
+     encoded.pages[0].page_digest.push_str("-tampered");
+     assert!(decode_kv_pages(&encoded).is_err());
+ }
++
++#[test]
++fn structurally_consistent_missing_page_rejects_decode() {
++    let mut encoded = fixture(2);
++    encoded.pages.pop();
++    encoded.receipt.encoded_pages = encoded.pages.len() as u32;
++    encoded.receipt.page_digests = encoded
++        .pages
++        .iter()
++        .map(|page| page.page_digest.clone())
++        .collect();
++    encoded.receipt.compressed_blocks = encoded
++        .pages
++        .iter()
++        .map(|page| page.encoded_blocks.len() as u32)
++        .sum();
++
++    assert!(decode_kv_pages(&encoded).is_err());
++}
++
++#[test]
++fn duplicate_block_coordinate_rejects_decode() {
++    let mut encoded = fixture(2);
++    encoded.pages[0].encoded_blocks[1].token = encoded.pages[0].encoded_blocks[0].token;
++    refresh_page_digest(&mut encoded, 0);
++
++    assert!(decode_kv_pages(&encoded).is_err());
++}
++
++#[test]
++fn page_source_digest_must_match_receipt() {
++    let mut encoded = fixture(2);
++    encoded.pages[0].source_tensor_digest = "blake3:wrong-source".to_string();
++    refresh_page_digest(&mut encoded, 0);
++
++    assert!(decode_kv_pages(&encoded).is_err());
++}
++
++#[test]
++fn block_reservation_must_match_page_geometry() {
++    let mut encoded = fixture(2);
++    encoded.pages[0].encoded_blocks[0].fixed_size_bytes += 1;
++    refresh_page_digest(&mut encoded, 0);
++
++    assert!(decode_kv_pages(&encoded).is_err());
++}
++
++#[test]
++fn receipt_counts_must_match_realized_pages_and_blocks() {
++    let mut encoded = fixture(2);
++    encoded.receipt.compressed_blocks += 1;
++
++    assert!(decode_kv_pages(&encoded).is_err());
++}
++
++#[test]
++fn keep_raw_policy_requires_declared_and_sized_fallback() {
++    let encoded = fixture(2);
++    let mut no_fallback = encoded.profile.clone();
++    no_fallback.fallback_policy.raw_fallback_available = false;
++    assert!(no_fallback.validate_for_shape(&encoded.shape).is_err());
++
++    let mut undersized = encoded.profile.clone();
++    undersized.page_geometry.encoded_block_bytes = 1;
++    assert!(undersized.validate_for_shape(&encoded.shape).is_err());
++
++    let mut fail_closed = encoded.profile.clone();
++    fail_closed.fallback_policy.mode = KvFallbackModeV1::FailClosed;
++    fail_closed.fallback_policy.raw_fallback_available = false;
++    fail_closed.validate_for_shape(&encoded.shape).unwrap();
++}
+diff --git a/poly-kv/Cargo.lock b/poly-kv/Cargo.lock
+index 08e4cc2..ebde655 100644
+--- a/poly-kv/Cargo.lock
++++ b/poly-kv/Cargo.lock
+@@ -29,6 +29,15 @@ version = "1.0.102"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+ 
++[[package]]
++name = "approx"
++version = "0.5.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
++dependencies = [
++ "num-traits",
++]
++
+ [[package]]
+ name = "arrayref"
+ version = "0.3.9"
+@@ -47,6 +56,15 @@ version = "1.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
+ 
++[[package]]
++name = "bincode"
++version = "1.3.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
++dependencies = [
++ "serde",
++]
++
+ [[package]]
+ name = "bit-set"
+ version = "0.8.0"
+@@ -88,6 +106,12 @@ version = "3.20.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5d20789868f4b01b2f2caec9f5c4e0213b41e3e5702a50157d699ae31ced2fcb"
+ 
++[[package]]
++name = "bytemuck"
++version = "1.25.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "95832e849adfb21180ccb6826a99da14e5d266ae5c2e668e1602cf234f153797"
++
+ [[package]]
+ name = "cast"
+ version = "0.3.0"
+@@ -272,6 +296,23 @@ version = "2.4.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
+ 
++[[package]]
++name = "fib-quant"
++version = "0.1.0-alpha.1"
++dependencies = [
++ "bincode",
++ "blake3",
++ "half",
++ "nalgebra 0.33.3",
++ "rand 0.8.7",
++ "rand_chacha 0.3.1",
++ "rand_distr",
++ "serde",
++ "serde_json",
++ "statrs",
++ "thiserror 2.0.19",
++]
++
+ [[package]]
+ name = "find-msvc-tools"
+ version = "0.1.9"
+@@ -314,6 +355,17 @@ dependencies = [
+  "slab",
+ ]
+ 
++[[package]]
++name = "getrandom"
++version = "0.2.17"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ff2abc00be7fca6ebc474524697ae276ad847ad0a6b3faa4bcb027e9a4614ad0"
++dependencies = [
++ "cfg-if",
++ "libc",
++ "wasi",
++]
++
+ [[package]]
+ name = "getrandom"
+ version = "0.3.4"
+@@ -445,6 +497,12 @@ version = "0.2.186"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
+ 
++[[package]]
++name = "libm"
++version = "0.2.16"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
++
+ [[package]]
+ name = "linux-raw-sys"
+ version = "0.12.1"
+@@ -457,12 +515,108 @@ version = "0.4.29"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+ 
++[[package]]
++name = "matrixmultiply"
++version = "0.3.11"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3f607c237553f086e7043417a51df26b2eb899d3caff94e6a67592ff992fedc7"
++dependencies = [
++ "autocfg",
++ "rawpointer",
++]
++
+ [[package]]
+ name = "memchr"
+ version = "2.8.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
+ 
++[[package]]
++name = "nalgebra"
++version = "0.32.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7b5c17de023a86f59ed79891b2e5d5a94c705dbe904a5b5c9c952ea6221b03e4"
++dependencies = [
++ "approx",
++ "matrixmultiply",
++ "nalgebra-macros",
++ "num-complex",
++ "num-rational",
++ "num-traits",
++ "rand 0.8.7",
++ "rand_distr",
++ "simba 0.8.1",
++ "typenum",
++]
++
++[[package]]
++name = "nalgebra"
++version = "0.33.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9d43ddcacf343185dfd6de2ee786d9e8b1c2301622afab66b6c73baf9882abfd"
++dependencies = [
++ "approx",
++ "matrixmultiply",
++ "nalgebra-macros",
++ "num-complex",
++ "num-rational",
++ "num-traits",
++ "serde",
++ "simba 0.9.1",
++ "typenum",
++]
++
++[[package]]
++name = "nalgebra-macros"
++version = "0.2.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "254a5372af8fc138e36684761d3c0cdb758a4410e938babcff1c860ce14ddbfc"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn 2.0.117",
++]
++
++[[package]]
++name = "num-bigint"
++version = "0.4.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367"
++dependencies = [
++ "num-integer",
++ "num-traits",
++]
++
++[[package]]
++name = "num-complex"
++version = "0.4.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495"
++dependencies = [
++ "num-traits",
++ "serde",
++]
++
++[[package]]
++name = "num-integer"
++version = "0.1.46"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
++dependencies = [
++ "num-traits",
++]
++
++[[package]]
++name = "num-rational"
++version = "0.4.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f83d14da390562dca69fc84082e73e548e1ad308d24accdedd2720017cb37824"
++dependencies = [
++ "num-bigint",
++ "num-integer",
++ "num-traits",
++]
++
+ [[package]]
+ name = "num-traits"
+ version = "0.2.19"
+@@ -470,6 +624,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
+ dependencies = [
+  "autocfg",
++ "libm",
+ ]
+ 
+ [[package]]
+@@ -484,6 +639,12 @@ version = "11.1.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d6790f58c7ff633d8771f42965289203411a5e5c68388703c06e14f24770b41e"
+ 
++[[package]]
++name = "paste"
++version = "1.0.15"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
++
+ [[package]]
+ name = "pin-project-lite"
+ version = "0.2.17"
+@@ -524,11 +685,12 @@ version = "0.1.0-alpha.1"
+ dependencies = [
+  "blake3",
+  "criterion",
++ "fib-quant",
+  "proptest",
+  "quant-codec-core",
+  "serde",
+  "serde_json",
+- "thiserror",
++ "thiserror 1.0.69",
+ ]
+ 
+ [[package]]
+@@ -563,7 +725,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
+ dependencies = [
+  "proc-macro2",
+- "syn",
++ "syn 2.0.117",
+ ]
+ 
+ [[package]]
+@@ -585,8 +747,8 @@ dependencies = [
+  "bit-vec",
+  "bitflags",
+  "num-traits",
+- "rand",
+- "rand_chacha",
++ "rand 0.9.4",
++ "rand_chacha 0.9.0",
+  "rand_xorshift",
+  "regex-syntax",
+  "rusty-fork",
+@@ -636,7 +798,7 @@ dependencies = [
+  "proc-macro2",
+  "pyo3-macros-backend",
+  "quote",
+- "syn",
++ "syn 2.0.117",
+ ]
+ 
+ [[package]]
+@@ -649,7 +811,7 @@ dependencies = [
+  "proc-macro2",
+  "pyo3-build-config",
+  "quote",
+- "syn",
++ "syn 2.0.117",
+ ]
+ 
+ [[package]]
+@@ -660,7 +822,7 @@ dependencies = [
+  "proptest",
+  "serde",
+  "serde_json",
+- "thiserror",
++ "thiserror 1.0.69",
+ ]
+ 
+ [[package]]
+@@ -690,14 +852,35 @@ version = "6.0.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+ 
++[[package]]
++name = "rand"
++version = "0.8.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "22f6172bdec972074665ed81ed53b71da00bfc44b65a753cfde883ec4c702a1a"
++dependencies = [
++ "libc",
++ "rand_chacha 0.3.1",
++ "rand_core 0.6.4",
++]
++
+ [[package]]
+ name = "rand"
+ version = "0.9.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "44c5af06bb1b7d3216d91932aed5265164bf384dc89cd6ba05cf59a35f5f76ea"
+ dependencies = [
+- "rand_chacha",
+- "rand_core",
++ "rand_chacha 0.9.0",
++ "rand_core 0.9.5",
++]
++
++[[package]]
++name = "rand_chacha"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
++dependencies = [
++ "ppv-lite86",
++ "rand_core 0.6.4",
+ ]
+ 
+ [[package]]
+@@ -707,7 +890,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
+ dependencies = [
+  "ppv-lite86",
+- "rand_core",
++ "rand_core 0.9.5",
++]
++
++[[package]]
++name = "rand_core"
++version = "0.6.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
++dependencies = [
++ "getrandom 0.2.17",
+ ]
+ 
+ [[package]]
+@@ -719,15 +911,31 @@ dependencies = [
+  "getrandom 0.3.4",
+ ]
+ 
++[[package]]
++name = "rand_distr"
++version = "0.4.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "32cb0b9bc82b0a0876c2dd994a7e7a2683d3e7390ca40e6886785ef0c7e3ee31"
++dependencies = [
++ "num-traits",
++ "rand 0.8.7",
++]
++
+ [[package]]
+ name = "rand_xorshift"
+ version = "0.4.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "513962919efc330f829edb2535844d1b912b0fbe2ca165d613e4e8788bb05a5a"
+ dependencies = [
+- "rand_core",
++ "rand_core 0.9.5",
+ ]
+ 
++[[package]]
++name = "rawpointer"
++version = "0.2.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "60a357793950651c4ed0f3f52338f53b2f809f32d83a07f72909fa13e4c6c1e3"
++
+ [[package]]
+ name = "rayon"
+ version = "1.12.0"
+@@ -808,6 +1016,15 @@ dependencies = [
+  "wait-timeout",
+ ]
+ 
++[[package]]
++name = "safe_arch"
++version = "0.7.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "96b02de82ddbe1b636e6170c21be622223aea188ef2e139be0a5b219ec215323"
++dependencies = [
++ "bytemuck",
++]
++
+ [[package]]
+ name = "same-file"
+ version = "1.0.6"
+@@ -850,7 +1067,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+- "syn",
++ "syn 2.0.117",
+ ]
+ 
+ [[package]]
+@@ -872,12 +1089,50 @@ version = "1.3.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
+ 
++[[package]]
++name = "simba"
++version = "0.8.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "061507c94fc6ab4ba1c9a0305018408e312e17c041eb63bef8aa726fa33aceae"
++dependencies = [
++ "approx",
++ "num-complex",
++ "num-traits",
++ "paste",
++ "wide",
++]
++
++[[package]]
++name = "simba"
++version = "0.9.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c99284beb21666094ba2b75bbceda012e610f5479dfcc2d6e2426f53197ffd95"
++dependencies = [
++ "approx",
++ "num-complex",
++ "num-traits",
++ "paste",
++ "wide",
++]
++
+ [[package]]
+ name = "slab"
+ version = "0.4.12"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
+ 
++[[package]]
++name = "statrs"
++version = "0.17.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f697a07e4606a0a25c044de247e583a330dbb1731d11bc7350b81f48ad567255"
++dependencies = [
++ "approx",
++ "nalgebra 0.32.6",
++ "num-traits",
++ "rand 0.8.7",
++]
++
+ [[package]]
+ name = "syn"
+ version = "2.0.117"
+@@ -889,6 +1144,17 @@ dependencies = [
+  "unicode-ident",
+ ]
+ 
++[[package]]
++name = "syn"
++version = "3.0.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "53e9bae58849f64dfa4f5d5ae372c8341f7305f82a3868709269343628b659a3"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "unicode-ident",
++]
++
+ [[package]]
+ name = "target-lexicon"
+ version = "0.13.5"
+@@ -914,7 +1180,16 @@ version = "1.0.69"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
+ dependencies = [
+- "thiserror-impl",
++ "thiserror-impl 1.0.69",
++]
++
++[[package]]
++name = "thiserror"
++version = "2.0.19"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "09a43598840e33d5b0331f38c5e30d13bb11c11210a4b58f0d9b18a5a5eefcd9"
++dependencies = [
++ "thiserror-impl 2.0.19",
+ ]
+ 
+ [[package]]
+@@ -925,7 +1200,18 @@ checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+- "syn",
++ "syn 2.0.117",
++]
++
++[[package]]
++name = "thiserror-impl"
++version = "2.0.19"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "43cbfe0cf76104d42a574802844187e84a305e531ed54455f11fbde0f10541cd"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn 3.0.3",
+ ]
+ 
+ [[package]]
+@@ -938,6 +1224,12 @@ dependencies = [
+  "serde_json",
+ ]
+ 
++[[package]]
++name = "typenum"
++version = "1.20.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
++
+ [[package]]
+ name = "unarray"
+ version = "0.1.4"
+@@ -975,6 +1267,12 @@ dependencies = [
+  "winapi-util",
+ ]
+ 
++[[package]]
++name = "wasi"
++version = "0.11.1+wasi-snapshot-preview1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
++
+ [[package]]
+ name = "wasip2"
+ version = "1.0.3+wasi-0.2.9"
+@@ -1025,7 +1323,7 @@ dependencies = [
+  "bumpalo",
+  "proc-macro2",
+  "quote",
+- "syn",
++ "syn 2.0.117",
+  "wasm-bindgen-shared",
+ ]
+ 
+@@ -1082,6 +1380,16 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "wide"
++version = "0.7.33"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0ce5da8ecb62bcd8ec8b7ea19f69a51275e91299be594ea5cc6ef7819e16cd03"
++dependencies = [
++ "bytemuck",
++ "safe_arch",
++]
++
+ [[package]]
+ name = "winapi-util"
+ version = "0.1.11"
+@@ -1142,7 +1450,7 @@ dependencies = [
+  "heck",
+  "indexmap",
+  "prettyplease",
+- "syn",
++ "syn 2.0.117",
+  "wasm-metadata",
+  "wit-bindgen-core",
+  "wit-component",
+@@ -1158,7 +1466,7 @@ dependencies = [
+  "prettyplease",
+  "proc-macro2",
+  "quote",
+- "syn",
++ "syn 2.0.117",
+  "wit-bindgen-core",
+  "wit-bindgen-rust",
+ ]
+@@ -1217,7 +1525,7 @@ checksum = "70e3cd084b1788766f53af483dd21f93881ff30d7320490ec3ef7526d203bad4"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+- "syn",
++ "syn 2.0.117",
+ ]
+ 
+ [[package]]
+diff --git a/poly-kv/crates/poly-kv/Cargo.toml b/poly-kv/crates/poly-kv/Cargo.toml
+index 4594fe5..c120969 100644
+--- a/poly-kv/crates/poly-kv/Cargo.toml
++++ b/poly-kv/crates/poly-kv/Cargo.toml
+@@ -8,22 +8,28 @@ description = "Shared compressed KV-cache pool infrastructure for Rust experimen
+ 
+ [dependencies]
+ quant-codec-core = { path = "../quant-codec-core" }
++fib-quant = { path = "../../../fib-quant", optional = true, features = ["kv"] }
+ serde = { version = "1", features = ["derive"], optional = true }
++serde_json = "1"
+ thiserror = "1"
+ blake3 = "1"
+ criterion = { version = "0.5", optional = true }
+ 
+ [dev-dependencies]
+ proptest = "1"
+-serde_json = "1"
+ 
+ [features]
+ default = ["serde"]
+ serde = ["dep:serde", "quant-codec-core/serde"]
+ turbo-quant-adapter = []
+-fibquant-adapter = []
++fibquant-adapter = ["dep:fib-quant", "serde"]
+ bench = ["dep:criterion"]
+ 
++[[bench]]
++name = "fibquant_paths"
++harness = false
++required-features = ["bench", "fibquant-adapter"]
++
+ [[bench]]
+ name = "synthetic_pool"
+ harness = false
+diff --git a/poly-kv/crates/poly-kv/src/adapters/fibquant.rs b/poly-kv/crates/poly-kv/src/adapters/fibquant.rs
+index fe9bf19..e0ed392 100644
+--- a/poly-kv/crates/poly-kv/src/adapters/fibquant.rs
++++ b/poly-kv/crates/poly-kv/src/adapters/fibquant.rs
+@@ -1,13 +1,325 @@
+-use crate::PolyKvError;
++use crate::{codecs::value::ValueCodec, metrics, PolyKvError};
++use fib_quant::{
++    kv::{
++        decode_kv_pages, decode_kv_wire, encode_kv_tensor, encode_kv_wire, KvAttentionKind,
++        KvAxisPolicyV1, KvCacheLayoutV1, KvCompressionProfileV1, KvDType, KvEncodedTensorV1,
++        KvPageGeometryV1, KvRole, KvRopeState, KvTensorShapeV1,
++    },
++    profile::FibQuantProfileV1,
++    FibQuantizer,
++};
++use quant_codec_core::{
++    CodecCapabilities, CodecId, CodecProfile, CodecProfileDigest, CodecResourceLimits, EvalReport,
++    ScoreSemantics, VectorCodec,
++};
+ 
+-#[derive(Debug, Clone, Copy, Default)]
+-pub struct FibQuantValueCodec;
++/// Feature-gated PolyKV value adapter backed by FibQuant's canonical CPU KV API.
++#[derive(Debug, Clone)]
++pub struct FibQuantValueCodec {
++    head_dim: usize,
++    shape: KvTensorShapeV1,
++    profile: KvCompressionProfileV1,
++    profile_digest: String,
++    max_mse: Option<f64>,
++}
++
++const MAX_ADAPTER_ENCODED_BYTES: u64 = 1 << 28;
+ 
+ impl FibQuantValueCodec {
+-    pub fn new_unsupported() -> Result<Self, PolyKvError> {
+-        Err(PolyKvError::UnsupportedAdapter {
+-            adapter: "fibquant",
+-            reason: "external API not inspected in this alpha pass".to_string(),
++    /// Build a deterministic one-vector value profile.
++    pub fn new(
++        head_dim: usize,
++        block_dim: usize,
++        codebook_size: usize,
++        seed: u64,
++    ) -> Result<Self, PolyKvError> {
++        let shape = KvTensorShapeV1::new(
++            KvRole::Value,
++            KvAttentionKind::Mha,
++            1,
++            1,
++            1,
++            1,
++            1,
++            u32::try_from(head_dim).map_err(|err| PolyKvError::InvalidShape {
++                reason: err.to_string(),
++            })?,
++            KvDType::F32,
++            KvRopeState::NotApplicable,
++        );
++        let fib_profile =
++            FibQuantProfileV1::paper_default(head_dim, block_dim, codebook_size, seed)
++                .map_err(fib_error)?;
++        let quantizer = FibQuantizer::new(fib_profile.clone()).map_err(fib_error)?;
++        let raw_bytes = head_dim
++            .checked_mul(4)
++            .and_then(|bytes| bytes.checked_add(1024))
++            .and_then(|bytes| u32::try_from(bytes).ok())
++            .ok_or_else(|| PolyKvError::InvalidShape {
++                reason: "encoded block reservation overflow".to_string(),
++            })?;
++        let page_geometry = KvPageGeometryV1::new(1, shape.head_dim, raw_bytes);
++        let profile = KvCompressionProfileV1::from_parts(
++            format!("poly-kv:fibquant:value:{head_dim}:{block_dim}:{codebook_size}:{seed}"),
++            &shape,
++            fib_profile,
++            quantizer.codebook().codebook_digest.clone(),
++            KvAxisPolicyV1::PerToken,
++            page_geometry,
++        )
++        .map_err(fib_error)?;
++        let profile_digest = profile.digest(&shape).map_err(fib_error)?;
++        Ok(Self {
++            head_dim,
++            shape,
++            profile,
++            profile_digest,
++            max_mse: None,
+         })
+     }
++
++    /// Attach the finite per-block MSE budget used by [`ValueCodec::eval_values`].
++    ///
++    /// Without this budget, encoding and decoding remain available but quality
++    /// evaluation fails closed rather than silently admitting a lossy block.
++    pub fn with_max_mse(mut self, max_mse: f64) -> Result<Self, PolyKvError> {
++        if !max_mse.is_finite() || max_mse < 0.0 {
++            return Err(PolyKvError::Codec(
++                "fibquant max_mse must be finite and nonnegative".to_string(),
++            ));
++        }
++        self.max_mse = Some(max_mse);
++        Ok(self)
++    }
++
++    /// Return the canonical FibQuant KV profile digest.
++    pub fn fib_profile_digest(&self) -> &str {
++        &self.profile_digest
++    }
++
++    fn encode_envelope(&self, input: &[f32]) -> Result<KvEncodedTensorV1, PolyKvError> {
++        self.validate_input(input)?;
++        let shape = self.shape_for_len(input.len())?;
++        let profile = self.profile_for_shape(&shape)?;
++        let layout = KvCacheLayoutV1::canonical(&shape).map_err(fib_error)?;
++        encode_kv_tensor(shape, layout, profile, input).map_err(fib_error)
++    }
++
++    fn validate_input(&self, input: &[f32]) -> Result<(), PolyKvError> {
++        if input.is_empty() || input.len() % self.head_dim != 0 {
++            return Err(PolyKvError::Codec(format!(
++                "fibquant value dimension must be a nonzero multiple of {}: input={}",
++                self.head_dim,
++                input.len()
++            )));
++        }
++        if input.iter().any(|value| !value.is_finite()) {
++            return Err(PolyKvError::Codec(
++                "fibquant value input contains NaN or infinite value".to_string(),
++            ));
++        }
++        Ok(())
++    }
++
++    fn shape_for_len(&self, len: usize) -> Result<KvTensorShapeV1, PolyKvError> {
++        let tokens =
++            u32::try_from(len / self.head_dim).map_err(|err| PolyKvError::InvalidShape {
++                reason: err.to_string(),
++            })?;
++        Ok(KvTensorShapeV1::new(
++            KvRole::Value,
++            KvAttentionKind::Mha,
++            1,
++            1,
++            1,
++            1,
++            tokens,
++            self.shape.head_dim,
++            KvDType::F32,
++            KvRopeState::NotApplicable,
++        ))
++    }
++
++    fn profile_for_shape(
++        &self,
++        shape: &KvTensorShapeV1,
++    ) -> Result<KvCompressionProfileV1, PolyKvError> {
++        let raw_bytes = shape
++            .head_dim
++            .checked_mul(4)
++            .and_then(|bytes| bytes.checked_add(1024))
++            .ok_or_else(|| PolyKvError::InvalidShape {
++                reason: "encoded block reservation overflow".to_string(),
++            })?;
++        let page_geometry = KvPageGeometryV1::new(1, shape.head_dim, raw_bytes);
++        KvCompressionProfileV1::from_parts(
++            self.profile.profile_id.clone(),
++            shape,
++            self.profile.fib_profile.clone(),
++            self.profile.codebook_digest.clone(),
++            self.profile.axis_policy,
++            page_geometry,
++        )
++        .map_err(fib_error)
++    }
++
++    fn decode_envelope(&self, block: &[u8]) -> Result<Vec<f32>, PolyKvError> {
++        if block.len() as u64 > MAX_ADAPTER_ENCODED_BYTES {
++            return Err(PolyKvError::Codec(format!(
++                "fibquant payload exceeds {MAX_ADAPTER_ENCODED_BYTES} byte limit"
++            )));
++        }
++        let encoded: KvEncodedTensorV1 = decode_kv_wire(block).map_err(fib_error)?;
++        if encoded.shape.role != KvRole::Value
++            || encoded.shape.head_dim != self.shape.head_dim
++            || encoded.shape.attention_kind != KvAttentionKind::Mha
++            || encoded.shape.batch != 1
++            || encoded.shape.layers != 1
++            || encoded.shape.kv_heads != 1
++            || encoded.shape.query_heads != 1
++        {
++            return Err(PolyKvError::ShapeMismatch {
++                reason: "fibquant encoded shape does not match codec profile".to_string(),
++            });
++        }
++        let expected_profile = self.profile_for_shape(&encoded.shape)?;
++        let expected_profile_digest = expected_profile.digest(&encoded.shape).map_err(fib_error)?;
++        let actual_profile_digest = encoded.profile.digest(&encoded.shape).map_err(fib_error)?;
++        if actual_profile_digest != expected_profile_digest {
++            return Err(PolyKvError::Codec(format!(
++                "fibquant profile mismatch: expected {}, got {}",
++                expected_profile_digest, actual_profile_digest
++            )));
++        }
++        decode_kv_pages(&encoded)
++            .map(|decoded| decoded.values)
++            .map_err(fib_error)
++    }
++}
++
++impl CodecProfile for FibQuantValueCodec {
++    fn codec_id(&self) -> CodecId {
++        CodecId::new("poly-kv:value:fibquant").expect("static codec id is valid")
++    }
++
++    fn codec_version(&self) -> &str {
++        "0.1.0-alpha.1"
++    }
++
++    fn profile_digest(&self) -> CodecProfileDigest {
++        let quality_budget = self
++            .max_mse
++            .map(|value| format!("mse:{:016x}", value.to_bits()))
++            .unwrap_or_else(|| "mse:unconfigured".to_string());
++        CodecProfileDigest::from_parts(&[
++            self.codec_id().as_str().as_bytes(),
++            self.codec_version().as_bytes(),
++            self.profile_digest.as_bytes(),
++            quality_budget.as_bytes(),
++        ])
++    }
++
++    fn fixed_rate_bits(&self) -> Option<u16> {
++        let index_bits = u16::from(self.profile.fib_profile.wire_index_bits);
++        let block_dim = u16::try_from(self.profile.fib_profile.block_dim).ok()?;
++        (index_bits % block_dim == 0).then_some(index_bits / block_dim)
++    }
++
++    fn block_dim(&self) -> Option<u16> {
++        u16::try_from(self.profile.fib_profile.block_dim).ok()
++    }
++
++    fn is_lossy(&self) -> bool {
++        true
++    }
++}
++
++impl VectorCodec for FibQuantValueCodec {
++    type EncodedBlock = Vec<u8>;
++    type Error = PolyKvError;
++
++    fn profile(&self) -> &dyn CodecProfile {
++        self
++    }
++
++    fn capabilities(&self) -> CodecCapabilities {
++        CodecCapabilities {
++            can_encode: true,
++            can_decode: true,
++            can_score_inner_product: false,
++            can_score_l2: false,
++            is_lossless: false,
++        }
++    }
++
++    fn resource_limits(&self) -> CodecResourceLimits {
++        CodecResourceLimits {
++            max_dim: self.head_dim as u32,
++            max_encoded_bytes: MAX_ADAPTER_ENCODED_BYTES,
++            max_batch_size: 1,
++        }
++    }
++
++    fn encode_block(&self, input: &[f32]) -> Result<Self::EncodedBlock, Self::Error> {
++        self.encode_values(input)
++    }
++
++    fn decode_block(&self, block: &Self::EncodedBlock, out: &mut [f32]) -> Result<(), Self::Error> {
++        self.decode_values(block, out)
++    }
++
++    fn score_semantics(&self) -> ScoreSemantics {
++        ScoreSemantics::CosineOnDecodedF32
++    }
++}
++
++impl crate::codecs::value::ValueCodec for FibQuantValueCodec {
++    fn encode_values(&self, input: &[f32]) -> Result<Vec<u8>, PolyKvError> {
++        let encoded = self.encode_envelope(input)?;
++        let bytes = encode_kv_wire(&encoded).map_err(fib_error)?;
++        if bytes.len() as u64 > MAX_ADAPTER_ENCODED_BYTES {
++            return Err(PolyKvError::Codec(format!(
++                "fibquant payload exceeds {MAX_ADAPTER_ENCODED_BYTES} byte limit"
++            )));
++        }
++        Ok(bytes)
++    }
++
++    fn decode_values(&self, block: &[u8], out: &mut [f32]) -> Result<(), PolyKvError> {
++        let decoded = self.decode_envelope(block)?;
++        if out.len() != decoded.len() {
++            return Err(PolyKvError::Codec(format!(
++                "fibquant value decode length mismatch: out={}, decoded={}",
++                out.len(),
++                decoded.len()
++            )));
++        }
++        out.copy_from_slice(&decoded);
++        Ok(())
++    }
++
++    fn eval_values(&self, exact: &[f32], block: &[u8]) -> Result<EvalReport, PolyKvError> {
++        self.validate_input(exact)?;
++        let mut decoded = vec![0.0; exact.len()];
++        self.decode_values(block, &mut decoded)?;
++        let mut report = metrics::eval_report(
++            exact,
++            &decoded,
++            (exact.len() as u64) * 4,
++            block.len() as u64,
++            self.max_mse.unwrap_or(0.0),
++            "fibquant canonical KV envelope; fallback status remains inside the FibQuant receipt",
++        );
++        if self.max_mse.is_none() {
++            report.passed = false;
++            report
++                .notes
++                .push("fibquant quality budget is not configured".to_string());
++        }
++        Ok(report)
++    }
++}
++
++fn fib_error(error: impl std::fmt::Display) -> PolyKvError {
++    PolyKvError::Codec(error.to_string())
+ }
+diff --git a/poly-kv/crates/poly-kv/src/codecs/q8_keys.rs b/poly-kv/crates/poly-kv/src/codecs/q8_keys.rs
+index b7a363b..d0f949f 100644
+--- a/poly-kv/crates/poly-kv/src/codecs/q8_keys.rs
++++ b/poly-kv/crates/poly-kv/src/codecs/q8_keys.rs
+@@ -81,7 +81,7 @@ impl VectorCodec for Q8KeyCodec {
+     type Error = PolyKvError;
+ 
+     fn profile(&self) -> &dyn quant_codec_core::CodecProfile {
+-        unreachable!("poly-kv codecs do not implement CodecProfile")
++        self
+     }
+ 
+     fn capabilities(&self) -> quant_codec_core::CodecCapabilities {
+diff --git a/poly-kv/crates/poly-kv/src/codecs/value.rs b/poly-kv/crates/poly-kv/src/codecs/value.rs
+index e21dd40..71dec50 100644
+--- a/poly-kv/crates/poly-kv/src/codecs/value.rs
++++ b/poly-kv/crates/poly-kv/src/codecs/value.rs
+@@ -1,20 +1,15 @@
+ use crate::PolyKvError;
+ use quant_codec_core::{CodecId, CodecProfile, CodecProfileDigest, EvalReport, VectorCodec};
+ 
+-pub trait ValueCodec: CodecProfile {
+-    type EncodedValueBlock;
+-
+-    fn encode_values(&self, input: &[f32]) -> Result<Self::EncodedValueBlock, PolyKvError>;
+-    fn decode_values(
+-        &self,
+-        block: &Self::EncodedValueBlock,
+-        out: &mut [f32],
+-    ) -> Result<(), PolyKvError>;
+-    fn eval_values(
+-        &self,
+-        exact: &[f32],
+-        block: &Self::EncodedValueBlock,
+-    ) -> Result<EvalReport, PolyKvError>;
++/// Object-safe value-codec boundary used by [`crate::PoolBuilder`].
++///
++/// Encoded blocks are canonical byte strings so a non-generic shared pool can
++/// retain one codec instance and dispatch decode without backend-specific
++/// storage variants.
++pub trait ValueCodec: CodecProfile + std::fmt::Debug + Send + Sync {
++    fn encode_values(&self, input: &[f32]) -> Result<Vec<u8>, PolyKvError>;
++    fn decode_values(&self, block: &[u8], out: &mut [f32]) -> Result<(), PolyKvError>;
++    fn eval_values(&self, exact: &[f32], block: &[u8]) -> Result<EvalReport, PolyKvError>;
+ }
+ 
+ #[derive(Debug, Clone, Copy, Default)]
+@@ -33,7 +28,7 @@ impl CodecProfile for RawExactValueCodec {
+         CodecProfileDigest::from_parts(&[
+             self.codec_id().as_str().as_bytes(),
+             self.codec_version().as_bytes(),
+-            b"raw-f32",
++            b"raw-f32-le-v1",
+         ])
+     }
+ 
+@@ -51,11 +46,11 @@ impl CodecProfile for RawExactValueCodec {
+ }
+ 
+ impl VectorCodec for RawExactValueCodec {
+-    type EncodedBlock = Vec<f32>;
++    type EncodedBlock = Vec<u8>;
+     type Error = PolyKvError;
+ 
+     fn profile(&self) -> &dyn quant_codec_core::CodecProfile {
+-        unreachable!("poly-kv codecs do not implement CodecProfile")
++        self
+     }
+ 
+     fn capabilities(&self) -> quant_codec_core::CodecCapabilities {
+@@ -64,7 +59,7 @@ impl VectorCodec for RawExactValueCodec {
+             can_decode: true,
+             can_score_inner_product: false,
+             can_score_l2: false,
+-            is_lossless: false,
++            is_lossless: true,
+         }
+     }
+ 
+@@ -79,48 +74,51 @@ impl VectorCodec for RawExactValueCodec {
+     fn decode_block(&self, block: &Self::EncodedBlock, out: &mut [f32]) -> Result<(), Self::Error> {
+         self.decode_values(block, out)
+     }
++
+     fn score_semantics(&self) -> quant_codec_core::ScoreSemantics {
+         quant_codec_core::ScoreSemantics::CosineOnDecodedF32
+     }
+ }
+ 
+ impl ValueCodec for RawExactValueCodec {
+-    type EncodedValueBlock = Vec<f32>;
+-
+-    fn encode_values(&self, input: &[f32]) -> Result<Self::EncodedValueBlock, PolyKvError> {
++    fn encode_values(&self, input: &[f32]) -> Result<Vec<u8>, PolyKvError> {
+         if !input.iter().all(|v| v.is_finite()) {
+             return Err(PolyKvError::Codec(
+                 "raw exact value input contains NaN or infinite value".to_string(),
+             ));
+         }
+-        Ok(input.to_vec())
++        let capacity = input.len().checked_mul(4).ok_or_else(|| {
++            PolyKvError::Codec("raw exact value encoded length overflow".to_string())
++        })?;
++        let mut encoded = Vec::with_capacity(capacity);
++        for value in input {
++            encoded.extend_from_slice(&value.to_le_bytes());
++        }
++        Ok(encoded)
+     }
+ 
+-    fn decode_values(
+-        &self,
+-        block: &Self::EncodedValueBlock,
+-        out: &mut [f32],
+-    ) -> Result<(), PolyKvError> {
+-        if out.len() != block.len() {
++    fn decode_values(&self, block: &[u8], out: &mut [f32]) -> Result<(), PolyKvError> {
++        let expected_bytes = out.len().checked_mul(4).ok_or_else(|| {
++            PolyKvError::Codec("raw exact value decode length overflow".to_string())
++        })?;
++        if block.len() != expected_bytes {
+             return Err(PolyKvError::Codec(format!(
+-                "raw exact value decode length mismatch: out={}, block={}",
++                "raw exact value decode length mismatch: out={}, block_bytes={}",
+                 out.len(),
+                 block.len()
+             )));
+         }
+-        out.copy_from_slice(block);
++        for (destination, bytes) in out.iter_mut().zip(block.chunks_exact(4)) {
++            *destination = f32::from_le_bytes(bytes.try_into().expect("chunk length is four"));
++        }
+         Ok(())
+     }
+ 
+-    fn eval_values(
+-        &self,
+-        exact: &[f32],
+-        block: &Self::EncodedValueBlock,
+-    ) -> Result<EvalReport, PolyKvError> {
+-        if exact.len() != block.len() {
+-            return Err(PolyKvError::Codec(
+-                "raw exact eval length mismatch".to_string(),
+-            ));
++    fn eval_values(&self, exact: &[f32], block: &[u8]) -> Result<EvalReport, PolyKvError> {
++        let mut decoded = vec![0.0; exact.len()];
++        self.decode_values(block, &mut decoded)?;
++        if decoded != exact {
++            return Err(PolyKvError::Codec("raw exact eval mismatch".to_string()));
+         }
+         Ok(EvalReport::exact((exact.len() as u64) * 4))
+     }
+diff --git a/poly-kv/crates/poly-kv/src/manifest.rs b/poly-kv/crates/poly-kv/src/manifest.rs
+index 6d455f4..ea384a1 100644
+--- a/poly-kv/crates/poly-kv/src/manifest.rs
++++ b/poly-kv/crates/poly-kv/src/manifest.rs
+@@ -12,6 +12,8 @@ pub struct QualityGateResultV1 {
+     pub passed: bool,
+     pub max_key_mse: f64,
+     pub observed_key_mse: Option<f64>,
++    pub max_value_mse: f64,
++    pub observed_value_mse: Option<f64>,
+     pub notes: Vec<String>,
+ }
+ 
+@@ -21,6 +23,8 @@ impl QualityGateResultV1 {
+             passed: true,
+             max_key_mse: 0.001,
+             observed_key_mse: None,
++            max_value_mse: 0.0,
++            observed_value_mse: None,
+             notes: vec!["synthetic alpha gate".to_string()],
+         }
+     }
+diff --git a/poly-kv/crates/poly-kv/src/pool.rs b/poly-kv/crates/poly-kv/src/pool.rs
+index 9c5cdb8..509de77 100644
+--- a/poly-kv/crates/poly-kv/src/pool.rs
++++ b/poly-kv/crates/poly-kv/src/pool.rs
+@@ -25,6 +25,7 @@ pub(crate) struct SharedKvPoolInner {
+     pub build_receipt: PoolBuildReceiptV1,
+     pub fallback: ExactFallback,
+     pub encoded_blocks: Vec<EncodedPoolBlock>,
++    pub value_codec: Arc<dyn ValueCodec>,
+     pub active_readers: AtomicUsize,
+     pub active_reader_scratch_bytes: AtomicU64,
+     pub next_reader_id: AtomicU64,
+@@ -42,7 +43,7 @@ pub(crate) struct EncodedPoolBlock {
+ #[derive(Debug, Clone)]
+ pub(crate) enum EncodedBlock {
+     Q8Key(Q8KeyBlock),
+-    RawValue(Vec<f32>),
++    Value(Vec<u8>),
+ }
+ 
+ #[derive(Debug, Clone)]
+@@ -67,7 +68,7 @@ pub struct PoolBuilder {
+     policy: CompressionPolicyV1,
+     exact_fallback: Option<ExactFallback>,
+     key_codec: Q8KeyCodec,
+-    value_codec: RawExactValueCodec,
++    value_codec: Arc<dyn ValueCodec>,
+ }
+ 
+ impl Default for PoolBuilder {
+@@ -79,7 +80,7 @@ impl Default for PoolBuilder {
+             policy: CompressionPolicyV1::alpha_reference(),
+             exact_fallback: None,
+             key_codec: Q8KeyCodec::symmetric_per_block(),
+-            value_codec: RawExactValueCodec,
++            value_codec: Arc::new(RawExactValueCodec),
+         }
+     }
+ }
+@@ -165,8 +166,11 @@ impl PoolBuilder {
+         self
+     }
+ 
+-    pub fn value_codec(mut self, value: RawExactValueCodec) -> Self {
+-        self.value_codec = value;
++    pub fn value_codec<V>(mut self, value: V) -> Self
++    where
++        V: ValueCodec + 'static,
++    {
++        self.value_codec = Arc::new(value);
+         self
+     }
+ 
+@@ -195,6 +199,7 @@ impl PoolBuilder {
+         let mut manifest_blocks = Vec::with_capacity(blocks.len());
+         let mut eval_receipts = Vec::new();
+         let mut observed_key_mse = None::<f64>;
++        let mut observed_value_mse = None::<f64>;
+ 
+         for block in &blocks {
+             let exact_bytes = block.exact_bytes();
+@@ -242,7 +247,8 @@ impl PoolBuilder {
+                 KvRole::Value => {
+                     let encoded = self.value_codec.encode_values(&block.data)?;
+                     let eval = self.value_codec.eval_values(&block.data, &encoded)?;
+-                    let encoded_bytes = (encoded.len() as u64) * 4;
++                    observed_value_mse = max_optional(observed_value_mse, eval.mse);
++                    let encoded_bytes = encoded.len() as u64;
+                     let artifact_digest = digest_encoded_raw(block, &encoded);
+                     eval_receipts.push(CompressionEvalReceiptV1 {
+                         schema_version: 1,
+@@ -273,7 +279,7 @@ impl PoolBuilder {
+                     encoded_blocks.push(EncodedPoolBlock {
+                         role: block.role,
+                         layer: block.layer,
+-                        encoded: EncodedBlock::RawValue(encoded),
++                        encoded: EncodedBlock::Value(encoded),
+                         exact_len: block.data.len(),
+                         encoded_bytes,
+                     });
+@@ -283,13 +289,21 @@ impl PoolBuilder {
+ 
+         let mut quality_gate = self.policy.quality_gate.clone();
+         quality_gate.observed_key_mse = observed_key_mse;
+-        quality_gate.passed = observed_key_mse
++        quality_gate.observed_value_mse = observed_value_mse;
++        let key_passed = observed_key_mse
+             .map(|mse| mse <= quality_gate.max_key_mse)
+             .unwrap_or(false);
++        let value_passed = observed_value_mse
++            .map(|mse| mse <= quality_gate.max_value_mse)
++            .unwrap_or(false);
++        quality_gate.passed = key_passed && value_passed;
+         if !quality_gate.passed {
+             return Err(PolyKvError::QualityGateFailed(format!(
+-                "observed key mse {:?} exceeds max {}",
+-                observed_key_mse, quality_gate.max_key_mse
++                "observed key mse {:?} (max {}) or value mse {:?} (max {}) exceeds budget",
++                observed_key_mse,
++                quality_gate.max_key_mse,
++                observed_value_mse,
++                quality_gate.max_value_mse
+             )));
+         }
+ 
+@@ -305,8 +319,12 @@ impl PoolBuilder {
+             source_dtype: shape.dtype,
+             shape,
+             policy: CompressionPolicyV1 {
++                profile_digest: combined_profile_digest(&self.key_codec, self.value_codec.as_ref()),
++                key_codec_id: self.key_codec.codec_id(),
++                value_codec_id: self.value_codec.codec_id(),
++                lossy_keys: self.key_codec.is_lossy(),
++                lossy_values: self.value_codec.is_lossy(),
+                 quality_gate: quality_gate.clone(),
+-                ..self.policy
+             },
+             blocks: manifest_blocks,
+             encoded_bytes,
+@@ -339,6 +357,7 @@ impl PoolBuilder {
+                 build_receipt,
+                 fallback,
+                 encoded_blocks,
++                value_codec: Arc::clone(&self.value_codec),
+                 active_readers: AtomicUsize::new(0),
+                 active_reader_scratch_bytes: AtomicU64::new(0),
+                 next_reader_id: AtomicU64::new(1),
+@@ -388,7 +407,11 @@ pub(crate) fn decode_slice_from_inner(
+             }),
+         )
+     } else {
+-        (decode_full_block(encoded)?, encoded.encoded_bytes, None)
++        (
++            decode_full_block(inner, encoded)?,
++            encoded.encoded_bytes,
++            None,
++        )
+     };
+ 
+     let data = extract_slice(&decoded_layer, &inner.manifest.shape, &request)?;
+@@ -441,7 +464,10 @@ pub(crate) fn decode_layer_from_inner(
+     Ok(DecodedLayer { layer, key, value })
+ }
+ 
+-fn decode_full_block(block: &EncodedPoolBlock) -> Result<Vec<f32>, PolyKvError> {
++fn decode_full_block(
++    inner: &SharedKvPoolInner,
++    block: &EncodedPoolBlock,
++) -> Result<Vec<f32>, PolyKvError> {
+     match &block.encoded {
+         EncodedBlock::Q8Key(encoded) => {
+             let codec = Q8KeyCodec::symmetric_per_block();
+@@ -449,7 +475,11 @@ fn decode_full_block(block: &EncodedPoolBlock) -> Result<Vec<f32>, PolyKvError>
+             codec.decode_block(encoded, &mut out)?;
+             Ok(out)
+         }
+-        EncodedBlock::RawValue(encoded) => Ok(encoded.clone()),
++        EncodedBlock::Value(encoded) => {
++            let mut out = vec![0.0; block.exact_len];
++            inner.value_codec.decode_values(encoded, &mut out)?;
++            Ok(out)
++        }
+     }
+ }
+ 
+@@ -554,15 +584,26 @@ fn digest_encoded_q8(block: &ExactKvBlock, encoded: &Q8KeyBlock) -> ArtifactDige
+     ArtifactDigest::from_canonical_bytes(&bytes)
+ }
+ 
+-fn digest_encoded_raw(block: &ExactKvBlock, encoded: &[f32]) -> ArtifactDigest {
++fn digest_encoded_raw(block: &ExactKvBlock, encoded: &[u8]) -> ArtifactDigest {
+     let mut bytes = Vec::new();
+     bytes.extend_from_slice(block.artifact_digest().to_string().as_bytes());
+-    for value in encoded {
+-        bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+-    }
++    bytes.extend_from_slice(encoded);
+     ArtifactDigest::from_canonical_bytes(&bytes)
+ }
+ 
++fn combined_profile_digest(
++    key_codec: &Q8KeyCodec,
++    value_codec: &dyn ValueCodec,
++) -> quant_codec_core::CodecProfileDigest {
++    let key_digest = key_codec.profile_digest().to_string();
++    let value_digest = value_codec.profile_digest().to_string();
++    quant_codec_core::CodecProfileDigest::from_parts(&[
++        b"poly-kv-policy-v1",
++        key_digest.as_bytes(),
++        value_digest.as_bytes(),
++    ])
++}
++
+ fn max_optional(a: Option<f64>, b: Option<f64>) -> Option<f64> {
+     match (a, b) {
+         (Some(a), Some(b)) => Some(a.max(b)),

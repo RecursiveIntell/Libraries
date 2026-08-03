@@ -1,8 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
+    "agent-evidence-workbench",
     "agent-graph",
     "agent-graph-mcp",
+    "agent-graph-python",
     "agent-guard",
     "ai-batch-queue",
     "assurance-runtime",
@@ -30,6 +32,7 @@ members = [
     "living-memory/living-memory",
     "llm-output-parser",
     "llm-pipeline",
+    "llm-pipeline-python",
     "llm-tool-runtime",
     "mechanism-runtime",
     "ollama-vision",
@@ -51,6 +54,7 @@ members = [
     "recursive-kernel-core",
     "remote-oracle-admission",
     "semantic-memory",
+    "semantic-memory-mcp",
     "semantic-memory-forge",
     "scr-runtime-compression",
     "spec-execution",
@@ -69,8 +73,10 @@ exclude = [
     "tauri-react-hooks",
     # Demo subcrate that does not exist on disk
     "demo-tauri-libraries/src-tauri",
+    # Submodule — out of sync feature set with workspace
 ]
 default-members = [
+    "agent-evidence-workbench",
     "agent-graph",
     "ai-batch-queue",
     "assurance-runtime",
@@ -119,6 +125,7 @@ default-members = [
     "recursive-kernel-core",
     "remote-oracle-admission",
     "semantic-memory",
+    "semantic-memory-mcp",
     "semantic-memory-forge",
     "scr-runtime-compression",
     "spec-execution",

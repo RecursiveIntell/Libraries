@@ -1,0 +1,155 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/Libraries/Cargo.toml
+    Checking candle-transformers v0.10.2
+ Documenting llm-output-parser v0.2.0 (/home/sikmindz/Coding/Libraries/llm-output-parser)
+ Documenting profile-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/profile-runtime)
+ Documenting verification-adjudication v0.1.0 (/home/sikmindz/Coding/Libraries/verification-adjudication)
+ Documenting llm-pipeline v0.2.0 (/home/sikmindz/Coding/Libraries/llm-pipeline)
+ Documenting ollama-vision v0.2.0 (/home/sikmindz/Coding/Libraries/ollama-vision)
+ Documenting remote-oracle-admission v0.1.0 (/home/sikmindz/Coding/Libraries/remote-oracle-admission)
+ Documenting claim-ledger v0.2.0 (/home/sikmindz/Coding/Libraries/claim-ledger)
+ Documenting cea-sqlite v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-sqlite)
+ Documenting kernel-oracles v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-oracles)
+ Documenting cea-store v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-store)
+ Documenting kernel-execution v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-execution)
+ Documenting cea-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-core)
+ Documenting ai-batch-queue v0.2.0 (/home/sikmindz/Coding/Libraries/ai-batch-queue)
+ Documenting tauri-queue v0.3.0 (/home/sikmindz/Coding/Libraries/tauri-queue)
+ Documenting receipt-bench v0.1.0 (/home/sikmindz/Coding/Libraries/receipt-bench)
+ Documenting comfyui-rs v0.2.0 (/home/sikmindz/Coding/Libraries/comfyui-rs)
+ Documenting constraint-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/constraint-compiler)
+ Documenting verification-calibration v0.1.0 (/home/sikmindz/Coding/Libraries/verification-calibration)
+ Documenting verification-policy v0.1.0 (/home/sikmindz/Coding/Libraries/verification-policy)
+ Documenting scr-runtime-compression v0.1.0 (/home/sikmindz/Coding/Libraries/scr-runtime-compression)
+ Documenting check-runner v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner)
+ Documenting stabilizer-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/stabilizer-core)
+ Documenting fib-quant v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/fib-quant)
+ Documenting typed-patch v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/typed-patch)
+warning: unresolved link to `llm-output-parser`
+ --> llm-pipeline/src/output_parser.rs:1:38
+  |
+1 | //! Re-exports from the standalone [`llm-output-parser`] crate.
+  |                                      ^^^^^^^^^^^^^^^^^ no item named `llm-output-parser` in scope
+  |
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+  = note: `#[warn(rustdoc::broken_intra_doc_links)]` on by default
+
+ Documenting turbo-quant v0.2.3 (/home/sikmindz/Coding/Libraries/turbo-quant)
+ Documenting verification-control v0.1.0 (/home/sikmindz/Coding/Libraries/verification-control)
+ Documenting agent-graph v0.2.0 (/home/sikmindz/Coding/Libraries/agent-graph)
+ Documenting sandbox-workspace v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace)
+warning: `llm-pipeline` (lib doc) generated 1 warning
+ Documenting quant-governor v0.1.0 (/home/sikmindz/Coding/Libraries/quant-governor)
+ Documenting boundary-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/boundary-compiler)
+ Documenting quant-eval v0.1.0 (/home/sikmindz/Coding/Libraries/quant-eval)
+ Documenting bitemporal-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/bitemporal-runtime)
+ Documenting forge-policy v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/forge-policy)
+ Documenting job-queue v0.2.0 (/home/sikmindz/Coding/Libraries/job-queue)
+ Documenting llm-tool-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/llm-tool-runtime)
+warning: unresolved link to `resume_force`
+   --> agent-graph/src/graph.rs:106:15
+    |
+106 |     /// Use [`resume_force`] to skip this check.
+    |               ^^^^^^^^^^^^ no item named `resume_force` in scope
+    |
+    = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+    = note: `#[warn(rustdoc::broken_intra_doc_links)]` on by default
+
+ Documenting forge-memory-bridge v0.1.1 (/home/sikmindz/Coding/Libraries/forge-memory-bridge)
+ Documenting agent-guard v0.1.0 (/home/sikmindz/Coding/Libraries/agent-guard)
+ Documenting constitutional-memory v0.1.0 (/home/sikmindz/Coding/Libraries/constitutional-memory)
+ Documenting spec-execution v0.1.0 (/home/sikmindz/Coding/Libraries/spec-execution)
+ Documenting federated-settlement v0.1.0 (/home/sikmindz/Coding/Libraries/federated-settlement)
+ Documenting effect-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/effect-runtime)
+ Documenting semantic-memory-forge v0.1.1 (/home/sikmindz/Coding/Libraries/semantic-memory-forge)
+ Documenting discovery-portfolio v0.1.0 (/home/sikmindz/Coding/Libraries/discovery-portfolio)
+ Documenting mechanism-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/mechanism-runtime)
+warning: `agent-graph` (lib doc) generated 1 warning
+ Documenting recursive-kernel-core v0.1.0 (/home/sikmindz/Coding/Libraries/recursive-kernel-core)
+ Documenting attestation-exchange v0.1.0 (/home/sikmindz/Coding/Libraries/attestation-exchange)
+ Documenting stack-ids v0.1.1 (/home/sikmindz/Coding/Libraries/stack-ids)
+ Documenting mindstate-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/mindstate-core)
+ Documenting effect-signature v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/effect-signature)
+ Documenting assurance-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/assurance-runtime)
+ Documenting authority-delegation v0.1.0 (/home/sikmindz/Coding/Libraries/authority-delegation)
+ Documenting continuity-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/continuity-runtime)
+ Documenting check-runner-sys v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner-sys)
+    Checking semantic-memory v0.5.10 (/home/sikmindz/Coding/Libraries/semantic-memory)
+ Documenting semantic-memory v0.5.10 (/home/sikmindz/Coding/Libraries/semantic-memory)
+warning: unresolved link to `prf`
+  |
+  = note: the link appears in this line:
+          
+          Design mirrors [`crate::benchmark`]: the scoring functions ([`prf`],
+                                                                       ^^^^^
+  = note: no item named `prf` in scope
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+  = note: `#[warn(rustdoc::broken_intra_doc_links)]` on by default
+
+warning: unresolved link to `detected_conflict_pairs`
+  |
+  = note: the link appears in this line:
+          
+          [`detected_conflict_pairs`]) are pure and deterministic, separate from any
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  = note: no item named `detected_conflict_pairs` in scope
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unclosed HTML tag `artifact`
+   --> semantic-memory/src/compression_governor.rs:165:46
+    |
+165 | /// Returns a vector of (embedding_id, Option<artifact>) pairs.
+    |                                              ^^^^^^^^^^
+    |
+    = note: `#[warn(rustdoc::invalid_html_tags)]` on by default
+help: try marking as source code
+    |
+165 | /// Returns a vector of (embedding_id, `Option<artifact>`) pairs.
+    |                                        +                +
+
+warning: unclosed HTML tag `uuid`
+   --> semantic-memory/src/factor_graph.rs:179:29
+    |
+179 |     /// Node ID (e.g. "fact:<uuid>").
+    |                             ^^^^^^
+
+warning: `semantic-memory` (lib doc) generated 4 warnings
+    Checking knowledge-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/knowledge-runtime)
+    Checking forge-engine v0.2.0 (/home/sikmindz/Coding/Libraries/living-memory/living-memory)
+ Documenting knowledge-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/knowledge-runtime)
+ Documenting forge-engine v0.2.0 (/home/sikmindz/Coding/Libraries/living-memory/living-memory)
+ Documenting kernel-conformance v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-conformance)
+warning: redundant explicit link target
+ --> knowledge-runtime/src/projection/rebuild.rs:3:31
+  |
+3 | //! The [`ProjectionTracker`](super::lifecycle::ProjectionTracker) is **observability only**.
+  |          -------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+  |          |
+  |          because label contains path that resolves to same destination
+  |
+  = note: when a link's destination is not specified,
+          the label is used to resolve intra-doc links
+  = note: `#[warn(rustdoc::redundant_explicit_links)]` on by default
+help: remove explicit link target
+  |
+3 - //! The [`ProjectionTracker`](super::lifecycle::ProjectionTracker) is **observability only**.
+3 + //! The [`ProjectionTracker`] is **observability only**.
+  |
+
+warning: public documentation for `ExperimentEvidenceBundle` links to private item `LOCAL_AUTHORING_METADATA_KEY`
+   --> living-memory/living-memory/src/lab/evidence.rs:484:39
+    |
+484 | /// canonical bundle metadata under [`LOCAL_AUTHORING_METADATA_KEY`].
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this item is private
+    |
+    = note: this link will resolve properly if you pass `--document-private-items`
+    = note: `#[warn(rustdoc::private_intra_doc_links)]` on by default
+
+    Checking forge-pilot v0.1.0 (/home/sikmindz/Coding/Libraries/forge-pilot)
+ Documenting forge-pilot v0.1.0 (/home/sikmindz/Coding/Libraries/forge-pilot)
+warning: `knowledge-runtime` (lib doc) generated 1 warning
+warning: `forge-engine` (lib doc) generated 1 warning
+ Documenting contract-schema-gen v0.1.0 (/home/sikmindz/Coding/Libraries/contract-schema-gen)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 05s
+   Generated /home/sikmindz/Coding/Libraries/target/doc/agent_graph/index.html and 58 other files

@@ -11,7 +11,7 @@ use agent_graph::node::Node;
 use agent_graph::state::AgentState;
 use async_trait::async_trait;
 use llm_pipeline::payload::Payload;
-use llm_pipeline::{ExecCtx, LlmCall, LlmConfig};
+use llm_pipeline::{CostModel, ExecCtx, GenerationConstraint, LlmCall, LlmConfig, RetryConfig};
 use serde::Deserialize;
 use serde_json::{Map, Value};
 use tokio::sync::Notify;
@@ -60,6 +60,7 @@ pub struct LlmNode {
     pub id: String,
     pub base_url: String,
     pub default_model: String,
+    pub api_key: Option<String>,
     pub prompt: String,
     pub model: Option<String>,
     pub json_mode: bool,
@@ -68,6 +69,12 @@ pub struct LlmNode {
     pub timeout_ms: u64,
     pub input_key: String,
     pub output_key: String,
+    pub cost_model: Option<CostModel>,
+    pub token_budget: Option<u32>,
+    pub best_of_n: Option<u32>,
+    pub best_of_n_temperatures: Vec<f64>,
+    pub constraint_schema: Option<String>,
+    pub integrity_key: Option<Vec<u8>>,
     pub ctx: RunContext,
 }
 
@@ -87,11 +94,31 @@ impl Node for LlmNode {
         if let Some(tokens) = self.max_tokens {
             config = config.with_max_tokens(tokens as u32);
         }
-        let call = LlmCall::new(&self.id, rendered)
+        if let Some(schema) = &self.constraint_schema {
+            let schema = serde_json::from_str(schema).map_err(|e| {
+                AgentGraphError::PayloadError(format!("invalid constraint schema: {e}"))
+            })?;
+            config = config.with_constraint(GenerationConstraint::JsonSchema(schema));
+        }
+        let mut call = LlmCall::new(&self.id, rendered)
             .with_model(model)
-            .with_timeout(std::time::Duration::from_millis(self.timeout_ms))
-            .with_config(config);
-        let exec_ctx = ExecCtx::builder(&self.base_url).build();
+            .with_timeout(std::time::Duration::from_millis(self.timeout_ms));
+        if let Some(n) = self.best_of_n {
+            call = call
+                .with_retry(RetryConfig::new(0).best_of_n(n, self.best_of_n_temperatures.clone()));
+        }
+        let call = call.with_config(config);
+        let mut exec_builder = ExecCtx::builder(&self.base_url);
+        if let Some(ref key) = self.api_key {
+            exec_builder = exec_builder.openai_with_key(key);
+        }
+        if let Some(cm) = self.cost_model {
+            exec_builder = exec_builder.with_cost_model(cm);
+        }
+        if let Some(n) = self.token_budget {
+            exec_builder = exec_builder.with_token_budget(n);
+        }
+        let exec_ctx = exec_builder.build();
         let output = tokio::select! {
             result = call.invoke(&exec_ctx, input) => result
                 .map_err(|e| AgentGraphError::PayloadError(e.to_string()))?

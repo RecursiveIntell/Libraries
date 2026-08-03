@@ -1,0 +1,6 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/Libraries/Cargo.toml
+    Checking forge-pilot v0.1.0 (/home/sikmindz/Coding/Libraries/forge-pilot)
+    Checking semantic-memory v0.5.10 (/home/sikmindz/Coding/Libraries/semantic-memory)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.73s

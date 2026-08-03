@@ -57,6 +57,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .ok()
             .map(std::path::PathBuf::from)
     });
+    let checkpoint_db_path = config.checkpoint_db_path.or_else(|| {
+        std::env::var("AGENT_GRAPH_CHECKPOINT_DB_PATH")
+            .ok()
+            .map(std::path::PathBuf::from)
+    });
 
     let rt = tokio::runtime::Runtime::new()?;
     rt.block_on(async {
@@ -66,11 +71,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             None
         };
-        let server = AgentGraphServer::new(
+        let server = AgentGraphServer::new_with_checkpoint_db(
             config.base_url,
             config.default_model,
+            config.api_key,
             config.data_dir,
             integrity_key_path,
+            checkpoint_db_path,
         )
         .map_err(|e| anyhow::anyhow!(e))?;
         let service = server.serve(rmcp::transport::stdio()).await?;

@@ -54,7 +54,8 @@ pub use crate::{node, router};
 
 #[cfg(feature = "checkpointing")]
 pub use crate::checkpoint::{Checkpoint, CheckpointManager};
-pub use crate::execution_cursor::{ExecutionCursor, InterruptPhase};
-
+#[cfg(feature = "checkpointing")]
+pub use crate::checkpoint_store::SqliteCheckpointStore;
 #[cfg(feature = "checkpointing")]
 pub use crate::checkpointer::SqliteSaver;
+pub use crate::execution_cursor::{ExecutionCursor, InterruptPhase};

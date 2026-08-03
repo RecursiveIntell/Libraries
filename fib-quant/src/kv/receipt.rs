@@ -107,6 +107,36 @@ impl KvCompressionReceiptV1 {
                 "invalid kv compression receipt".into(),
             ));
         }
+        for (name, value) in [
+            ("source_digest", self.source_digest.as_str()),
+            ("profile_digest", self.profile_digest.as_str()),
+            ("shape_digest", self.shape_digest.as_str()),
+            ("codebook_digest", self.codebook_digest.as_str()),
+            ("rotation_digest", self.rotation_digest.as_str()),
+        ] {
+            if value.is_empty() {
+                return Err(FibQuantError::CorruptPayload(format!(
+                    "kv compression receipt {name} must be nonempty"
+                )));
+            }
+        }
+        if self.encoded_pages == 0 || self.page_digests.len() != self.encoded_pages as usize {
+            return Err(FibQuantError::CorruptPayload(
+                "kv compression receipt page count mismatch".into(),
+            ));
+        }
+        if self.page_digests.iter().any(String::is_empty) {
+            return Err(FibQuantError::CorruptPayload(
+                "kv compression receipt page digest must be nonempty".into(),
+            ));
+        }
+        self.compressed_blocks
+            .checked_add(self.raw_fallback_blocks)
+            .ok_or_else(|| {
+                FibQuantError::ResourceLimitExceeded(
+                    "kv compression receipt block count overflow".into(),
+                )
+            })?;
         Ok(())
     }
 }

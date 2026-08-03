@@ -43,6 +43,14 @@ pub struct BudgetDebitV1 {
 /// Provider call receipt — one per LLM call made during pipeline execution.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderCallReceiptV1 {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub integrity_tag: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub previous_receipt_digest: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traceparent: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tracestate: Option<String>,
     pub receipt_id: String,
     pub provider: String,
     pub model_route: String,
@@ -67,6 +75,20 @@ pub struct RetryDecisionReceiptV1 {
 /// Complete pipeline execution receipt.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PipelineExecutionReceiptV1 {
+    #[serde(default = "default_receipt_version")]
+    pub receipt_version: String,
+    #[serde(default = "default_crate_version")]
+    pub crate_version: String,
+    #[serde(default)]
+    pub integrity_tag: Option<String>,
+    #[serde(default)]
+    pub previous_receipt_digest: Option<String>,
+    #[serde(default)]
+    pub traceparent: Option<String>,
+    #[serde(default)]
+    pub tracestate: Option<String>,
+    #[serde(default)]
+    pub chain_valid: bool,
     pub receipt_id: String,
     pub pipeline_id: String,
     pub provider_calls: Vec<ProviderCallReceiptV1>,
@@ -75,6 +97,13 @@ pub struct PipelineExecutionReceiptV1 {
     pub response_digest: String,
     pub outcome: ExecutionOutcome,
     pub recorded_time: chrono::DateTime<chrono::Utc>,
+}
+
+fn default_receipt_version() -> String {
+    "1".to_string()
+}
+fn default_crate_version() -> String {
+    env!("CARGO_PKG_VERSION").to_string()
 }
 
 /// Input to a pipeline execution.

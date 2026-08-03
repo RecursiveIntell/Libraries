@@ -4,9 +4,12 @@
 //! cancellation handle, and optional event handler. It is designed to be
 //! constructed once and shared across all payloads in a chain or graph.
 
+#[cfg(feature = "anthropic")]
+use crate::backend::AnthropicBackend;
 #[cfg(feature = "openai")]
 use crate::backend::OpenAiBackend;
 use crate::backend::{Backend, BackoffConfig, OllamaBackend};
+use crate::cost::CostModel;
 use crate::events::EventHandler;
 use crate::limits::PipelineLimits;
 #[allow(deprecated)]
@@ -15,7 +18,7 @@ use reqwest::Client;
 use stack_ids::TraceCtx;
 use std::collections::HashMap;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
+    atomic::{AtomicBool, AtomicU32, Ordering},
     Arc,
 };
 use std::time::Duration;
@@ -70,6 +73,30 @@ pub struct ExecCtx {
     pub trace_ctx: TraceCtx,
     /// Resource limits for pipeline operations.
     pub limits: PipelineLimits,
+    /// Optional cost model for emitting `CostUpdate` events.
+    pub cost_model: Option<CostModel>,
+    /// Optional global token budget for this context.
+    pub token_budget: Option<Arc<AtomicU32>>,
+}
+
+#[allow(deprecated)]
+impl Clone for ExecCtx {
+    fn clone(&self) -> Self {
+        Self {
+            client: self.client.clone(),
+            base_url: self.base_url.clone(),
+            backend: self.backend.clone(),
+            backoff: self.backoff.clone(),
+            vars: self.vars.clone(),
+            cancellation: self.cancellation.clone(),
+            event_handler: self.event_handler.clone(),
+            trace_id: self.trace_id.clone(),
+            trace_ctx: self.trace_ctx.clone(),
+            limits: self.limits.clone(),
+            cost_model: self.cost_model,
+            token_budget: self.token_budget.clone(),
+        }
+    }
 }
 
 #[allow(deprecated)]
@@ -88,6 +115,8 @@ impl ExecCtx {
             trace_id: None,
             trace_ctx: None,
             limits: None,
+            cost_model: None,
+            token_budget: None,
         }
     }
 
@@ -142,6 +171,8 @@ pub struct ExecCtxBuilder {
     trace_id: Option<TraceId>,
     trace_ctx: Option<TraceCtx>,
     limits: Option<PipelineLimits>,
+    cost_model: Option<CostModel>,
+    token_budget: Option<Arc<AtomicU32>>,
 }
 
 #[allow(deprecated)]
@@ -175,6 +206,15 @@ impl ExecCtxBuilder {
     #[cfg(feature = "openai")]
     pub fn openai_with_key(mut self, api_key: impl Into<String>) -> Self {
         self.backend = Some(Arc::new(OpenAiBackend::new().with_api_key(api_key)));
+        self
+    }
+
+    /// Use the Anthropic Messages API backend with the given API key.
+    ///
+    /// Sets the backend to [`AnthropicBackend`] with the given `x-api-key`.
+    #[cfg(feature = "anthropic")]
+    pub fn anthropic_with_key(mut self, api_key: impl Into<String>) -> Self {
+        self.backend = Some(Arc::new(AnthropicBackend::new(api_key)));
         self
     }
 
@@ -253,6 +293,21 @@ impl ExecCtxBuilder {
         self
     }
 
+    /// Set a cost model for estimating and emitting per-call costs.
+    pub fn with_cost_model(mut self, cost_model: CostModel) -> Self {
+        self.cost_model = Some(cost_model);
+        self
+    }
+
+    /// Set a global token budget shared across all invocations using this context.
+    ///
+    /// Each successful backend call adds its reported token usage to the budget.
+    /// Exceeding the budget raises [`PipelineError::BudgetExceeded`](crate::PipelineError::BudgetExceeded).
+    pub fn with_token_budget(mut self, limit: u32) -> Self {
+        self.token_budget = Some(Arc::new(AtomicU32::new(limit)));
+        self
+    }
+
     /// Build the execution context.
     ///
     /// **Preferred**: use [`with_trace_ctx()`](Self::with_trace_ctx) to set trace identity.
@@ -275,7 +330,12 @@ impl ExecCtxBuilder {
             Client::builder()
                 .timeout(client_timeout)
                 .build()
-                .expect("Failed to build HTTP client")
+                .unwrap_or_else(|e| {
+                    // This is a best-effort fallback. Client construction only
+                    // fails for invalid TLS/config, which we cannot recover from.
+                    tracing::warn!("failed to build HTTP client with timeout: {e}");
+                    Client::new()
+                })
         });
 
         let (trace_id, trace_ctx) = match (self.trace_ctx, self.trace_id) {
@@ -308,6 +368,8 @@ impl ExecCtxBuilder {
             trace_id,
             trace_ctx,
             limits,
+            cost_model: self.cost_model,
+            token_budget: self.token_budget,
         }
     }
 }

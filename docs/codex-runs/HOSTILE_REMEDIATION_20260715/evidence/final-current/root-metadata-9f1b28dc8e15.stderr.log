@@ -1,0 +1,3 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/Libraries/Cargo.toml

@@ -1,0 +1,94 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/Libraries/Cargo.toml
+    Checking stack-ids v0.1.1 (/home/sikmindz/Coding/Libraries/stack-ids)
+   Compiling turbo-quant v0.2.3 (/home/sikmindz/Coding/Libraries/turbo-quant)
+    Checking fib-quant v0.1.0-alpha.1 (/home/sikmindz/Coding/Libraries/fib-quant)
+    Checking quant-governor v0.1.0 (/home/sikmindz/Coding/Libraries/quant-governor)
+   Compiling semantic-memory v0.5.10 (/home/sikmindz/Coding/Libraries/semantic-memory)
+    Checking bitemporal-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/bitemporal-runtime)
+    Checking boundary-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/boundary-compiler)
+    Checking forge-policy v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/forge-policy)
+    Checking effect-signature v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/effect-signature)
+    Checking check-runner-sys v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner-sys)
+    Checking claim-ledger v0.2.0 (/home/sikmindz/Coding/Libraries/claim-ledger)
+    Checking mindstate-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/mindstate-core)
+    Checking assurance-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/assurance-runtime)
+    Checking authority-delegation v0.1.0 (/home/sikmindz/Coding/Libraries/authority-delegation)
+    Checking continuity-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/continuity-runtime)
+    Checking llm-output-parser v0.2.0 (/home/sikmindz/Coding/Libraries/llm-output-parser)
+    Checking quant-eval v0.1.0 (/home/sikmindz/Coding/Libraries/quant-eval)
+    Checking receipt-bench v0.1.0 (/home/sikmindz/Coding/Libraries/receipt-bench)
+    Checking sandbox-workspace v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace)
+    Checking typed-patch v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/typed-patch)
+    Checking check-runner v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner)
+    Checking ollama-vision v0.2.0 (/home/sikmindz/Coding/Libraries/ollama-vision)
+    Checking cea-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-core)
+    Checking stabilizer-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/stabilizer-core)
+    Checking agent-guard v0.1.0 (/home/sikmindz/Coding/Libraries/agent-guard)
+    Checking cea-store v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-store)
+    Checking cea-sqlite v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-sqlite)
+    Checking scr-runtime-compression v0.1.0 (/home/sikmindz/Coding/Libraries/scr-runtime-compression)
+    Checking semantic-memory-forge v0.1.1 (/home/sikmindz/Coding/Libraries/semantic-memory-forge)
+    Checking recursive-kernel-core v0.1.0 (/home/sikmindz/Coding/Libraries/recursive-kernel-core)
+    Checking attestation-exchange v0.1.0 (/home/sikmindz/Coding/Libraries/attestation-exchange)
+    Checking effect-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/effect-runtime)
+    Checking mechanism-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/mechanism-runtime)
+    Checking constitutional-memory v0.1.0 (/home/sikmindz/Coding/Libraries/constitutional-memory)
+    Checking agent-graph v0.2.0 (/home/sikmindz/Coding/Libraries/agent-graph)
+    Checking federated-settlement v0.1.0 (/home/sikmindz/Coding/Libraries/federated-settlement)
+    Checking discovery-portfolio v0.1.0 (/home/sikmindz/Coding/Libraries/discovery-portfolio)
+    Checking spec-execution v0.1.0 (/home/sikmindz/Coding/Libraries/spec-execution)
+    Checking job-queue v0.2.0 (/home/sikmindz/Coding/Libraries/job-queue)
+    Checking ai-batch-queue v0.2.0 (/home/sikmindz/Coding/Libraries/ai-batch-queue)
+    Checking comfyui-rs v0.2.0 (/home/sikmindz/Coding/Libraries/comfyui-rs)
+    Checking remote-oracle-admission v0.1.0 (/home/sikmindz/Coding/Libraries/remote-oracle-admission)
+    Checking tauri-queue v0.3.0 (/home/sikmindz/Coding/Libraries/tauri-queue)
+    Checking forge-memory-bridge v0.1.1 (/home/sikmindz/Coding/Libraries/forge-memory-bridge)
+    Checking llm-tool-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/llm-tool-runtime)
+    Checking constraint-compiler v0.1.0 (/home/sikmindz/Coding/Libraries/constraint-compiler)
+    Checking verification-control v0.1.0 (/home/sikmindz/Coding/Libraries/verification-control)
+    Checking llm-pipeline v0.2.0 (/home/sikmindz/Coding/Libraries/llm-pipeline)
+    Checking kernel-execution v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-execution)
+    Checking kernel-oracles v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-oracles)
+error: used `expect()` on a `Result` value
+   --> llm-pipeline/src/exec_ctx.rs:275:13
+    |
+275 | /             Client::builder()
+276 | |                 .timeout(client_timeout)
+277 | |                 .build()
+278 | |                 .expect("Failed to build HTTP client")
+    | |______________________________________________________^
+    |
+    = note: if this value is an `Err`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#expect_used
+    = note: `-D clippy::expect-used` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::expect_used)]`
+
+error: could not compile `llm-pipeline` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: enclosing `Ok` and `?` operator are unneeded
+   --> semantic-memory/src/projection_import.rs:377:5
+    |
+377 | /     Ok(rows
+378 | |         .into_iter()
+379 | |         .map(
+380 | |             |(
+...   |
+411 | |         .collect::<Result<Vec<_>, _>>()?)
+    | |_________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#needless_question_mark
+    = note: `-D clippy::needless-question-mark` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_question_mark)]`
+help: remove the enclosing `Ok` and `?` operator
+    |
+377 ~     rows
+378 |         .into_iter()
+...
+410 |         )
+411 ~         .collect::<Result<Vec<_>, _>>()
+    |
+
+error: could not compile `semantic-memory` (lib) due to 1 previous error
+error: could not compile `semantic-memory` (lib test) due to 1 previous error

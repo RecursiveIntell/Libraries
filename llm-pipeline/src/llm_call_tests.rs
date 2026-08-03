@@ -1,5 +1,8 @@
 use super::*;
-use crate::backend::{Backend, MockBackend, Role};
+use crate::backend::{Backend, MockBackend, ProviderMeta, Role};
+use crate::constraints::GenerationConstraint;
+use crate::cost::CostModel;
+use crate::events::{Event, FnEventHandler};
 use async_trait::async_trait;
 use reqwest::Client;
 use std::time::Duration;
@@ -27,6 +30,11 @@ impl Backend for SlowBackend {
             text: self.response.clone(),
             status: 200,
             metadata: None,
+            provider_meta: ProviderMeta::default(),
+            token_usage: None,
+            finish_reason: None,
+            ttft_ms: None,
+            cache_hit: false,
         })
     }
 
@@ -43,6 +51,11 @@ impl Backend for SlowBackend {
             text: self.response.clone(),
             status: 200,
             metadata: None,
+            provider_meta: ProviderMeta::default(),
+            token_usage: None,
+            finish_reason: None,
+            ttft_ms: None,
+            cache_hit: false,
         })
     }
 
@@ -203,12 +216,14 @@ fn test_build_request() {
         .with_model("gpt-4o")
         .with_config(LlmConfig::default().with_json_mode(true));
 
+    let ctx = ExecCtx::builder("http://localhost").build();
     let request = call.build_request(
         "Tell me about Rust",
         Some("You are helpful"),
         Vec::new(),
         false,
         Duration::from_secs(30),
+        &ctx,
     );
 
     assert_eq!(request.model, "gpt-4o");
@@ -231,7 +246,15 @@ fn test_build_request_with_messages() {
             content: "4".into(),
         },
     ];
-    let request = call.build_request("Follow up", None, messages, false, Duration::from_secs(30));
+    let ctx = ExecCtx::builder("http://localhost").build();
+    let request = call.build_request(
+        "Follow up",
+        None,
+        messages,
+        false,
+        Duration::from_secs(30),
+        &ctx,
+    );
     assert_eq!(request.messages.len(), 2);
 }
 
@@ -538,6 +561,54 @@ fn test_transport_retry_populates_diagnostics() {
 }
 
 #[test]
+fn test_preflight_rejects_unsupported_constraint() {
+    let ctx = ExecCtx::builder("http://localhost:11434").build();
+    let request = LlmRequest {
+        model: "llama3.2".into(),
+        prompt: "hi".into(),
+        system_prompt: None,
+        messages: vec![],
+        config: LlmConfig::default(),
+        max_tokens_limit: None,
+        stream: false,
+        request_timeout: Some(Duration::from_secs(30)),
+        constraint: GenerationConstraint::Regex("^hello$".into()),
+    };
+
+    let err = LlmCall::preflight_constraint(&ctx, &request)
+        .expect_err("regex should be unsupported on ollama");
+    assert!(matches!(
+        err,
+        crate::PipelineError::UnsupportedConstraint { .. }
+    ));
+}
+
+#[tokio::test]
+async fn test_cost_update_event_emitted() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    let cost = Arc::new(AtomicUsize::new(0));
+    let cost_for_handler = Arc::clone(&cost);
+    let handler = FnEventHandler(move |event: Event| {
+        if let Event::CostUpdate { estimated_cost, .. } = event {
+            cost_for_handler.store((estimated_cost * 1_000_000.0) as usize, Ordering::SeqCst);
+        }
+    });
+
+    let ctx = ExecCtx::builder("http://localhost:11434")
+        .backend(Arc::new(MockBackend::fixed("hello world")))
+        .with_cost_model(CostModel::new(0.5, 1.5, 0.25))
+        .event_handler(Arc::new(handler))
+        .build();
+
+    let call = LlmCall::new("cost-test", "{input}");
+    let _output = call.invoke(&ctx, Value::String("hi".into())).await.unwrap();
+
+    // MockBackend doesn't report token usage, so no event should fire.
+    assert_eq!(cost.load(Ordering::SeqCst), 0);
+}
+
+#[test]
 fn test_llm_call_accessors() {
     let call = LlmCall::new("test", "Hello {input}")
         .with_model("llama3.2:3b")
@@ -550,4 +621,108 @@ fn test_llm_call_accessors() {
     assert_eq!(call.prompt_template(), "Hello {input}");
     assert!(call.system_template().is_none());
     assert!(call.retry().is_none());
+}
+
+// --- Token-budget and BestOfN tests ---
+
+#[tokio::test]
+async fn test_token_budget_enforced_on_successful_call() {
+    let ctx = ExecCtx::builder("http://localhost:11434")
+        .backend(Arc::new(MockBackend::with_usage("hello", 10)))
+        .with_token_budget(5)
+        .build();
+
+    let call = LlmCall::new("budget-test", "{input}");
+    let err = call
+        .invoke(&ctx, Value::String("hi".into()))
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        crate::PipelineError::BudgetExceeded { used: 10, limit: 5 }
+    ));
+}
+
+#[tokio::test]
+async fn test_token_budget_passes_when_under_budget() {
+    let ctx = ExecCtx::builder("http://localhost:11434")
+        .backend(Arc::new(MockBackend::with_usage("hello", 3)))
+        .with_token_budget(10)
+        .build();
+
+    let call = LlmCall::new("budget-test", "{input}");
+    let output = call.invoke(&ctx, Value::String("hi".into())).await.unwrap();
+    assert_eq!(output.raw_response, "hello");
+}
+
+#[tokio::test]
+async fn test_best_of_n_picks_successful_parse() {
+    use crate::retry::{BestOfNExhaustion, RetryConfig, RetryStrategy};
+
+    // First two responses are invalid JSON, third is valid.
+    let ctx = ExecCtx::builder("http://localhost:11434")
+        .backend(Arc::new(MockBackend::new(vec![
+            "not json".into(),
+            "also not json".into(),
+            r#"{"key": "value"}"#.into(),
+        ])))
+        .build();
+
+    let call = LlmCall::new("bon-test", "{input}")
+        .expecting_json()
+        .with_retry(
+            RetryConfig::new(0)
+                .best_of_n(3, vec![0.7, 0.5, 0.3])
+                .with_best_of_n_exhaustion(BestOfNExhaustion::ReturnError),
+        );
+
+    let output = call.invoke(&ctx, Value::String("hi".into())).await.unwrap();
+    assert_eq!(output.value, json!({"key": "value"}));
+}
+
+#[tokio::test]
+async fn test_best_of_n_exhaustion_returns_error() {
+    use crate::retry::{BestOfNExhaustion, RetryConfig};
+
+    let ctx = ExecCtx::builder("http://localhost:11434")
+        .backend(Arc::new(MockBackend::fixed("not json")))
+        .build();
+
+    let call = LlmCall::new("bon-exhaust", "{input}")
+        .expecting_json()
+        .with_retry(
+            RetryConfig::new(0)
+                .best_of_n(2, vec![0.7, 0.5])
+                .with_best_of_n_exhaustion(BestOfNExhaustion::ReturnError),
+        );
+
+    let err = call
+        .invoke(&ctx, Value::String("hi".into()))
+        .await
+        .unwrap_err();
+    assert!(matches!(err, crate::PipelineError::Other(_)));
+}
+
+#[tokio::test]
+async fn test_best_of_n_falls_back_to_sequential() {
+    use crate::retry::{BestOfNExhaustion, RetryConfig};
+
+    let ctx = ExecCtx::builder("http://localhost:11434")
+        .backend(Arc::new(MockBackend::new(vec![
+            "bad".into(),
+            "bad".into(),
+            r#"{"ok": true}"#.into(),
+        ])))
+        .build();
+
+    let call = LlmCall::new("bon-fallback", "{input}")
+        .expecting_json()
+        .with_retry(
+            RetryConfig::new(2)
+                .best_of_n(2, vec![0.7, 0.5])
+                .with_best_of_n_exhaustion(BestOfNExhaustion::SequentialFallback),
+        );
+
+    let output = call.invoke(&ctx, Value::String("hi".into())).await.unwrap();
+    assert_eq!(output.value, json!({"ok": true}));
 }

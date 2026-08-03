@@ -145,6 +145,7 @@ pub struct BudgetCounters {
 pub struct RunManager {
     inner: Arc<Mutex<Inner>>,
     counter: Arc<AtomicU64>,
+    checkpoint_store: Option<Arc<dyn agent_graph::checkpoint_store::CheckpointStore>>,
 }
 struct Inner {
     runs: HashMap<String, RunRecord>,
@@ -161,11 +162,20 @@ impl Default for RunManager {
                 reserved_async_slots: 0,
             })),
             counter: Arc::new(AtomicU64::new(1)),
+            checkpoint_store: None,
         }
     }
 }
 
 impl RunManager {
+    pub fn with_checkpoint_store(
+        mut self,
+        store: Option<Arc<dyn agent_graph::checkpoint_store::CheckpointStore>>,
+    ) -> Self {
+        self.checkpoint_store = store;
+        self
+    }
+
     pub fn allocate(
         &self,
         graph_id: &str,
@@ -369,8 +379,9 @@ impl RunManager {
         spec: GraphSpec,
         base_url: String,
         default_model: String,
+        api_key: Option<String>,
     ) -> Result<Value, String> {
-        self.execute_with_store(run_id, spec, base_url, default_model, None)
+        self.execute_with_store(run_id, spec, base_url, default_model, api_key, None)
     }
 
     pub fn execute_with_store(
@@ -379,6 +390,7 @@ impl RunManager {
         spec: GraphSpec,
         base_url: String,
         default_model: String,
+        api_key: Option<String>,
         store: Option<PersistentStore>,
     ) -> Result<Value, String> {
         self.execute_with_store_options(
@@ -386,6 +398,7 @@ impl RunManager {
             spec,
             base_url,
             default_model,
+            api_key,
             store,
             None,
             BudgetCounters::default(),
@@ -398,6 +411,7 @@ impl RunManager {
         spec: GraphSpec,
         base_url: String,
         default_model: String,
+        api_key: Option<String>,
         store: Option<PersistentStore>,
         initial_state: Option<Value>,
         initial_counters: BudgetCounters,
@@ -437,9 +451,11 @@ impl RunManager {
             CompileContext {
                 base_url,
                 default_model,
+                api_key,
                 cancelled: cancelled.clone(),
                 cancellation: cancellation.clone(),
                 events: events.clone(),
+                checkpoint_store: self.checkpoint_store.clone(),
             },
         )?;
         let starting_state = initial_state
@@ -712,7 +728,7 @@ impl RunManager {
     ) where
         F: FnOnce(RunRecord) + Send + 'static,
     {
-        self.start_with_completion_with_store(run_id, spec, base_url, model, None, on_completion);
+        self.start_with_completion_with_store(run_id, spec, base_url, model, None, None, on_completion);
     }
 
     pub fn start_with_completion_with_store<F>(
@@ -721,6 +737,7 @@ impl RunManager {
         spec: GraphSpec,
         base_url: String,
         model: String,
+        api_key: Option<String>,
         store: Option<PersistentStore>,
         on_completion: F,
     ) where
@@ -728,7 +745,7 @@ impl RunManager {
     {
         let manager = self.clone();
         std::thread::spawn(move || {
-            if let Err(error) = manager.execute_with_store(&run_id, spec, base_url, model, store) {
+            if let Err(error) = manager.execute_with_store(&run_id, spec, base_url, model, api_key, store) {
                 let _ = manager.update(&run_id, |r| {
                     r.status = "failed".into();
                     r.success = Some(false);
@@ -747,6 +764,7 @@ impl RunManager {
         spec: GraphSpec,
         base_url: String,
         model: String,
+        api_key: Option<String>,
         store: Option<PersistentStore>,
         on_completion: F,
     ) where
@@ -759,6 +777,7 @@ impl RunManager {
                 spec,
                 base_url,
                 model,
+                api_key,
                 store,
                 None,
                 BudgetCounters::default(),

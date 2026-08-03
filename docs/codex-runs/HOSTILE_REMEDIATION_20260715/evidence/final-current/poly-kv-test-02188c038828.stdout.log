@@ -1,0 +1,78 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test build_receipt_is_deterministic_for_reordered_input ... ok
+test build_receipt_is_deterministic_for_same_fixture ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test memory_accounting_reader_attach_does_not_duplicate_encoded_pool_bytes ... ok
+test memory_accounting_tracks_mixed_reader_scratch_budgets ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test manifest_memory_uses_canonical_serialized_length ... ok
+test manifests_and_receipts_roundtrip_through_serde ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test mismatched_shape_is_rejected ... ok
+test malformed_token_span_is_rejected ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test synthetic_q8_key_drift_is_bounded_and_finite ... ok
+test builder_can_derive_exact_fallback_from_input_blocks ... ok
+test synthetic_decode_layer_returns_key_and_value ... ok
+test synthetic_exact_fallback_roundtrip ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Testing synthetic_pool_build_mha
+Success
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test digest_is_stable_for_canonical_bytes ... ok
+test trait_mock_compiles ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test serde_roundtrips_public_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test shape_v2_accepts_mha_mqa_and_gqa_contracts ... ok
+test rejects_out_of_bounds_slice_request ... ok
+test shape_v2_rejects_invalid_attention_contracts ... ok
+test shape_v2_unsupported_attention_fails_closed ... ok
+test validates_shape_and_spans ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

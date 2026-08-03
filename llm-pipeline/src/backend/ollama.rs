@@ -6,8 +6,10 @@
 //!
 //! This is the default backend and preserves all existing behavior.
 
-use super::{Backend, LlmRequest, LlmResponse, Role};
+use super::{Backend, LlmRequest, LlmResponse, ProviderMeta, Role};
+use crate::constraints::GenerationConstraint;
 use crate::error::Result;
+use crate::payload::TokenUsage;
 use crate::streaming::StreamingDecoder;
 use crate::PipelineError;
 use async_trait::async_trait;
@@ -36,10 +38,13 @@ pub struct OllamaBackend;
 
 impl OllamaBackend {
     /// Build the Ollama `options` object from the LlmConfig.
-    fn build_options(request: &LlmRequest) -> Value {
+    fn build_options(request: &LlmRequest, max_tokens_limit: Option<u32>) -> Value {
+        let num_predict = max_tokens_limit
+            .map(|limit| request.config.max_tokens.min(limit))
+            .unwrap_or(request.config.max_tokens);
         let mut opts = json!({
             "temperature": request.config.temperature,
-            "num_predict": request.config.max_tokens,
+            "num_predict": num_predict,
         });
         if request.config.thinking {
             opts["extended_thinking"] = json!(true);
@@ -52,6 +57,24 @@ impl OllamaBackend {
             }
         }
         opts
+    }
+
+    /// Apply a structured generation constraint to an Ollama body.
+    fn apply_constraint(body: &mut Value, constraint: &GenerationConstraint) {
+        match constraint {
+            GenerationConstraint::None => {}
+            GenerationConstraint::JsonSchema(schema) => {
+                body["format"] = schema.clone();
+            }
+            GenerationConstraint::Grammar(grammar) => {
+                body["format"] = json!("grammar");
+                body["grammar"] = json!(grammar);
+            }
+            GenerationConstraint::Regex(regex) => {
+                body["format"] = json!("regex");
+                body["regex"] = json!(regex);
+            }
+        }
     }
 
     /// Whether this request should use `/api/chat` (vs `/api/generate`).
@@ -69,11 +92,12 @@ impl OllamaBackend {
             "model": request.model,
             "prompt": request.prompt,
             "stream": stream,
-            "options": Self::build_options(request),
+            "options": Self::build_options(request, None),
         });
         if request.config.json_mode {
             body["format"] = json!("json");
         }
+        Self::apply_constraint(&mut body, &request.constraint);
         body
     }
 
@@ -108,11 +132,12 @@ impl OllamaBackend {
             "model": request.model,
             "messages": messages,
             "stream": stream,
-            "options": Self::build_options(request),
+            "options": Self::build_options(request, None),
         });
         if request.config.json_mode {
             body["format"] = json!("json");
         }
+        Self::apply_constraint(&mut body, &request.constraint);
         body
     }
 
@@ -188,6 +213,36 @@ impl OllamaBackend {
             Some(Value::Object(meta))
         }
     }
+
+    /// Extract normalized token usage from an Ollama response.
+    fn extract_token_usage(json_resp: &Value) -> Option<TokenUsage> {
+        let prompt_tokens = json_resp
+            .get("prompt_eval_count")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0) as u32;
+        let completion_tokens = json_resp
+            .get("eval_count")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0) as u32;
+        if prompt_tokens == 0 && completion_tokens == 0 {
+            return None;
+        }
+        Some(TokenUsage {
+            prompt_tokens,
+            completion_tokens,
+            total_tokens: prompt_tokens + completion_tokens,
+            cache_read_tokens: None,
+            cache_write_tokens: None,
+        })
+    }
+
+    /// Extract finish reason from an Ollama response, if reported.
+    fn extract_finish_reason(json_resp: &Value) -> Option<String> {
+        json_resp
+            .get("done_reason")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+    }
 }
 
 #[async_trait]
@@ -218,6 +273,11 @@ impl Backend for OllamaBackend {
                 text,
                 status,
                 metadata: Self::extract_metadata(&json_resp),
+                provider_meta: ProviderMeta::default(),
+                token_usage: Self::extract_token_usage(&json_resp),
+                finish_reason: Self::extract_finish_reason(&json_resp),
+                ttft_ms: None,
+                cache_hit: false,
             })
         } else {
             // Generate endpoint
@@ -236,6 +296,11 @@ impl Backend for OllamaBackend {
                 text,
                 status,
                 metadata: Self::extract_metadata(&json_resp),
+                provider_meta: ProviderMeta::default(),
+                token_usage: Self::extract_token_usage(&json_resp),
+                finish_reason: Self::extract_finish_reason(&json_resp),
+                ttft_ms: None,
+                cache_hit: false,
             })
         }
     }
@@ -335,10 +400,18 @@ impl Backend for OllamaBackend {
             }
         }
 
+        let usage_metadata = last_metadata.clone();
         Ok(LlmResponse {
             text: accumulated,
             status,
             metadata: last_metadata,
+            provider_meta: ProviderMeta::default(),
+            token_usage: usage_metadata.as_ref().and_then(Self::extract_token_usage),
+            finish_reason: usage_metadata
+                .as_ref()
+                .and_then(Self::extract_finish_reason),
+            ttft_ms: None,
+            cache_hit: false,
         })
     }
 
@@ -360,6 +433,8 @@ mod tests {
             prompt: "Why is the sky blue?".into(),
             messages: Vec::new(),
             config: LlmConfig::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: false,
             request_timeout: None,
         }

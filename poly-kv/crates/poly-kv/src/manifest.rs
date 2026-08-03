@@ -12,6 +12,8 @@ pub struct QualityGateResultV1 {
     pub passed: bool,
     pub max_key_mse: f64,
     pub observed_key_mse: Option<f64>,
+    pub max_value_mse: f64,
+    pub observed_value_mse: Option<f64>,
     pub notes: Vec<String>,
 }
 
@@ -21,6 +23,8 @@ impl QualityGateResultV1 {
             passed: true,
             max_key_mse: 0.001,
             observed_key_mse: None,
+            max_value_mse: 0.0,
+            observed_value_mse: None,
             notes: vec!["synthetic alpha gate".to_string()],
         }
     }

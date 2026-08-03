@@ -33,6 +33,7 @@ kv = []
 
 [dependencies]
 blake3 = "1.8.3"
+bincode = "1.3.3"
 half = "2"
 nalgebra = { version = "0.33", features = ["serde-serialize"] }
 rand = "0.8"

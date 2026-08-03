@@ -1,0 +1,12 @@
+    Checking check-runner-sys v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner-sys)
+    Checking forge-policy v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/forge-policy)
+    Checking effect-signature v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/effect-signature)
+    Checking mindstate-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/mindstate-core)
+    Checking sandbox-workspace v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace)
+    Checking typed-patch v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/typed-patch)
+    Checking check-runner v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/check-runner)
+    Checking cea-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-core)
+    Checking stabilizer-core v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/stabilizer-core)
+    Checking cea-store v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-store)
+    Checking cea-sqlite v0.1.0 (/home/sikmindz/Coding/Libraries/Primitives/cea-sqlite)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.81s

@@ -24,6 +24,10 @@ use stack_ids::{AttemptId, TrialId};
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct ParseDiagnostics {
+    pub parser_duration_us: u64,
+    pub confidence: Option<f64>,
+    pub parallel_attempts: u32,
+    pub winning_temperature: Option<f64>,
     /// Which parse strategy ultimately produced the Value.
     /// e.g. `"lossy"`, `"json"`, `"string_list"`, `"xml_tag"`, `"custom"`.
     pub strategy: Option<&'static str>,
@@ -76,6 +80,15 @@ pub struct ParseDiagnostics {
 }
 
 impl ParseDiagnostics {
+    pub fn compute_confidence(&mut self) -> f64 {
+        let score = (1.0
+            - if self.repaired { 0.3 } else { 0.0 }
+            - if self.auto_completed { 0.2 } else { 0.0 }
+            - self.parser_strategies.len().saturating_sub(1) as f64 * 0.1)
+            .clamp(0.0, 1.0);
+        self.confidence = Some(score);
+        score
+    }
     /// Quick check: did parsing succeed?
     pub fn ok(&self) -> bool {
         self.parse_error.is_none()

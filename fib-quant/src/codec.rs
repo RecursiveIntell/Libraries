@@ -79,6 +79,11 @@ impl FibQuantizer {
         &self.codebook
     }
 
+    /// Access the rotation.
+    pub fn rotation(&self) -> &StoredRotation {
+        &self.rotation
+    }
+
     /// Encode a vector into a fixed-rate artifact.
     pub fn encode(&self, x: &[f32]) -> Result<FibCodeV1> {
         let d = self.profile.ambient_dim as usize;

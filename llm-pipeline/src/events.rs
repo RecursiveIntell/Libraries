@@ -76,6 +76,17 @@ pub enum Event {
         /// Reason for the retry (error description).
         reason: String,
     },
+    /// Estimated monetary cost update for a completed LLM call.
+    CostUpdate {
+        /// Instance name of the payload.
+        name: String,
+        /// Estimated cost in the smallest currency unit (e.g. USD).
+        estimated_cost: f64,
+        /// Currency code, typically `"USD"`.
+        currency: String,
+        /// Token usage that produced this cost.
+        token_usage: crate::payload::TokenUsage,
+    },
 }
 
 /// Handler for payload lifecycle events.

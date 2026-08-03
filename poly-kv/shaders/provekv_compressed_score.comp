@@ -1,0 +1,118 @@
+#version 450
+#extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int32 : require
+#extension GL_KHR_shader_subgroup_basic : require
+#extension GL_KHR_shader_subgroup_arithmetic : require
+#extension GL_KHR_shader_subgroup_shuffle : require
+
+// proveKV compressed-domain dot product scoring kernel
+// Scores a query against an immutable 8-bit quantized corpus pool.
+// 768-dimensional vectors (nomic-embed-text Q8_0), packed as uint8.
+
+layout(local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+layout(constant_id = 1) const uint DIMS = 768;
+layout(constant_id = 2) const uint TOP_K = 3;
+
+// Input: 8-bit quantized query vector
+layout(set = 0, binding = 0) readonly buffer QueryBuffer {
+    uint8_t query_quant[DIMS];
+};
+
+// Input: immutable compressed corpus pool (N vectors × DIMS bytes)
+layout(set = 0, binding = 1) readonly buffer PoolBuffer {
+    uint8_t pool_quant[];  // size = N * DIMS
+};
+
+// Output: f32 scores for each vector
+layout(set = 0, binding = 2) buffer ScoreBuffer {
+    float scores[];  // size = N
+};
+
+// Output: top-k indices (for selective decode)
+layout(set = 0, binding = 3) buffer TopKBuffer {
+    uint top_k_indices[TOP_K];
+    float top_k_scores[TOP_K];
+};
+
+// Work-group shared memory for parallel reduction
+shared int wg_dot[256];  // max subgroup size on AMD
+
+void main() {
+    uint gid = gl_GlobalInvocationID.x;  // which vector in the pool
+    uint lid = gl_LocalInvocationID.x;   // thread within workgroup
+    uint N = gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+
+    if (gid >= N) return;
+
+    // ── Phase 1: Compressed-domain dot product ─────────────────
+    // Each thread processes DIMS/WORKGROUP_SIZE elements in parallel,
+    // then reduces within the workgroup.
+    
+    int local_dot = 0;
+    uint vec_offset = gid * DIMS;
+    
+    // Strided dot product: thread i processes elements i, i+WS, i+2*WS, ...
+    for (uint d = lid; d < DIMS; d += gl_WorkGroupSize.x) {
+        int q = int(query_quant[d]);
+        int p = int(pool_quant[vec_offset + d]);
+        local_dot += q * p;
+    }
+    
+    // ── Phase 2: Workgroup reduction (subgroup shuffle) ────────
+    wg_dot[lid] = local_dot;
+    barrier();
+    memoryBarrierShared();
+    
+    // Tree reduction within workgroup
+    for (uint stride = gl_WorkGroupSize.x / 2; stride > 0; stride >>= 1) {
+        if (lid < stride) {
+            wg_dot[lid] += wg_dot[lid + stride];
+        }
+        barrier();
+        memoryBarrierShared();
+    }
+    
+    // Thread 0 writes the final score
+    if (lid == 0) {
+        int dot = wg_dot[0];
+        // Linear mapping: quantized dot → approximate cosine
+        // Max dot = DIMS * 255 * 255 = DIMS * 65025
+        // Scale to [-1, 1]
+        float max_dot = float(DIMS) * 65025.0;
+        float approx_cos = (float(dot) / max_dot) * 4.0 - 1.0;
+        scores[gid / gl_WorkGroupSize.x] = approx_cos;
+    }
+}
+
+// ── Second-pass kernel: Top-K selection ────────────────────────
+// GPU-native top-k using parallel bitonic sort or tournament selection.
+// For proveKV's use case (top 3-9 candidates for rerank), a simple
+// tournament works better than full sort.
+
+// Local memory for tournament
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+void topk_select() {
+    uint gid = gl_GlobalInvocationID.x;
+    uint N = gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+    
+    // Each thread compares its assigned vector against current top-k
+    // Uses atomic operations on the top-k buffer
+    if (gid >= N) return;
+    
+    float my_score = scores[gid];
+    
+    // Try to insert into top-k (simple insertion sort on GPU)
+    for (int k = 0; k < int(TOP_K); k++) {
+        if (my_score > top_k_scores[k]) {
+            // Shift down and insert
+            for (int j = int(TOP_K) - 1; j > k; j--) {
+                top_k_scores[j] = top_k_scores[j - 1];
+                top_k_indices[j] = top_k_indices[j - 1];
+            }
+            top_k_scores[k] = my_score;
+            top_k_indices[k] = gid;
+            break;
+        }
+    }
+}

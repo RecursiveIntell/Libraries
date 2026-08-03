@@ -1,0 +1,24 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml
+workspace: /home/sikmindz/Coding/Libraries/Cargo.toml
+   Compiling semantic-memory v0.5.10 (/home/sikmindz/Coding/Libraries/semantic-memory)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.81s
+     Running unittests src/lib.rs (target/debug/deps/semantic_memory-fd0707a357e6cb42)
+     Running tests/brute_force_parity.rs (target/debug/deps/brute_force_parity-fad049ecfb7bcb19)
+     Running tests/chunk_manifest_ingest.rs (target/debug/deps/chunk_manifest_ingest-331faa89da9b9f22)
+     Running tests/chunker_tests.rs (target/debug/deps/chunker_tests-bf73ae11688df351)
+     Running tests/compaction.rs (target/debug/deps/compaction-448bf73315ddbcb9)
+     Running tests/concurrent_access.rs (target/debug/deps/concurrent_access-06d7254e7e2e2b09)
+     Running tests/conversation_search_tests.rs (target/debug/deps/conversation_search_tests-1469e2344fb3dbe1)
+     Running tests/conversation_tests.rs (target/debug/deps/conversation_tests-55e4073d789952e2)
+     Running tests/db_tests.rs (target/debug/deps/db_tests-e9f47d94e083b816)
+     Running tests/embedding_purpose.rs (target/debug/deps/embedding_purpose-204f8d52190fd60b)
+     Running tests/episode_identity.rs (target/debug/deps/episode_identity-262f6d26b0883c79)
+     Running tests/hardening_semantics.rs (target/debug/deps/hardening_semantics-25228333136e1525)
+     Running tests/hardening_v5.rs (target/debug/deps/hardening_v5-b98b113ba1c6944a)
+     Running tests/hnsw_hotswap.rs (target/debug/deps/hnsw_hotswap-5798642112346d14)
+     Running tests/hnsw_integration.rs (target/debug/deps/hnsw_integration-b4cf8c5e452f46fa)
+     Running tests/hnsw_persistence.rs (target/debug/deps/hnsw_persistence-1a90a80919fa2c40)
+     Running tests/hostile_benchmark_receipt.rs (target/debug/deps/hostile_benchmark_receipt-5977847ad6aa2e0a)
+     Running tests/import_boundary_tests.rs (target/debug/deps/import_boundary_tests-f432066e7c3c61a7)
+error: test failed, to rerun pass `-p semantic-memory --test import_boundary_tests`

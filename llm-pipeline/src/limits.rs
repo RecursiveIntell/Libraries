@@ -30,6 +30,7 @@ use std::time::Duration;
 /// assert_eq!(limits.max_response_bytes, 2_097_152);
 ///
 /// let strict = PipelineLimits {
+///     max_tokens_per_call: None,
 ///     max_response_bytes: 1024 * 512,
 ///     request_timeout: Duration::from_secs(30),
 ///     stream_idle_timeout: Duration::from_secs(10),
@@ -37,6 +38,7 @@ use std::time::Duration;
 /// ```
 #[derive(Debug, Clone)]
 pub struct PipelineLimits {
+    pub max_tokens_per_call: Option<u32>,
     /// Maximum size of an LLM response in bytes. Responses exceeding this
     /// limit produce [`PipelineError::ResponseTooLarge`](crate::PipelineError::ResponseTooLarge).
     pub max_response_bytes: usize,
@@ -53,6 +55,7 @@ pub struct PipelineLimits {
 impl Default for PipelineLimits {
     fn default() -> Self {
         Self {
+            max_tokens_per_call: None,
             max_response_bytes: 2 * 1024 * 1024, // 2 MB
             request_timeout: Duration::from_secs(120),
             stream_idle_timeout: Duration::from_secs(30),
@@ -75,10 +78,12 @@ mod tests {
     #[test]
     fn test_custom_limits() {
         let limits = PipelineLimits {
+            max_tokens_per_call: Some(512),
             max_response_bytes: 1024,
             request_timeout: Duration::from_secs(10),
             stream_idle_timeout: Duration::from_secs(5),
         };
         assert_eq!(limits.max_response_bytes, 1024);
+        assert_eq!(limits.max_tokens_per_call, Some(512));
     }
 }

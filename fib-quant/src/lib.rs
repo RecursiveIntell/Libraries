@@ -43,6 +43,7 @@ pub mod metrics;
 pub mod profile;
 pub mod receipt;
 pub mod rotation;
+pub mod scoring;
 pub mod spherical_beta;
 
 pub use codebook::{build_initial_codebook, FibCodebookV1};
@@ -57,6 +58,7 @@ pub use profile::{
 };
 pub use receipt::FibQuantCompressionReceiptV1;
 pub use rotation::{StoredRotation, ROTATION_ALGORITHM_VERSION, ROTATION_SCHEMA};
+pub use scoring::{FibPreparedQuery, FibScorer, GramTable, ScoredItem};
 pub use spherical_beta::{
     beta_d_k, radius_quantile, radius_quantile_k2_closed_form, sample_reference_projection,
     sample_spherical_beta,

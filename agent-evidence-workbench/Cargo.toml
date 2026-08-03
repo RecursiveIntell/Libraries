@@ -1,0 +1,29 @@
+[package]
+name = "agent-evidence-workbench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+sha2 = { workspace = true }
+hex = "0.4"
+regex = "1"
+clap = { version = "4", features = ["derive"] }
+tokio = { workspace = true, features = ["rt", "process", "macros"] }
+thiserror = { workspace = true }
+claim-ledger = { path = "../claim-ledger" }
+semantic-memory = { path = "../semantic-memory", optional = true }
+
+[features]
+default = []
+semantic-memory = ["dep:semantic-memory"]
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[[bin]]
+name = "aew"
+path = "src/main.rs"

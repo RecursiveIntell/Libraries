@@ -1,0 +1,15 @@
+[package]
+name = "agent-graph-python"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+agent-graph = { path = "../agent-graph" }
+pyo3 = { version = "0.28.3", features = ["extension-module"] }
+pyo3-async-runtimes = { version = "0.28", features = ["tokio-runtime"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread"] }

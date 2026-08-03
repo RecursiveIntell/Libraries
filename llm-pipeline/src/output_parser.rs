@@ -1,4 +1,4 @@
-//! Re-exports from the standalone [`llm-output-parser`] crate.
+//! Re-exports from the standalone `llm-output-parser` crate.
 //!
 //! The parser implementation now lives in the separate `llm-output-parser` crate.
 //! This module re-exports its public API for backward compatibility so existing

@@ -1,0 +1,57 @@
+{
+  "schema_version": "libraries.command-receipt.v1",
+  "receipt_id": "primitives-clippy-75f131fb4fa5",
+  "name": "primitives-clippy",
+  "stage": "final",
+  "issue_ids": [],
+  "argv": [
+    "cargo",
+    "clippy",
+    "--workspace",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/home/sikmindz/Coding/Libraries/Primitives",
+  "started_at": "2026-07-16T03:08:36Z",
+  "finished_at": "2026-07-16T03:08:41Z",
+  "duration_ms": 4960,
+  "exit_code": 0,
+  "source": {
+    "branch": "fix/hostile-remediation-20260715",
+    "commit": "e30726e36caca4e72df2d25244e82310833e6739",
+    "tree": "b430bd790f090e9c1b1247a500b75bbad1fedeab",
+    "dirty": true,
+    "status_sha256": "4aa1d360724d637a0714bd6377630c0d515a9125d1e3d54957b14d3c673a6a4a",
+    "cargo_lock_sha256": "76c0a9bf971fab2e5afba154c9572a2c41c3a2cad896f9da7d9c0c94c62174c1"
+  },
+  "source_after": {
+    "branch": "fix/hostile-remediation-20260715",
+    "commit": "e30726e36caca4e72df2d25244e82310833e6739",
+    "tree": "b430bd790f090e9c1b1247a500b75bbad1fedeab",
+    "dirty": true,
+    "status_sha256": "4aa1d360724d637a0714bd6377630c0d515a9125d1e3d54957b14d3c673a6a4a",
+    "cargo_lock_sha256": "76c0a9bf971fab2e5afba154c9572a2c41c3a2cad896f9da7d9c0c94c62174c1"
+  },
+  "source_changed_during_command": false,
+  "environment": {
+    "platform": "Linux-7.1.3-200.nobara.fc44.x86_64-x86_64-with-glibc2.42",
+    "machine": "x86_64",
+    "python": "3.14.6",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.0\nLLVM version: 22.1.2",
+    "cargo": "cargo 1.96.0 (30a34c682 2026-05-25)",
+    "pid": 621514
+  },
+  "stdout": {
+    "path": "/home/sikmindz/Coding/Libraries/docs/codex-runs/HOSTILE_REMEDIATION_20260715/evidence/final-current/primitives-clippy-75f131fb4fa5.stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "stderr": {
+    "path": "/home/sikmindz/Coding/Libraries/docs/codex-runs/HOSTILE_REMEDIATION_20260715/evidence/final-current/primitives-clippy-75f131fb4fa5.stderr.log",
+    "sha256": "17f2f750ec19de8b96bf0bfc0a624523ac88a9dae16cef564858303129aa0a11",
+    "bytes": 1089
+  }
+}

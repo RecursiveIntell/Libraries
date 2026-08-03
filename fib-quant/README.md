@@ -4,11 +4,13 @@
 [![Docs.rs](https://docs.rs/fib-quant/badge.svg)](https://docs.rs/fib-quant)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-**The cold tier. 50× compression. 100% recall.**
+**Experimental CPU-first vector and KV artifact codec.**
+
+This crate is an alpha research implementation. It does not claim production KV-cache serving, paper-benchmark reproduction, universal compression ratios, or retrieval guarantees.
 
 > Based on Namyoon Lee and Yongjune Kim, "FibQuant: Universal Vector Quantization for Random-Access KV-Cache Compression", arXiv:2605.11478.
 
-fib-quant compresses KV-cache vectors by decomposing them into spherical blocks, quantizing each block against a Fibonacci-optimized codebook, and storing only the codebook indices. The result: a 768-dim f32 vector (3,072 bytes) becomes ~860 bytes in JSON — or ~64 bytes with binary packing. And it still finds the right document at rank 1.
+fib-quant provides CPU reference paths for spherical-block quantization, deterministic profiles, authenticated receipts, and an optional typed KV artifact contract. Size and quality outcomes depend on the tensor shape, profile, fallback policy, and metadata overhead.
 
 ## Where It Fits
 
@@ -16,10 +18,9 @@ fib-quant is the **cold-tier codec** in poly-kv. It handles shared context that'
 
 ```
 ┌──────────────────────────────────┐
-│    SHARED POOL — fib-quant       │  ← you are here
-│    System prompts, few-shot      │
-│    examples, shared docs         │
-│    50× compression, cos 0.863    │
+│    CPU reference KV artifacts     │  ← optional `kv` feature
+│    Typed shape, profile, receipt   │
+│    No production serving claim     │
 └──────────┬──────────┬────────────┘
            │          │
       ┌────▼───┐ ┌───▼────┐
@@ -27,19 +28,18 @@ fib-quant is the **cold-tier codec** in poly-kv. It handles shared context that'
       └────────┘ └────────┘
 ```
 
-## Benchmarked (2026-06-01)
+## Local accounting smoke fixture (2026-08-01)
 
-| Metric | Result |
-|---|---|
-| Recall@1 (8 queries, compressed) | **1.000** |
-| Recall@1 (10 agents, shared pool) | **1.000** |
-| Cosine fidelity (768-dim) | 0.863 |
-| Rank drift vs exact scan | 0.33 |
-| JSON compression (single 768d vector) | 3.6× (3,072b → 860b) |
-| Projected binary compression | ~48× (3,072b → ~64b) |
-| Batch compression (160 docs, cold tier) | 480 KB → 133 KB (3.6× JSON) |
+This is one small synthetic KV tensor, not a representative benchmark or a paper reproduction:
 
-**Key insight:** 100% recall even at 0.863 fidelity. The target document stays at rank 1 while secondary rankings shift. For a cold tier that's accessed occasionally, this is the right tradeoff.
+| Representation | Total bytes |
+|---|---:|
+| Raw f32 values | 16 |
+| JSON logical envelope | 4,256 |
+| Framed binary wire | 2,339 |
+| Framed-wire header | 44 |
+
+The framed wire was smaller than JSON for this fixture, but larger than raw f32 because profile, codebook, page, and receipt metadata dominate at this size. Do not extrapolate these values to production workloads.
 
 ## Quick Start
 
@@ -83,35 +83,24 @@ fn main() -> fib_quant::Result<()> {
 
 The codebook is built from spherical-Beta source samples, Fibonacci-optimized direction vectors, and radial quantile estimation. Training is deterministic from the seed.
 
-## The Binary Wire Gap
+## Framed binary wire
 
-Current compression is JSON-serialized. A single codebook index (5 bits) becomes a JSON integer (~4 bytes). At scale, this overhead dwarfs the payload. The `packed` module exists for exactly this — direct bit-level encoding. When integrated:
-
-| | 1 vector (768d) | 100 vectors | 10,000 vectors |
-|---|---|---|---|
-| JSON | 860 bytes (3.6×) | 86 KB (3.6×) | 8.6 MB (3.6×) |
-| Binary | ~64 bytes (48×) | ~6 KB (48×) | ~640 KB (48×) |
+The optional `kv` feature owns a versioned `FQKV` frame with explicit flags, checked payload length, BLAKE3 payload digest, bounded deserialization, and exact trailing-byte rejection. The payload contains the typed shape, layout, profile, pages, and receipts. The wire is an experimental local contract; compatibility migrations and durable restart/recovery are not claimed.
 
 ## Integration with poly-kv
 
-```rust
-use poly_kv::{SharedKVPool, KvTensorShape, AttentionType};
-
-// fib-quant is auto-selected for cold-tier compression
-let (pool, receipt) = SharedKVPool::build(&corpus, &shape, 42)?;
-// receipt.compression_ratio tells you how well it compressed
-// receipt.pool_digest is a blake3 hash of all layer digests
-```
+PolyKV can opt into the `fibquant-adapter` feature and select `FibQuantValueCodec` through `PoolBuilder::value_codec`. The integration is CPU-only and experimental. It requires an explicit finite value-quality budget and retains exact fallback separately; it does not auto-select compression or claim persistence/recovery.
 
 ## What's Implemented
 
-- Fixed-rate block quantization (k=4, N=32 benchmarked)
+- Fixed-rate block quantization
 - Deterministic stored rotations (Fibonacci/random/Roberts-Kronecker)
 - Spherical-Beta source sampling for codebook initialization
 - Lloyd-Max refinement with non-worsening fallback
 - Fixed-width bit packing for indices
 - Fail-closed digests and compression receipts
-- Optional `kv` feature for typed KV-cache contracts
+- Versioned `FQKV` framed wire under the optional `kv` feature
+- Optional typed KV-cache contracts
 
 ## What's Not Claimed
 

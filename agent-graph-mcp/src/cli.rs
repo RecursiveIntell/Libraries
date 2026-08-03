@@ -11,8 +11,10 @@ use std::path::PathBuf;
 pub struct CliConfig {
     pub base_url: String,
     pub default_model: String,
+    pub api_key: Option<String>,
     pub data_dir: Option<PathBuf>,
     pub integrity_key_path: Option<PathBuf>,
+    pub checkpoint_db_path: Option<PathBuf>,
     pub require_integrity_key: bool,
     pub ephemeral: bool,
 }
@@ -22,8 +24,10 @@ impl Default for CliConfig {
         Self {
             base_url: "http://127.0.0.1:11434".to_string(),
             default_model: "glm-5.2:cloud".to_string(),
+            api_key: None,
             data_dir: None,
             integrity_key_path: None,
+            checkpoint_db_path: None,
             require_integrity_key: false,
             ephemeral: false,
         }
@@ -87,6 +91,12 @@ pub fn parse_args(args: &[String]) -> Result<CliConfig, CliError> {
                 }
                 config.default_model = value.clone();
             }
+            "--api-key" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| CliError::new("--api-key requires a value"))?;
+                config.api_key = Some(value.clone());
+            }
             "--data-dir" => {
                 let value = iter
                     .next()
@@ -105,6 +115,17 @@ pub fn parse_args(args: &[String]) -> Result<CliConfig, CliError> {
                 }
                 config.integrity_key_path = Some(PathBuf::from(value));
             }
+            "--checkpoint-db-path" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| CliError::new("--checkpoint-db-path requires a value"))?;
+                if value.is_empty() {
+                    return Err(CliError::new(
+                        "--checkpoint-db-path value must not be empty",
+                    ));
+                }
+                config.checkpoint_db_path = Some(PathBuf::from(value));
+            }
             "--require-integrity-key" => {
                 config.require_integrity_key = true;
             }
@@ -119,8 +140,10 @@ pub fn parse_args(args: &[String]) -> Result<CliConfig, CliError> {
                     "  --base-url <url>         Provider URL (default: http://127.0.0.1:11434)"
                 );
                 eprintln!("  --model <name>           Default model for LLM nodes (default: glm-5.2:cloud)");
+                eprintln!("  --api-key <key>          API key for authenticated providers (DeepSeek, OpenRouter, etc.)");
                 eprintln!("  --data-dir <path>        Persistent storage directory");
                 eprintln!("  --integrity-key <path>   Integrity key file for durable mode");
+                eprintln!("  --checkpoint-db-path <path>  SQLite checkpoint database (or AGENT_GRAPH_CHECKPOINT_DB_PATH)");
                 eprintln!("  --require-integrity-key  Fail startup if integrity key is missing/unreadable");
                 eprintln!("  --ephemeral              Explicit in-memory mode (no persistence)");
                 eprintln!("  --help                   Show this help message");

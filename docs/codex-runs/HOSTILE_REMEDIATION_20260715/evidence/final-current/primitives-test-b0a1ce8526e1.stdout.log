@@ -1,0 +1,135 @@
+
+running 11 tests
+test tests::contradictions_lower_conservative_confidence ... ok
+test tests::high_fuzzy_coverage_is_capable_of_capping_confidence ... ok
+test tests::low_sample_perfect_history_remains_conservative ... ok
+test tests::legacy_signature_fields_deserialize_cleanly ... ok
+test tests::line_map_lookup_is_indexed_by_hash_map ... ok
+test tests::differential_pass_attribution_requires_clean_category_and_changed_files ... ok
+test tests::strong_exact_signal_with_high_sample_can_still_be_confident ... ok
+test tests::proportional_attribution_normalizes_per_effect ... ok
+test tests::confidence_is_higher_for_consistent_reinforcement_than_alternating ... ok
+test tests::run_hash_is_stable_across_triple_ordering ... ok
+test tests::save_load_roundtrip_preserves_predictions_and_decay ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test tests::conn_write_transactions_are_explicitly_unsupported ... ok
+test tests::open_creates_schema_for_fresh_database ... ok
+test tests::open_adopts_existing_current_schema_without_manual_versioning ... ok
+test tests::direct_store_connections_apply_safety_pragmas ... ok
+test tests::update_graph_rolls_back_when_run_log_insert_fails ... ok
+test tests::update_graph_persists_nodes_edges_and_run_log ... ok
+test tests::load_graph_round_trips_persisted_edge_stats ... ok
+test tests::update_graph_persists_negative_evidence_for_absent_effects ... ok
+test tests::load_edges_filters_by_version ... ok
+test tests::open_migrates_legacy_schema_and_preserves_rows ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test tests::load_graph_restores_persisted_edge_stats ... ok
+test tests::update_graph_is_idempotent_after_commit ... ok
+test tests::update_graph_rolls_back_when_run_log_insert_fails ... ok
+test tests::load_graph_filters_edges_by_version ... ok
+test tests::update_graph_persists_negative_evidence_for_absent_effects ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test tests::check_result_requires_all_checks_to_pass ... ok
+test tests::env_allowlist_accepts_safe_prefixes_and_rejects_unknowns ... ok
+test tests::select_backend_rejects_host_in_sealed_mode_without_opt_in ... ok
+test wave1_tests::select_backend_falls_back_to_host_when_allowed ... ignored, environment-dependent: fails when docker/podman is available because auto→container succeeds before host fallback
+test tests::select_backend_returns_host_when_allowed ... ok
+test tests::collect_logs_preserves_outputs_and_timings ... ok
+test wave1_tests::select_backend_rejects_unapproved_host_fallback_in_sealed_mode ... ok
+test wave1_tests::check_result_all_pass_requires_every_check ... ok
+test wave1_tests::host_backend_collect_logs_preserves_outputs_and_timings ... ok
+test tests::host_backend_clears_disallowed_environment_variables ... ok
+test tests::host_backend_run_command_times_out ... ok
+test tests::host_backend_timeout_kills_spawned_child_process_group ... ok
+
+test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.15s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test tests::hash_changes_when_signature_changes ... ok
+test tests::located_effect_round_trips_through_json ... ok
+test tests::hash_is_stable_for_identical_signatures ... ok
+test wave1_tests::located_effect_round_trips_through_json ... ok
+test wave1_tests::effect_signature_hash_is_deterministic_and_sensitive_to_fields ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test tests::env_allowlist_matches_expected_prefixes ... ok
+test tests::path_guard_rejects_absolute_and_parent_components ... ok
+test tests::path_guard_rejects_multiple_escape_shapes ... ok
+test tests::reject_symlinks_blocks_existing_symlink_segments ... ok
+test tests::resolve_workspace_path_rejects_symlinked_parent_escape ... ok
+test tests::relative_path_guard_rejects_parent_escape_shapes ... ok
+test tests::relative_path_guard_accepts_safe_relative_shapes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 7 tests
+test tests::budget_evidence_truncates_without_reordering ... ok
+test wave1_tests::budget_evidence_truncates_without_reordering ... ok
+test tests::compute_question_sig_changes_with_inputs ... ok
+test tests::render_sorts_evidence_and_traces_deterministically ... ok
+test wave1_tests::compute_question_sig_is_deterministic_and_input_sensitive ... ok
+test tests::hash_is_order_independent_for_equivalent_content ... ok
+test wave1_tests::render_and_hash_are_stable_across_input_ordering ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test tests::create_parent_dirs_rejects_nested_escape_attempts ... ok
+test tests::local_patch_fs_rejects_escape_paths ... ok
+test tests::local_patch_fs_rejects_reads_and_writes_through_symlink_segments ... ok
+test wave1_tests::local_patch_fs_rejects_escape_paths ... ok
+test tests::local_patch_fs_round_trips_file_contents ... ok
+test tests::prepare_workspace_skips_symlink_entries ... ok
+test tests::prepare_workspace_copies_fixture_recursively ... ok
+test wave1_tests::local_patch_fs_round_trips_and_removes_files ... ok
+test wave1_tests::prepare_workspace_copies_fixture_tree ... ok
+test tests::local_patch_fs_rejects_generated_escape_paths ... ok
+test tests::local_patch_fs_round_trips_safe_relative_paths ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 6 tests
+test tests::next_attempt_progresses_through_all_phases_then_exhausts ... ok
+test tests::extract_strategy_tags_detects_patch_shape_and_context ... ok
+test tests::novelty_and_approach_family_follow_tag_overlap ... ok
+test tests::reset_rewinds_phase_sequence ... ok
+test wave1_tests::next_attempt_advances_through_all_phases_then_exhausts ... ok
+test wave1_tests::strategy_tags_capture_patch_shape_and_family ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test tests::strategy_helpers_count_lines ... ok
+test tests::validate_patch_rejects_workspace_escape_and_invalid_occurrence ... ok
+test tests::apply_patch_rolls_back_when_a_later_edit_fails ... ok
+test tests::idempotent_replace_patch_can_be_applied_twice ... ok
+test tests::parent_dir_paths_are_always_rejected ... ok
+test tests::idempotent_replace_patch_remains_stable_for_arbitrary_line ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

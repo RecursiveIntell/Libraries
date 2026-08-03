@@ -5,7 +5,7 @@ use crate::{digest::json_digest, FibQuantError, Result};
 use super::{
     block::KvEncodedBlockV1,
     layout::KvPageGeometryV1,
-    shape::{KvTensorShapeV1, KV_SHAPE_SCHEMA},
+    shape::{checked_product, KvTensorShapeV1, KV_SHAPE_SCHEMA},
 };
 
 pub const KV_PAGE_SCHEMA: &str = "fib_quant_kv_encoded_page_v1";
@@ -94,7 +94,13 @@ impl KvEncodedPageV1 {
                 "invalid kv page token span".into(),
             ));
         }
-        if self.token_start + self.token_count > shape.tokens {
+        let token_end = self
+            .token_start
+            .checked_add(self.token_count)
+            .ok_or_else(|| {
+                FibQuantError::ResourceLimitExceeded("kv page token span overflow".into())
+            })?;
+        if token_end > shape.tokens {
             return Err(FibQuantError::CorruptPayload(
                 "kv page token span exceeds shape tokens".into(),
             ));
@@ -103,6 +109,18 @@ impl KvEncodedPageV1 {
             return Err(FibQuantError::CorruptPayload(
                 "kv page token_count exceeds geometry".into(),
             ));
+        }
+        let expected_blocks = checked_product(&[
+            shape.batch as usize,
+            shape.layers as usize,
+            shape.kv_heads as usize,
+            self.token_count as usize,
+        ])?;
+        if self.encoded_blocks.len() != expected_blocks {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "kv page has {} blocks, expected {expected_blocks}",
+                self.encoded_blocks.len()
+            )));
         }
         let expected_raw = self
             .encoded_blocks
@@ -114,18 +132,36 @@ impl KvEncodedPageV1 {
                 "kv page raw fallback count mismatch".into(),
             ));
         }
-        for (idx, block) in self.encoded_blocks.iter().enumerate() {
-            block.validate(shape.head_dim)?;
-            if block.block_id as usize != idx {
-                return Err(FibQuantError::CorruptPayload(
-                    "kv page block ids must be contiguous".into(),
-                ));
-            }
-            if block.token < self.token_start || block.token >= self.token_start + self.token_count
-            {
-                return Err(FibQuantError::CorruptPayload(
-                    "kv page block token outside page span".into(),
-                ));
+        let mut block_index = 0usize;
+        for batch in 0..shape.batch {
+            for layer in 0..shape.layers {
+                for kv_head in 0..shape.kv_heads {
+                    for token in self.token_start..token_end {
+                        let block = &self.encoded_blocks[block_index];
+                        block.validate(shape.head_dim)?;
+                        if block.block_id as usize != block_index {
+                            return Err(FibQuantError::CorruptPayload(
+                                "kv page block ids must be contiguous".into(),
+                            ));
+                        }
+                        if block.batch != batch
+                            || block.layer != layer
+                            || block.kv_head != kv_head
+                            || block.token != token
+                        {
+                            return Err(FibQuantError::CorruptPayload(
+                                "kv page blocks must provide canonical complete coordinate coverage"
+                                    .into(),
+                            ));
+                        }
+                        if block.fixed_size_bytes != self.page_geometry.encoded_block_bytes {
+                            return Err(FibQuantError::CorruptPayload(
+                                "kv block reservation does not match page geometry".into(),
+                            ));
+                        }
+                        block_index += 1;
+                    }
+                }
             }
         }
         let expected_digest = self.compute_digest(shape)?;

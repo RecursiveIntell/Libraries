@@ -4,8 +4,10 @@
 //! complementing the legacy [`CheckpointSaver`](crate::checkpointer::CheckpointSaver)
 //! which operates at the superstep level.
 
+use crate::error::AgentGraphError;
 use crate::outcome::Interrupt;
 use crate::Result;
+use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -456,6 +458,583 @@ impl CheckpointStore for InMemoryCheckpointStore {
             run.status = RunStatus::Failed;
             run.updated_at = chrono::Utc::now();
             Ok(())
+        })
+    }
+}
+
+/// SQLite-backed durable [`CheckpointStore`] using `rusqlite` with WAL mode.
+///
+/// All database access runs inside `tokio::task::spawn_blocking` to avoid
+/// blocking the async runtime.  The schema mirrors the in-memory structures
+/// exactly — runs, attempts, and state snapshots — so that a future
+/// `PostgresCheckpointStore` can share the same layout.
+///
+/// ## Crash recovery
+///
+/// On construction, any run that was left in the `running` state by a previous
+/// crash is atomically transitioned to `interrupted`.  Callers that know the
+/// run ID can then resume it from the last persisted snapshot and attempt
+/// records.
+#[cfg(feature = "checkpointing")]
+pub struct SqliteCheckpointStore {
+    conn: Arc<std::sync::Mutex<rusqlite::Connection>>,
+}
+
+#[cfg(feature = "checkpointing")]
+impl SqliteCheckpointStore {
+    /// Open (or create) the checkpoint database at `path`.
+    ///
+    /// Schema is created if it does not exist.  WAL mode is enabled for
+    /// concurrent read/write safety, matching the pattern used by `job-queue`.
+    pub fn new(path: &str) -> Result<Self> {
+        let conn = rusqlite::Connection::open(path).map_err(AgentGraphError::DatabaseError)?;
+
+        conn.execute_batch(
+            "PRAGMA journal_mode = WAL;
+             PRAGMA foreign_keys = ON;
+             PRAGMA busy_timeout = 5000;",
+        )
+        .map_err(AgentGraphError::DatabaseError)?;
+
+        conn.execute_batch(
+            "CREATE TABLE IF NOT EXISTS graph_runs (
+                run_id          TEXT PRIMARY KEY,
+                graph_name      TEXT NOT NULL,
+                status          TEXT NOT NULL,
+                interrupted     TEXT,
+                created_at      TEXT NOT NULL,
+                updated_at      TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS graph_attempts (
+                attempt_id      TEXT PRIMARY KEY,
+                run_id          TEXT NOT NULL REFERENCES graph_runs(run_id) ON DELETE CASCADE,
+                node_id         TEXT NOT NULL,
+                attempt         INTEGER NOT NULL,
+                input           TEXT NOT NULL,
+                output          TEXT,
+                status          TEXT NOT NULL,
+                error           TEXT,
+                meta            TEXT NOT NULL DEFAULT '{}',
+                trace_ctx       TEXT,
+                started_at      TEXT NOT NULL,
+                finished_at     TEXT,
+                UNIQUE (run_id, node_id, attempt)
+            );
+
+            CREATE TABLE IF NOT EXISTS graph_state_snapshots (
+                run_id          TEXT PRIMARY KEY REFERENCES graph_runs(run_id) ON DELETE CASCADE,
+                state           TEXT NOT NULL,
+                updated_at      TEXT NOT NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_attempts_run
+                ON graph_attempts(run_id);",
+        )
+        .map_err(AgentGraphError::DatabaseError)?;
+
+        // Crash recovery: mark any run that was left running as interrupted.
+        let now = chrono::Utc::now().to_rfc3339();
+        let recovered = conn
+            .execute(
+                "UPDATE graph_runs SET status = 'interrupted', updated_at = ?1
+                 WHERE status = 'running'",
+                rusqlite::params![now],
+            )
+            .map_err(AgentGraphError::DatabaseError)?;
+
+        if recovered > 0 {
+            tracing::warn!(count = recovered, "Crash recovery: marked interrupted runs");
+        }
+
+        Ok(Self {
+            conn: Arc::new(std::sync::Mutex::new(conn)),
+        })
+    }
+
+    /// Build a [`RunSummary`] for the given run from its persisted records.
+    pub fn summarize_run(&self, run_id: &str) -> Result<Option<RunSummary>> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+        Self::summarize_run_impl(&conn, run_id)
+    }
+
+    fn summarize_run_impl(conn: &rusqlite::Connection, run_id: &str) -> Result<Option<RunSummary>> {
+        let mut stmt = conn
+            .prepare(
+                "SELECT graph_name, status, created_at, updated_at FROM graph_runs WHERE run_id = ?1",
+            )
+            .map_err(AgentGraphError::DatabaseError)?;
+
+        let run_row = stmt
+            .query_row(rusqlite::params![run_id], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                ))
+            })
+            .optional()
+            .map_err(AgentGraphError::DatabaseError)?;
+
+        let Some((graph_name, status_str, created_at_str, updated_at_str)) = run_row else {
+            return Ok(None);
+        };
+
+        let status = match status_str.as_str() {
+            "running" => RunStatus::Running,
+            "completed" => RunStatus::Completed,
+            "failed" => RunStatus::Failed,
+            "interrupted" => RunStatus::Interrupted,
+            "cancelled" => RunStatus::Cancelled,
+            _ => RunStatus::Failed,
+        };
+
+        let status_for_finished = status.clone();
+
+        let (total_attempts, failed_attempts): (i64, i64) = conn
+            .query_row(
+                "SELECT COUNT(*), COUNT(CASE WHEN status = 'failed' THEN 1 END)
+                 FROM graph_attempts WHERE run_id = ?1",
+                rusqlite::params![run_id],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap_or((0, 0));
+
+        let node_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(DISTINCT node_id) FROM graph_attempts WHERE run_id = ?1",
+                rusqlite::params![run_id],
+                |row| row.get(0),
+            )
+            .unwrap_or(0);
+
+        Ok(Some(RunSummary {
+            run_id: run_id.to_string(),
+            graph_name,
+            status,
+            total_nodes_executed: node_count as usize,
+            total_attempts: total_attempts as usize,
+            failed_attempts: failed_attempts as usize,
+            trace_id: None,
+            trace_ctx: None,
+            started_at: chrono::DateTime::parse_from_rfc3339(&created_at_str)
+                .map(|dt| dt.with_timezone(&chrono::Utc))
+                .unwrap_or_else(|_| chrono::Utc::now()),
+            finished_at: if status_for_finished == RunStatus::Running {
+                None
+            } else {
+                Some(
+                    chrono::DateTime::parse_from_rfc3339(&updated_at_str)
+                        .map(|dt| dt.with_timezone(&chrono::Utc))
+                        .unwrap_or_else(|_| chrono::Utc::now()),
+                )
+            },
+        }))
+    }
+
+    fn now_iso() -> String {
+        chrono::Utc::now().to_rfc3339()
+    }
+}
+
+#[cfg(feature = "checkpointing")]
+impl CheckpointStore for SqliteCheckpointStore {
+    fn create_run(
+        &self,
+        graph_name: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<RunId>> + Send + '_>> {
+        let graph_name = graph_name.to_string();
+        let run_id = stack_ids::GraphRunId::random("agent-graph").to_string();
+        let now = Self::now_iso();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            let rid = run_id.clone();
+            tokio::task::spawn_blocking(move || -> Result<RunId> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                conn.execute(
+                    "INSERT INTO graph_runs (run_id, graph_name, status, created_at, updated_at)
+                     VALUES (?1, ?2, 'running', ?3, ?3)",
+                    rusqlite::params![rid, graph_name, now],
+                )
+                .map_err(AgentGraphError::DatabaseError)?;
+                Ok(rid)
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn record_attempt(
+        &self,
+        run_id: &str,
+        node_id: &str,
+        attempt: u32,
+        input: &Value,
+    ) -> Pin<Box<dyn Future<Output = Result<CheckpointAttemptId>> + Send + '_>> {
+        let rid = run_id.to_string();
+        let nid = node_id.to_string();
+        let att = attempt;
+        let input_json = serde_json::to_string(input).unwrap_or_else(|_| "null".to_string());
+        let now = Self::now_iso();
+        let attempt_id =
+            stack_ids::GraphCheckpointAttemptId::random("agent-graph-checkpoint").to_string();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            let aid = attempt_id.clone();
+            tokio::task::spawn_blocking(move || -> Result<CheckpointAttemptId> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                conn.execute(
+                    "INSERT INTO graph_attempts
+                     (attempt_id, run_id, node_id, attempt, input, status, started_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, 'running', ?6)",
+                    rusqlite::params![aid, rid, nid, att, input_json, now],
+                )
+                .map_err(AgentGraphError::DatabaseError)?;
+                Ok(aid)
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn complete_attempt(
+        &self,
+        attempt_id: &str,
+        output: &Value,
+        meta: &HashMap<String, Value>,
+    ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
+        let aid = attempt_id.to_string();
+        let output_json = serde_json::to_string(output).unwrap_or_else(|_| "null".to_string());
+        let meta_json = serde_json::to_string(meta).unwrap_or_else(|_| "{}".to_string());
+        let now = Self::now_iso();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                conn.execute(
+                    "UPDATE graph_attempts
+                     SET status = 'completed', output = ?2, meta = ?3, finished_at = ?4
+                     WHERE attempt_id = ?1",
+                    rusqlite::params![aid, output_json, meta_json, now],
+                )
+                .map_err(AgentGraphError::DatabaseError)?;
+                Ok(())
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn fail_attempt(
+        &self,
+        attempt_id: &str,
+        error: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
+        let aid = attempt_id.to_string();
+        let err = error.to_string();
+        let now = Self::now_iso();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                conn.execute(
+                    "UPDATE graph_attempts
+                     SET status = 'failed', error = ?2, finished_at = ?3
+                     WHERE attempt_id = ?1",
+                    rusqlite::params![aid, err, now],
+                )
+                .map_err(AgentGraphError::DatabaseError)?;
+                Ok(())
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn record_interrupt(
+        &self,
+        attempt_id: &str,
+        interrupt: &Interrupt,
+    ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
+        let aid = attempt_id.to_string();
+        let interrupt_json =
+            serde_json::to_string(interrupt).unwrap_or_else(|_| "null".to_string());
+        let now = Self::now_iso();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                conn.execute(
+                    "UPDATE graph_attempts SET status = 'interrupted', finished_at = ?2
+                     WHERE attempt_id = ?1",
+                    rusqlite::params![aid, now],
+                )
+                .map_err(AgentGraphError::DatabaseError)?;
+                conn.execute(
+                    "UPDATE graph_runs SET status = 'interrupted', interrupted = ?2,
+                     updated_at = ?3 WHERE run_id = (
+                        SELECT run_id FROM graph_attempts WHERE attempt_id = ?1
+                     )",
+                    rusqlite::params![aid, interrupt_json, now],
+                )
+                .map_err(AgentGraphError::DatabaseError)?;
+                Ok(())
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn save_state_snapshot(
+        &self,
+        run_id: &str,
+        state: &HashMap<String, Value>,
+    ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
+        let rid = run_id.to_string();
+        let state_json = serde_json::to_string(state).unwrap_or_else(|_| "{}".to_string());
+        let now = Self::now_iso();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                conn.execute(
+                    "INSERT INTO graph_state_snapshots (run_id, state, updated_at)
+                     VALUES (?1, ?2, ?3)
+                     ON CONFLICT(run_id) DO UPDATE SET state = excluded.state,
+                     updated_at = excluded.updated_at",
+                    rusqlite::params![rid, state_json, now],
+                )
+                .map_err(AgentGraphError::DatabaseError)?;
+                Ok(())
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn load_run(
+        &self,
+        run_id: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<Option<RunState>>> + Send + '_>> {
+        let rid = run_id.to_string();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            let rid2 = rid.clone();
+            tokio::task::spawn_blocking(move || -> Result<Option<RunState>> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+
+                let mut stmt = conn
+                    .prepare(
+                        "SELECT graph_name, status, interrupted, created_at, updated_at
+                         FROM graph_runs WHERE run_id = ?1",
+                    )
+                    .map_err(AgentGraphError::DatabaseError)?;
+
+                let run_row = stmt
+                    .query_row(rusqlite::params![rid2], |row| {
+                        Ok((
+                            row.get::<_, String>(0)?,
+                            row.get::<_, String>(1)?,
+                            row.get::<_, Option<String>>(2)?,
+                            row.get::<_, String>(3)?,
+                            row.get::<_, String>(4)?,
+                        ))
+                    })
+                    .optional()
+                    .map_err(AgentGraphError::DatabaseError)?;
+
+                let Some((
+                    graph_name,
+                    status_str,
+                    interrupted_json,
+                    created_at_str,
+                    updated_at_str,
+                )) = run_row
+                else {
+                    return Ok(None);
+                };
+
+                let status = match status_str.as_str() {
+                    "running" => RunStatus::Running,
+                    "completed" => RunStatus::Completed,
+                    "failed" => RunStatus::Failed,
+                    "interrupted" => RunStatus::Interrupted,
+                    "cancelled" => RunStatus::Cancelled,
+                    _ => RunStatus::Failed,
+                };
+
+                let mut a_stmt = conn
+                    .prepare(
+                        "SELECT attempt_id, node_id, attempt, input, output, status,
+                                error, meta, trace_ctx, started_at, finished_at
+                         FROM graph_attempts WHERE run_id = ?1 ORDER BY started_at",
+                    )
+                    .map_err(AgentGraphError::DatabaseError)?;
+
+                let attempts: Vec<AttemptRecord> = a_stmt
+                    .query_map(rusqlite::params![rid2], |row| {
+                        let status_str: String = row.get(5)?;
+                        let status = match status_str.as_str() {
+                            "running" => AttemptStatus::Running,
+                            "completed" => AttemptStatus::Completed,
+                            "failed" => AttemptStatus::Failed,
+                            "interrupted" => AttemptStatus::Interrupted,
+                            "cancelled" => AttemptStatus::Cancelled,
+                            _ => AttemptStatus::Failed,
+                        };
+                        Ok(AttemptRecord {
+                            attempt_id: row.get(0)?,
+                            run_id: rid2.clone(),
+                            node_id: row.get(1)?,
+                            attempt: row.get::<_, i64>(2)? as u32,
+                            input: serde_json::from_str(&row.get::<_, String>(3)?)
+                                .unwrap_or(Value::Null),
+                            output: row
+                                .get::<_, Option<String>>(4)?
+                                .map(|s| serde_json::from_str(&s).unwrap_or(Value::Null)),
+                            status,
+                            error: row.get(6)?,
+                            meta: serde_json::from_str(
+                                &row.get::<_, Option<String>>(7)?
+                                    .unwrap_or_else(|| "{}".to_string()),
+                            )
+                            .unwrap_or_default(),
+                            trace_ctx: row
+                                .get::<_, Option<String>>(8)?
+                                .and_then(|s| serde_json::from_str(&s).ok()),
+                            started_at: chrono::DateTime::parse_from_rfc3339(
+                                &row.get::<_, String>(9)?,
+                            )
+                            .map(|dt| dt.with_timezone(&chrono::Utc))
+                            .unwrap_or_else(|_| chrono::Utc::now()),
+                            finished_at: row.get::<_, Option<String>>(10)?.and_then(|s| {
+                                chrono::DateTime::parse_from_rfc3339(&s)
+                                    .map(|dt| dt.with_timezone(&chrono::Utc))
+                                    .ok()
+                            }),
+                        })
+                    })
+                    .map_err(AgentGraphError::DatabaseError)?
+                    .filter_map(|r| r.ok())
+                    .collect();
+
+                let state_snapshot: HashMap<String, Value> = conn
+                    .query_row(
+                        "SELECT state FROM graph_state_snapshots WHERE run_id = ?1",
+                        rusqlite::params![rid2],
+                        |row| row.get::<_, String>(0),
+                    )
+                    .optional()
+                    .map_err(AgentGraphError::DatabaseError)?
+                    .and_then(|s| serde_json::from_str(&s).ok())
+                    .unwrap_or_default();
+
+                let interrupted: Option<Interrupt> =
+                    interrupted_json.and_then(|s| serde_json::from_str(&s).ok());
+
+                let created_at = chrono::DateTime::parse_from_rfc3339(&created_at_str)
+                    .map(|dt| dt.with_timezone(&chrono::Utc))
+                    .unwrap_or_else(|_| chrono::Utc::now());
+                let updated_at = chrono::DateTime::parse_from_rfc3339(&updated_at_str)
+                    .map(|dt| dt.with_timezone(&chrono::Utc))
+                    .unwrap_or_else(|_| chrono::Utc::now());
+
+                Ok(Some(RunState {
+                    run_id: rid2,
+                    graph_name,
+                    status,
+                    attempts,
+                    state_snapshot,
+                    interrupted,
+                    created_at,
+                    updated_at,
+                }))
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn complete_run(&self, run_id: &str) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
+        let rid = run_id.to_string();
+        let now = Self::now_iso();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                let affected = conn
+                    .execute(
+                        "UPDATE graph_runs SET status = 'completed', updated_at = ?2
+                         WHERE run_id = ?1 AND status = 'running'",
+                        rusqlite::params![rid, now],
+                    )
+                    .map_err(AgentGraphError::DatabaseError)?;
+                if affected == 0 {
+                    return Err(AgentGraphError::RunNotFound(rid));
+                }
+                Ok(())
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
+        })
+    }
+
+    fn fail_run(
+        &self,
+        run_id: &str,
+        _error: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + '_>> {
+        let rid = run_id.to_string();
+        let now = Self::now_iso();
+        let conn = self.conn.clone();
+
+        Box::pin(async move {
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                let conn = conn
+                    .lock()
+                    .map_err(|e| AgentGraphError::Other(e.to_string()))?;
+                let affected = conn
+                    .execute(
+                        "UPDATE graph_runs SET status = 'failed', updated_at = ?2
+                         WHERE run_id = ?1 AND status = 'running'",
+                        rusqlite::params![rid, now],
+                    )
+                    .map_err(AgentGraphError::DatabaseError)?;
+                if affected == 0 {
+                    return Err(AgentGraphError::RunNotFound(rid));
+                }
+                Ok(())
+            })
+            .await
+            .map_err(|e| AgentGraphError::Other(e.to_string()))?
         })
     }
 }

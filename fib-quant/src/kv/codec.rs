@@ -156,6 +156,12 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
     encoded.layout.validate_for_shape(&encoded.shape)?;
     encoded.profile.validate_for_shape(&encoded.shape)?;
     encoded.receipt.validate()?;
+    let shape_digest = encoded.shape.digest()?;
+    if encoded.receipt.shape_digest != shape_digest {
+        return Err(FibQuantError::CorruptPayload(
+            "kv compression receipt shape digest mismatch".into(),
+        ));
+    }
     let profile_digest = encoded.profile.digest(&encoded.shape)?;
     if encoded.receipt.profile_digest != profile_digest {
         return Err(FibQuantError::ProfileDigestMismatch {
@@ -163,17 +169,76 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
             actual: encoded.receipt.profile_digest.clone(),
         });
     }
+    if encoded.receipt.codebook_digest != encoded.profile.codebook_digest {
+        return Err(FibQuantError::CodebookDigestMismatch {
+            expected: encoded.profile.codebook_digest.clone(),
+            actual: encoded.receipt.codebook_digest.clone(),
+        });
+    }
+    if encoded.receipt.rotation_digest != encoded.profile.rotation_digest {
+        return Err(FibQuantError::RotationDigestMismatch {
+            expected: encoded.profile.rotation_digest.clone(),
+            actual: encoded.receipt.rotation_digest.clone(),
+        });
+    }
+    let expected_page_count = encoded.profile.page_geometry.page_count(&encoded.shape)?;
+    if encoded.pages.len() != expected_page_count as usize
+        || encoded.receipt.encoded_pages != expected_page_count
+    {
+        return Err(FibQuantError::CorruptPayload(
+            "encoded kv pages do not completely cover the declared shape".into(),
+        ));
+    }
     let quantizer = build_quantizer(&encoded.profile)?;
     let mut values = vec![0.0; encoded.shape.element_count()?];
     let mut page_digests = Vec::with_capacity(encoded.pages.len());
+    let mut compressed_blocks = 0u32;
     let mut raw_fallback_blocks = 0u32;
-    for page in &encoded.pages {
+    let mut fallback_reasons = Vec::new();
+    for (page_index, page) in encoded.pages.iter().enumerate() {
+        let expected_page_id = u32::try_from(page_index).map_err(|_| {
+            FibQuantError::ResourceLimitExceeded("kv page index exceeds u32".into())
+        })?;
+        let expected_token_start = expected_page_id
+            .checked_mul(encoded.profile.page_geometry.tokens_per_page)
+            .ok_or_else(|| {
+                FibQuantError::ResourceLimitExceeded("kv page token start overflow".into())
+            })?;
+        let expected_token_end = expected_token_start
+            .checked_add(encoded.profile.page_geometry.tokens_per_page)
+            .ok_or_else(|| {
+                FibQuantError::ResourceLimitExceeded("kv page token end overflow".into())
+            })?
+            .min(encoded.shape.tokens);
+        if page.page_id != expected_page_id
+            || page.token_start != expected_token_start
+            || page.token_count != expected_token_end - expected_token_start
+        {
+            return Err(FibQuantError::CorruptPayload(
+                "kv pages must provide canonical complete token coverage".into(),
+            ));
+        }
+        if page.page_geometry != encoded.profile.page_geometry {
+            return Err(FibQuantError::CorruptPayload(
+                "kv page geometry does not match compression profile".into(),
+            ));
+        }
+        if page.source_tensor_digest != encoded.receipt.source_digest {
+            return Err(FibQuantError::CorruptPayload(
+                "kv page source digest does not match compression receipt".into(),
+            ));
+        }
         page.validate(&encoded.shape)?;
         if page.profile_digest != encoded.receipt.profile_digest {
             return Err(FibQuantError::ProfileDigestMismatch {
                 expected: encoded.receipt.profile_digest.clone(),
                 actual: page.profile_digest.clone(),
             });
+        }
+        if encoded.receipt.page_digests[page_index] != page.page_digest {
+            return Err(FibQuantError::CorruptPayload(
+                "kv page digest does not match compression receipt".into(),
+            ));
         }
         page_digests.push(page.page_digest.clone());
         for block in &page.encoded_blocks {
@@ -188,10 +253,24 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
             }
             let decoded = match &block.encoding {
                 KvBlockEncodingV1::RawF32 { values } => {
-                    raw_fallback_blocks += 1;
+                    raw_fallback_blocks = raw_fallback_blocks.checked_add(1).ok_or_else(|| {
+                        FibQuantError::ResourceLimitExceeded(
+                            "raw fallback block count overflow".into(),
+                        )
+                    })?;
+                    if !fallback_reasons.contains(&block.reason) {
+                        fallback_reasons.push(block.reason.clone());
+                    }
                     values.clone()
                 }
-                KvBlockEncodingV1::FibQuant { code } => quantizer.decode(code)?,
+                KvBlockEncodingV1::FibQuant { code } => {
+                    compressed_blocks = compressed_blocks.checked_add(1).ok_or_else(|| {
+                        FibQuantError::ResourceLimitExceeded(
+                            "compressed block count overflow".into(),
+                        )
+                    })?;
+                    quantizer.decode(code)?
+                }
             };
             if decoded.len() != encoded.shape.head_dim as usize {
                 return Err(FibQuantError::CorruptPayload(
@@ -208,6 +287,15 @@ pub fn decode_kv_pages(encoded: &KvEncodedTensorV1) -> Result<KvDecodedTensorV1>
             )?;
             out.copy_from_slice(&decoded);
         }
+    }
+    if page_digests != encoded.receipt.page_digests
+        || compressed_blocks != encoded.receipt.compressed_blocks
+        || raw_fallback_blocks != encoded.receipt.raw_fallback_blocks
+        || fallback_reasons != encoded.receipt.fallback_reasons
+    {
+        return Err(FibQuantError::CorruptPayload(
+            "kv compression receipt does not match realized pages and blocks".into(),
+        ));
     }
     let decoded_digest = kv_tensor_digest(&values)?;
     Ok(KvDecodedTensorV1 {

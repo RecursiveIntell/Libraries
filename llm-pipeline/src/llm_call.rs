@@ -8,6 +8,7 @@
 use crate::{
     backend::{self, ChatMessage, LlmRequest, LlmResponse},
     client::LlmConfig,
+    constraints::GenerationConstraint,
     diagnostics::ParseDiagnostics,
     error::Result,
     events::{emit, Event},
@@ -17,7 +18,9 @@ use crate::{
     parsing,
     payload::{BoxFut, Payload, PayloadOutput},
     retry::RetryConfig,
+    PipelineError,
 };
+use futures::future::join_all;
 use llm_output_parser::ParseOptions;
 use serde_json::{json, Value};
 use stack_ids::{AttemptId, TrialId};
@@ -70,6 +73,22 @@ pub struct LlmCall {
     /// This enables mixed-latency payloads on the same context -- e.g., a
     /// 5 s classifier and a 120 s generator can each have their own timeout.
     timeout: Option<Duration>,
+}
+
+impl Clone for LlmCall {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            prompt_template: self.prompt_template.clone(),
+            system_template: self.system_template.clone(),
+            model: self.model.clone(),
+            config: self.config.clone(),
+            streaming: self.streaming,
+            output_strategy: self.output_strategy.clone(),
+            retry: self.retry.clone(),
+            timeout: self.timeout,
+        }
+    }
 }
 
 impl LlmCall {
@@ -279,6 +298,7 @@ impl LlmCall {
         messages: Vec<ChatMessage>,
         stream: bool,
         effective_timeout: Duration,
+        ctx: &ExecCtx,
     ) -> LlmRequest {
         LlmRequest {
             model: self.model.clone(),
@@ -286,6 +306,8 @@ impl LlmCall {
             prompt: prompt.to_string(),
             messages,
             config: self.config.clone(),
+            constraint: self.config.constraint.clone(),
+            max_tokens_limit: ctx.limits.max_tokens_per_call,
             stream,
             request_timeout: Some(effective_timeout),
         }
@@ -307,6 +329,35 @@ impl LlmCall {
         }
     }
 
+    fn enforce_token_budget(ctx: &ExecCtx, response: &LlmResponse) -> Result<()> {
+        if let (Some(budget), Some(usage)) = (&ctx.token_budget, &response.token_usage) {
+            let used = usage.total_tokens;
+            let limit = budget.load(std::sync::atomic::Ordering::Acquire);
+            loop {
+                if used > limit {
+                    return Err(PipelineError::BudgetExceeded { used, limit });
+                }
+                match budget.compare_exchange(
+                    limit,
+                    limit - used,
+                    std::sync::atomic::Ordering::AcqRel,
+                    std::sync::atomic::Ordering::Acquire,
+                ) {
+                    Ok(_) => break,
+                    Err(actual) => {
+                        if used > actual {
+                            return Err(PipelineError::BudgetExceeded {
+                                used,
+                                limit: actual,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn enforce_response_size(ctx: &ExecCtx, size: usize) -> Result<()> {
         if size > ctx.limits.max_response_bytes {
             return Err(crate::PipelineError::ResponseTooLarge {
@@ -316,6 +367,242 @@ impl LlmCall {
         }
 
         Ok(())
+    }
+
+    /// Run sequential semantic retries.
+    #[allow(clippy::too_many_arguments)]
+    async fn run_sequential_retries(
+        &self,
+        ctx: &ExecCtx,
+        retry_config: &RetryConfig,
+        prompt: &str,
+        system: Option<String>,
+        output: &mut PayloadOutput,
+        semantic_retries_used: &mut u32,
+        total_transport_retries: &mut u32,
+        total_backoff_total_ms: &mut u64,
+        retry_attempt_id: &mut Option<AttemptId>,
+        retry_trial_id: &mut Option<TrialId>,
+        effective_timeout: Duration,
+    ) -> Result<()> {
+        let attempt_id = AttemptId::generate();
+        *retry_attempt_id = Some(attempt_id.clone());
+
+        let mut messages = vec![ChatMessage {
+            role: backend::Role::User,
+            content: prompt.to_string(),
+        }];
+        let mut temp_offset = 0.0f64;
+        let parser_opts = Self::parser_options(ctx);
+
+        let mut retry_reason = self.check_retry_needed(output, retry_config);
+
+        for attempt in 1..=retry_config.max_retries {
+            ctx.check_cancelled()?;
+
+            let reason = retry_reason.take().unwrap_or_default();
+            let trial_id = TrialId::generate();
+            *retry_trial_id = Some(trial_id.clone());
+
+            emit(
+                &ctx.event_handler,
+                Event::RetryStart {
+                    name: self.name.clone(),
+                    attempt,
+                    reason: reason.clone(),
+                    attempt_id: attempt_id.clone(),
+                    trial_id: trial_id.clone(),
+                },
+            );
+
+            messages.push(ChatMessage {
+                role: backend::Role::Assistant,
+                content: output.raw_response.clone(),
+            });
+            messages.push(ChatMessage {
+                role: backend::Role::User,
+                content: format!(
+                    "Your previous response was invalid: {}. Please try again with the correct format.",
+                    reason
+                ),
+            });
+
+            if retry_config.cool_down {
+                temp_offset += retry_config.cool_down_schedule.decrement_for(attempt);
+            }
+
+            let mut retry_config_clone = self.config.clone();
+            retry_config_clone.temperature =
+                (retry_config_clone.temperature - temp_offset).max(0.0);
+
+            let retry_request = LlmRequest {
+                model: self.model.clone(),
+                system_prompt: system.clone(),
+                prompt: prompt.to_string(),
+                messages: messages.clone(),
+                config: retry_config_clone,
+                constraint: self.config.constraint.clone(),
+                max_tokens_limit: ctx.limits.max_tokens_per_call,
+                stream: false,
+                request_timeout: Some(effective_timeout),
+            };
+
+            let (retry_response, tr, bt) = self.call_backend(ctx, &retry_request).await?;
+            Self::enforce_token_budget(ctx, &retry_response)?;
+            *total_transport_retries += tr;
+            *total_backoff_total_ms += bt;
+            Self::enforce_response_size(ctx, retry_response.text.len())?;
+
+            let retry_response_text = retry_response.text.clone();
+            *semantic_retries_used = attempt;
+            *output = self.build_output(retry_response_text, &parser_opts);
+            Self::apply_response_metadata(output, &retry_response);
+
+            if let Some(ref mut diag) = output.diagnostics {
+                diag.retry_attempts = *semantic_retries_used;
+                diag.transport_retries = *total_transport_retries;
+                diag.backoff_total_ms = *total_backoff_total_ms;
+                diag.attempt_id = Some(attempt_id.clone());
+                diag.trial_id = Some(trial_id);
+            }
+
+            retry_reason = self.check_retry_needed(output, retry_config);
+
+            emit(
+                &ctx.event_handler,
+                Event::RetryEnd {
+                    name: self.name.clone(),
+                    attempts: attempt,
+                    success: retry_reason.is_none(),
+                    attempt_id: attempt_id.clone(),
+                },
+            );
+
+            if retry_reason.is_none() {
+                break;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Run best-of-N concurrent semantic retries.
+    ///
+    /// Returns `Ok(true)` if all attempts failed and the caller should follow
+    /// `BestOfNExhaustion`; returns `Ok(false)` if a successful parse was found.
+    #[allow(clippy::too_many_arguments)]
+    async fn run_best_of_n(
+        &self,
+        ctx: &ExecCtx,
+        retry_config: &RetryConfig,
+        n: u32,
+        temperatures: Vec<f64>,
+        prompt: &str,
+        system: Option<String>,
+        effective_timeout: Duration,
+        output: &mut PayloadOutput,
+        semantic_retries_used: &mut u32,
+        total_transport_retries: &mut u32,
+        total_backoff_total_ms: &mut u64,
+        retry_attempt_id: &mut Option<AttemptId>,
+        retry_trial_id: &mut Option<TrialId>,
+    ) -> Result<bool> {
+        let attempt_id = AttemptId::generate();
+        *retry_attempt_id = Some(attempt_id.clone());
+        let parser_opts = Self::parser_options(ctx);
+
+        let base_messages = vec![ChatMessage {
+            role: backend::Role::User,
+            content: prompt.to_string(),
+        }];
+
+        let count = n as usize;
+        let mut tasks = Vec::with_capacity(count);
+
+        for i in 0..count {
+            let temperature = temperatures.get(i).copied().unwrap_or_else(|| {
+                retry_config
+                    .cool_down_schedule
+                    .apply(self.config.temperature, i as u32 + 1)
+            });
+            let mut cfg = self.config.clone();
+            cfg.temperature = temperature.max(0.0);
+
+            let request = LlmRequest {
+                model: self.model.clone(),
+                system_prompt: system.clone(),
+                prompt: prompt.to_string(),
+                messages: base_messages.clone(),
+                config: cfg,
+                constraint: self.config.constraint.clone(),
+                max_tokens_limit: ctx.limits.max_tokens_per_call,
+                stream: false,
+                request_timeout: Some(effective_timeout),
+            };
+
+            let this = self.clone();
+            let ctx_ref = ctx.clone();
+            let request_clone = request;
+            tasks.push(async move {
+                let trial_id = TrialId::generate();
+                let result = this.call_backend(&ctx_ref, &request_clone).await;
+                (i, trial_id, result)
+            });
+        }
+
+        let results = join_all(tasks).await;
+        let mut errors: Vec<String> = Vec::new();
+
+        for (i, trial_id, result) in results {
+            match result {
+                Ok((response, tr, bt)) => {
+                    if let Err(e) = Self::enforce_token_budget(ctx, &response) {
+                        errors.push(format!("attempt {}: budget exceeded - {}", i + 1, e));
+                        continue;
+                    }
+                    *total_transport_retries += tr;
+                    *total_backoff_total_ms += bt;
+                    if let Err(e) = Self::enforce_response_size(ctx, response.text.len()) {
+                        errors.push(format!("attempt {}: response too large - {}", i + 1, e));
+                        continue;
+                    }
+
+                    let candidate = self.build_output(response.text.clone(), &parser_opts);
+                    if self.check_retry_needed(&candidate, retry_config).is_none() {
+                        *semantic_retries_used = i as u32 + 1;
+                        *retry_trial_id = Some(trial_id);
+                        *output = candidate;
+                        Self::apply_response_metadata(output, &response);
+                        if let Some(ref mut diag) = output.diagnostics {
+                            diag.retry_attempts = *semantic_retries_used;
+                            diag.transport_retries = *total_transport_retries;
+                            diag.backoff_total_ms = *total_backoff_total_ms;
+                            diag.attempt_id = Some(attempt_id.clone());
+                            diag.trial_id = retry_trial_id.clone();
+                        }
+                        return Ok(false);
+                    } else {
+                        errors.push(format!("attempt {}: parse/validation failed", i + 1));
+                    }
+                }
+                Err(e) => {
+                    errors.push(format!("attempt {}: backend error - {}", i + 1, e));
+                }
+            }
+        }
+
+        // No candidate succeeded.
+        emit(
+            &ctx.event_handler,
+            Event::RetryEnd {
+                name: self.name.clone(),
+                attempts: n,
+                success: false,
+                attempt_id,
+            },
+        );
+
+        Ok(true)
     }
 
     async fn wait_for_stream_idle(
@@ -496,6 +783,59 @@ impl LlmCall {
         None
     }
 
+    /// Check whether a backend can satisfy the request's structured-generation constraint.
+    fn preflight_constraint(ctx: &ExecCtx, request: &LlmRequest) -> Result<()> {
+        let backend_name = ctx.backend.name();
+        match &request.constraint {
+            GenerationConstraint::None => Ok(()),
+            GenerationConstraint::JsonSchema(_) => {
+                if ctx.backend.supports_json_schema() {
+                    Ok(())
+                } else {
+                    Err(PipelineError::UnsupportedConstraint {
+                        backend: backend_name.to_string(),
+                        constraint: "JsonSchema".to_string(),
+                    })
+                }
+            }
+            GenerationConstraint::Grammar(_) => {
+                if ctx.backend.supports_grammar() {
+                    Ok(())
+                } else {
+                    Err(PipelineError::UnsupportedConstraint {
+                        backend: backend_name.to_string(),
+                        constraint: "Grammar".to_string(),
+                    })
+                }
+            }
+            GenerationConstraint::Regex(_) => {
+                if ctx.backend.supports_regex() {
+                    Ok(())
+                } else {
+                    Err(PipelineError::UnsupportedConstraint {
+                        backend: backend_name.to_string(),
+                        constraint: "Regex".to_string(),
+                    })
+                }
+            }
+        }
+    }
+
+    /// Apply telemetry and provider metadata from an `LlmResponse` to a `PayloadOutput`.
+    fn apply_response_metadata(output: &mut PayloadOutput, response: &LlmResponse) {
+        output.ttft_ms = response.ttft_ms;
+        output.token_usage = response.token_usage.clone();
+        output.finish_reason = response.finish_reason.clone();
+        output.cache_hit = response.cache_hit;
+        if let Some(raw) = response.provider_meta.raw.as_ref() {
+            if let Some(model) = raw.get("model").and_then(|v| v.as_str()) {
+                if output.model.is_none() {
+                    output.model = Some(model.to_string());
+                }
+            }
+        }
+    }
+
     /// Build a `PayloadOutput` from raw LLM text using the configured `OutputStrategy`.
     ///
     /// Per CLAUDE.md: `build_output` MUST always return `Ok(PayloadOutput)`.
@@ -626,6 +966,10 @@ impl LlmCall {
             raw_response: raw_text,
             thinking,
             model: Some(self.model.clone()),
+            ttft_ms: None,
+            token_usage: None,
+            finish_reason: None,
+            cache_hit: false,
             diagnostics: Some(diag),
             trace_id: None,  // Set by invoke()
             trace_ctx: None, // Set by invoke()
@@ -676,7 +1020,11 @@ impl Payload for LlmCall {
                     Vec::new(),
                     self.streaming,
                     effective_timeout,
+                    ctx,
                 );
+
+                // Preflight: reject constraints the backend cannot satisfy.
+                Self::preflight_constraint(ctx, &request)?;
 
                 let result = if self.streaming {
                     self.call_backend_streaming(ctx, &request).await
@@ -685,10 +1033,13 @@ impl Payload for LlmCall {
                 };
 
                 let (response, mut total_transport_retries, mut total_backoff_total_ms) = result?;
+                Self::enforce_token_budget(ctx, &response)?;
                 Self::enforce_response_size(ctx, response.text.len())?;
 
                 let mut semantic_retries_used = 0u32;
-                let mut output = self.build_output(response.text, &parser_opts);
+                let response_text = response.text.clone();
+                let mut output = self.build_output(response_text, &parser_opts);
+                Self::apply_response_metadata(&mut output, &response);
                 if let Some(ref mut diag) = output.diagnostics {
                     diag.transport_retries = total_transport_retries;
                     diag.backoff_total_ms = total_backoff_total_ms;
@@ -700,100 +1051,74 @@ impl Payload for LlmCall {
                 let mut retry_trial_id: Option<TrialId> = None;
 
                 if let Some(ref retry_config) = self.retry {
-                    let mut retry_reason = self.check_retry_needed(&output, retry_config);
+                    let retry_reason = self.check_retry_needed(&output, retry_config);
 
                     if retry_reason.is_some() {
-                        // Create the AttemptId once for this retry family
-                        let attempt_id = AttemptId::generate();
-                        retry_attempt_id = Some(attempt_id.clone());
-
-                        let mut messages = vec![ChatMessage {
-                            role: backend::Role::User,
-                            content: prompt.clone(),
-                        }];
-                        let mut temp_offset = 0.0f64;
-
-                        for attempt in 1..=retry_config.max_retries {
-                            ctx.check_cancelled()?;
-
-                            let reason = retry_reason.take().unwrap_or_default();
-
-                            // Each retry attempt gets a new TrialId
-                            let trial_id = TrialId::generate();
-                            retry_trial_id = Some(trial_id.clone());
-
-                            emit(
-                                &ctx.event_handler,
-                                Event::RetryStart {
-                                    name: self.name.clone(),
-                                    attempt,
-                                    reason: reason.clone(),
-                                    attempt_id: attempt_id.clone(),
-                                    trial_id: trial_id.clone(),
-                                },
-                            );
-
-                            messages.push(ChatMessage {
-                                role: backend::Role::Assistant,
-                                content: output.raw_response.clone(),
-                            });
-                            messages.push(ChatMessage {
-                                role: backend::Role::User,
-                                content: format!(
-                                    "Your previous response was invalid: {}. Please try again with the correct format.",
-                                    reason
-                                ),
-                            });
-
-                            if retry_config.cool_down {
-                                temp_offset += 0.2;
+                        match retry_config.strategy {
+                            crate::retry::RetryStrategy::Sequential => {
+                                self.run_sequential_retries(
+                                    ctx,
+                                    retry_config,
+                                    &prompt,
+                                    system.clone(),
+                                    &mut output,
+                                    &mut semantic_retries_used,
+                                    &mut total_transport_retries,
+                                    &mut total_backoff_total_ms,
+                                    &mut retry_attempt_id,
+                                    &mut retry_trial_id,
+                                    effective_timeout,
+                                )
+                                .await?;
                             }
+                            crate::retry::RetryStrategy::BestOfN {
+                                n,
+                                ref temperatures,
+                            } => {
+                                let exhausted = self
+                                    .run_best_of_n(
+                                        ctx,
+                                        retry_config,
+                                        n,
+                                        temperatures.clone(),
+                                        &prompt,
+                                        system.clone(),
+                                        effective_timeout,
+                                        &mut output,
+                                        &mut semantic_retries_used,
+                                        &mut total_transport_retries,
+                                        &mut total_backoff_total_ms,
+                                        &mut retry_attempt_id,
+                                        &mut retry_trial_id,
+                                    )
+                                    .await?;
 
-                            let mut retry_config_clone = self.config.clone();
-                            retry_config_clone.temperature =
-                                (retry_config_clone.temperature - temp_offset).max(0.0);
-
-                            let retry_request = LlmRequest {
-                                model: self.model.clone(),
-                                system_prompt: system.clone(),
-                                prompt: prompt.clone(),
-                                messages: messages.clone(),
-                                config: retry_config_clone,
-                                stream: false,
-                                request_timeout: Some(effective_timeout),
-                            };
-
-                            let (retry_response, tr, bt) =
-                                self.call_backend(ctx, &retry_request).await?;
-                            total_transport_retries += tr;
-                            total_backoff_total_ms += bt;
-                            Self::enforce_response_size(ctx, retry_response.text.len())?;
-
-                            semantic_retries_used = attempt;
-                            output = self.build_output(retry_response.text, &parser_opts);
-
-                            if let Some(ref mut diag) = output.diagnostics {
-                                diag.retry_attempts = semantic_retries_used;
-                                diag.transport_retries = total_transport_retries;
-                                diag.backoff_total_ms = total_backoff_total_ms;
-                                diag.attempt_id = Some(attempt_id.clone());
-                                diag.trial_id = Some(trial_id);
-                            }
-
-                            retry_reason = self.check_retry_needed(&output, retry_config);
-
-                            emit(
-                                &ctx.event_handler,
-                                Event::RetryEnd {
-                                    name: self.name.clone(),
-                                    attempts: attempt,
-                                    success: retry_reason.is_none(),
-                                    attempt_id: attempt_id.clone(),
-                                },
-                            );
-
-                            if retry_reason.is_none() {
-                                break;
+                                if exhausted {
+                                    match retry_config.best_of_n_exhaustion {
+                                        crate::retry::BestOfNExhaustion::SequentialFallback => {
+                                            self.run_sequential_retries(
+                                                ctx,
+                                                retry_config,
+                                                &prompt,
+                                                system.clone(),
+                                                &mut output,
+                                                &mut semantic_retries_used,
+                                                &mut total_transport_retries,
+                                                &mut total_backoff_total_ms,
+                                                &mut retry_attempt_id,
+                                                &mut retry_trial_id,
+                                                effective_timeout,
+                                            )
+                                            .await?;
+                                        }
+                                        crate::retry::BestOfNExhaustion::ReturnError => {
+                                            return Err(PipelineError::Other(format!(
+                                                "BestOfN exhausted all {} attempts without a valid parse",
+                                                n
+                                            )));
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -815,6 +1140,22 @@ impl Payload for LlmCall {
                 output.transport_retries_used = total_transport_retries;
                 output.semantic_retries_used = semantic_retries_used;
                 output.wall_time_ms = start.elapsed().as_millis() as u64;
+
+                // Emit cost update if a cost model is configured and usage was reported.
+                if let (Some(cost_model), Some(usage)) =
+                    (ctx.cost_model, output.token_usage.clone())
+                {
+                    let estimated_cost = cost_model.estimate(&usage, output.cache_hit);
+                    emit(
+                        &ctx.event_handler,
+                        Event::CostUpdate {
+                            name: self.name.clone(),
+                            estimated_cost,
+                            currency: "USD".to_string(),
+                            token_usage: usage,
+                        },
+                    );
+                }
 
                 Ok(output)
             };

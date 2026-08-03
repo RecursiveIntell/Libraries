@@ -1,0 +1,929 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test test_memory_saver_clear ... ok
+test test_memory_saver_basic ... ok
+test test_memory_saver_history ... ok
+test test_memory_saver_multiple_threads ... ok
+test test_graph_get_state ... ok
+test test_graph_with_checkpointer ... ok
+test test_sqlite_saver_basic ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test test_build_invalid_edge ... ok
+test test_node_not_found ... ok
+test test_error_propagation ... ok
+test test_conditional_routing_with_state ... ok
+test test_graph_with_initial_state ... ok
+test test_state_mutation_across_nodes ... ok
+test test_single_node_no_edges ... ok
+test test_loop_execution ... ok
+test test_max_iterations ... ok
+test test_three_node_chain ... ok
+test test_simple_execution ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test test_snapshot_during_execution ... ok
+test test_state_accumulation ... ok
+test test_quality_loop_pattern ... ok
+test test_multi_branch_graph ... ok
+test test_research_pattern ... ok
+test test_checkpoint_save_load ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test test_cancellation_is_failed_not_complete ... ok
+test test_ordinary_error_is_failed_not_complete ... ok
+test test_successful_execution_still_completes ... ok
+test test_interrupt_still_returns_interrupted ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test test_interrupt_config_builder ... ok
+test test_execute_with_interrupt_complete ... ok
+test test_interrupt_after ... ok
+test test_interrupt_before ... ok
+test test_execute_with_interrupt_interrupted ... ok
+test test_dynamic_interrupt_from_node ... ok
+test test_resume_after_interrupt ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test test_command_end ... ok
+test test_config_access_in_node ... ok
+test test_command_goto ... ok
+test test_fan_out_parallel_execution ... ok
+test test_conditional_fan_out ... ok
+test test_fan_out_fan_in ... ok
+test test_start_end_constants ... ok
+test test_parallel_state_with_append_reducer ... ok
+test test_parallel_state_with_reducer ... ok
+test test_parallel_execution_actually_parallel ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 2 tests
+test error_kind_matches_other_variant_without_anyhow_bridge ... ok
+test other_error_variant_is_string_bounded ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 15 tests
+test test_append_reducer_two_scalars ... ok
+test test_add_reducer_floats ... ok
+test test_append_reducer_scalar_and_array ... ok
+test test_append_reducer_array_and_scalar ... ok
+test test_add_reducer ... ok
+test test_add_reducer_error_on_non_numbers ... ok
+test test_append_reducer_arrays ... ok
+test test_fn_reducer ... ok
+test test_merge_reducer_deep ... ok
+test test_last_write_wins_reducer ... ok
+test test_merge_reducer_objects ... ok
+test test_merge_reducer_non_object_replaces ... ok
+test test_state_add_reducer ... ok
+test test_state_with_reducer ... ok
+test test_graph_builder_with_reducer ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test test_retry_delay_calculation ... ok
+test test_retry_policy_builder ... ok
+test test_no_retry_for_node_without_policy ... ok
+test test_retry_with_predicate ... ok
+test test_retry_events_share_trial_ids_per_concrete_attempt ... ok
+test test_checkpoint_store_records_every_retry_trial ... ok
+test test_retry_exhausted ... ok
+test test_retry_on_failure ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 6 tests
+test test_router_returns_none ... ok
+test test_router_returns_node_name ... ok
+test test_router_end_execution ... ok
+test test_conditional_routing_low_value ... ok
+test test_multi_stage_routing ... ok
+test test_conditional_routing_high_value ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 23 tests
+test test_checkpoint_store_records_failure ... ok
+test test_composite_event_sink ... ok
+test test_checkpoint_store_state_snapshots ... ok
+test test_custom_executor ... ok
+test test_checkpoint_store_records_attempts ... ok
+test test_event_sink_captures_events ... ok
+test test_event_sink_with_stream_compat ... ok
+test test_in_process_executor ... ok
+test test_join_node_custom_merge ... ok
+test test_payload_node_basic ... ok
+test test_loop_with_explicit_termination ... ok
+test test_payload_token_streaming ... ok
+test test_interrupt_resume_roundtrip ... ok
+test test_payload_node_error_propagation ... ok
+test test_join_node_merge_objects ... ok
+test test_payload_node_with_output_mapper ... ok
+test test_payload_node_in_chain ... ok
+test test_join_node_collect_array ... ok
+test test_payload_node_with_input_selector ... ok
+test test_loop_with_max_steps ... ok
+test test_router_branching_with_payload ... ok
+test test_fan_out_fan_in_deterministic ... ok
+test test_cancellation_stops_execution ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 13 tests
+test test_state_contains ... ok
+test test_state_export ... ok
+test test_state_get_missing_key ... ok
+test test_state_keys ... ok
+test test_state_complex_types ... ok
+test test_state_get_opt ... ok
+test test_state_remove ... ok
+test test_state_set_get ... ok
+test test_state_with_data ... ok
+test test_state_history ... ok
+test test_state_update ... ok
+test test_state_snapshot_restore ... ok
+test test_state_concurrent_access ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 23 tests
+test test_error_kind_discriminants ... ok
+test test_checkpoint_metadata_mismatch_detection ... ok
+test test_checkpoint_metadata_graph_hash ... ok
+test test_checkpoint_store_run_summary ... ok
+test test_parallelism_config_default ... ok
+test test_parallelism_config_min_one ... ok
+test test_execute_with_summary_reports_trace_and_counts ... ok
+test test_parallelism_config_hard_cap ... ok
+test test_run_summary_serialization ... ok
+test test_state_limits_defaults ... ok
+test test_resume_rejects_checkpoint_mismatch ... ok
+test test_resume_force_still_works_on_mismatch ... ok
+test test_state_limit_enforcement_leaves_state_unchanged_on_failure ... ok
+test test_trace_id_on_config ... ok
+test test_transaction_commit ... ok
+test test_parallelism_fan_out_with_config ... ok
+test test_transaction_conflict_on_concurrent_modification ... ok
+test test_transaction_isolated_before_commit ... ok
+test test_trace_id_in_events ... ok
+test test_transaction_read_within ... ok
+test test_transaction_limit_failure_leaves_state_unchanged ... ok
+test test_transaction_rollback ... ok
+test test_parallelism_cap_actually_caps_concurrency ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 3 tests
+test test_stream_superstep_events ... ok
+test test_stream_events ... ok
+test test_stream_state_updates ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test test_subgraph_state_isolation ... ok
+test test_subgraph_basic ... ok
+test test_nested_subgraphs ... ok
+test test_subgraph_with_conditional_routing ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Testing linear_graph_3_nodes
+Success
+
+Testing loop_graph_10_iterations
+Success
+
+Testing state_read_write
+Success
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test tests::test_agent_guard_initialize ... ok
+test tests::test_agent_guard_new ... ok
+test tests::test_make_decision ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 20 tests
+test eta::tests::test_different_operations_isolated ... ok
+test eta::tests::test_estimate_remaining_multiple ... ok
+test eta::tests::test_fallback_to_unknown_bucket ... ok
+test eta::tests::test_no_data_returns_none ... ok
+test eta::tests::test_record_and_estimate ... ok
+test eta::tests::test_sample_count ... ok
+test queue::tests::test_cancel_job ... ok
+test queue::tests::test_cancel_single_item ... ok
+test queue::tests::test_completed_with_errors ... ok
+test queue::tests::test_enqueue_assigns_id ... ok
+test queue::tests::test_eta_integration ... ok
+test queue::tests::test_list_and_count ... ok
+test queue::tests::test_mark_running ... ok
+test queue::tests::test_model_aware_reordering ... ok
+test queue::tests::test_next_queued ... ok
+test queue::tests::test_reorder_preserves_running_jobs ... ok
+test queue::tests::test_retry_clears_trial_preserves_attempt ... ok
+test queue::tests::test_retry_failed ... ok
+test queue::tests::test_stamp_trial_id ... ok
+test queue::tests::test_update_item_and_complete ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 36 tests
+test test_build_job_helper ... ok
+test test_batch_item_retry_keeps_attempt_family ... ok
+test test_cancel_queued_job ... ok
+test test_cancel_single_item ... ok
+test test_cancel_running_item_marks_cancelled ... ok
+test test_complete_all_success ... ok
+test test_complete_with_errors ... ok
+test test_enqueue_assigns_id ... ok
+test test_eta_after_completions ... ok
+test test_eta_confidence_levels ... ok
+test test_eta_estimate_struct ... ok
+test test_eta_no_data ... ok
+test test_eta_zero_when_all_done ... ok
+test test_event_serialization ... ok
+test test_get_job ... ok
+test test_get_nonexistent_job ... ok
+test test_has_running_job ... ok
+test test_item_result_variants ... ok
+test test_list_jobs ... ok
+test test_mark_running ... ok
+test test_next_queued_empty ... ok
+test test_max_consecutive_same_key_scheduling ... ok
+test test_next_queued_respects_max_consecutive_cap ... ok
+test test_next_queued_returns_first ... ok
+test test_queue_creation ... ok
+test test_no_reorder_same_resource ... ok
+test test_queued_count ... ok
+test test_reorder_groups_by_resource ... ok
+test test_reorder_marks_jobs ... ok
+test test_reorder_preserves_running ... ok
+test test_retry_failed ... ok
+test test_retry_no_failed_items_errors ... ok
+test test_scheduling_config_defaults ... ok
+test test_retry_preserves_attempt_id_and_clears_trial_id ... ok
+test test_scheduling_config_serialization ... ok
+test test_size_bucket_classification ... ok
+
+test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test v23_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test recertification_schedule_v1_roundtrips ... ok
+test evidence_collection_plan_v1_roundtrips ... ok
+test regulatory_regime_profile_v1_roundtrips ... ok
+test requirement_control_map_v1_roundtrips ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test profile_p4_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test hazard_library_v1_roundtrips ... ok
+test mitigation_playbook_v1_roundtrips ... ok
+test hazard_scenario_v1_roundtrips ... ok
+test monitor_catalog_v1_roundtrips ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test profile_p5_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test assurance_case_rejects_empty_evidence ... ok
+test assurance_case_rejects_empty_case_id ... ok
+test control_mapping_valid_inputs_build ... ok
+test covered_mapping_rejects_gaps ... ok
+test assurance_case_valid_inputs_build ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+
+running 1 test
+test serde_roundtrip_example ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test assurance_case_requires_evidence_refs ... ok
+test blocked_release_requires_blocking_gaps ... ok
+test certification_and_recertification_paths_validate_when_well_formed ... ok
+test control_mapping_rejects_covered_state_with_gaps ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test vendor_certification_adapter_v1_roundtrips ... ok
+test vendor_evidence_translation_v1_roundtrips ... ok
+test vendor_revocation_handling_v1_roundtrips ... ok
+test vendor_trust_root_binding_v1_roundtrips ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test profile_p6_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test attestation_top_level_artifacts_validate_when_well_formed ... ok
+test vendor_adapter_requires_covered_artifact_families ... ok
+test vendor_translation_requires_required_caveats ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test v22_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test approval_matrix_v1_roundtrips ... ok
+test conflict_class_catalog_v1_roundtrips ... ok
+test delegation_matrix_v1_roundtrips ... ok
+test role_catalog_v1_roundtrips ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test profile_p3_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test serde_roundtrip_example ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test authority_chain_requires_approval_refs ... ok
+test dual_control_requires_two_approvers ... ok
+test emergency_and_receipt_paths_validate_when_well_formed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test queries::tests::test_append_supersede_creates_receipt ... ok
+test queries::tests::test_as_of_query_returns_correct_version ... ok
+test tests::test_in_memory_basic_insert ... ok
+test queries::tests::test_temporal_snapshot ... ok
+test types::tests::test_record_temporal_fields ... ok
+test types::tests::test_supersession_receipt_digest ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test as_of_query_returns_correct_version ... ok
+test append_supersede_creates_receipt ... ok
+test invalid_recorded_time_returns_empty ... ok
+test temporal_snapshot_at_time ... ok
+test supersession_chain_preserves_history ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 19 tests
+test canonicalizer::tests::test_bool ... ok
+test canonicalizer::tests::test_detect_duplicates_nested ... ok
+test canonicalizer::tests::test_duplicate_key_rejected ... ok
+test canonicalizer::tests::test_nested_object ... ok
+test canonicalizer::tests::test_null ... ok
+test canonicalizer::tests::test_object_sorted_keys ... ok
+test canonicalizer::tests::test_numbers ... ok
+test canonicalizer::tests::test_string_basic ... ok
+test canonicalizer::tests::test_string_escapes ... ok
+test digest::tests::test_digest_different_inputs_different_output ... ok
+test digest::tests::test_digest_display ... ok
+test digest::tests::test_digest_is_deterministic ... ok
+test digest::tests::test_digest_same_input_same_output ... ok
+test profile::tests::test_check_resources_depth_exceeded ... ok
+test profile::tests::test_check_resources_object_keys_exceeded ... ok
+test profile::tests::test_check_resources_ok ... ok
+test profile::tests::test_check_resources_string_bytes_exceeded ... ok
+test profile::tests::test_default_profile ... ok
+test profile::tests::test_profile_with_schema ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test duplicate_key_nested_rejection ... ok
+test content_digest_computation ... ok
+test duplicate_key_rejection ... ok
+test rfc8785_arrays_preserve_order ... ok
+test parse_and_validate_accepts_valid ... ok
+test rfc8785_basic_object ... ok
+test rfc8785_nested ... ok
+test rfc8785_number_formatting ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test tests::contradictions_lower_conservative_confidence ... ok
+test tests::high_fuzzy_coverage_is_capable_of_capping_confidence ... ok
+test tests::low_sample_perfect_history_remains_conservative ... ok
+test tests::proportional_attribution_normalizes_per_effect ... ok
+test tests::differential_pass_attribution_requires_clean_category_and_changed_files ... ok
+test tests::line_map_lookup_is_indexed_by_hash_map ... ok
+test tests::strong_exact_signal_with_high_sample_can_still_be_confident ... ok
+test tests::confidence_is_higher_for_consistent_reinforcement_than_alternating ... ok
+test tests::legacy_signature_fields_deserialize_cleanly ... ok
+test tests::run_hash_is_stable_across_triple_ordering ... ok
+test tests::save_load_roundtrip_preserves_predictions_and_decay ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test tests::conn_write_transactions_are_explicitly_unsupported ... ok
+test tests::open_creates_schema_for_fresh_database ... ok
+test tests::direct_store_connections_apply_safety_pragmas ... ok
+test tests::open_adopts_existing_current_schema_without_manual_versioning ... ok
+test tests::update_graph_persists_nodes_edges_and_run_log ... ok
+test tests::load_graph_round_trips_persisted_edge_stats ... ok
+test tests::update_graph_rolls_back_when_run_log_insert_fails ... ok
+test tests::update_graph_persists_negative_evidence_for_absent_effects ... ok
+test tests::load_edges_filters_by_version ... ok
+test tests::open_migrates_legacy_schema_and_preserves_rows ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test tests::load_graph_restores_persisted_edge_stats ... ok
+test tests::update_graph_is_idempotent_after_commit ... ok
+test tests::update_graph_rolls_back_when_run_log_insert_fails ... ok
+test tests::update_graph_persists_negative_evidence_for_absent_effects ... ok
+test tests::load_graph_filters_edges_by_version ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test tests::check_result_requires_all_checks_to_pass ... ok
+test tests::env_allowlist_accepts_safe_prefixes_and_rejects_unknowns ... ok
+test tests::collect_logs_preserves_outputs_and_timings ... ok
+test wave1_tests::select_backend_falls_back_to_host_when_allowed ... ignored, environment-dependent: fails when docker/podman is available because auto→container succeeds before host fallback
+test wave1_tests::check_result_all_pass_requires_every_check ... ok
+test tests::select_backend_rejects_host_in_sealed_mode_without_opt_in ... ok
+test tests::select_backend_returns_host_when_allowed ... ok
+test wave1_tests::select_backend_rejects_unapproved_host_fallback_in_sealed_mode ... ok
+test wave1_tests::host_backend_collect_logs_preserves_outputs_and_timings ... ok
+test tests::host_backend_clears_disallowed_environment_variables ... ok
+test tests::host_backend_run_command_times_out ... ok
+test tests::host_backend_timeout_kills_spawned_child_process_group ... ok
+
+test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.15s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 41 tests
+test budget::summary_tests::budget_for_claim_with_no_debts ... ok
+test budget::summary_tests::budget_for_claim_consumes_all_debts ... ok
+test budget::summary_tests::total_weight_sums_all_debts ... ok
+test budget::summary_tests::summary_reflects_budget_state ... ok
+test budget::tests::budget_new_has_id ... ok
+test budget::tests::consume_debt_reduces_available ... ok
+test budget::tests::consume_non_strict_allows_overdraw ... ok
+test budget::tests::consume_strict_blocks_overdraw ... ok
+test budget::tests::custom_config_changes_thresholds ... ok
+test budget::tests::custom_config_weights_change_consumption ... ok
+test budget::tests::gate_decision_allows_proceed ... ok
+test budget::tests::gate_degrade_when_exhausted ... ok
+test budget::tests::gate_proceed_when_under_80 ... ok
+test budget::tests::gate_warn_at_80 ... ok
+test budget::tests::gate_retract_when_severely_overdrawn ... ok
+test budget::tests::proof_debt_weights_are_nonzero_except_none ... ok
+test budget::tests::resolve_debt_replenishes ... ok
+test budget::tests::source_basis_is_heaviest_debt ... ok
+test ids::tests::claim_id_begins_with_clm ... ok
+test ids::tests::contradiction_id_is_ordered_and_deterministic ... ok
+test ids::tests::normalize_text_collapse_whitespace ... ok
+test ids::tests::evidence_bundle_id_begins_with_evb ... ok
+test budget::tests::waiver_preserves_debt_and_authorizes_bounded_proceeding ... ok
+test ids::tests::sha256_text_differs_for_different_inputs ... ok
+test ids::tests::sha256_text_is_deterministic ... ok
+test ids::tests::stable_id_differs_for_different_inputs ... ok
+test ids::tests::stable_id_differs_for_different_prefixes ... ok
+test ids::tests::stable_id_is_deterministic ... ok
+test ids::tests::support_judgment_id_begins_with_sup ... ok
+test ids::tests::stable_id_is_deterministic_for_unicode ... ok
+test ids::tests::stable_id_distinguishes_part_boundaries_and_empty_parts ... ok
+test receipt::tests::export_receipt_bind_output ... ok
+test receipt::tests::ledger_append_receipt_sequence ... ok
+test receipt::tests::supersession_receipt_new ... ok
+test receipt::tests::export_receipt_new_has_id ... ok
+test types::tests::claim_new_has_deterministic_id ... ok
+test types::tests::evidence_bundle_new_has_id_prefix ... ok
+test types::tests::contradiction_record_new_is_ordered ... ok
+test types::tests::support_proof_payload_has_methods ... ok
+test types::tests::support_state_is_strong ... ok
+test ids::tests::ulid_is_unique ... ok
+
+test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test valid_digest_without_signature_is_digest_valid_only ... ok
+test valid_signature_from_unauthorized_signer_is_not_authorized ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test canonical_digest_has_a_cross_language_golden_vector ... ok
+test stable_ids_bind_version_prefix_and_part_boundaries ... ok
+test explicit_time_constructors_make_receipts_byte_identical ... ok
+test strict_jsonl_rejects_malformed_nonblank_lines_with_line_number ... ok
+test waiver_authorizes_bounded_proceeding_without_erasing_debt ... ok
+test verification_requires_the_expected_head_and_rejects_a_valid_prefix ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test unknown_event_types_fail_closed_before_compaction ... ok
+test snapshot_preserves_last_writer_content_link ... ok
+test tampered_snapshot_is_rejected ... ok
+test snapshot_round_trip_and_receipt_verify ... ok
+test unprojectable_events_are_retained_or_fail_closed ... ok
+test compacted_replay_equals_full_replay ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test evidence_bundle_links_to_claim ... ok
+test claim_creation_roundtrip ... ok
+test ledger_entry_contains_claim_event ... ok
+test ledger_jsonl_parsing_is_strict ... ok
+test support_judgment_event_in_ledger ... ok
+test supersession_receipt_chains_and_binds_head ... ok
+test ledger_verification_detects_tampering ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test automated_pipeline_budget_for_claim ... ok
+test automated_pipeline_custom_config ... ok
+test debt_weights_are_ordered_by_danger ... ok
+test automated_pipeline_summary_serializable ... ok
+test consumed_pct_handles_u64_max_without_wrapping_and_gates_correctly ... ok
+test budget_id_is_deterministic ... ok
+test automated_pipeline_full_lifecycle_with_ledger ... ok
+test full_proof_debt_lifecycle ... ok
+test retract_fires_on_severe_overdraw ... ok
+test strict_mode_blocks_overdraw ... ok
+test ledger_records_proof_debt_events ... ok
+test operator_waiver_preserves_debt ... ok
+test waiver_requires_integrity_authority_and_an_exact_budget_debt_snapshot ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test candidate_only_proof_packet_does_not_pass_verification_gate ... ok
+test proof_packet_with_verified_evidence_keeps_candidate_provenance_separate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test similar_claim_candidate_cannot_mutate_verification_state ... ok
+test similar_claim_candidate_is_candidate_only_and_exact_reranked ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 23 tests
+test client::tests::test_empty_object_info ... ok
+test client::tests::test_image_ref ... ok
+test client::tests::test_normalize_endpoint ... ok
+test client::tests::test_parse_checkpoint_object_info ... ok
+test client::tests::test_parse_prompt_response ... ok
+test client::tests::test_parse_history_response ... ok
+test client::tests::test_parse_queue_response ... ok
+test client::tests::test_queue_status_serialization ... ok
+test client::tests::test_parse_sampler_object_info ... ok
+test client::tests::test_trace_ctx_creation ... ok
+test workflow::tests::test_build_has_all_nodes ... ok
+test workflow::tests::test_checkpoint_loader ... ok
+test workflow::tests::test_clip_text_encode ... ok
+test workflow::tests::test_custom_filename_prefix ... ok
+test workflow::tests::test_defaults ... ok
+test workflow::tests::test_default_filename_prefix ... ok
+test workflow::tests::test_empty_latent_image ... ok
+test workflow::tests::test_ksampler_settings ... ok
+test workflow::tests::test_node_connections ... ok
+test workflow::tests::test_random_seed_when_negative ... ok
+test workflow::tests::test_workflow_roundtrip ... ok
+test client::tests::test_client_builder ... ok
+test client::tests::test_default_client_id ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test amendment_requires_rollback_handle_before_approval ... ok
+test happy_amendment_fixture_retains_rollback_lane ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test archive_compaction_keeps_query_guarantees_explicit ... ok
+test amendment_approval_requires_archive_outputs_and_semantic_diff ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test charter_bundle_v1_schema_version_constant ... ok
+test charter_bundle_v1_serde_roundtrip ... ok
+test archive_manifest_v1_schema_version_constant ... ok
+test archive_manifest_v1_serde_roundtrip ... ok
+test amendment_decision_v1_schema_version_constant ... ok
+test amendment_decision_v1_serde_roundtrip ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+
+running 18 tests
+test tests::kern_001_nuisance_snapshot_hash_is_order_insensitive ... ok
+test tests::kern_003_oracle_candidates_exclude_nuisance_nodes ... ok
+test tests::kern_002_non_inferential_records_do_not_mint_nodes ... ok
+test tests::bug_005_missing_group_is_inferential_only ... ok
+test tests::alias_and_evidence_refs_without_semantics_do_not_force_thin_export ... ok
+test tests::invalidation_cones_cover_peer_nodes_in_hyperedge ... ok
+test tests::thin_export_yields_explicit_degradation ... ok
+test tests::hyperedge_compilation_groups_records_by_assertion_group ... ok
+test tests::alias_and_evidence_refs_preserve_thin_export_for_unreviewed_batches ... ok
+test tests::compilation_is_deterministic ... ok
+test tests::compilation_is_deterministic_under_record_reordering ... ok
+test tests::bug_001_nuisance_constraints_are_not_duplicated ... ok
+test tests::v10_geometry_manifest_keeps_graph_roles_explicitly_separate ... ok
+test tests::thin_export_does_not_invent_assertion_hyperedges_without_group ... ok
+test tests::missing_claim_family_marker_is_explicit_without_hallucinating_thin_structure ... ok
+test tests::nuisance_state_is_materialized_explicitly_when_hyperedges_disabled ... ok
+test tests::nuisance_state_is_materialized_in_hyperedges_by_default ... ok
+test tests::v10_regions_are_stable_and_default_bounded_units_of_work ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test v24_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test pager_route_profile_v1_roundtrips ... ok
+test escalation_clock_policy_v1_roundtrips ... ok
+test severity_matrix_v1_roundtrips ... ok
+test incident_taxonomy_v1_roundtrips ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test profile_p7_fixture_bundles_parse_into_owned_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test serde_roundtrip_example ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test escalation_policy_rejects_non_positive_clock ... ok
+test exercise_requires_follow_up_actions ... ok
+test service_level_profile_requires_owner_ref ... ok
+test replay_slice_requires_gaps_when_partial ... ok
+test taxonomy_and_status_validate_when_well_formed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test tests::execution_evidence_schema_family_is_registered ... ok
+test tests::v9_bridge_atomicity_schemas_are_registered ... ok
+test tests::v9_canonical_bundle_schemas_are_registered ... ok
+test tests::v9_execution_evidence_schemas_are_complete ... ok
+test tests::v9_governance_review_schemas_are_registered ... ok
+test tests::v9_repair_law_schema_is_registered ... ok
+test tests::v9_runtime_provenance_schema_is_registered ... ok
+test tests::generates_expected_schema_set ... ok
+test tests::canonical_schemas_match_generator_output ... FAILED
+test tests::check_fails_when_schema_file_drifts ... ok
+
+failures:
+
+---- tests::canonical_schemas_match_generator_output stdout ----
+
+thread 'tests::canonical_schemas_match_generator_output' (602702) panicked at contract-schema-gen/src/lib.rs:970:52:
+called `Result::unwrap()` on an `Err` value: "schema drift detected for '/home/sikmindz/Coding/Libraries/contract-schema-gen/../schemas/export-envelope-v3.schema.json'"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::canonical_schemas_match_generator_output
+
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+

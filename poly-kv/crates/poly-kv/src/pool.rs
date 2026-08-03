@@ -25,6 +25,7 @@ pub(crate) struct SharedKvPoolInner {
     pub build_receipt: PoolBuildReceiptV1,
     pub fallback: ExactFallback,
     pub encoded_blocks: Vec<EncodedPoolBlock>,
+    pub value_codec: Arc<dyn ValueCodec>,
     pub active_readers: AtomicUsize,
     pub active_reader_scratch_bytes: AtomicU64,
     pub next_reader_id: AtomicU64,
@@ -42,7 +43,7 @@ pub(crate) struct EncodedPoolBlock {
 #[derive(Debug, Clone)]
 pub(crate) enum EncodedBlock {
     Q8Key(Q8KeyBlock),
-    RawValue(Vec<f32>),
+    Value(Vec<u8>),
 }
 
 #[derive(Debug, Clone)]
@@ -67,7 +68,7 @@ pub struct PoolBuilder {
     policy: CompressionPolicyV1,
     exact_fallback: Option<ExactFallback>,
     key_codec: Q8KeyCodec,
-    value_codec: RawExactValueCodec,
+    value_codec: Arc<dyn ValueCodec>,
 }
 
 impl Default for PoolBuilder {
@@ -79,9 +80,13 @@ impl Default for PoolBuilder {
             policy: CompressionPolicyV1::alpha_reference(),
             exact_fallback: None,
             key_codec: Q8KeyCodec::symmetric_per_block(),
-            value_codec: RawExactValueCodec,
+            value_codec: Arc::new(RawExactValueCodec),
         }
     }
+}
+
+pub fn should_compress(encoded_bytes: u64, exact_fallback_bytes: u64) -> bool {
+    encoded_bytes < exact_fallback_bytes
 }
 
 impl SharedKvPool {
@@ -165,8 +170,11 @@ impl PoolBuilder {
         self
     }
 
-    pub fn value_codec(mut self, value: RawExactValueCodec) -> Self {
-        self.value_codec = value;
+    pub fn value_codec<V>(mut self, value: V) -> Self
+    where
+        V: ValueCodec + 'static,
+    {
+        self.value_codec = Arc::new(value);
         self
     }
 
@@ -195,6 +203,7 @@ impl PoolBuilder {
         let mut manifest_blocks = Vec::with_capacity(blocks.len());
         let mut eval_receipts = Vec::new();
         let mut observed_key_mse = None::<f64>;
+        let mut observed_value_mse = None::<f64>;
 
         for block in &blocks {
             let exact_bytes = block.exact_bytes();
@@ -242,7 +251,8 @@ impl PoolBuilder {
                 KvRole::Value => {
                     let encoded = self.value_codec.encode_values(&block.data)?;
                     let eval = self.value_codec.eval_values(&block.data, &encoded)?;
-                    let encoded_bytes = (encoded.len() as u64) * 4;
+                    observed_value_mse = max_optional(observed_value_mse, eval.mse);
+                    let encoded_bytes = encoded.len() as u64;
                     let artifact_digest = digest_encoded_raw(block, &encoded);
                     eval_receipts.push(CompressionEvalReceiptV1 {
                         schema_version: 1,
@@ -273,7 +283,7 @@ impl PoolBuilder {
                     encoded_blocks.push(EncodedPoolBlock {
                         role: block.role,
                         layer: block.layer,
-                        encoded: EncodedBlock::RawValue(encoded),
+                        encoded: EncodedBlock::Value(encoded),
                         exact_len: block.data.len(),
                         encoded_bytes,
                     });
@@ -283,13 +293,21 @@ impl PoolBuilder {
 
         let mut quality_gate = self.policy.quality_gate.clone();
         quality_gate.observed_key_mse = observed_key_mse;
-        quality_gate.passed = observed_key_mse
+        quality_gate.observed_value_mse = observed_value_mse;
+        let key_passed = observed_key_mse
             .map(|mse| mse <= quality_gate.max_key_mse)
             .unwrap_or(false);
+        let value_passed = observed_value_mse
+            .map(|mse| mse <= quality_gate.max_value_mse)
+            .unwrap_or(false);
+        quality_gate.passed = key_passed && value_passed;
         if !quality_gate.passed {
             return Err(PolyKvError::QualityGateFailed(format!(
-                "observed key mse {:?} exceeds max {}",
-                observed_key_mse, quality_gate.max_key_mse
+                "observed key mse {:?} (max {}) or value mse {:?} (max {}) exceeds budget",
+                observed_key_mse,
+                quality_gate.max_key_mse,
+                observed_value_mse,
+                quality_gate.max_value_mse
             )));
         }
 
@@ -305,8 +323,12 @@ impl PoolBuilder {
             source_dtype: shape.dtype,
             shape,
             policy: CompressionPolicyV1 {
+                profile_digest: combined_profile_digest(&self.key_codec, self.value_codec.as_ref()),
+                key_codec_id: self.key_codec.codec_id(),
+                value_codec_id: self.value_codec.codec_id(),
+                lossy_keys: self.key_codec.is_lossy(),
+                lossy_values: self.value_codec.is_lossy(),
                 quality_gate: quality_gate.clone(),
-                ..self.policy
             },
             blocks: manifest_blocks,
             encoded_bytes,
@@ -339,6 +361,7 @@ impl PoolBuilder {
                 build_receipt,
                 fallback,
                 encoded_blocks,
+                value_codec: Arc::clone(&self.value_codec),
                 active_readers: AtomicUsize::new(0),
                 active_reader_scratch_bytes: AtomicU64::new(0),
                 next_reader_id: AtomicU64::new(1),
@@ -388,7 +411,11 @@ pub(crate) fn decode_slice_from_inner(
             }),
         )
     } else {
-        (decode_full_block(encoded)?, encoded.encoded_bytes, None)
+        (
+            decode_full_block(inner, encoded)?,
+            encoded.encoded_bytes,
+            None,
+        )
     };
 
     let data = extract_slice(&decoded_layer, &inner.manifest.shape, &request)?;
@@ -441,7 +468,10 @@ pub(crate) fn decode_layer_from_inner(
     Ok(DecodedLayer { layer, key, value })
 }
 
-fn decode_full_block(block: &EncodedPoolBlock) -> Result<Vec<f32>, PolyKvError> {
+fn decode_full_block(
+    inner: &SharedKvPoolInner,
+    block: &EncodedPoolBlock,
+) -> Result<Vec<f32>, PolyKvError> {
     match &block.encoded {
         EncodedBlock::Q8Key(encoded) => {
             let codec = Q8KeyCodec::symmetric_per_block();
@@ -449,7 +479,11 @@ fn decode_full_block(block: &EncodedPoolBlock) -> Result<Vec<f32>, PolyKvError> 
             codec.decode_block(encoded, &mut out)?;
             Ok(out)
         }
-        EncodedBlock::RawValue(encoded) => Ok(encoded.clone()),
+        EncodedBlock::Value(encoded) => {
+            let mut out = vec![0.0; block.exact_len];
+            inner.value_codec.decode_values(encoded, &mut out)?;
+            Ok(out)
+        }
     }
 }
 
@@ -554,13 +588,24 @@ fn digest_encoded_q8(block: &ExactKvBlock, encoded: &Q8KeyBlock) -> ArtifactDige
     ArtifactDigest::from_canonical_bytes(&bytes)
 }
 
-fn digest_encoded_raw(block: &ExactKvBlock, encoded: &[f32]) -> ArtifactDigest {
+fn digest_encoded_raw(block: &ExactKvBlock, encoded: &[u8]) -> ArtifactDigest {
     let mut bytes = Vec::new();
     bytes.extend_from_slice(block.artifact_digest().to_string().as_bytes());
-    for value in encoded {
-        bytes.extend_from_slice(&value.to_bits().to_le_bytes());
-    }
+    bytes.extend_from_slice(encoded);
     ArtifactDigest::from_canonical_bytes(&bytes)
+}
+
+fn combined_profile_digest(
+    key_codec: &Q8KeyCodec,
+    value_codec: &dyn ValueCodec,
+) -> quant_codec_core::CodecProfileDigest {
+    let key_digest = key_codec.profile_digest().to_string();
+    let value_digest = value_codec.profile_digest().to_string();
+    quant_codec_core::CodecProfileDigest::from_parts(&[
+        b"poly-kv-policy-v1",
+        key_digest.as_bytes(),
+        value_digest.as_bytes(),
+    ])
 }
 
 fn max_optional(a: Option<f64>, b: Option<f64>) -> Option<f64> {
@@ -569,5 +614,412 @@ fn max_optional(a: Option<f64>, b: Option<f64>) -> Option<f64> {
         (Some(a), None) => Some(a),
         (None, Some(b)) => Some(b),
         (None, None) => None,
+    }
+}
+
+// ── Compressed attention scoring (fibquant-adapter only) ────────
+
+#[cfg(feature = "fibquant-adapter")]
+use crate::CompressedAttentionSelectionReceipt;
+
+/// A scored candidate from compressed-domain attention.
+#[cfg(feature = "fibquant-adapter")]
+#[derive(Debug, Clone)]
+pub struct CompressedAttentionHit {
+    pub token_index: usize,
+    pub score: f32,
+    pub value: Vec<f32>,
+}
+
+/// Result of compressed candidate scoring with bounded value decode.
+#[cfg(feature = "fibquant-adapter")]
+#[derive(Debug, Clone)]
+pub struct CompressedAttentionSelection {
+    pub hits: Vec<CompressedAttentionHit>,
+    pub receipt: CompressedAttentionSelectionReceipt,
+}
+
+/// Cached decoded key/value codes and FibScorer for one layer/head.
+#[cfg(feature = "fibquant-adapter")]
+pub struct PreparedCompressedIndex {
+    pub layer_idx: usize,
+    pub head_idx: usize,
+    pub key_codes: Vec<fib_quant::FibCodeV1>,
+    pub value_codes: Vec<fib_quant::FibCodeV1>,
+    pub scorer: fib_quant::FibScorer,
+    pub num_tokens: usize,
+}
+
+#[cfg(feature = "fibquant-adapter")]
+impl SharedKvPool {
+    /// Score compressed FibQuant codes for one layer/head, select top-k,
+    /// decode only selected values, return receipt proving no full decode.
+    pub fn attention_topk_compressed(
+        &self,
+        layer_idx: usize,
+        head_idx: usize,
+        query: &[f32],
+        top_k: usize,
+    ) -> Result<CompressedAttentionSelection, PolyKvError> {
+        let shape = &self.inner.manifest.shape;
+        let head_dim = shape.head_dim as usize;
+        if query.len() != head_dim {
+            return Err(PolyKvError::ShapeMismatch {
+                reason: format!("query dim {} != head_dim {}", query.len(), head_dim),
+            });
+        }
+        let num_heads = shape.key_heads as usize;
+        if head_idx >= num_heads {
+            return Err(PolyKvError::InvalidShape {
+                reason: format!("head_idx {} >= num_heads {}", head_idx, num_heads),
+            });
+        }
+        let num_tokens = shape.seq_len as usize;
+
+        // Decode FibCodeV1 codes from encoded value blocks.
+        let adapter = crate::adapters::fibquant::FibQuantValueCodec::new(head_dim, 4, 32, 42)?;
+        let mut value_codes: Vec<fib_quant::FibCodeV1> = Vec::new();
+        for block in &self.inner.encoded_blocks {
+            if block.role == KvRole::Value {
+                if let EncodedBlock::Value(ref bytes) = block.encoded {
+                    let codes = adapter.decode_to_fib_codes(bytes)?;
+                    value_codes.extend(codes);
+                }
+            }
+        }
+        if value_codes.len() < num_tokens * num_heads {
+            return Err(PolyKvError::Codec(
+                "not enough FibCodeV1 codes decoded for scoring".into(),
+            ));
+        }
+
+        // Build scorer and score candidates for this head.
+        let scorer = adapter.build_scorer(42)?;
+        let prepared = scorer
+            .prepare_query(query)
+            .map_err(|e| PolyKvError::Codec(format!("fib prepare: {e}")))?;
+
+        let mut scored: Vec<(usize, f32)> = Vec::with_capacity(num_tokens);
+        for token_idx in 0..num_tokens {
+            let code_idx = token_idx * num_heads + head_idx;
+            if code_idx < value_codes.len() {
+                let score = scorer
+                    .score_prepared(&prepared, &value_codes[code_idx])
+                    .map_err(|e| PolyKvError::Codec(format!("fib score: {e}")))?;
+                scored.push((token_idx, score));
+            }
+        }
+
+        let selected = top_k.min(scored.len());
+        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        scored.truncate(selected);
+
+        let mut hits = Vec::with_capacity(selected);
+        for &(token_idx, score) in &scored {
+            let code_idx = token_idx * num_heads + head_idx;
+            let value = scorer
+                .quantizer()
+                .decode(&value_codes[code_idx])
+                .map_err(|e| PolyKvError::Codec(format!("fib decode: {e}")))?;
+            hits.push(CompressedAttentionHit {
+                token_index: token_idx,
+                score,
+                value,
+            });
+        }
+
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let receipt = CompressedAttentionSelectionReceipt {
+            schema_version: crate::COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA,
+            pool_id: self.inner.manifest.manifest_digest.to_string(),
+            layer_idx: layer_idx as u32,
+            head_idx: head_idx as u32,
+            total_candidates: num_tokens as u32,
+            selected_count: hits.len() as u32,
+            full_layer_decoded: false,
+            decoded_value_vectors: hits.len() as u64,
+            full_decode_value_count: num_tokens as u64,
+            claim_boundary: "fib_cold_pool_compressed_score_topk_value_decode".into(),
+            codec_used: "fibquant-adapter".into(),
+            timestamp: now,
+        };
+        receipt.validate().map_err(|e| PolyKvError::Manifest(e))?;
+        Ok(CompressedAttentionSelection { hits, receipt })
+    }
+
+    /// Build a prepared compressed index for repeated scoring.
+    pub fn prepare_compressed_index(
+        &self,
+        layer_idx: usize,
+        head_idx: usize,
+    ) -> Result<PreparedCompressedIndex, PolyKvError> {
+        let shape = &self.inner.manifest.shape;
+        let num_tokens = shape.seq_len as usize;
+        let head_dim = shape.head_dim as usize;
+        let num_heads = shape.key_heads as usize;
+        if head_idx >= num_heads {
+            return Err(PolyKvError::InvalidShape {
+                reason: format!("head_idx {} >= num_heads {}", head_idx, num_heads),
+            });
+        }
+
+        let adapter = crate::adapters::fibquant::FibQuantValueCodec::new(head_dim, 4, 32, 42)?;
+        let scorer = adapter.build_scorer(42)?;
+
+        let mut value_codes: Vec<fib_quant::FibCodeV1> = Vec::new();
+        for block in &self.inner.encoded_blocks {
+            if block.role == KvRole::Value {
+                if let EncodedBlock::Value(ref bytes) = block.encoded {
+                    value_codes.extend(adapter.decode_to_fib_codes(bytes)?);
+                }
+            }
+        }
+
+        Ok(PreparedCompressedIndex {
+            layer_idx,
+            head_idx,
+            key_codes: vec![],
+            value_codes,
+            scorer,
+            num_tokens,
+        })
+    }
+
+    /// Score using a prepared index (avoids rebuilding codec state).
+    pub fn attention_topk_compressed_prepared(
+        &self,
+        index: &PreparedCompressedIndex,
+        query: &[f32],
+        top_k: usize,
+    ) -> Result<CompressedAttentionSelection, PolyKvError> {
+        let head_dim = self.inner.manifest.shape.head_dim as usize;
+        if query.len() != head_dim {
+            return Err(PolyKvError::ShapeMismatch {
+                reason: format!("query dim {} != head_dim {}", query.len(), head_dim),
+            });
+        }
+        let prepared = index
+            .scorer
+            .prepare_query(query)
+            .map_err(|e| PolyKvError::Codec(format!("fib prepare: {e}")))?;
+
+        let num_heads = self.inner.manifest.shape.key_heads as usize;
+        let num_tokens = index.num_tokens;
+        let mut scored: Vec<(usize, f32)> = Vec::with_capacity(num_tokens);
+        for token_idx in 0..num_tokens {
+            let code_idx = token_idx * num_heads + index.head_idx;
+            if code_idx < index.value_codes.len() {
+                let score = index
+                    .scorer
+                    .score_prepared(&prepared, &index.value_codes[code_idx])
+                    .map_err(|e| PolyKvError::Codec(format!("fib score: {e}")))?;
+                scored.push((token_idx, score));
+            }
+        }
+
+        let selected = top_k.min(scored.len());
+        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        scored.truncate(selected);
+
+        let mut hits = Vec::with_capacity(selected);
+        for &(token_idx, score) in &scored {
+            let code_idx = token_idx * num_heads + index.head_idx;
+            let value = index
+                .scorer
+                .quantizer()
+                .decode(&index.value_codes[code_idx])
+                .map_err(|e| PolyKvError::Codec(format!("fib decode: {e}")))?;
+            hits.push(CompressedAttentionHit {
+                token_index: token_idx,
+                score,
+                value,
+            });
+        }
+
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let receipt = CompressedAttentionSelectionReceipt {
+            schema_version: crate::COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA,
+            pool_id: self.inner.manifest.manifest_digest.to_string(),
+            layer_idx: index.layer_idx as u32,
+            head_idx: index.head_idx as u32,
+            total_candidates: num_tokens as u32,
+            selected_count: hits.len() as u32,
+            full_layer_decoded: false,
+            decoded_value_vectors: hits.len() as u64,
+            full_decode_value_count: num_tokens as u64,
+            claim_boundary: "fib_cold_pool_compressed_score_topk_value_decode_prepared".into(),
+            codec_used: "fibquant-adapter-prepared".into(),
+            timestamp: now,
+        };
+        receipt.validate().map_err(|e| PolyKvError::Manifest(e))?;
+        Ok(CompressedAttentionSelection { hits, receipt })
+    }
+}
+
+// ── Branch support ──────────────────────────────────────────────
+
+/// A writable branch forked from a shared immutable pool.
+///
+/// Each branch holds a reference to the shared prefix and its own
+/// exact-writable tail. Branch mutations never affect the shared pool
+/// or any other branch.
+#[derive(Debug)]
+pub struct BranchHandle {
+    /// Reference to the shared immutable pool.
+    pool: SharedKvPool,
+    /// Agent/branch identifier.
+    agent_id: String,
+    /// Writable tail tokens — appended after the shared prefix.
+    tail_tokens: Vec<u32>,
+    /// Writable tail KV blocks (exact only initially; compressed after
+    /// Phase 4 governed admission).
+    tail_blocks: Vec<ExactKvBlock>,
+    /// Current sequence length = shared_prefix_len + tail_len.
+    current_seq_len: u64,
+}
+
+/// Configuration for creating a new branch.
+#[derive(Debug, Clone, Default)]
+pub struct BranchConfig {
+    /// Human-readable agent identifier.
+    pub agent_id: String,
+    /// Optional initial tail tokens to seed the branch.
+    pub initial_tokens: Vec<u32>,
+}
+
+impl BranchConfig {
+    pub fn new(agent_id: impl Into<String>) -> Self {
+        Self {
+            agent_id: agent_id.into(),
+            initial_tokens: Vec::new(),
+        }
+    }
+
+    pub fn with_tokens(mut self, tokens: Vec<u32>) -> Self {
+        self.initial_tokens = tokens;
+        self
+    }
+}
+
+impl SharedKvPool {
+    /// Fork a new branch from this shared pool.
+    ///
+    /// The branch starts with an empty writable tail and the full
+    /// shared prefix available for decoding.
+    pub fn fork(&self, config: BranchConfig) -> Result<BranchHandle, PolyKvError> {
+        if config.agent_id.is_empty() {
+            return Err(PolyKvError::Manifest(
+                "branch agent_id must not be empty".to_string(),
+            ));
+        }
+        let seq_len = self.inner.manifest.shape.seq_len;
+        Ok(BranchHandle {
+            pool: self.clone(),
+            agent_id: config.agent_id,
+            tail_tokens: config.initial_tokens,
+            tail_blocks: Vec::new(),
+            current_seq_len: seq_len,
+        })
+    }
+}
+
+impl BranchHandle {
+    /// Return the shared pool this branch was forked from.
+    pub fn pool(&self) -> &SharedKvPool {
+        &self.pool
+    }
+
+    /// Return the agent/branch identifier.
+    pub fn agent_id(&self) -> &str {
+        &self.agent_id
+    }
+
+    /// Number of tokens in the shared prefix.
+    pub fn shared_prefix_len(&self) -> u64 {
+        self.pool.inner.manifest.shape.seq_len
+    }
+
+    /// Number of tokens in this branch's writable tail.
+    pub fn tail_len(&self) -> usize {
+        self.tail_tokens.len()
+    }
+
+    /// Current total sequence length (shared prefix + tail).
+    pub fn current_seq_len(&self) -> u64 {
+        self.current_seq_len
+    }
+
+    /// Append tokens to the branch tail.
+    ///
+    /// The caller is responsible for computing the corresponding KV
+    /// tensors and calling `append_blocks`.
+    pub fn append_tokens(&mut self, tokens: &[u32]) {
+        self.tail_tokens.extend_from_slice(tokens);
+        self.current_seq_len += tokens.len() as u64;
+    }
+
+    /// Append exact KV blocks to the branch tail.
+    ///
+    /// Blocks must match the pool's shape (per-layer key/value pairs)
+    /// and the current tail length.
+    pub fn append_blocks(&mut self, blocks: Vec<ExactKvBlock>) -> Result<(), PolyKvError> {
+        let shape = &self.pool.inner.manifest.shape;
+        for block in &blocks {
+            if block.shape != *shape {
+                return Err(PolyKvError::ShapeMismatch {
+                    reason: format!(
+                        "block {:?} layer {} shape differs from pool",
+                        block.role, block.layer.0
+                    ),
+                });
+            }
+        }
+        self.tail_blocks.extend(blocks);
+        Ok(())
+    }
+
+    /// Append tokens and their associated KV blocks atomically.
+    pub fn append(&mut self, tokens: &[u32], blocks: Vec<ExactKvBlock>) -> Result<(), PolyKvError> {
+        self.append_tokens(tokens);
+        self.append_blocks(blocks)
+    }
+
+    /// Decode the combined shared-prefix + branch-tail state for one
+    /// layer, returning the full (key_data, value_data) tensors.
+    ///
+    /// This decodes the shared prefix blocks and concatenates the
+    /// branch-tail exact blocks.
+    pub fn decode_combined_layer(
+        &self,
+        layer: LayerId,
+    ) -> Result<(Vec<f32>, Vec<f32>), PolyKvError> {
+        let scratch = 64 * 1024;
+        let decoded = decode_layer_from_inner(&self.pool.inner, layer, scratch)?;
+        let mut keys = decoded.key.data;
+        let mut values = decoded.value.data;
+
+        // Append branch-tail blocks for this layer.
+        for block in &self.tail_blocks {
+            if block.layer == layer {
+                match block.role {
+                    KvRole::Key => keys.extend_from_slice(&block.data),
+                    KvRole::Value => values.extend_from_slice(&block.data),
+                }
+            }
+        }
+        Ok((keys, values))
+    }
+}
+
+impl Drop for BranchHandle {
+    fn drop(&mut self) {
+        // Branch cleanup: no shared state mutation needed.
+        // The pool reference is released via Arc drop.
     }
 }

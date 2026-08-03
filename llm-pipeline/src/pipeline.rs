@@ -16,6 +16,8 @@ use crate::{
 };
 use reqwest::Client;
 use serde_json::Value;
+use sha2::{Digest, Sha256};
+use std::cell::RefCell;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -24,11 +26,7 @@ use tokio::sync::mpsc;
 
 /// SHA-256 digest helper for receipts.
 fn sha256_digest(data: &str) -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-    let mut h = DefaultHasher::new();
-    data.hash(&mut h);
-    format!("{:016x}", h.finish())
+    format!("{:x}", Sha256::digest(data.as_bytes()))
 }
 
 /// Pipeline executor for multi-stage LLM workflows.
@@ -48,7 +46,7 @@ where
     cancellation: Option<Arc<AtomicBool>>,
     _phantom: std::marker::PhantomData<T>,
     /// The last execution receipt, populated after each `execute_*` call.
-    last_receipt: Option<PipelineExecutionReceiptV1>,
+    last_receipt: RefCell<Option<PipelineExecutionReceiptV1>>,
 }
 
 impl<T> std::fmt::Debug for Pipeline<T>
@@ -85,8 +83,8 @@ where
     }
 
     /// Returns the last execution receipt, if any.
-    pub fn last_receipt(&self) -> Option<&PipelineExecutionReceiptV1> {
-        self.last_receipt.as_ref()
+    pub fn last_receipt(&self) -> Option<PipelineExecutionReceiptV1> {
+        self.last_receipt.borrow().clone()
     }
 
     /// Check whether cancellation has been requested.
@@ -181,17 +179,30 @@ where
             let latency_ms = start.elapsed().as_millis() as u64;
 
             // Emit a ProviderCallReceiptV1 for this stage's LLM call.
+            let traceparent = ctx.trace_ctx.to_traceparent().ok();
             provider_calls.push(ProviderCallReceiptV1 {
+                integrity_tag: None,
+                previous_receipt_digest: None,
+                traceparent: traceparent.clone(),
+                tracestate: None,
                 receipt_id: uuid::Uuid::new_v4().to_string(),
-                provider: "ollama".to_string(),
+                provider: ctx.backend.name().to_string(),
                 model_route: payload.model().to_string(),
                 request_digest: sha256_digest(
                     &serde_json::to_string(&current_input).unwrap_or_default(),
                 ),
                 response_digest: sha256_digest(&output.raw_response),
                 latency_ms,
-                tokens_in: 0, // Backend doesn't expose token counts in LlmResponse metadata
-                tokens_out: 0,
+                tokens_in: output
+                    .token_usage
+                    .as_ref()
+                    .map(|u| u.prompt_tokens as u64)
+                    .unwrap_or(0),
+                tokens_out: output
+                    .token_usage
+                    .as_ref()
+                    .map(|u| u.completion_tokens as u64)
+                    .unwrap_or(0),
             });
 
             // Emit RetryDecisionReceiptV1 entries from diagnostics if present.
@@ -234,6 +245,13 @@ where
 
         // Build the execution receipt and store it.
         let receipt = PipelineExecutionReceiptV1 {
+            receipt_version: "1".to_string(),
+            crate_version: env!("CARGO_PKG_VERSION").to_string(),
+            integrity_tag: None,
+            previous_receipt_digest: None,
+            traceparent: ctx.trace_ctx.to_traceparent().ok(),
+            tracestate: None,
+            chain_valid: false,
             receipt_id: uuid::Uuid::new_v4().to_string(),
             pipeline_id: format!("pipeline-{}", stages_enabled.iter().filter(|&&b| b).count()),
             provider_calls,
@@ -245,13 +263,7 @@ where
             outcome: ExecutionOutcome::Success,
             recorded_time: chrono::Utc::now(),
         };
-        // Store via interior mutability (RefCell) — safe because this is &mut self
-        // and each call gets a fresh pipeline reference.
-        let receipt_box = Box::new(receipt);
-        let receipt_ptr = Box::into_raw(receipt_box) as *mut Option<PipelineExecutionReceiptV1>;
-        // SAFETY: self.last_receipt is now set via pointer injection — the receipt
-        // is dropped when Pipeline is dropped (Box manages allocation).
-        let _ = receipt_ptr;
+        *self.last_receipt.borrow_mut() = Some(receipt);
 
         Ok(PipelineResult {
             final_output,
@@ -420,7 +432,7 @@ where
             context: self.context,
             cancellation: self.cancellation,
             _phantom: std::marker::PhantomData,
-            last_receipt: None,
+            last_receipt: RefCell::new(None),
         })
     }
 }

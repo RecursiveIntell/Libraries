@@ -81,7 +81,7 @@ impl VectorCodec for Q8KeyCodec {
     type Error = PolyKvError;
 
     fn profile(&self) -> &dyn quant_codec_core::CodecProfile {
-        unreachable!("poly-kv codecs do not implement CodecProfile")
+        self
     }
 
     fn capabilities(&self) -> quant_codec_core::CodecCapabilities {

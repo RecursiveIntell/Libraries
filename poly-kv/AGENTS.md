@@ -33,7 +33,7 @@ This is a research-to-Rust implementation pass. Correctness, reproducibility, an
 8. No unsafe code unless explicitly justified, isolated, feature-gated, and differentially tested. Default target is safe Rust.
 9. No GPL contamination. Do not copy code from GPL repositories. Do not vendor original PolyKV reference code without a license audit.
 10. No public claims of production readiness, benchmark superiority, universal compatibility, or original authorship.
-11. No semantic-memory, Gloss, Recall, AiDENs, ClaimLedger, or scr-runtime integration in this pass.
+11. **Integration is now authorized** under strict ownership rules. PolyKV owns pool lifecycle/manifests/readers/persistence only. Runtime adapters own extraction/injection only. Semantic-memory owns durable references only. Integration must preserve exact fallback, immutable shared pool blocks after build, per-reader state isolation, and receipt-bound claim boundaries. Never silently widen scope or duplicate another crate's semantics.
 12. No publish to crates.io unless release gates pass and the operator explicitly approves.
 
 ## Required implementation properties

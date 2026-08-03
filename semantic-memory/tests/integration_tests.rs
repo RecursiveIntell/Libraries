@@ -1,3 +1,7 @@
+#[cfg(feature = "testing")]
+use semantic_memory::{
+    AuthorityPermit, ExactnessProfile, ReceiptMode, SearchContext, SearchSource,
+};
 use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder, Role};
 use tempfile::TempDir;
 
@@ -399,4 +403,205 @@ async fn test_auto_token_count() {
     // Should have auto-computed token count (19 chars / 4 ≈ 4), not None
     assert!(messages[0].token_count.is_some());
     assert!(messages[0].token_count.unwrap() > 0);
+}
+
+#[cfg(feature = "admin-ops")]
+#[tokio::test]
+async fn search_cache_cleared_after_update_fact() {
+    let (store, _tmp) = test_store();
+
+    // Add a fact with unique content easily matched by FTS5
+    let fact_id = store
+        .add_fact(
+            "general",
+            "xyzzy unique marker phrase for cache test",
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+
+    // First search populates the cache
+    let results1 = store
+        .search("xyzzy unique marker", Some(5), None, None)
+        .await
+        .unwrap();
+    assert!(
+        !results1.is_empty(),
+        "Should find the fact with xyzzy marker before update"
+    );
+    assert!(results1
+        .iter()
+        .any(|r| r.content.contains("xyzzy unique marker")));
+
+    // Update the fact to completely different content
+    store
+        .update_fact(&fact_id, "completely replaced content nothing in common")
+        .await
+        .unwrap();
+
+    // Second search with same query: cache must have been cleared, so fresh DB query runs
+    let results2 = store
+        .search("xyzzy unique marker", Some(5), None, None)
+        .await
+        .unwrap();
+
+    // Fresh search should not return the old cached content
+    assert!(
+        results2
+            .iter()
+            .all(|r| !r.content.contains("xyzzy unique marker")),
+        "Search cache must be cleared after update_fact — old stale content should not appear"
+    );
+}
+
+#[cfg(feature = "admin-ops")]
+#[tokio::test]
+async fn search_cache_cleared_after_delete_namespace() {
+    let (store, _tmp) = test_store();
+
+    store
+        .add_fact(
+            "testns",
+            "qqqq distinctive namespace cache fact",
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+
+    let results1 = store
+        .search("qqqq distinctive namespace", Some(5), None, None)
+        .await
+        .unwrap();
+    assert!(
+        !results1.is_empty(),
+        "Should find qqqq fact before namespace delete"
+    );
+
+    store.delete_namespace("testns").await.unwrap();
+
+    let results2 = store
+        .search("qqqq distinctive namespace", Some(5), None, None)
+        .await
+        .unwrap();
+    assert!(
+        results2
+            .iter()
+            .all(|r| !r.content.contains("qqqq distinctive")),
+        "Cache must be cleared after delete_namespace"
+    );
+}
+
+#[cfg(feature = "testing")]
+#[tokio::test]
+async fn two_store_governed_canary_is_immediately_witnessed_and_cache_coherent_by_epoch() {
+    let dir = tempfile::TempDir::new().unwrap();
+    let config_a = MemoryConfig {
+        base_dir: dir.path().to_path_buf(),
+        ..Default::default()
+    };
+    let config_b = config_a.clone();
+
+    let reader =
+        MemoryStore::open_with_embedder(config_a, Box::new(MockEmbedder::new(768))).unwrap();
+    let writer =
+        MemoryStore::open_with_embedder(config_b, Box::new(MockEmbedder::new(768))).unwrap();
+
+    let cache_query = "coherence canary epoch cache token 2026";
+    let canary = "coherence canary epoch cache token 2026";
+
+    reader
+        .add_fact(
+            "coherence",
+            "coherence baseline fact for cache warmup coherence canary epoch cache token",
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+
+    let baseline = reader
+        .search(cache_query, Some(10), None, None)
+        .await
+        .unwrap();
+    assert!(
+        baseline
+            .iter()
+            .any(|r| r.content.contains("baseline fact for cache warmup")),
+        "Reader cache should be primed by a baseline fact"
+    );
+    assert!(
+        !baseline.iter().any(|r| r.content.contains(canary)),
+        "Baseline should not yet contain the canary"
+    );
+
+    let permit = AuthorityPermit::operator_system(
+        "coherence-principal".to_string(),
+        "coherence-caller".to_string(),
+        AuthorityPermit::APPEND_CAPABILITY,
+    );
+    let receipt = writer
+        .authority()
+        .append(
+            permit,
+            "coherence-canary-write".to_string(),
+            "coherence".to_string(),
+            canary.to_string(),
+            Some("tests/coherence-canary.md".to_string()),
+        )
+        .await
+        .unwrap();
+
+    let mut context = SearchContext::default_now();
+    context.receipt_mode = ReceiptMode::ReturnReceipt;
+    context.exactness_profile = ExactnessProfile::PreferExact;
+    context.request_id = Some("coherence-canary-witnessed".to_string());
+
+    let witnessed = reader
+        .search_with_context(cache_query, Some(10), None, None, context)
+        .await
+        .unwrap();
+    let witness = if let Some(witness) = witnessed.receipt.as_ref() {
+        witness
+    } else {
+        panic!("witnessed search should emit a receipt");
+    };
+
+    let canary_result = if let Some(canary_result) =
+        witnessed
+            .results
+            .iter()
+            .find(|result| match &result.source {
+                SearchSource::Fact { fact_id, .. } => fact_id == &receipt.affected_ids[0],
+                _ => false,
+            }) {
+        canary_result
+    } else {
+        panic!("canary result should be present in witnessed search");
+    };
+    assert!(
+        canary_result.cosine_similarity.is_some(),
+        "governed append must carry vector evidence on exact witnessed search"
+    );
+
+    assert!(
+        witness
+            .result_ids
+            .iter()
+            .any(|id| id == &format!("fact:{}", receipt.affected_ids[0])),
+        "witnessed receipt should include the governed fact id"
+    );
+
+    let replayed = reader
+        .search(cache_query, Some(10), None, None)
+        .await
+        .unwrap();
+    assert!(
+        replayed
+            .iter()
+            .any(|r| matches!(&r.source, SearchSource::Fact { fact_id, .. } if *fact_id == receipt.affected_ids[0]))
+            || replayed.iter().any(|r| r.content.contains(canary)),
+        "Ordinary search should eventually observe the canary under cache coherence checks"
+    );
 }

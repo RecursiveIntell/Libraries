@@ -148,6 +148,8 @@ mod tests {
             prompt: "say hi".to_string(),
             messages: vec![],
             config: Default::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: false,
             request_timeout: None,
         };
@@ -176,6 +178,8 @@ mod tests {
             prompt: "test".to_string(),
             messages: vec![],
             config: Default::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: false,
             request_timeout: None,
         };
@@ -201,6 +205,8 @@ mod tests {
             prompt: "test".to_string(),
             messages: vec![],
             config: Default::default(),
+            constraint: crate::GenerationConstraint::default(),
+            max_tokens_limit: None,
             stream: true,
             request_timeout: None,
         };

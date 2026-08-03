@@ -1,6 +1,7 @@
 //! # LLM Pipeline
 //!
-//! Reusable node payloads for LLM workflows, with optional sequential chaining.
+//! Supported providers include Ollama and feature-gated OpenAI/Anthropic backends.
+//! Cost models, token budgets, and sequential/`BestOfN` retry strategies are available.
 //!
 //! This crate provides the building blocks for LLM-powered workflows:
 //! **payloads** that execute LLM calls, **parsing utilities** for messy
@@ -85,6 +86,8 @@
 // --- New payload layer ---
 pub mod backend;
 pub mod chain;
+pub mod constraints;
+pub mod cost;
 pub mod diagnostics;
 pub mod events;
 #[allow(deprecated)]
@@ -96,6 +99,7 @@ pub mod output_strategy;
 pub mod parsing;
 #[allow(deprecated)]
 pub mod payload;
+pub mod receipts;
 pub mod retry;
 pub mod retry_policy;
 pub mod streaming;
@@ -113,16 +117,21 @@ pub mod stage;
 pub mod types;
 
 // --- Primary exports: new payload API ---
+#[cfg(feature = "anthropic")]
+pub use backend::AnthropicBackend;
 #[cfg(feature = "openai")]
 pub use backend::OpenAiBackend;
 pub use backend::{BackoffConfig, MockBackend, OllamaBackend, RecordingBackend};
 pub use chain::Chain;
+pub use constraints::GenerationConstraint;
+pub use cost::CostModel;
 pub use diagnostics::ParseDiagnostics;
 pub use exec_ctx::{ExecCtx, ExecCtxBuilder};
 pub use limits::PipelineLimits;
 pub use llm_call::LlmCall;
 pub use output_strategy::OutputStrategy;
-pub use payload::{BoxFut, Payload, PayloadOutput};
+pub use payload::{BoxFut, Payload, PayloadOutput, TokenUsage};
+pub use receipts::{verify_pipeline_receipt, ReceiptVerification};
 pub use retry::RetryConfig;
 pub use retry_policy::{SemanticRetryPolicy, TransportRetryPolicy};
 pub use streaming::StreamingDecoder;

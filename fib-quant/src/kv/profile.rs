@@ -288,6 +288,28 @@ impl KvCompressionProfileV1 {
         self.page_geometry.validate_for_shape(shape)?;
         self.protected_policy.validate_for_shape(shape)?;
         self.quality_budget.validate()?;
+
+        let has_protected_regions = self.protected_policy.first_tokens_raw > 0
+            || self.protected_policy.last_tokens_raw > 0
+            || !self.protected_policy.raw_layers.is_empty()
+            || !self.protected_policy.raw_heads.is_empty();
+        let policy_can_emit_raw = self.axis_policy == KvAxisPolicyV1::Raw
+            || has_protected_regions
+            || self.fallback_policy.mode == KvFallbackModeV1::KeepRaw
+            || (self.quality_budget.has_any_metric()
+                && self.quality_budget.fallback_on_violation == KvFallbackModeV1::KeepRaw);
+        if policy_can_emit_raw && !self.fallback_policy.raw_fallback_available {
+            return Err(FibQuantError::CorruptPayload(
+                "kv profile can emit raw blocks but raw fallback is unavailable".into(),
+            ));
+        }
+        if policy_can_emit_raw
+            && self.page_geometry.encoded_block_bytes < self.page_geometry.raw_vector_bytes
+        {
+            return Err(FibQuantError::CorruptPayload(
+                "encoded_block_bytes cannot hold the declared raw fallback vector".into(),
+            ));
+        }
         Ok(())
     }
 
