@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use turbo_quant::{PolarQuantizer, RotationKind, TurboCodeWireV1, TurboMode, TurboQuantizer};
 
 #[test]

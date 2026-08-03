@@ -31,8 +31,10 @@ pub struct PolyKvBackend {
     dim: usize,
     /// Number of stored items.
     count: Mutex<usize>,
+    #[allow(dead_code)]
     /// Persistence store.
     store: Mutex<Option<KvPoolStore>>,
+    #[allow(dead_code)]
     /// Config for pool persistence.
     store_root: Mutex<Option<std::path::PathBuf>>,
 }
@@ -239,7 +241,7 @@ impl VectorBackend for PolyKvBackend {
         let pool = self.get_or_build_pool()?;
 
         // Use compressed scoring for the first head.
-        #[cfg(feature = "fibquant-adapter")]
+        #[cfg(feature = "fib-quant-codec")]
         {
             let selection = pool
                 .attention_topk_compressed(0, 0, query, top_k.min(count))
@@ -261,7 +263,7 @@ impl VectorBackend for PolyKvBackend {
                 })
                 .collect())
         }
-        #[cfg(not(feature = "fibquant-adapter"))]
+        #[cfg(not(feature = "fib-quant-codec"))]
         {
             // Fallback: decode full pool and compute cosine.
             let reader = pool
