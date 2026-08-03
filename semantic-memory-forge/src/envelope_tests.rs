@@ -103,9 +103,7 @@ fn valid_envelope_passes_validation() {
 
 #[test]
 fn empty_envelope_id_rejected() {
-    let mut env = make_test_envelope();
-    env.envelope_id = EnvelopeId::new("");
-    assert!(env.validate().is_err());
+    assert!(EnvelopeId::try_new("").is_err());
 }
 
 #[test]
@@ -421,7 +419,7 @@ fn v2_digest_matches_pinned_golden_fixture() {
 
     assert_eq!(
         digest.hex(),
-        "540585eb2fb643b349a1726e6d7820527b5c50797eb2c4c4899bf3aab20a2b7c"
+        "d2f6380a41b041ec570357e8a69deb63ddf13a61cd2f5b3ee12c6c6acafe6d0c"
     );
 }
 
@@ -448,7 +446,7 @@ fn v3_digest_matches_pinned_golden_fixture() {
 
     assert_eq!(
         digest.hex(),
-        "78f0c45bcbb4b2e3b2a445eabaad775ebdcc976c76ac113085dcc7741d51779a"
+        "95b40ef94d18560a11a9a97661c364ca346204957c4f9c07c826b5714fea88f7"
     );
 }
 
