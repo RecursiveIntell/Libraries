@@ -186,7 +186,7 @@ fn assign_version_families(
         }
     }
     let mut family_of: Vec<usize> = (0..superseded_by.len()).collect();
-    for i in 0..superseded_by.len() {
+    for (i, _) in superseded_by.iter().enumerate() {
         let mut cur = i;
         let mut visited: HashSet<usize> = HashSet::new();
         visited.insert(cur);
@@ -1229,7 +1229,7 @@ impl MemoryStore {
             confidence,
             verification_status: verification_status.clone(),
             experiment_id: experiment_id_owned.clone().or(current_meta.experiment_id),
-            valid_time: current_meta.valid_time.clone(),
+            valid_time: current_meta.valid_time,
             fact_digest: current_meta.fact_digest.clone(),
         };
 
@@ -1294,7 +1294,7 @@ impl MemoryStore {
             confidence,
             verification_status: verification_status.clone(),
             experiment_id: experiment_id_owned.clone().or(current_meta.experiment_id),
-            valid_time: current_meta.valid_time.clone(),
+            valid_time: current_meta.valid_time,
             fact_digest: current_meta.fact_digest.clone(),
         };
 
