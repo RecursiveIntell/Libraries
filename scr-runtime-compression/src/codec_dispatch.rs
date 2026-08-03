@@ -85,6 +85,41 @@ where
     Ok(ExactFallbackAdapter::new(fallback_decoder))
 }
 
+/// Register a real FibQuant decoder bound to one profile/codebook instance.
+///
+/// CMP-003: FibQuant decoding requires the codebook that produced the code
+/// (the payload carries digests, not the codebook), so registration is
+/// stateful: the caller supplies the [`fib_quant::FibQuantizer`]. The
+/// registered decoder validates the payload (serde parse, then the codec's
+/// own `validate_code_header`) and converts the decoded f32 vector to
+/// little-endian value bytes. It never substitutes raw bytes and never
+/// accepts a different `CodecId`.
+#[cfg(feature = "fib")]
+pub fn build_fib_adapter<T>(codec: fib_quant::FibQuantizer) -> ExactFallbackAdapter<T>
+where
+    T: From<Vec<u8>> + Send + Sync + 'static,
+{
+    let decoder: FallbackDecoder<T> = Box::new(move |codec_id, data| {
+        if codec_id != CodecId::FibQuant {
+            return Err(DecompressError::CodecNotAvailable(format!(
+                "fib adapter only decodes `fib_quant`, requested `{codec_id}`"
+            )));
+        }
+        let code: fib_quant::FibCodeV1 = serde_json::from_slice(data).map_err(|error| {
+            DecompressError::DecodeFailed(format!("fib payload parse failed: {error}"))
+        })?;
+        let floats = codec.decode(&code).map_err(|error| {
+            DecompressError::DecodeFailed(format!("fib decode failed: {error}"))
+        })?;
+        let bytes: Vec<u8> = floats
+            .into_iter()
+            .flat_map(|value| value.to_le_bytes())
+            .collect();
+        Ok(T::from(bytes))
+    });
+    ExactFallbackAdapter::new(decoder)
+}
+
 /// Map a governance profile into a runtime codec without substitution.
 fn map_profile_to_codec(
     profile: &quant_governor::CodecProfile,
@@ -151,10 +186,15 @@ mod tests {
     #[test]
     #[cfg(feature = "turbo")]
     fn select_codec_turbo() {
-        use quant_governor::ContentType;
+        use quant_governor::{CodecProfile, ContentType};
 
-        // Audio with low latency tolerance should select Turbo
-        let policy = GovernancePolicy::default();
+        // Audio with low latency tolerance should select Turbo — admitted
+        // explicitly (CMP-001: default policy admits only Raw).
+        let policy = GovernancePolicy::default().with_admitted_codecs([
+            CodecProfile::Raw,
+            CodecProfile::Q8,
+            CodecProfile::Turbo,
+        ]);
         let request = GovernanceRequest {
             content_type: ContentType::Audio,
             size_bytes: 6144,
@@ -217,5 +257,101 @@ mod tests {
         let result = adapter.decode_exact(CodecId::TurboQuant, compressed);
         // The result must NOT equal the input — that would be passthrough.
         assert!(result.is_err());
+    }
+
+    /// CMP-003: a REAL FibQuant codec round-trips through a registered
+    /// decoder — actual decoding, not passthrough and not a typed rejection.
+    #[cfg(feature = "fib")]
+    #[test]
+    fn fib_registered_decoder_roundtrips_real_code() {
+        use fib_quant::{FibCodebookV1, FibQuantProfileV1, FibQuantizer};
+
+        let mut profile = FibQuantProfileV1::paper_default(8, 2, 8, 31).unwrap();
+        profile.training_samples = 128;
+        profile.lloyd_restarts = 2;
+        profile.lloyd_iterations = 3;
+        let codebook = FibCodebookV1::build(profile.clone()).unwrap();
+        let quantizer = FibQuantizer::from_codebook(codebook).unwrap();
+
+        let vector: Vec<f32> = (0..8).map(|i| (i as f32 + 1.0) / 8.0).collect();
+        let code = quantizer.encode(&vector).unwrap();
+        let payload = serde_json::to_vec(&code).unwrap();
+
+        let adapter =
+            build_fib_adapter::<Vec<u8>>(quantizer).with_supported_codecs([CodecId::FibQuant]);
+        let decoded = adapter.decode_exact(CodecId::FibQuant, &payload).unwrap();
+        assert_eq!(decoded.len(), 8 * 4, "decoded f32 value bytes");
+
+        let floats: Vec<f32> = decoded
+            .chunks_exact(4)
+            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+            .collect();
+        assert_eq!(floats.len(), 8);
+        // Reconstruction is quantized, not bit-exact — verify it is close and
+        // finite (never raw passthrough of the payload).
+        let mse: f64 = floats
+            .iter()
+            .zip(&vector)
+            .map(|(a, b)| f64::from(*a - *b).powi(2))
+            .sum::<f64>()
+            / vector.len() as f64;
+        assert!(
+            mse < 1.0,
+            "quantized reconstruction should be bounded, mse={mse}"
+        );
+        assert_ne!(decoded, payload, "decoded bytes must not be the payload");
+    }
+
+    /// CMP-003: garbage payloads fail typed — never a silent default.
+    #[cfg(feature = "fib")]
+    #[test]
+    fn fib_registered_decoder_rejects_garbage_payload_typed() {
+        use fib_quant::{FibCodebookV1, FibQuantProfileV1, FibQuantizer};
+
+        let mut profile = FibQuantProfileV1::paper_default(8, 2, 8, 31).unwrap();
+        profile.training_samples = 64;
+        profile.lloyd_restarts = 1;
+        profile.lloyd_iterations = 2;
+        let codebook = FibCodebookV1::build(profile).unwrap();
+        let quantizer = FibQuantizer::from_codebook(codebook).unwrap();
+        let adapter =
+            build_fib_adapter::<Vec<u8>>(quantizer).with_supported_codecs([CodecId::FibQuant]);
+
+        let err = adapter
+            .decode_exact(CodecId::FibQuant, b"not-json")
+            .unwrap_err();
+        assert!(
+            matches!(err, DecompressError::DecodeFailed(_)),
+            "expected typed DecodeFailed, got {err:?}"
+        );
+    }
+
+    /// CMP-003: a registered fib adapter refuses other codec ids.
+    #[cfg(feature = "fib")]
+    #[test]
+    fn fib_registered_decoder_rejects_other_codec_id() {
+        use fib_quant::{FibCodebookV1, FibQuantProfileV1, FibQuantizer};
+
+        let mut profile = FibQuantProfileV1::paper_default(8, 2, 8, 31).unwrap();
+        profile.training_samples = 64;
+        profile.lloyd_restarts = 1;
+        profile.lloyd_iterations = 2;
+        let codebook = FibCodebookV1::build(profile).unwrap();
+        let quantizer = FibQuantizer::from_codebook(codebook).unwrap();
+        let adapter =
+            build_fib_adapter::<Vec<u8>>(quantizer).with_supported_codecs([CodecId::FibQuant]);
+
+        let err = adapter
+            .decode_exact(CodecId::TurboQuant, b"whatever")
+            .unwrap_err();
+        // The strict-mode gate rejects a codec the adapter was not registered
+        // for — a typed rejection before any decode attempt.
+        assert!(
+            matches!(
+                err,
+                DecompressError::StrictModeRejected(_) | DecompressError::CodecNotAvailable(_)
+            ),
+            "expected typed rejection, got {err:?}"
+        );
     }
 }
