@@ -90,7 +90,6 @@ fn assert_root_manifest_keeps_canonical_stack_dependencies(root: &Path) {
         r#"stack-ids = { version = "0.1.0", path = "../stack-ids" }"#,
         r#"semantic-memory-forge = { version = "0.1.0", path = "../semantic-memory-forge" }"#,
         r#"forge-memory-bridge = { version = "0.1.0", path = "../forge-memory-bridge" }"#,
-        r#"semantic-memory = { version = "0.5.0", path = "../semantic-memory""#,
         r#"knowledge-runtime = { version = "0.1.0", path = "../knowledge-runtime" }"#,
         r#"llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }"#,
         r#"verification-control = { version = "0.1.0", path = "../verification-control" }"#,
@@ -101,6 +100,18 @@ fn assert_root_manifest_keeps_canonical_stack_dependencies(root: &Path) {
             "workspace manifest must retain canonical dependency {dependency}"
         );
     }
+    // semantic-memory is version-agnostic by design: the canonical identity is
+    // name+path, and the version legitimately advances (0.5.0 -> 0.6.0 under
+    // GRAPH-004 lineage reconciliation). Pinning the literal version here
+    // would make this audit fail on every legitimate bump.
+    assert!(
+        manifest.contains(r#"semantic-memory = { version = ""#),
+        "workspace manifest must retain canonical dependency semantic-memory"
+    );
+    assert!(
+        manifest.contains(r#"path = "../semantic-memory""#),
+        "semantic-memory must stay a path dependency on the workspace crate"
+    );
 }
 
 fn assert_source_basis_matches_current_stack_surface(root: &Path) {
