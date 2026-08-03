@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[path = "../src/proxy.rs"]
 mod proxy;
 #[test]

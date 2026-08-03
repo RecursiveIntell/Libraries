@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::OnceLock;

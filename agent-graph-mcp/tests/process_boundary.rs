@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[path = "../src/daemon.rs"]
 mod daemon;
 #[path = "../src/lifecycle.rs"]

@@ -142,6 +142,7 @@ impl Node for LlmNode {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::cancellation_requested;
     use std::sync::{atomic::AtomicBool, Arc};

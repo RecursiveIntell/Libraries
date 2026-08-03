@@ -253,6 +253,7 @@ pub fn instantiate(id: &str, name: &str) -> Result<Value, String> {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::{instantiate, list};
     use crate::spec::GraphSpec;

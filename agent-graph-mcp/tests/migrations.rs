@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[path = "../src/migrations.rs"]
 mod migrations;
 #[test]

@@ -61,7 +61,7 @@ pub fn migration_digest(binary_digest: &str) -> String {
     format!("{:x}", h.finalize())
 }
 
-pub fn owner_for_new_run<'a>(owner: &'a str) -> rusqlite::Result<&'a str> {
+pub fn owner_for_new_run(owner: &str) -> rusqlite::Result<&str> {
     if owner.is_empty() {
         Err(rusqlite::Error::InvalidParameterName(
             "owner_instance_id".into(),

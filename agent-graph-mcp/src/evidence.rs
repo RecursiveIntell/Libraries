@@ -98,7 +98,8 @@ pub fn witness_envelope_digest(capture: &WitnessCapture) -> String {
         authority_class: &capture.authority_class,
         retrieved_at: &capture.retrieved_at,
     };
-    let bytes = serde_json::to_vec(&envelope).expect("witness envelope serialization");
+    let bytes = serde_json::to_vec(&envelope)
+        .unwrap_or_else(|_| unreachable!("witness envelope serialization"));
     format!("sha256:{:x}", Sha256::digest(bytes))
 }
 
@@ -144,7 +145,8 @@ pub fn witness_envelope_hmac(capture: &WitnessCapture, key: &[u8]) -> String {
         retrieved_at: &capture.retrieved_at,
     };
     hmac_sha256(
-        &serde_json::to_value(envelope).expect("witness envelope serialization"),
+        &serde_json::to_value(envelope)
+            .unwrap_or_else(|_| unreachable!("witness envelope serialization")),
         key,
     )
 }
@@ -372,14 +374,14 @@ pub fn validate_research_evidence(value: &Value) -> Result<(), String> {
         if source
             .get("source_type")
             .and_then(Value::as_str)
-            .is_none_or(|source_type| source_type.trim().is_empty())
+            .map_or(true, |source_type| source_type.trim().is_empty())
         {
             return Err(format!(
                 "research evidence source {index} requires a non-empty source_type"
             ));
         }
         if let Some(witness_id) = source.get("witness_id") {
-            if witness_id.as_str().is_none_or(str::is_empty) {
+            if witness_id.as_str().map_or(true, str::is_empty) {
                 return Err(format!(
                     "research evidence source {index} witness_id must be a non-empty string"
                 ));
@@ -390,7 +392,7 @@ pub fn validate_research_evidence(value: &Value) -> Result<(), String> {
         if claim
             .get("text")
             .and_then(Value::as_str)
-            .is_none_or(|text| text.trim().is_empty())
+            .map_or(true, |text| text.trim().is_empty())
         {
             return Err(format!(
                 "research evidence claim {index} requires non-empty text"
@@ -532,7 +534,12 @@ pub fn witness_bindings(value: &Value) -> Result<Vec<WitnessBinding>, WitnessErr
     let claims = value
         .get("claims")
         .and_then(Value::as_array)
-        .expect("validate_research_evidence checked claims");
+        .ok_or_else(|| {
+            WitnessError::new(
+                "WITNESS_EVIDENCE_INVALID",
+                "validated research evidence is missing claims",
+            )
+        })?;
     let mut bindings = Vec::new();
     for claim in claims {
         let span = parse_span(claim)?;
@@ -582,6 +589,7 @@ pub fn validate_witness_dependencies(
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::{validate_research_evidence, validate_witness_dependencies, WitnessCapture};
     use crate::store::PersistentStore;

@@ -505,6 +505,7 @@ impl AgentGraphServer {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used, clippy::items_after_test_module)]
 mod tests {
     use super::*;
     use crate::run_manager::RunManager;
@@ -754,7 +755,7 @@ impl AgentGraphServer {
             let tpl_name = tpl_val
                 .get("name")
                 .and_then(Value::as_str)
-                .or_else(|| graph_id.as_deref())
+                .or(graph_id.as_deref())
                 .unwrap_or(tpl_id);
             templates::instantiate(tpl_id, tpl_name)
                 .map_err(|e| internal_error(format!("template error: {e}")))?
@@ -908,7 +909,7 @@ impl AgentGraphServer {
         }): Parameters<GraphExecuteParams>,
     ) -> Result<Json<StructuredOutput>, ErrorData> {
         let input = input.unwrap_or(Value::Null);
-        ensure_size(&input, MAX_INPUT_BYTES, "execution input").map_err(|e| invalid_params(e))?;
+        ensure_size(&input, MAX_INPUT_BYTES, "execution input").map_err(invalid_params)?;
 
         let graph = self.resolve_graph(&graph_id, graph_version.as_deref())?;
 
@@ -943,7 +944,7 @@ impl AgentGraphServer {
 
         let run_id = runs
             .allocate(&graph_id, &graph.version, input.clone())
-            .map_err(|e| internal_error(e))?;
+            .map_err(internal_error)?;
 
         if let Err(e) = runs.admit_async(&run_id) {
             runs.remove(&run_id);
@@ -1298,7 +1299,7 @@ impl AgentGraphServer {
                 let limit_val = limit.unwrap_or(100) as usize;
                 let result = runs
                     .events(self.store.as_ref(), id, cursor_val, limit_val)
-                    .map_err(|e| invalid_params(e))?;
+                    .map_err(invalid_params)?;
                 Ok(output_with_meta(result, None, None, Some(id)))
             }
 
@@ -1576,9 +1577,13 @@ impl AgentGraphServer {
             runs.release_async_slot();
             return Ok(error_output(error, "RUN_CAPACITY"));
         }
-        self.store
-            .as_ref()
-            .expect("resumed launch requires SQLite")
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "SQLite persistence is required for resumed launch",
+                "CHECKPOINT_STORE_REQUIRED",
+            ));
+        };
+        store
             .update_execution_status(&run_id, "running", None, None, None)
             .map_err(internal_error)?;
         let terminal_store = self.store.clone();
@@ -1867,7 +1872,7 @@ impl AgentGraphServer {
         };
         let input = input.unwrap_or(Value::Null);
         let checkpoint_requested = checkpoint.unwrap_or(false);
-        ensure_size(&input, MAX_INPUT_BYTES, "execution input").map_err(|e| invalid_params(e))?;
+        ensure_size(&input, MAX_INPUT_BYTES, "execution input").map_err(invalid_params)?;
 
         let RegisteredGraph {
             spec,
@@ -1925,7 +1930,12 @@ impl AgentGraphServer {
                     "CHECKPOINT_STORE_REQUIRED",
                 ));
             };
-            let eligibility = eligibility.expect("checkpoint eligibility");
+            let Some(eligibility) = eligibility else {
+                return Ok(error_output(
+                    "checkpoint eligibility was not computed",
+                    "CHECKPOINT_INVALID",
+                ));
+            };
             let state = initial_state_for_input(&input);
             let budgets_value = requested_budgets
                 .as_ref()
@@ -1939,7 +1949,7 @@ impl AgentGraphServer {
                     input.clone(),
                     requested_budgets.clone(),
                 )
-                .map_err(|e| internal_error(e))?;
+                .map_err(internal_error)?;
             if let Err(error) = store.save_execution_with_budgets(
                 &run_id,
                 &graph_id,
@@ -2000,7 +2010,7 @@ impl AgentGraphServer {
 
         let run_id = runs
             .allocate_with_budgets(&graph_id, &version, input.clone(), requested_budgets)
-            .map_err(|e| internal_error(e))?;
+            .map_err(internal_error)?;
         if let Err(e) = runs.admit_async(&run_id) {
             runs.remove(&run_id);
             return Ok(error_output(e, "RUN_CAPACITY"));
@@ -2070,7 +2080,7 @@ impl AgentGraphServer {
             Ok(Some(record))
                 if run_id
                     .as_deref()
-                    .is_none_or(|run_id| record.run_id == run_id) =>
+                    .map_or(true, |run_id| record.run_id == run_id) =>
             {
                 Ok(output_with_meta(
                     checkpoint_value(&record),
@@ -2386,7 +2396,7 @@ impl AgentGraphServer {
                 cursor.unwrap_or(0),
                 limit.unwrap_or(100) as usize,
             )
-            .map_err(|e| invalid_params(e))?;
+            .map_err(invalid_params)?;
         Ok(output_with_meta(result, None, None, Some(&run_id)))
     }
 

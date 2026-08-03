@@ -38,6 +38,7 @@ impl OwnerLock {
         let path = data_dir.join(".owner.lock");
         let file = OpenOptions::new()
             .create(true)
+            .truncate(false)
             .read(true)
             .write(true)
             .mode(0o600)
@@ -63,6 +64,7 @@ impl Drop for OwnerLock {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::*;
     use tempfile::tempdir;

@@ -1043,6 +1043,7 @@ impl PersistentStore {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn persist_terminal_projection(
         &self,
         run_id: &str,
@@ -1236,6 +1237,7 @@ impl PersistentStore {
 
     // ── Checkpoints ─────────────────────────────────────────────────────
 
+    #[allow(clippy::too_many_arguments)]
     pub fn create_resume_checkpoint(
         &self,
         run_id: &str,
@@ -1414,6 +1416,7 @@ impl PersistentStore {
 
     // ── Durable checkpoint-bound approvals ───────────────────────────
 
+    #[allow(clippy::too_many_arguments)]
     pub fn create_checkpoint_approval(
         &self,
         checkpoint_id: &str,
@@ -1795,6 +1798,7 @@ impl PersistentStore {
             .store(true, std::sync::atomic::Ordering::SeqCst);
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn save_checkpoint(
         &self,
         run_id: &str,
@@ -1932,6 +1936,7 @@ impl PersistentStore {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::*;
 

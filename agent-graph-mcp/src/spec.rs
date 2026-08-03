@@ -220,9 +220,10 @@ impl GraphSpec {
                 .or_default()
                 .push(edge.to.as_str());
             if edge.to != "END" {
-                *predecessors
-                    .get_mut(edge.to.as_str())
-                    .expect("validated edge target") += 1;
+                let Some(predecessor) = predecessors.get_mut(edge.to.as_str()) else {
+                    return Err("validated edge target is missing from node set".into());
+                };
+                *predecessor += 1;
             }
         }
         for node in &self.nodes {
@@ -254,11 +255,13 @@ impl GraphSpec {
                 return Err("loops are outside the deterministic local resume subset".into());
             }
             chain.push(current.to_owned());
-            let next = successors
+            let Some(next) = successors
                 .get(current)
                 .and_then(|targets| targets.first())
                 .copied()
-                .expect("successor count checked");
+            else {
+                return Err("linear resume successor is missing".into());
+            };
             if next == "END" {
                 break;
             }
@@ -368,13 +371,7 @@ fn validate_state_write_conflicts(spec: &GraphSpec) -> Result<(), String> {
             NodeType::Llm | NodeType::HumanApproval | NodeType::Subgraph => {
                 if let Some(key) = node
                     .config
-                    .get(if node.node_type == NodeType::Llm {
-                        "output_key"
-                    } else if node.node_type == NodeType::HumanApproval {
-                        "output_key"
-                    } else {
-                        "output_key"
-                    })
+                    .get("output_key")
                     .and_then(Value::as_str)
                     .filter(|key| !key.is_empty())
                 {
@@ -647,15 +644,14 @@ fn validate_node(node: &NodeSpec, ids: &BTreeSet<&str>) -> Result<(), String> {
             }
         }
     }
-    if node.node_type == NodeType::Subgraph {
-        if node
+    if node.node_type == NodeType::Subgraph
+        && node
             .config
             .get("graph_name")
             .and_then(Value::as_str)
             .is_none()
-        {
-            return Err(format!("subgraph '{}' requires config.graph_name", node.id));
-        }
+    {
+        return Err(format!("subgraph '{}' requires config.graph_name", node.id));
     }
     if node.node_type == NodeType::HumanApproval {
         if node
@@ -745,6 +741,7 @@ fn reject_dangerous_keys(value: &Value) -> Result<(), String> {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::parse_and_validate;
     use serde_json::{json, Value};

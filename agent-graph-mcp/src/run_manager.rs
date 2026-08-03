@@ -232,7 +232,10 @@ impl RunManager {
 
     fn insert_record(&self, record: RunRecord) -> Result<String, String> {
         let run_id = record.run_id.clone();
-        let mut inner = self.inner.lock().expect("run registry poisoned");
+        let mut inner = self
+            .inner
+            .lock()
+            .map_err(|_| "run registry poisoned".to_owned())?;
         if inner.order.len() == MAX_RUNS {
             let Some(old) = inner.order.iter().find_map(|id| {
                 inner
@@ -253,6 +256,7 @@ impl RunManager {
         Ok(run_id)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn allocate_resumed(
         &self,
         run_id: &str,
@@ -405,6 +409,7 @@ impl RunManager {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn execute_with_store_options(
         &self,
         run_id: &str,
@@ -711,7 +716,10 @@ impl RunManager {
                 push_event(r, serde_json::to_value(event).unwrap_or(Value::Null));
             }
         })?;
-        Ok(self.get(run_id).expect("updated run").public())
+        let updated = self
+            .get(run_id)
+            .ok_or_else(|| "updated run missing".to_owned())?;
+        Ok(updated.public())
     }
 
     pub fn start(&self, run_id: String, spec: GraphSpec, base_url: String, model: String) {
@@ -739,6 +747,7 @@ impl RunManager {
         );
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn start_with_completion_with_store<F>(
         &self,
         run_id: String,
@@ -768,6 +777,7 @@ impl RunManager {
         });
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn start_resumed_with_completion<F>(
         &self,
         run_id: String,
@@ -1012,6 +1022,7 @@ pub fn initial_state_for_input(input: &Value) -> Value {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::*;
 

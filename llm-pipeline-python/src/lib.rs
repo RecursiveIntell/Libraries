@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 //! Python bindings for llm-pipeline — Hermes transport replacement.
 //!
 //! ``Pipeline`` wraps ``LlmCall`` + ``ExecCtx`` so Hermes can route LLM
