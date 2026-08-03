@@ -18,8 +18,7 @@ fn main() {
     println!("cargo:rerun-if-env-changed=CUDA_PATH");
 
     // Find nvcc
-    let cuda_path = env::var("CUDA_PATH")
-        .unwrap_or_else(|_| "/usr/local/cuda".to_string());
+    let cuda_path = env::var("CUDA_PATH").unwrap_or_else(|_| "/usr/local/cuda".to_string());
     let nvcc = PathBuf::from(&cuda_path).join("bin").join("nvcc");
 
     if !nvcc.exists() {
@@ -62,7 +61,10 @@ fn compile_with_nvcc(nvcc: &PathBuf) {
             println!("cargo:warning=CUDA kernels compiled successfully");
         }
         Ok(s) => {
-            println!("cargo:warning=nvcc failed with exit code {}", s.code().unwrap_or(-1));
+            println!(
+                "cargo:warning=nvcc failed with exit code {}",
+                s.code().unwrap_or(-1)
+            );
         }
         Err(e) => {
             println!("cargo:warning=Failed to run nvcc: {}", e);
