@@ -67,5 +67,10 @@ path = "examples/payload_chain.rs"
 name = "mock_example"
 path = "examples/mock_example.rs"
 
+[[example]]
+name = "anthropic_budget"
+path = "examples/anthropic_budget.rs"
+required-features = ["anthropic"]
+
 [lints]
 workspace = true

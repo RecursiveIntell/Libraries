@@ -6,6 +6,7 @@
 //! ANTHROPIC_API_KEY=sk-xxx cargo run -p llm-pipeline --example anthropic_budget --features anthropic
 //! ```
 
+use llm_pipeline::payload::Payload;
 use llm_pipeline::{backend::AnthropicBackend, CostModel, ExecCtx, LlmCall};
 use serde_json::json;
 
