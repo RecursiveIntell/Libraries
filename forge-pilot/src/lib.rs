@@ -15,6 +15,7 @@ pub mod config;
 pub mod decide;
 pub mod error;
 pub mod export;
+pub mod fixture_map;
 #[cfg(feature = "governance")]
 pub mod governance_gate;
 pub mod history;

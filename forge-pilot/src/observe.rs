@@ -151,6 +151,7 @@ pub struct Observation {
     pub batch: Option<ProjectionImportBatchV3>,
     pub compiled: Option<CompileOutput>,
     pub scheduled: Option<ScheduledExecution>,
+    pub fixture_map: Option<crate::fixture_map::FixtureMap>,
     pub oracle: Option<OracleAssessment>,
     pub causal_refutation: Option<kernel_oracles::OracleRefutationResult>,
     pub minimal_perturbation: Option<kernel_oracles::OracleRefutationResult>,
@@ -397,6 +398,9 @@ pub async fn observe_scope(
         degradations,
         #[cfg(feature = "governance")]
         governance: Some(governance_obs),
+        fixture_map: Some(crate::fixture_map::FixtureMap::from_workspace(
+            std::path::Path::new(&config.workspace_path),
+        )),
     })
 }
 

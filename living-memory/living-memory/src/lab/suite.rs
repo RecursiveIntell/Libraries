@@ -147,3 +147,52 @@ pub fn load_suite(suite_dir: &Path) -> ForgeResult<EvalSuite> {
         tasks,
     })
 }
+
+/// Generates an EvalTask from a kernel syndrome.
+///
+/// All tasks produced this way carry a prompt prefix marking them as
+/// `NonAuthoritativeDerived` — they originate from the kernel's advisory
+/// inference graph and require human review before promotion to
+/// authoritative evidence.
+///
+/// Defaults: correctness=0.8, fmt/clippy/tests all required, CEA
+/// instrumentation enabled, no test modification allowed, max 2 files
+/// changed.
+pub fn eval_task_from_syndrome(
+    syndrome_signature: &str,
+    syndrome_id: &str,
+    fixture_path: &std::path::Path,
+    belief_micros: u64,
+) -> EvalTask {
+    let fragility = 1.0 - (belief_micros as f64 / 1_000_000.0);
+    EvalTask {
+        task_id: format!("kernel-{}", syndrome_id),
+        prompt: format!(
+            "KERNEL-GENERATED (NonAuthoritativeDerived): syndrome '{}' detected in crate at {}. \
+             Belief: {}/1000000. Verify correctness by running fmt, clippy, and test suite \
+             on the crate as-is (baseline only — the syndrome is an inference signal, \
+             not a prescribed patch).",
+            syndrome_signature,
+            fixture_path.display(),
+            belief_micros
+        ),
+        constraints: TaskConstraints {
+            allow_test_modifications: false,
+            max_files_changed: Some(2),
+        },
+        weights: TaskWeights {
+            correctness: 0.8,
+            novelty: fragility.min(0.3),
+            stability: 0.1,
+        },
+        expected: TaskExpected {
+            require_fmt: true,
+            require_clippy: true,
+            require_tests: true,
+        },
+        cea: TaskCea {
+            instrument: true,
+            risk_threshold_override: None,
+        },
+    }
+}

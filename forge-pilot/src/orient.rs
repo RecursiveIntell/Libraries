@@ -9,6 +9,7 @@ use crate::history::PilotHistory;
 use crate::observe::{Observation, ObservationDisposition};
 use crate::targets::TargetKind;
 use crate::types::TargetNormalization;
+use forge_engine::{ExperimentConfig, StructuredPatch};
 use std::cmp::Ordering;
 use std::collections::BTreeSet;
 
@@ -311,7 +312,34 @@ fn choose_plan(observation: &Observation, config: &LoopConfig, target: &TargetKi
     }
 
     match target {
-        TargetKind::ActiveSyndrome { .. } => {
+        TargetKind::ActiveSyndrome { signature } => {
+            // NEW: Try resolving to a concrete crate fixture for a PairedPatch plan
+            if let Some(fixture_map) = &observation.fixture_map {
+                if let Some(fixture_path) = fixture_map.resolve_fixture_from_signature(signature) {
+                    if fixture_path.join("Cargo.toml").exists() {
+                        let description = format!(
+                            "kernel-generated paired patch for syndrome {} in {}",
+                            signature,
+                            fixture_path.display()
+                        );
+                        return PlanKind::PairedPatch {
+                            fixture_path: fixture_path.to_string_lossy().into_owned(),
+                            patch: StructuredPatch {
+                                patch_id: uuid::Uuid::new_v4(),
+                                summary: description.clone(),
+                                edits: vec![],
+                                notes: vec![
+                                    "NonAuthoritativeDerived — kernel-inferred syndrome, baseline-only check"
+                                        .into(),
+                                ],
+                            },
+                            experiment_config: ExperimentConfig::default(),
+                            description,
+                        };
+                    }
+                }
+            }
+            // Fall through to oracle path if no fixture resolved
             if let Some(oracle) = &observation.oracle {
                 PlanKind::OracleExactBounded {
                     oracle_slice_id: oracle.slice_id.clone(),

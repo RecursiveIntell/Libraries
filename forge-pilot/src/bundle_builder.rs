@@ -177,7 +177,19 @@ pub fn build_bundle_from_patch(input: PatchBundleInput<'_>) -> ExperimentEvidenc
         experiment_diff: Some(input.experiment_result.diff.clone()),
         attribution_json: None,
         assessment: None,
-        warnings: input.known_threats.clone(),
+        warnings: {
+            let mut warnings = input.known_threats.clone();
+            // Authority gate: kernel-generated plans are NonAuthoritativeDerived
+            if matches!(&input.plan, PlanKind::PairedPatch { description, .. }
+                if description.contains("kernel-generated") || description.contains("NonAuthoritativeDerived"))
+            {
+                warnings.insert(
+                    0,
+                    "AUTHORITY: NonAuthoritativeDerived — this evidence originated from a kernel-inferred syndrome and requires human review before promotion to authoritative status.".into(),
+                );
+            }
+            warnings
+        },
         created_at: chrono::Utc::now().to_rfc3339(),
         run_id: Some(input.experiment_result.run_id.clone()),
         attempt_id: Some(attempt_id.to_string()),
