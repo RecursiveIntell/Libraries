@@ -1,0 +1,21 @@
+{
+  "task_id": "scope-test-baseline",
+  "prompt": "Verify correctness of scope-test crate across multiple scope types (fn, struct, enum, impl, trait).",
+  "constraints": {
+    "allow_test_modifications": false,
+    "max_files_changed": 2
+  },
+  "weights": {
+    "correctness": 0.8,
+    "novelty": 0.3,
+    "stability": 0.1
+  },
+  "expected": {
+    "require_fmt": true,
+    "require_clippy": true,
+    "require_tests": true
+  },
+  "cea": {
+    "instrument": true
+  }
+}
