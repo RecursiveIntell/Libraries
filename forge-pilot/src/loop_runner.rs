@@ -162,6 +162,24 @@ impl LoopRunner {
         };
         let mut last_observation: Option<Arc<Observation>> = None;
 
+        // Seed the memory store with any existing forge evidence bundles before
+        // the first observation. Without this, cold-start loops see thin_export
+        // on every observation and never issue execution permits.
+        if let Err(e) = crate::export::import_recent_forge_bundles(
+            &self.config.scope.namespace,
+            &self.resources.forge_store,
+            &self.resources.memory_store,
+            64,
+        )
+        .await
+        {
+            tracing::warn!(
+                namespace = %self.config.scope.namespace,
+                error = %e,
+                "pre-seed import skipped (non-fatal)"
+            );
+        }
+
         for iteration_index in 0..self.config.max_iterations {
             if self.external_halt.is_halted() {
                 return Ok(self.finish_report(

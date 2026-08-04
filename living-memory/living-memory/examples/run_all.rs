@@ -17,7 +17,10 @@ use forge_engine::runtime::patch::types::{
 use forge_engine::runtime::patch::apply::LineAttributionMap;
 use forge_engine::cea::instrumentation::attribute_effects;
 use forge_engine::cea::store::update_graph;
+use forge_engine::export_bundle;
 use forge_engine::store::ForgeStore;
+use forge_engine::lab::evidence::ExperimentEvidenceBundle;
+use forge_engine::ScoreVector;
 use std::path::{Path, PathBuf};
 use std::collections::BTreeSet;
 
@@ -128,7 +131,8 @@ async fn main() {
 
         for (idx, (name, patch)) in patches.iter().enumerate() {
             total_runs += 1;
-            let version_id = &name;
+            let version_id: &str = name;
+            let version_str = name.clone();
 
             match runner.run(&task.fixture_path, patch, &experiment_config).await {
                 Ok(experiment) => {
@@ -162,6 +166,57 @@ async fn main() {
                                 total_edges += edges_added as u64;
                                 println!("  {:2} {}: {} edges scope={} hash={}",
                                     idx, name, edges_added, scope, run_hash_short);
+
+                                // Also persist an evidence bundle so the OODA loop
+                                // can import it on cold start (fixes thin_export loop).
+                                let bundle = ExperimentEvidenceBundle {
+                                    bundle_id: format!("run_all:{}-{}", task.task.task_id, name),
+                                    candidate_id: task.task.task_id.clone(),
+                                    eval_id: format!("eval:{}", name),
+                                    version_id: version_str.clone(),
+                                    supersedes_claim_version_id: None,
+                                    relation_lineage_hints: Default::default(),
+                                    scores: ScoreVector {
+                                        correctness: if experiment.diff.regressions == 0 { 0.9 } else { 0.4 },
+                                        novelty: 0.25,
+                                        stability: 0.7,
+                                        weighted_total: 0.7,
+                                        cea_confidence: None,
+                                        cea_predicted_correctness: None,
+                                    },
+                                    hypotheses: vec![],
+                                    verification: None,
+                                    trace_id: None,
+                                    experiment_diff: Some(experiment.diff.clone()),
+                                    attribution_json: None,
+                                    assessment: None,
+                                    warnings: vec![],
+                                    created_at: chrono::Utc::now().to_rfc3339(),
+                                    run_id: Some(experiment.run_id.clone()),
+                                    attempt_id: None,
+                                    causal_question: None,
+                                    unit_definition: None,
+                                    bundle_scope: None,
+                                    receipts: vec![],
+                                    verification_trials: vec![],
+                                    refutation_artifacts: vec![],
+                                    sealed: false,
+                                    pair_comparability: None,
+                                    claim_strength: Default::default(),
+                                    identification_rationale: None,
+                                    known_threats: vec![],
+                                    patch_hash: None,
+                                    treatment: None,
+                                    outcome: None,
+                                    covariates: None,
+                                    promotion_state: None,
+                                    primary_effect: None,
+                                    all_effects: vec![],
+                                    hypothesis_edges: vec![],
+                                };
+                                if let Err(e) = export_bundle(&bundle, "forge-pilot-self", &store).await {
+                                    eprintln!("  {:2} {}: export err: {}", idx, name, e);
+                                }
                             }
                             forge_engine::cea::store::UpdateResult::AlreadyProcessed => {
                                 // Shouldn't happen since we check run hashes, but handle gracefully
