@@ -217,6 +217,25 @@ async fn main() {
                                 if let Err(e) = export_bundle(&bundle, "forge-pilot-self", &store).await {
                                     eprintln!("  {:2} {}: export err: {}", idx, name, e);
                                 }
+                                // Also write to evidence_bundles table so import_recent_forge_bundles()
+                                // finds it on cold start (export_bundle writes to export_receipts)
+                                let scores_json = serde_json::to_string(&bundle.scores).unwrap_or_default();
+                                let warnings_json = serde_json::to_string(&bundle.warnings).unwrap_or_default();
+                                if let Err(e) = store.insert_evidence_bundle(
+                                    &bundle.bundle_id,
+                                    &bundle.candidate_id,
+                                    &bundle.eval_id,
+                                    &bundle.version_id,
+                                    &bundle.trace_id.clone().unwrap_or_default(),
+                                    &scores_json,
+                                    "[]",
+                                    None,
+                                    None,
+                                    None,
+                                    &warnings_json,
+                                ) {
+                                    eprintln!("  {:2} {}: evidence insert err: {}", idx, name, e);
+                                }
                             }
                             forge_engine::cea::store::UpdateResult::AlreadyProcessed => {
                                 // Shouldn't happen since we check run hashes, but handle gracefully
