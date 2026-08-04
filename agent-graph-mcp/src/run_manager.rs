@@ -17,7 +17,7 @@ use crate::evidence::{bundle, digest, redact, validate_witness_dependencies};
 use crate::spec::{ensure_size, GraphSpec, MAX_OUTPUT_BYTES, MAX_STATE_BYTES};
 use crate::store::PersistentStore;
 
-const MAX_RUNS: usize = 100;
+const MAX_RUNS: usize = 32;
 const MAX_ACTIVE_RUNS: usize = 8;
 
 fn is_terminal(status: &str) -> bool {
@@ -852,6 +852,16 @@ impl RunManager {
                 &run.state,
                 &run.receipt,
             );
+            // Once durably persisted, release heavy in-memory state.
+            // The run data is available via SQLite (graph_run_receipt, graph_run_events).
+            if status == "durable_terminal" {
+                run.state = Value::Null;
+                run.final_state = Value::Null;
+                run.steps = Vec::new();
+                run.events = VecDeque::new();
+                run.receipt = Value::Null;
+                run.bundle = Value::Null;
+            }
         });
     }
     pub(crate) fn remove(&self, id: &str) -> Option<RunRecord> {
