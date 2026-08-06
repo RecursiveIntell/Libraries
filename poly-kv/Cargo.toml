@@ -3,6 +3,7 @@ members = [
   "crates/quant-codec-core",
   "crates/poly-kv",
   "crates/poly-kv-python",
+  "crates/provekv-pool",
 ]
 resolver = "2"
 
