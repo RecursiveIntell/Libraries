@@ -1,0 +1,8 @@
+{
+  "task_id": "cea-sqlite-baseline",
+  "prompt": "Evaluate correctness of cea-sqlite: apply minimal structured patch and verify cargo check + clippy + tests pass.",
+  "constraints": {"allow_test_modifications": false, "max_files_changed": 1},
+  "weights": {"correctness": 0.7, "novelty": 0.2, "stability": 0.1},
+  "expected": {"require_fmt": true, "require_clippy": true, "require_tests": true},
+  "cea": {"instrument": true, "risk_threshold_override": null}
+}

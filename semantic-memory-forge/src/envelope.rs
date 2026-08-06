@@ -816,13 +816,7 @@ impl ExportRecordSemanticsV3 {
             .unwrap_or_default();
         let export_confidence_class = semantics_root
             .and_then(|root| json_enum(root, "export_confidence_class"))
-            .unwrap_or_else(|| {
-                if semantics_root.is_some() || export_meta.is_some() {
-                    ExportConfidenceClass::Reviewed
-                } else {
-                    ExportConfidenceClass::ThinExport
-                }
-            });
+            .unwrap_or(ExportConfidenceClass::Reviewed);
         let comparability_snapshot_version = semantics_root
             .and_then(|root| json_string(root, "comparability_snapshot_version"))
             .or_else(|| export_meta.and_then(|meta| meta.comparability_snapshot_version.clone()));

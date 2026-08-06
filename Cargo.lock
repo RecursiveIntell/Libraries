@@ -5640,7 +5640,6 @@ dependencies = [
  "base64 0.22.1",
  "bytes",
  "encoding_rs",
- "futures-channel",
  "futures-core",
  "futures-util",
  "h2",
@@ -6170,32 +6169,6 @@ dependencies = [
  "stack-ids",
  "thiserror 2.0.18",
  "tracing",
- "uuid",
-]
-
-[[package]]
-name = "semantic-memory-mcp"
-version = "0.5.6"
-dependencies = [
- "anyhow",
- "blake3",
- "boundary-compiler",
- "chrono",
- "claim-ledger",
- "clap",
- "knowledge-runtime",
- "llm-output-parser",
- "reqwest 0.12.28",
- "rmcp",
- "schemars 1.2.1",
- "semantic-memory",
- "serde",
- "serde_json",
- "stack-ids",
- "tempfile",
- "tokio",
- "tracing",
- "tracing-subscriber",
  "uuid",
 ]
 

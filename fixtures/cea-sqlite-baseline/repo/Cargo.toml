@@ -1,0 +1,21 @@
+[package]
+name = "cea-sqlite"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+readme = "README.md"
+publish = false
+description = "SQLite implementation of the cea-store contract"
+
+[dependencies]
+cea-core = { version = "0.1.0", path = "../cea-core" }
+cea-store = { version = "0.1.0", path = "../cea-store" }
+chrono = "0.4"
+forge-policy = { version = "0.1.0", path = "../forge-policy" }
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+[dev-dependencies]
+check-runner = { version = "0.1.0", path = "../check-runner" }
+serde_json = "1"
+tempfile = "3"

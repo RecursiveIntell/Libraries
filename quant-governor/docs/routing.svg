@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">quant-governor policy routing</title>
+  <desc id="desc">A governance request is evaluated against a governance policy. Content type, size, and accuracy requirements select a codec profile. The decision emits either an exact fallback receipt or a degradation receipt.</desc>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#17304A" stroke-width="1" opacity="0.45"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="620" rx="24" fill="#07111F"/>
+  <rect width="1200" height="620" rx="24" fill="url(#grid)"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="56" y="62" fill="#E2E8F0" font-size="27" font-weight="700">GOVERNED CODEC ROUTING</text>
+    <text x="56" y="91" fill="#94A3B8" font-size="14">policy-driven codec selection · exact fallback and degradation are explicit, receipt-bearing outcomes</text>
+
+    <g fill="none" stroke="#64748B" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M202 300H276"/>
+      <path d="M276 300H420"/>
+      <path d="M480 300H600"/>
+      <path d="M660 300H780"/>
+      <path d="M600 250V220H780"/>
+      <path d="M600 350V380H780"/>
+      <path d="M840 300H920"/>
+    </g>
+
+    <!-- Request -->
+    <rect x="56" y="246" width="146" height="108" rx="54" fill="#172033" stroke="#A78BFA" stroke-width="2"/>
+    <text x="129" y="292" text-anchor="middle" fill="#DDD6FE" font-size="13" font-weight="700">REQUEST</text>
+    <text x="129" y="319" text-anchor="middle" fill="#C4B5FD" font-size="12">content · size · accuracy</text>
+
+    <!-- Policy -->
+    <rect x="276" y="246" width="144" height="108" rx="12" fill="#102333" stroke="#22D3EE" stroke-width="2"/>
+    <text x="296" y="280" fill="#67E8F9" font-size="12" font-weight="700">GOVERNANCE</text>
+    <text x="296" y="308" fill="#ECFEFF" font-size="15">policy profiles</text>
+    <text x="296" y="332" fill="#94A3B8" font-size="11">admissibility classes</text>
+
+    <!-- Evaluate -->
+    <rect x="420" y="246" width="180" height="108" rx="12" fill="#11271F" stroke="#34D399" stroke-width="2"/>
+    <text x="440" y="280" fill="#6EE7B7" font-size="12" font-weight="700">EVALUATE</text>
+    <text x="440" y="308" fill="#ECFDF5" font-size="15">codec decision</text>
+    <text x="440" y="332" fill="#94A3B8" font-size="11">content type + size + accuracy</text>
+
+    <!-- Route -->
+    <rect x="600" y="196" width="180" height="108" rx="12" fill="#2A1328" stroke="#F472B6" stroke-width="2"/>
+    <text x="620" y="230" fill="#F9A8D4" font-size="12" font-weight="700">COMPRESSED</text>
+    <text x="620" y="258" fill="#FCE7F3" font-size="15">q8 · q4 · turbo · fib</text>
+    <text x="620" y="282" fill="#FBCFE8" font-size="11">codec profile applied</text>
+
+    <rect x="600" y="300" width="180" height="108" rx="12" fill="#162318" stroke="#84CC16" stroke-width="2"/>
+    <text x="620" y="334" fill="#BEF264" font-size="12" font-weight="700">RAW</text>
+    <text x="620" y="362" fill="#ECFCCB" font-size="15">uncompressed</text>
+    <text x="620" y="386" fill="#94A3B8" font-size="11">critical accuracy</text>
+
+    <!-- Receipts -->
+    <rect x="780" y="246" width="140" height="108" rx="12" fill="#211E13" stroke="#FBBF24" stroke-width="2"/>
+    <text x="800" y="280" fill="#FDE68A" font-size="12" font-weight="700">RECEIPTS</text>
+    <text x="800" y="308" fill="#FEF3C7" font-size="13">exact fallback</text>
+    <text x="800" y="332" fill="#FEF3C7" font-size="13">degradation</text>
+
+    <!-- Output -->
+    <rect x="920" y="246" width="224" height="108" rx="12" fill="#171D31" stroke="#A78BFA" stroke-width="2"/>
+    <text x="940" y="280" fill="#C4B5FD" font-size="12" font-weight="700">CODE DECISION + RECEIPT</text>
+    <text x="940" y="308" fill="#EDE9FE" font-size="14">selected codec · metadata</text>
+    <text x="940" y="332" fill="#DDD6FE" font-size="11">routing outcome is auditable</text>
+  </g>
+</svg>

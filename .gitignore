@@ -3,3 +3,6 @@ target-*/
 *.zip
 *.7z
 __pycache__/
+
+# compiled native extensions (build artifacts)
+*.so

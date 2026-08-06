@@ -140,6 +140,38 @@ Supported executable node classes are:
 
 `external`, `tool`, and `loop` are reserved classifications but are rejected as unsupported executable node types by the local runtime. A node being representable in the enum is not evidence that it can run.
 
+#### Join modes
+
+A `join` node combines branch values written to state keys under `config.inputs` and writes to `config.output`. Supported `config.mode` values:
+
+| Mode | Behavior |
+|---|---|
+| `collect_array` (default) | Ordered array of branch values. Loss-minimizing first stage; not a decision. |
+| `collect_object` | Object keyed by branch state key, preserving branch identity. Duplicate branch keys are a hard error. |
+| `merge_objects` | Shallow object merge. Use only for disjoint namespaces or after an ownership check. |
+| `first_non_null` | Race-to-first usable (non-null) result. |
+| `all_success` | Barrier requiring every branch boolean (or `{"success": bool}`) to be true. |
+| `quorum` | Count boolean approvals; `config.required` sets the threshold (default 1). |
+| `dedupe_by_identity` | Collapse duplicate findings by stable identity (`config.identity_path`, e.g. `claim.id`) rather than wording. First occurrence wins; missing identity path is rejected. |
+| `contradiction_matrix` | Emit explicit claim pairs that cannot both hold under the same scope and time. Paths default to `scope` / `claim` / `time`; `config.strict: true` quarantines instead of passing when contradictions exist. |
+| `minority_report` | Preserve artifacts flagged `dissent: true` (`config.dissent_path`) in the minority report; the majority value excludes them. |
+| `proof_carrying_join` | Advance only artifacts carrying required schema fields (default `evidence`, `checks`, `receipt`), well-formed witness references (`witness_id` + `digest` per evidence entry), and executed checks (`status: "passed"`). Invalid artifacts quarantine the join. |
+
+Strategy modes (`dedupe_by_identity`, `contradiction_matrix`, `minority_report`, `proof_carrying_join`) run a five-stage pipeline — validate → normalize → contradictions → adjudicate → certify — and emit a certification envelope instead of a bare value:
+
+```json
+{
+  "join": "proof_carrying_join",
+  "certification": "pass",
+  "value": [],
+  "contradictions": [],
+  "minority_report": [],
+  "notes": []
+}
+```
+
+`certification` is one of `pass`, `fail`, `abstain`, `quarantine`, `request_authority`. A `fail` certification aborts graph execution; `quarantine`/`abstain`/`request_authority` complete so downstream nodes can observe the terminal status. The envelope makes join verdicts explicit: collected output is never silently promoted to certified truth.
+
 ### Resource bounds
 
 The specification validator enforces finite limits, including:

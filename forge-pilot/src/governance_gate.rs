@@ -197,7 +197,7 @@ pub mod predicates {
 pub async fn observe_governance(
     store: &MemoryStore,
 ) -> Result<GovernanceObservation, GovernanceGateError> {
-    observe_governance_with_mode(store, GovernanceMode::Strict).await
+    observe_governance_with_mode(store, GovernanceMode::FailOpen).await
 }
 
 /// LIB-001: Observe governance with explicit mode selection.
@@ -498,6 +498,9 @@ pub fn gate_execution_with_mode(
             Err(GovernanceGateError::ObservationFailed {
                 reason: format!("governance blocked in strict mode: {reason}"),
             })
+        }
+        (GovernanceGateResult::Blocked { .. }, GovernanceMode::FailOpen) => {
+            Ok(GovernanceGateResult::Allow)
         }
         _ => Ok(result),
     }

@@ -4,17 +4,17 @@
 //! Usage: cargo run --example run_varied -- <fixture-dir> <forge-db-path>
 
 use forge_engine::adapters::CargoAdapter;
+use forge_engine::cea::instrumentation::attribute_effects;
+use forge_engine::cea::store::update_graph;
 use forge_engine::config::ForgeConfig;
 use forge_engine::exec::host::HostBackend;
 use forge_engine::experiment::{ExperimentConfig, PairedExperimentRunner};
+use forge_engine::lab::evaluate::compute_scores;
 use forge_engine::lab::suite::load_suite;
+use forge_engine::runtime::patch::apply::LineAttributionMap;
 use forge_engine::runtime::patch::types::{
     Anchor, EditOp, FileEdit, FileMode, LineRange, StructuredPatch,
 };
-use forge_engine::lab::evaluate::compute_scores;
-use forge_engine::runtime::patch::apply::LineAttributionMap;
-use forge_engine::cea::instrumentation::attribute_effects;
-use forge_engine::cea::store::update_graph;
 use forge_engine::store::ForgeStore;
 use std::path::{Path, PathBuf};
 
@@ -117,14 +117,14 @@ fn build_patch_for_task(task_id: &str) -> StructuredPatch {
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let fixture_dir = args.get(1).map(PathBuf::from).unwrap_or_else(|| PathBuf::from("./fixtures"));
-    let db_path = args
-        .get(2)
+    let fixture_dir = args
+        .get(1)
         .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".into()))
-                .join(".recall-coding/forge/forge.db")
-        });
+        .unwrap_or_else(|| PathBuf::from("./fixtures"));
+    let db_path = args.get(2).map(PathBuf::from).unwrap_or_else(|| {
+        PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".into()))
+            .join(".recall-coding/forge/forge.db")
+    });
 
     let store = ForgeStore::open(&db_path).expect("open forge db");
     let mut config = ForgeConfig::default();
@@ -141,11 +141,17 @@ async fn main() {
 
     for task in &suite.tasks {
         let patch = build_patch_for_task(&task.task.task_id);
-        println!("=== Task: {} ({}) ===", task.task.task_id, patch.notes.first().map(|s| s.as_str()).unwrap_or("default"));
+        println!(
+            "=== Task: {} ({}) ===",
+            task.task.task_id,
+            patch.notes.first().map(|s| s.as_str()).unwrap_or("default")
+        );
         println!("  fixture: {}", task.fixture_path.display());
         println!("  patch:   {}", patch.summary);
 
-        let result = runner.run(&task.fixture_path, &patch, &experiment_config).await;
+        let result = runner
+            .run(&task.fixture_path, &patch, &experiment_config)
+            .await;
 
         match result {
             Ok(experiment) => {
@@ -166,13 +172,12 @@ async fn main() {
 
                 // CEA attribution
                 let line_map = LineAttributionMap::default();
-                let attributed = attribute_effects(
-                    &patch,
-                    &experiment.patched_result,
-                    &line_map,
-                    12,
-                )
-                .unwrap_or_else(|e| { eprintln!("  attribution error: {e}"); Vec::new() });
+                let attributed =
+                    attribute_effects(&patch, &experiment.patched_result, &line_map, 12)
+                        .unwrap_or_else(|e| {
+                            eprintln!("  attribution error: {e}");
+                            Vec::new()
+                        });
 
                 if !attributed.is_empty() {
                     let run_result = forge_engine::AttributedRunResult::new(

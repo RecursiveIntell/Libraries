@@ -12,8 +12,8 @@ fn main() {
     let store = cea_sqlite::SqliteCeaStore::open(path).expect("open store");
 
     let sig = EditOpSignature {
-        op_kind: EditOpKind::Replace,
-        anchor_kind: AnchorKind::Range,
+        op_kind: EditOpKind::Insert,
+        anchor_kind: AnchorKind::AfterLine,
         lines_added: 1,
         lines_removed: 0,
         context_hash: "".to_string(),
@@ -23,22 +23,22 @@ fn main() {
         file_index: FileIndex(0),
     };
     let effect = EffectSignature {
-        check_kind: "clippy".to_string(),
-        outcome: "error".to_string(),
-        severity: "error".to_string(),
-        message_class: "risky_edit".to_string(),
-        line_offset_from_edit: Some(1),
+        check_kind: "fmt".to_string(),
+        outcome: "pass".to_string(),
+        severity: "pass".to_string(),
+        message_class: "global_pass".to_string(),
+        line_offset_from_edit: None,
     };
 
-    // 40 runs with DISTINCT distances so run hashes all differ; each adds a
-    // positive observation for the same cause->effect edge. This pushes the
-    // sample-growth curve (1-exp(-n/8)) above the 0.65 risk threshold.
-    for i in 0..40u32 {
+    // Seed runs with HIGH per-run attribution weights (short distances = high scores)
+    // and distinct weights to produce unique run hashes.
+    for i in 0..80u32 {
+        let w = 0.5 + (i as f64 * 0.005);
         let triple = cea_core::AttributionTriple {
             cause: sig.clone(),
             effect: effect.clone(),
-            distance: (1 + i) as i32,
-            weight: 1.0,
+            distance: 1,
+            weight: w,
         };
         let check = check_runner::CheckResult {
             fmt_pass: true,

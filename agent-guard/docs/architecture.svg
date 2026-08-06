@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc">
+  <title id="title">agent-guard Linux security control plane</title>
+  <desc id="desc">The AgentGuard manager sits above Linux security mechanisms: BPF LSM, cgroup v2, Landlock, seccomp, and eBPF. Decisions and actions produce typed security receipts.</desc>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#17304A" stroke-width="1" opacity="0.45"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="600" rx="24" fill="#07111F"/>
+  <rect width="1200" height="600" rx="24" fill="url(#grid)"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="56" y="62" fill="#E2E8F0" font-size="27" font-weight="700">AGENTGUARD CONTROL PLANE</text>
+    <text x="56" y="91" fill="#94A3B8" font-size="14">Linux-only · BPF LSM · cgroup v2 · Landlock · seccomp · eBPF · typed security receipts</text>
+
+    <g fill="none" stroke="#64748B" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M202 260H276"/>
+      <path d="M420 260V200H540"/>
+      <path d="M420 260V320H540"/>
+      <path d="M420 260H540"/>
+      <path d="M420 260V440H540"/>
+      <path d="M540 260H620"/>
+      <path d="M780 260H860"/>
+    </g>
+
+    <!-- Agent -->
+    <rect x="56" y="206" width="146" height="108" rx="54" fill="#172033" stroke="#A78BFA" stroke-width="2"/>
+    <text x="129" y="252" text-anchor="middle" fill="#DDD6FE" font-size="13" font-weight="700">AI AGENT</text>
+    <text x="129" y="279" text-anchor="middle" fill="#C4B5FD" font-size="12">subject · action</text>
+
+    <!-- Guard -->
+    <rect x="276" y="206" width="144" height="108" rx="12" fill="#102333" stroke="#22D3EE" stroke-width="2"/>
+    <text x="296" y="240" fill="#67E8F9" font-size="12" font-weight="700">AGENTGUARD</text>
+    <text x="296" y="268" fill="#ECFEFF" font-size="14">manager</text>
+    <text x="296" y="292" fill="#94A3B8" font-size="11">initialize · decide</text>
+
+    <!-- Control plane -->
+    <rect x="420" y="146" width="120" height="108" rx="12" fill="#2A1328" stroke="#F472B6" stroke-width="2"/>
+    <text x="440" y="180" fill="#F9A8D4" font-size="12" font-weight="700">BPF LSM</text>
+    <text x="440" y="208" fill="#FCE7F3" font-size="13">hook-based</text>
+    <text x="440" y="232" fill="#FBCFE8" font-size="11">kernel policy</text>
+
+    <rect x="420" y="260" width="120" height="108" rx="12" fill="#162318" stroke="#84CC16" stroke-width="2"/>
+    <text x="440" y="294" fill="#BEF264" font-size="12" font-weight="700">CGROUP V2</text>
+    <text x="440" y="322" fill="#ECFCCB" font-size="13">resource caps</text>
+    <text x="440" y="346" fill="#94A3B8" font-size="11">isolation</text>
+
+    <rect x="420" y="374" width="120" height="108" rx="12" fill="#211E13" stroke="#FBBF24" stroke-width="2"/>
+    <text x="440" y="408" fill="#FDE68A" font-size="12" font-weight="700">SECCOMP</text>
+    <text x="440" y="436" fill="#FEF3C7" font-size="13">syscall filter</text>
+    <text x="440" y="460" fill="#94A3B8" font-size="11">allowlist</text>
+
+    <!-- Landlock + eBPF -->
+    <rect x="620" y="206" width="160" height="108" rx="12" fill="#171D31" stroke="#A78BFA" stroke-width="2"/>
+    <text x="640" y="240" fill="#C4B5FD" font-size="12" font-weight="700">LANDLOCK + EBPF</text>
+    <text x="640" y="268" fill="#EDE9FE" font-size="13">path · network</text>
+    <text x="640" y="292" fill="#DDD6FE" font-size="11">filesystem + tracing</text>
+
+    <!-- Receipt -->
+    <rect x="860" y="206" width="284" height="108" rx="12" fill="#2A1328" stroke="#F472B6" stroke-width="2"/>
+    <text x="880" y="240" fill="#F9A8D4" font-size="12" font-weight="700">SECURITY RECEIPT</text>
+    <text x="880" y="268" fill="#FCE7F3" font-size="13">decision · mechanism</text>
+    <text x="880" y="292" fill="#FBCFE8" font-size="11">action type · subject</text>
+
+    <rect x="56" y="480" width="844" height="56" rx="10" fill="#101A28" stroke="#334155"/>
+    <text x="76" y="507" fill="#CBD5E1" font-size="12" font-weight="700">LINUX ONLY</text>
+    <text x="76" y="528" fill="#94A3B8" font-size="12">does not compile on non-Linux · non-Linux methods return platform-unsupported errors</text>
+  </g>
+</svg>
