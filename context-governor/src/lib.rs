@@ -173,200 +173,7 @@ impl AllocatorMode {
     }
 }
 
-/// Build provider-neutral steps from messages.
-/// Groups consecutive messages into intent-action-result steps.
-pub fn build_context_steps(messages: &[Message]) -> Vec<ContextStepV1> {
-    let mut steps = Vec::new();
-    let mut current_start = 0usize;
-    let mut initiator_role = String::new();
-
-    for (index, message) in messages.iter().enumerate() {
-        let role = message.role.as_str();
-        if role == "user" && index > current_start {
-            steps.push(build_step(messages, current_start, index, &initiator_role));
-            current_start = index;
-        }
-        if index == 0 || role == "user" {
-            initiator_role = role.to_string();
-        }
-    }
-    if current_start < messages.len() {
-        steps.push(build_step(
-            messages,
-            current_start,
-            messages.len(),
-            &initiator_role,
-        ));
-    }
-
-    // Mark the latest user step
-    if let Some(last_step) = steps.last_mut() {
-        last_step.is_latest_user_step = true;
-    }
-
-    steps
-}
-
-fn build_step(
-    messages: &[Message],
-    start: usize,
-    end: usize,
-    initiator_role: &str,
-) -> ContextStepV1 {
-    let mut content_parts = Vec::new();
-    let tool_call_links = Vec::new();
-    let mut has_active_instruction = false;
-    let mut has_error = false;
-
-    for message in messages[start..end].iter() {
-        let content_lower = message.content.to_lowercase();
-        if content_lower.contains("acceptance gate")
-            || content_lower.contains("must pass")
-            || content_lower.contains("must remain")
-        {
-            has_active_instruction = true;
-        }
-        if content_lower.contains("error")
-            || content_lower.contains("traceback")
-            || content_lower.contains("failed")
-        {
-            has_error = true;
-        }
-
-        if message.role == "tool" || message.role == "function" {
-            content_parts.push(StructuredContentPartV1 {
-                text: message.content.clone(),
-                part_kind: ContentPartKind::ToolResult,
-                tool_call_id: message
-                    .metadata
-                    .get("tool_call_id")
-                    .and_then(|v| v.as_str())
-                    .map(String::from),
-                tool_result_content: message.content.clone(),
-                tool_exit_code: message
-                    .metadata
-                    .get("exit_code")
-                    .and_then(|v| v.as_i64())
-                    .map(|i| i as i32),
-                ..Default::default()
-            });
-        } else if message.role == "assistant" {
-            // Check if content looks like a tool call (JSON with function/arguments)
-            let trimmed = message.content.trim();
-            if trimmed.starts_with('{')
-                && (trimmed.contains("\"function\"")
-                    || trimmed.contains("\"arguments\"")
-                    || trimmed.contains("\"tool\""))
-            {
-                content_parts.push(StructuredContentPartV1 {
-                    text: message.content.clone(),
-                    part_kind: ContentPartKind::ToolCall,
-                    tool_name: message
-                        .metadata
-                        .get("tool_name")
-                        .and_then(|v| v.as_str())
-                        .map(String::from),
-                    tool_arguments_json: message.content.clone(),
-                    ..Default::default()
-                });
-            } else {
-                content_parts.push(StructuredContentPartV1 {
-                    text: message.content.clone(),
-                    part_kind: ContentPartKind::Text,
-                    ..Default::default()
-                });
-            }
-        } else {
-            content_parts.push(StructuredContentPartV1 {
-                text: message.content.clone(),
-                part_kind: ContentPartKind::Text,
-                ..Default::default()
-            });
-        }
-    }
-
-    ContextStepV1 {
-        step_id: format!("step_{start}_{end}"),
-        start_message_index: start,
-        end_message_index: end,
-        initiator_role: initiator_role.to_string(),
-        content_parts,
-        tool_call_links,
-        has_active_instruction,
-        has_error,
-        is_latest_user_step: false,
-    }
-}
-
-/// Extract explicit plan state from context steps.
-pub fn extract_plan_state(steps: &[ContextStepV1], messages: &[Message]) -> PlanStateV1 {
-    let _ = messages;
-    let mut plan_state = PlanStateV1::default();
-
-    for (step_idx, step) in steps.iter().enumerate() {
-        if step.has_active_instruction {
-            plan_state.active_instruction_steps.push(step_idx);
-        }
-        for part in &step.content_parts {
-            let lower = part.text.to_lowercase();
-            if lower.contains("acceptance gate:")
-                || lower.contains("must pass")
-                || lower.contains("must remain")
-            {
-                if let Some(extracted) = extract_line_after(&part.text, "acceptance gate:") {
-                    plan_state.acceptance_gates.push(extracted);
-                }
-            }
-            if lower.contains("decision:") || lower.contains("decided") {
-                if let Some(extracted) = extract_line_after(&part.text, "decision:") {
-                    plan_state.decisions.push(extracted);
-                }
-            }
-            if lower.contains("unresolved question") || lower.contains('?') {
-                plan_state
-                    .unresolved_questions
-                    .push(compact_preview(&part.text, 240));
-            }
-            if lower.contains("plan:") || lower.contains("phase 1") || lower.contains("phase 2") {
-                plan_state.current_plan = compact_preview(&part.text, 500);
-            }
-        }
-    }
-
-    plan_state
-}
-
-fn extract_line_after(text: &str, marker: &str) -> Option<String> {
-    let lower = text.to_lowercase();
-    let pos = lower.find(marker)?;
-    let after = &text[pos + marker.len()..];
-    let line_end = after.find('\n').unwrap_or(after.len());
-    Some(after[..line_end].trim().to_string())
-}
-
-/// Build the structural floor from context items.
-pub fn build_structural_floor(items: &[ContextItemV1]) -> StructuralFloorV1 {
-    let mut floor = StructuralFloorV1::default();
-
-    for item in items.iter() {
-        match item.authority_class {
-            AuthorityClass::MustPreserveExact | AuthorityClass::ActiveTask => {
-                floor.mandatory_item_ids.push(item.item_id.clone());
-            }
-            _ => {}
-        }
-        if matches!(item.item_type, ItemType::LatestUserMessage) {
-            floor.latest_user_item_id = Some(item.item_id.clone());
-        }
-        if matches!(item.item_type, ItemType::AcceptanceGate) {
-            floor.acceptance_gate_item_ids.push(item.item_id.clone());
-        }
-    }
-
-    floor
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct ContextAllocationPlanV1 {
     pub schema: String,
     pub plan_id: String,
@@ -982,7 +789,7 @@ pub fn approx_tokens_messages(messages: &[Message]) -> usize {
         .sum()
 }
 
-fn count_tokens_text(text: &str, policy: &CompactionPolicy) -> usize {
+pub(crate) fn count_tokens_text(text: &str, policy: &CompactionPolicy) -> usize {
     match policy.token_counter {
         TokenCounterKind::ApproxChars => approx_tokens_text(text),
         TokenCounterKind::ApproxWords => approx_word_tokens(text),
@@ -1095,206 +902,7 @@ pub fn finalize_compacted_response(
     Ok(response)
 }
 
-fn classify_messages(
-    session_id: &str,
-    messages: &[Message],
-    policy: &CompactionPolicy,
-) -> Vec<ContextItemV1> {
-    let latest_user = messages
-        .iter()
-        .rposition(|m| m.role == "user")
-        .unwrap_or(messages.len() - 1);
-    let mut seen_hashes = BTreeSet::new();
-    messages
-        .iter()
-        .enumerate()
-        .map(|(idx, msg)| {
-            let h = hash_text(&msg.content);
-            let duplicate = !seen_hashes.insert(h.clone());
-            classify_message(session_id, idx, latest_user, msg, h, duplicate, policy)
-        })
-        .collect()
-}
-
-fn classify_message(
-    session_id: &str,
-    idx: usize,
-    latest_user: usize,
-    msg: &Message,
-    content_hash: String,
-    duplicate: bool,
-    policy: &CompactionPolicy,
-) -> ContextItemV1 {
-    let content_l = msg.content.to_lowercase();
-    let aggressive = is_aggressive_allocator(policy);
-    let counted_tokens = count_tokens_text(&msg.content, policy);
-    let msg_chars = msg.content.chars().count();
-    let long_message = msg_chars > 600;
-    let mut item_type = ItemType::LowRiskNarrative;
-    let mut authority = AuthorityClass::SummaryOk;
-    let mut policy = PreservationPolicy::ExtractiveSummary;
-    let mut reasons = Vec::new();
-
-    // Plan detection: structured plans survive compaction cycles.
-    let has_plan = detect_plan_content(&msg.content);
-
-    if msg.role == "system" || msg.role == "developer" {
-        item_type = ItemType::ActiveInstruction;
-        authority = AuthorityClass::MustPreserveExact;
-        policy = PreservationPolicy::KeepVerbatim;
-        reasons.push("system-or-developer-constraint".to_string());
-    } else if idx == latest_user && msg.role == "user" {
-        item_type = ItemType::LatestUserMessage;
-        authority = AuthorityClass::ActiveTask;
-        policy = PreservationPolicy::KeepVerbatim;
-        reasons.push("latest-user-message".to_string());
-    } else if contains_any(
-        &content_l,
-        &[
-            "acceptance gate",
-            "must pass",
-            "required",
-            "requirement",
-            "do not",
-            "never ",
-        ],
-    ) {
-        item_type = ItemType::AcceptanceGate;
-        authority = AuthorityClass::MustPreserveExact;
-        policy = if aggressive && long_message {
-            PreservationPolicy::ReceiptOnly
-        } else {
-            PreservationPolicy::KeepVerbatim
-        };
-        reasons.push("acceptance-or-instruction".to_string());
-    } else if has_plan {
-        item_type = ItemType::AcceptanceGate;
-        authority = AuthorityClass::MustPreserveExact;
-        policy = if aggressive && long_message {
-            PreservationPolicy::ReceiptOnly
-        } else {
-            PreservationPolicy::KeepVerbatim
-        };
-        reasons.push("plan-content-detected".to_string());
-    } else if contains_any(
-        &content_l,
-        &[
-            "error:",
-            "error[",
-            "traceback",
-            "panic",
-            "failed",
-            "compilation failed",
-            "exit_code\":1",
-            "exit code 1",
-        ],
-    ) {
-        item_type = ItemType::ErrorOutput;
-        authority = AuthorityClass::EvidenceCritical;
-        policy = if msg.role == "tool" && msg.content.chars().count() > 600 {
-            PreservationPolicy::ReceiptOnly
-        } else {
-            PreservationPolicy::KeepVerbatim
-        };
-        reasons.push("error-output".to_string());
-    } else if contains_path_signal(&msg.content) {
-        item_type = ItemType::FilePathContext;
-        authority = AuthorityClass::EvidenceCritical;
-        policy = if aggressive && long_message {
-            PreservationPolicy::ReceiptOnly
-        } else {
-            PreservationPolicy::KeepVerbatim
-        };
-        reasons.push("path-signal".to_string());
-    } else if msg.role == "tool" {
-        item_type = ItemType::ToolResult;
-        authority = AuthorityClass::VerifiedToolReceipt;
-        policy = if msg.content.chars().count() > 600 {
-            PreservationPolicy::ReceiptOnly
-        } else {
-            PreservationPolicy::KeepVerbatim
-        };
-        reasons.push("tool-result".to_string());
-    } else if contains_any(
-        &content_l,
-        &["decided", "decision", "architecture", "verdict"],
-    ) {
-        item_type = ItemType::Decision;
-        authority = AuthorityClass::DurableMemoryCandidate;
-        policy = PreservationPolicy::SemanticMemoryArchive;
-        reasons.push("decision-signal".to_string());
-    } else if contains_any(&content_l, &["source:", "evidence", "verified", "receipt"]) {
-        item_type = ItemType::SourceEvidence;
-        authority = AuthorityClass::EvidenceCritical;
-        policy = if aggressive && long_message {
-            PreservationPolicy::ReceiptOnly
-        } else {
-            PreservationPolicy::KeepVerbatim
-        };
-        reasons.push("evidence-signal".to_string());
-    }
-
-    let authority_is_monotonic = matches!(
-        authority,
-        AuthorityClass::MustPreserveExact
-            | AuthorityClass::EvidenceCritical
-            | AuthorityClass::ActiveTask
-            | AuthorityClass::VerifiedToolReceipt
-    ) || matches!(policy, PreservationPolicy::KeepVerbatim);
-    if duplicate && !authority_is_monotonic {
-        item_type = ItemType::DuplicateContext;
-        authority = AuthorityClass::Discardable;
-        policy = PreservationPolicy::OmitDuplicate;
-        reasons.push("duplicate-content".to_string());
-    }
-
-    if contains_any(
-        &content_l,
-        &[
-            "likely",
-            "potentially",
-            "would likely",
-            "may indicate",
-            "logically connect",
-        ],
-    ) {
-        if matches!(
-            authority,
-            AuthorityClass::SummaryOk | AuthorityClass::ArchiveOk
-        ) && matches!(
-            policy,
-            PreservationPolicy::ExtractiveSummary | PreservationPolicy::AbstractiveSummary
-        ) {
-            item_type = ItemType::ArtifactBoilerplate;
-            authority = AuthorityClass::Quarantine;
-            policy = PreservationPolicy::Quarantine;
-            reasons.push("speculative-language-quarantined".to_string());
-        } else {
-            reasons.push("speculative-language-non-downgrading-flag".to_string());
-        }
-    }
-
-    ContextItemV1 {
-        schema: "ContextItemV1".to_string(),
-        item_id: format!("ctxi_{idx:04}_{}", &content_hash[..12]),
-        session_id: session_id.to_string(),
-        start_index: idx,
-        end_index: idx,
-        role_set: vec![msg.role.clone()],
-        char_count: msg.content.chars().count(),
-        approx_tokens: counted_tokens,
-        content_blake3: content_hash,
-        content_kind: detect_content_kind(&msg.role, &msg.content),
-        item_type,
-        authority_class: authority,
-        preservation_policy: policy,
-        risk_reasons: reasons,
-        source_message_ids: msg.id.clone().into_iter().collect(),
-        priority_score: 0,
-    }
-}
-
-fn resolve_allocator(policy: &CompactionPolicy) -> AllocatorMode {
+pub(crate) fn resolve_allocator(policy: &CompactionPolicy) -> AllocatorMode {
     if policy.allocator.trim().is_empty() {
         return AllocatorMode::DeterministicV1;
     }
@@ -1306,10 +914,10 @@ fn resolve_allocator(policy: &CompactionPolicy) -> AllocatorMode {
     }
 }
 
-fn is_aggressive_allocator(policy: &CompactionPolicy) -> bool {
+pub(crate) fn is_aggressive_allocator(policy: &CompactionPolicy) -> bool {
     matches!(resolve_allocator(policy), AllocatorMode::AggressiveV1)
 }
-fn is_aggressive_allocator_mode(mode: &AllocatorMode) -> bool {
+pub(crate) fn is_aggressive_allocator_mode(mode: &AllocatorMode) -> bool {
     matches!(mode, AllocatorMode::AggressiveV1)
 }
 
@@ -2230,7 +1838,7 @@ This is background, not an active task.\nUse context_expand(receipt_id=\"{receip
     )
 }
 
-fn compact_preview(text: &str, max_chars: usize) -> String {
+pub(crate) fn compact_preview(text: &str, max_chars: usize) -> String {
     let clean = text.split_whitespace().collect::<Vec<_>>().join(" ");
     if clean.chars().count() <= max_chars {
         clean
@@ -2278,7 +1886,7 @@ fn json_preview(text: &str, max_chars: usize) -> String {
     compact_preview(text, max_chars)
 }
 
-fn detect_content_kind(role: &str, content: &str) -> ContentKind {
+pub(crate) fn detect_content_kind(role: &str, content: &str) -> ContentKind {
     let trimmed = content.trim();
     let lower = trimmed.to_lowercase();
     if serde_json::from_str::<Value>(trimmed).is_ok() {
@@ -2440,11 +2048,11 @@ fn minimal_recovery_summary(summary: &str) -> String {
     lines.join("\n")
 }
 
-fn contains_any(text: &str, needles: &[&str]) -> bool {
+pub(crate) fn contains_any(text: &str, needles: &[&str]) -> bool {
     needles.iter().any(|needle| text.contains(needle))
 }
 
-fn contains_path_signal(text: &str) -> bool {
+pub(crate) fn contains_path_signal(text: &str) -> bool {
     text.contains("/home/")
         || text.contains("~/")
         || text.contains("Cargo.toml")
