@@ -77,6 +77,7 @@ fn replay_fixture_scores_full_head_tail_and_context_governor() {
     let report = evaluate_replay_fixture(
         "synthetic-noisy-tool",
         CompactRequest {
+            hmac_key_path: None,
             session_id: "synthetic-noisy-tool".into(),
             messages,
             policy: CompactionPolicy {
@@ -124,6 +125,7 @@ fn latest_user_duplicate_still_preserves_active_task_verbatim() {
     let report = evaluate_replay_fixture(
         "latest-duplicate-active-task",
         CompactRequest {
+            hmac_key_path: None,
             session_id: "latest-duplicate-active-task".into(),
             messages,
             policy: CompactionPolicy {
@@ -173,6 +175,7 @@ fn aggressive_replay_compaction_hits_budget_without_losing_exact_recovery() {
     let report = evaluate_replay_fixture(
         "synthetic-aggressive-budget",
         CompactRequest {
+            hmac_key_path: None,
             session_id: "synthetic-aggressive-budget".into(),
             messages,
             policy: CompactionPolicy {

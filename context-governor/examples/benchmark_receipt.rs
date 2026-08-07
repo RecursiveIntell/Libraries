@@ -222,6 +222,7 @@ fn make_request(message_count: usize, target_tokens: usize) -> CompactRequest {
         ),
     ));
     CompactRequest {
+        hmac_key_path: None,
         session_id: format!("benchmark-{message_count}"),
         messages,
         policy: CompactionPolicy {

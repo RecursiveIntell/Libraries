@@ -1,7 +1,7 @@
 use context_governor::{
     audit_compression_boundary, audit_mcp_tool_surface, compact_context, context_diff,
     evaluate_governed_memory, evaluate_leakage_free_rag, finalize_compacted_response,
-    parse_summary_output, render_summary_prompt, screen_knowledge_conflicts,
+    parse_summary_output, receipt_index, render_summary_prompt, screen_knowledge_conflicts,
     select_retrieval_route, CompactRequest, CompactResponse, ContextGovernorError, EvidenceClaim,
     FileContextStore, GovernanceCase, GovernanceFailureMode, PromptConfigV1, RagEvalInput,
     SearchScope, ToolManifestEntry,
@@ -9,6 +9,7 @@ use context_governor::{
 
 use serde::Serialize;
 use std::io::{self, Read};
+use std::path::Path;
 
 fn main() {
     if let Err(err) = run() {
@@ -171,9 +172,53 @@ fn run() -> Result<(), ContextGovernorError> {
             let parsed = parse_summary_output(&input);
             print_json(&parsed)
         }
+        "verify" => {
+            let dir = required_arg(&args, "--dir")?;
+            let hmac_key_path = arg_value(&args, "--hmac-key");
+            let receipt = arg_value(&args, "--receipt");
+            let key = load_key_or_fail(&hmac_key_path)?;
+            let ids = receipt.as_ref().map(|id| vec![id.clone()]);
+            let (total, passed, failures) =
+                receipt_index::verify_all_receipts(Path::new(&dir), &key, ids.as_deref());
+            println!("total={total} passed={passed} failed={}", failures.len());
+            if !failures.is_empty() {
+                for f in &failures {
+                    eprintln!("FAIL: {f}");
+                }
+            }
+            Ok(())
+        }
+        "key-status" => {
+            let dir = arg_value(&args, "--dir").unwrap_or_else(|| ".".to_string());
+            let hmac_key_path = arg_value(&args, "--hmac-key");
+            let key = load_key_or_fail(&hmac_key_path)?;
+            let key_hex = hex::encode(&key);
+            let receipt_count = std::fs::read_dir(Path::new(&dir))
+                .map(|entries| {
+                    entries
+                        .filter_map(|e| e.ok())
+                        .filter(|e| {
+                            e.path()
+                                .file_stem()
+                                .and_then(|s| s.to_str())
+                                .map(|s| s.starts_with("ctxr_") || s.starts_with("rehydrated-"))
+                                .unwrap_or(false)
+                        })
+                        .count()
+                })
+                .unwrap_or(0);
+            let key_info = serde_json::json!({
+                "hex_prefix": &key_hex[..8],
+                "len": key.len(),
+                "receipt_count_in_dir": receipt_count,
+            });
+            print_json(&key_info)
+        }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  compact < request.json > response.json\n  finalize < response.json > finalized-response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  parse-summary < summary.txt    (parses LLM output into structured fields)"
+                "context-governor commands:\n  compact < request.json > response.json\n  finalize < response.json > finalized-response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  verify --dir DIR [--hmac-key PATH] [--receipt ID]
+  key-status --dir DIR [--hmac-key PATH]
+  parse-summary < summary.txt    (parses LLM output into structured fields)"
             );
             Ok(())
         }
@@ -182,6 +227,17 @@ fn run() -> Result<(), ContextGovernorError> {
             format!("unknown command: {other}"),
         ))),
     }
+}
+
+fn load_key_or_fail(hmac_key_path: &Option<String>) -> Result<Vec<u8>, ContextGovernorError> {
+    let path = hmac_key_path.as_deref().unwrap_or_else(|| {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
+        Box::leak(format!("{home}/.hermes/context-governor/hmac.key").into_boxed_str())
+    });
+    receipt_index::load_hmac_key(Path::new(path)).or_else(|_| {
+        let key = receipt_index::generate_hmac_key();
+        receipt_index::save_hmac_key(Path::new(path), &key).map(|_| key)
+    })
 }
 
 #[derive(serde::Serialize)]

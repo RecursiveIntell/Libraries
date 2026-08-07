@@ -15,7 +15,8 @@ fn msg(role: &str, content: &str) -> Message {
 #[test]
 fn content_aware_summary_keeps_cargo_error_lines_not_bulk_noise() {
     let response = compact_context(CompactRequest {
-        session_id: "content-compression".into(),
+        hmac_key_path: None,
+            session_id: "content-compression".into(),
         messages: vec![
             msg("system", "system"),
             msg("tool", &format!("{}\nerror[E0425]: cannot find value `x`\nwarning: unused import\ntest result: FAILED\n{}", "bulk line\n".repeat(500), "tail noise\n".repeat(500))),
@@ -45,6 +46,7 @@ fn content_aware_summary_keeps_cargo_error_lines_not_bulk_noise() {
 fn json_summary_keeps_keys_and_search_still_finds_exact_payload() {
     let json_payload = r#"{"alpha": 1, "beta": true, "nested": {"needle": "JSON_NEEDLE"}}"#;
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "json-compression".into(),
         messages: vec![msg("assistant", json_payload), msg("user", "latest")],
         policy: CompactionPolicy {
@@ -78,6 +80,7 @@ fn search_result_summary_keeps_paths_and_match_lines_not_bulk_noise() {
         "tail noise\n".repeat(400)
     );
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "search-result-compression".into(),
         messages: vec![msg("tool", &search_payload), msg("user", "latest")],
         policy: CompactionPolicy {

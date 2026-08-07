@@ -56,6 +56,7 @@ fn replay_answerability_scores_operational_questions_after_compaction() {
     let report = evaluate_replay_answerability(
         "answerability-fixture",
         CompactRequest {
+            hmac_key_path: None,
             session_id: "answerability".into(),
             messages,
             policy: CompactionPolicy {

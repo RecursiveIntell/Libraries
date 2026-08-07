@@ -16,6 +16,7 @@ fn msg(role: &str, content: &str) -> Message {
 #[test]
 fn expand_recovers_exact_omitted_text_by_item_id() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "tools".into(),
         messages: vec![
             msg("system", "system"),
@@ -49,6 +50,7 @@ fn expand_recovers_exact_omitted_text_by_item_id() {
 #[test]
 fn search_finds_receipt_and_exact_store_content_without_dumping_everything() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "search".into(),
         messages: vec![
             msg("system", "system"),
@@ -73,6 +75,7 @@ fn search_finds_receipt_and_exact_store_content_without_dumping_everything() {
 #[test]
 fn diff_reports_policy_counts() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "diff".into(),
         messages: vec![
             msg("system", "system"),

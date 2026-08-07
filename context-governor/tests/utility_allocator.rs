@@ -29,6 +29,7 @@ fn utility_v2_prefers_focus_relevant_middle_item_at_tight_budget() {
     let irrelevant = format!("{} unrelated record", "filler ".repeat(70));
     let relevant = format!("{} parser focus implementation", "filler ".repeat(70));
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "utility-focus".into(),
         messages: vec![
             msg("assistant", irrelevant),
@@ -55,6 +56,7 @@ fn utility_v2_prefers_focus_relevant_middle_item_at_tight_budget() {
 #[test]
 fn utility_v2_reserves_mandatory_system_gate_error_and_latest_user() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "utility-mandatory".into(),
         messages: vec![
             msg("system", "system instruction must remain".into()),
@@ -86,6 +88,7 @@ fn utility_v2_reserves_mandatory_system_gate_error_and_latest_user() {
 #[test]
 fn utility_v2_is_stable_and_exposes_selection_evidence() {
     let request = CompactRequest {
+        hmac_key_path: None,
         session_id: "utility-stable".into(),
         messages: vec![
             msg("assistant", "old history ".repeat(80)),
@@ -114,6 +117,7 @@ fn utility_v2_penalizes_duplicate_optional_content_against_novel_focus_content()
     let repeated = format!("{} shared history", "duplicate ".repeat(60));
     let novel = format!("{} parser optimization unique", "parser ".repeat(60));
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "utility-duplicate".into(),
         messages: vec![
             msg("assistant", repeated.clone()),
@@ -149,6 +153,7 @@ fn utility_v2_hot_path_membership_work_is_linear_for_large_inputs() {
     messages.push(msg("user", "complete parser focus".into()));
 
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "utility-linear".into(),
         messages,
         policy: utility_policy(700),
@@ -169,6 +174,7 @@ fn deterministic_v1_explicit_mode_matches_default_semantics() {
         msg("user", "latest request".into()),
     ];
     let default = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "deterministic-fixture".into(),
         messages: messages.clone(),
         policy: CompactionPolicy {
@@ -181,6 +187,7 @@ fn deterministic_v1_explicit_mode_matches_default_semantics() {
     })
     .unwrap();
     let explicit = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "deterministic-fixture".into(),
         messages,
         policy: CompactionPolicy {

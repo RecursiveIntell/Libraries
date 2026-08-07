@@ -18,6 +18,7 @@ fn receipt_index_scales_to_10k_compactions() {
     for i in 0..10_000 {
         let iter_start = Instant::now();
         let _response = compact_context(CompactRequest {
+            hmac_key_path: None,
             session_id: format!("scale-{}", i),
             messages: vec![
                 msg("system", &format!("scale test {}", i)),

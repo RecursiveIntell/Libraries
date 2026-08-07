@@ -12,6 +12,7 @@ fn msg(role: &str, content: &str) -> Message {
 
 fn kind_for(content: &str) -> ContentKind {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "kind".into(),
         messages: vec![msg("assistant", content), msg("user", "latest")],
         policy: CompactionPolicy {

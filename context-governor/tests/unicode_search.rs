@@ -13,6 +13,7 @@ fn msg(role: &str, content: &str) -> Message {
 #[test]
 fn context_search_handles_multibyte_char_boundaries() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "unicode-search".into(),
         messages: vec![msg("tool", &format!("x{} NEEDLE", "→".repeat(2000)))],
         policy: Default::default(),

@@ -17,6 +17,7 @@ fn msg(role: &str, content: &str) -> Message {
 fn file_context_store_round_trips_receipt_and_exact_fallback() {
     let dir = tempfile::tempdir().unwrap();
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "store-session".into(),
         messages: vec![
             msg("system", "system"),
@@ -72,6 +73,7 @@ fn file_context_store_status_reports_lifecycle_bytes_and_cleans_tmp_files() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(dir.path().join("stale.json.tmp"), "partial").unwrap();
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "store-status".into(),
         messages: vec![
             msg("tool", &"bulk STORE_STATUS ".repeat(300)),
@@ -118,6 +120,7 @@ fn file_context_store_persists_search_index_across_instances_and_prunes() {
         ("persist-b", "PERSIST_SECOND_NEEDLE"),
     ] {
         let response = compact_context(CompactRequest {
+            hmac_key_path: None,
             session_id: session_id.into(),
             messages: vec![
                 msg("tool", &format!("{} {needle}", "bulk ".repeat(350))),
@@ -196,6 +199,7 @@ fn file_context_store_persists_search_index_across_instances_and_prunes() {
 fn save_with_status_finalizes_exact_recovery_and_pruning_removes_it() {
     let dir = tempfile::tempdir().unwrap();
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "save-status".into(),
         messages: vec![
             msg("tool", &"PERSISTENCE_NEEDLE ".repeat(500)),
@@ -230,6 +234,7 @@ fn overwriting_a_receipt_updates_the_persisted_index_in_place() {
     let dir = tempfile::tempdir().unwrap();
     let store = FileContextStore::new(dir.path());
     let mut response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "overwrite-index".into(),
         messages: vec![
             msg("tool", &"OLD_INDEX_TOKEN ".repeat(300)),
@@ -324,6 +329,7 @@ fn saving_a_new_receipt_updates_an_existing_index_in_place() {
 
 fn indexed_fixture(session_id: &str, content: &str) -> context_governor::CompactResponse {
     compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: session_id.into(),
         messages: vec![msg("tool", content), msg("user", "latest")],
         policy: CompactionPolicy {

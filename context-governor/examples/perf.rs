@@ -70,6 +70,7 @@ fn make_request(message_count: usize) -> CompactRequest {
         "Latest active request: finish implementation and report receipts.",
     ));
     CompactRequest {
+        hmac_key_path: None,
         session_id: format!("perf-{message_count}"),
         messages,
         policy: CompactionPolicy {

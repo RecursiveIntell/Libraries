@@ -592,6 +592,7 @@ mod tests {
 
     fn make_test_response() -> CompactResponse {
         let request = CompactRequest {
+            hmac_key_path: None,
             session_id: "test-session".to_string(),
             messages: vec![
                 Message {

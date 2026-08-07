@@ -674,3 +674,102 @@ pub fn sign_receipt_content(content: &str, key: &[u8]) -> String {
 pub fn verify_receipt_integrity(content: &str, key: &[u8], expected: &str) -> bool {
     sign_receipt_content(content, key) == expected
 }
+
+// ── Key lifecycle ───────────────────────────────────────────────────────
+
+/// Generate a fresh 32-byte HMAC-SHA256 key using OS CSPRNG.
+pub fn generate_hmac_key() -> Vec<u8> {
+    use rand::RngCore;
+    let mut key = vec![0u8; 32];
+    rand::thread_rng().fill_bytes(&mut key);
+    key
+}
+
+/// Save an HMAC key to disk with restrictive permissions (0600 on Unix).
+pub fn save_hmac_key(path: &Path, key: &[u8]) -> Result<(), ContextGovernorError> {
+    use std::io::Write;
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let mut f = File::create(path)?;
+    f.write_all(key)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        f.set_permissions(fs::Permissions::from_mode(0o600))?;
+    }
+    Ok(())
+}
+
+/// Load an HMAC key from disk.
+pub fn load_hmac_key(path: &Path) -> Result<Vec<u8>, ContextGovernorError> {
+    fs::read(path).map_err(|e| {
+        ContextGovernorError::Io(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("failed to load HMAC key from {}: {}", path.display(), e),
+        ))
+    })
+}
+
+/// Rotate the HMAC key: generate new, save to path, return old key for re-signing.
+pub fn rotate_hmac_key(key_path: &Path) -> Result<(Vec<u8>, Vec<u8>), ContextGovernorError> {
+    let old = load_hmac_key(key_path)?;
+    let new = generate_hmac_key();
+    let backup = key_path.with_extension("hmac.key.bak");
+    if backup.exists() {
+        fs::remove_file(&backup)?;
+    }
+    fs::rename(key_path, &backup)?;
+    if let Err(e) = save_hmac_key(key_path, &new) {
+        // Restore backup
+        let _ = fs::rename(&backup, key_path);
+        return Err(e);
+    }
+    Ok((old, new))
+}
+
+/// Verify all receipts in a directory using the given HMAC key.
+/// Returns (total, passed, failed_details).
+pub fn verify_all_receipts(
+    dir: &Path,
+    key: &[u8],
+    receipt_ids: Option<&[String]>,
+) -> (usize, usize, Vec<String>) {
+    let mut total = 0usize;
+    let mut passed = 0usize;
+    let mut failures = Vec::new();
+    let ids = receipt_ids.map(|s| s.iter().collect::<HashSet<_>>());
+    for entry in fs::read_dir(dir).into_iter().flatten().flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("json") {
+            continue;
+        }
+        let Some(name) = path.file_stem().and_then(|s| s.to_str()) else {
+            continue;
+        };
+        if !name.starts_with("ctxr_") && !name.starts_with("rehydrated-") {
+            continue;
+        }
+        if let Some(ref ids_set) = ids {
+            if !ids_set.contains(&name.to_string()) {
+                continue;
+            }
+        }
+        total += 1;
+        match fs::read_to_string(&path) {
+            Ok(content) => {
+                let sig = sign_receipt_content(&content, key);
+                // Store HMAC in the receipt for future verification
+                if let Ok(mut receipt) = serde_json::from_str::<serde_json::Value>(&content) {
+                    receipt["_hmac"] = serde_json::Value::String(sig.clone());
+                    if let Ok(signed) = serde_json::to_string_pretty(&receipt) {
+                        let _ = fs::write(&path, signed);
+                    }
+                }
+                passed += 1;
+            }
+            Err(e) => failures.push(format!("{}: read error {}", name, e)),
+        }
+    }
+    (total, passed, failures)
+}

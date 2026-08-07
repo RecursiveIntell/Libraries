@@ -31,6 +31,7 @@ impl MemorySink for RecordingSink {
 #[test]
 fn memory_archive_records_are_explicit_and_result_bound() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "memory".into(),
         messages: vec![
             msg("system", "system"),
@@ -71,6 +72,7 @@ fn memory_archive_records_are_explicit_and_result_bound() {
 #[test]
 fn semantic_memory_enabled_without_sink_fails_loud_not_silent() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "memory-no-sink".into(),
         messages: vec![
             msg(

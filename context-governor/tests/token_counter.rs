@@ -16,6 +16,7 @@ fn msg(role: &str, content: &str) -> Message {
 fn approx_words_counter_is_used_for_item_accounting() {
     let content = "alpha ".repeat(20);
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "token-counter".into(),
         messages: vec![msg("user", &content)],
         policy: CompactionPolicy {
@@ -33,6 +34,7 @@ fn approx_words_counter_is_used_for_item_accounting() {
 #[test]
 fn approximate_token_counter_records_provider_budget_warning() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "token-warning".into(),
         messages: vec![msg("user", "latest")],
         policy: CompactionPolicy::default(),
@@ -50,6 +52,7 @@ fn approximate_token_counter_records_provider_budget_warning() {
 #[test]
 fn provider_chat_approx_records_mode_and_overhead_warning() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "provider-chat-token-warning".into(),
         messages: vec![msg("tool", r#"{"path":"/tmp/example.rs","ok":false}"#)],
         policy: CompactionPolicy {
@@ -75,6 +78,7 @@ fn provider_chat_approx_records_mode_and_overhead_warning() {
 #[test]
 fn tiktoken_counter_surface_falls_back_loudly_without_native_feature() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "tiktoken-surface".into(),
         messages: vec![msg("user", "latest")],
         policy: CompactionPolicy {
@@ -108,6 +112,7 @@ fn tiktoken_counter_surface_falls_back_loudly_without_native_feature() {
 fn tiktoken_counts_match_expected_cl100k() {
     // "Hello, world!" is 4 tokens under cl100k_base.
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "tiktoken-real".into(),
         messages: vec![msg("user", "Hello, world!")],
         policy: CompactionPolicy {
@@ -134,6 +139,7 @@ fn tiktoken_counts_match_expected_cl100k() {
 #[test]
 fn hard_cascade_summary_truncation_uses_the_selected_counter_not_chars() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "word-counter-summary".into(),
         messages: vec![
             msg("tool", &format!("{} WORD_COUNTER_NEEDLE", "a ".repeat(900))),

@@ -16,6 +16,7 @@ fn latest_user_survives_all_budget_modes() {
     let modes = [BudgetMode::SoftWarn, BudgetMode::HardCascade];
     for mode in &modes {
         let response = compact_context(CompactRequest {
+            hmac_key_path: None,
             session_id: format!("invariant-mode-{:?}", mode),
             messages: vec![
                 msg("system", "old system prompt"),
@@ -56,6 +57,7 @@ fn latest_user_survives_after_many_cycles() {
     messages.push(msg("user", "FINAL_CYCLE_USER_MARKER"));
 
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "cycle-invariant".into(),
         messages,
         policy: CompactionPolicy {

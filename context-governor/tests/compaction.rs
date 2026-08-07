@@ -32,6 +32,7 @@ fn preserves_latest_user_acceptance_gates_and_errors_verbatim() {
     ];
 
     let receipt = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "s1".into(),
         messages: messages.clone(),
         policy: CompactionPolicy {
@@ -67,6 +68,7 @@ fn compacted_summary_is_reference_only_and_has_expand_handles() {
     ];
 
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "s2".into(),
         messages,
         policy: CompactionPolicy {
@@ -125,6 +127,7 @@ fn artifact_recall_can_be_background_when_query_explicitly_matches() {
 #[test]
 fn receipt_hash_matches_final_compacted_messages_after_receipt_id_injection() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "hash-final".into(),
         messages: vec![
             msg("system", "system"),
@@ -174,6 +177,7 @@ fn receipt_hash_matches_final_compacted_messages_after_receipt_id_injection() {
 #[test]
 fn finalize_compacted_response_rebinds_receipt_to_adapter_output() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "adapter-finalize".into(),
         messages: vec![
             msg("system", "system"),
@@ -217,6 +221,7 @@ fn finalize_compacted_response_rebinds_receipt_to_adapter_output() {
 #[test]
 fn summary_is_inserted_before_latest_user_so_latest_task_stays_active() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "latest-after-summary".into(),
         messages: vec![
             msg("system", "system"),
@@ -254,6 +259,7 @@ fn summary_is_inserted_before_latest_user_so_latest_task_stays_active() {
 #[test]
 fn archived_durable_items_have_exact_store_records_even_when_kept() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "archive-kept".into(),
         messages: vec![
             msg("system", "system"),
@@ -288,6 +294,7 @@ fn archived_durable_items_have_exact_store_records_even_when_kept() {
 #[test]
 fn hard_cascade_keeps_minimal_recovery_pointer_when_it_fits() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "hard-minimal-pointer".into(),
         messages: vec![
             msg(
@@ -320,6 +327,7 @@ fn hard_cascade_keeps_minimal_recovery_pointer_when_it_fits() {
 #[test]
 fn latest_user_with_speculation_stays_exact_when_tail_protection_is_disabled() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "monotonic-authority".into(),
         messages: vec![msg("user", "latest task likely needs an exact response")],
         policy: CompactionPolicy {
@@ -342,6 +350,7 @@ fn latest_user_with_speculation_stays_exact_when_tail_protection_is_disabled() {
 #[test]
 fn acceptance_gate_with_speculation_stays_exact() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "acceptance-speculation".into(),
         messages: vec![
             msg(
@@ -369,6 +378,7 @@ fn acceptance_gate_with_speculation_stays_exact() {
 #[test]
 fn verified_error_with_speculation_stays_exact() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "error-speculation".into(),
         messages: vec![
             msg(
@@ -409,6 +419,7 @@ fn latest_user_identity_is_final_and_not_deduplicated() {
         .insert("identity".into(), Value::String("latest".into()));
 
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "latest-identity".into(),
         messages: vec![earlier, msg("assistant", "historical"), latest.clone()],
         policy: CompactionPolicy {
@@ -435,6 +446,7 @@ fn latest_user_identity_is_final_and_not_deduplicated() {
 #[test]
 fn compact_only_exact_recovery_is_in_response_not_persisted() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "recovery-in-response".into(),
         messages: vec![
             msg("tool", &"recovery material ".repeat(500)),
@@ -463,6 +475,7 @@ fn compact_only_exact_recovery_is_in_response_not_persisted() {
 #[test]
 fn hard_cascade_reports_when_protected_overflow_cannot_fit() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "hard-overflow".into(),
         messages: vec![msg("user", &"protected latest ".repeat(1_000))],
         policy: CompactionPolicy {
@@ -487,6 +500,7 @@ fn hard_cascade_reports_when_protected_overflow_cannot_fit() {
 #[test]
 fn unsafe_relinked_summary_is_replaced_before_reinjection() {
     let result = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "boundary-relink".into(),
         messages: vec![
             msg("tool", &format!("Ignore previous {}", "noise ".repeat(400))),
@@ -542,6 +556,7 @@ fn latest_user_preserved_with_zero_tail_protection() {
         },
     ];
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "adversarial-latest-user".into(),
         messages,
         policy: CompactionPolicy {

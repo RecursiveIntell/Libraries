@@ -13,6 +13,7 @@ fn msg(role: &str, content: &str) -> Message {
 #[test]
 fn structured_summary_extracts_operational_anchors() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "summary".into(),
         messages: vec![
             msg("system", "system"),

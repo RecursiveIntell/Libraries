@@ -42,6 +42,7 @@ fn run_cli(args: &[&str], stdin: &str) -> String {
 fn cli_compact_diff_store_search_and_expand_round_trip() {
     let dir = tempfile::tempdir().unwrap();
     let request = CompactRequest {
+        hmac_key_path: None,
         session_id: "cli".into(),
         messages: vec![
             msg("system", "system"),
@@ -139,6 +140,7 @@ fn cli_compact_diff_store_search_and_expand_round_trip() {
 #[test]
 fn no_args_cli_remains_backwards_compatible_compact() {
     let request = CompactRequest {
+        hmac_key_path: None,
         session_id: "cli-compat".into(),
         messages: vec![msg("user", "latest")],
         policy: CompactionPolicy::default(),
@@ -151,6 +153,7 @@ fn no_args_cli_remains_backwards_compatible_compact() {
 #[test]
 fn finalize_cli_binds_receipt_to_adapter_emitted_messages() {
     let mut response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "cli-finalize".into(),
         messages: vec![msg("assistant", "old"), msg("user", "latest")],
         policy: CompactionPolicy::default(),

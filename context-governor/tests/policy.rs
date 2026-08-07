@@ -16,6 +16,7 @@ fn msg(role: &str, content: &str) -> Message {
 #[test]
 fn token_counter_kind_is_recorded_in_receipt() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "policy-token-counter".into(),
         messages: vec![msg("user", "latest")],
         policy: CompactionPolicy {
@@ -37,6 +38,7 @@ fn token_counter_kind_is_recorded_in_receipt() {
 #[test]
 fn hard_cascade_keeps_output_under_budget_when_possible() {
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "policy-hard".into(),
         messages: vec![
             msg("system", "sys"),
@@ -70,6 +72,7 @@ fn hard_cascade_keeps_output_under_budget_when_possible() {
 #[test]
 fn fail_closed_errors_when_exact_preserve_exceeds_budget() {
     let err = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "policy-fail".into(),
         messages: vec![msg(
             "user",

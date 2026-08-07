@@ -48,6 +48,7 @@ fn main() {
         .join("\n");
 
     let response = compact_context(CompactRequest {
+        hmac_key_path: None,
         session_id: "replay-eval".into(),
         messages: transcript,
         policy: CompactionPolicy {

@@ -12,6 +12,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::Write;
+use std::path::Path;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -360,6 +361,10 @@ pub struct CompactRequest {
     pub policy: CompactionPolicy,
     #[serde(default)]
     pub focus: Option<String>,
+    /// Path to HMAC-SHA256 key file for receipt integrity signing.
+    /// When set, every compaction response will include an HMAC digest.
+    #[serde(default)]
+    pub hmac_key_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -416,6 +421,10 @@ pub struct CompactResponse {
     /// Monotonic authority floor — items that must never be downgraded.
     #[serde(default)]
     pub structural_floor: StructuralFloorV1,
+    /// HMAC-SHA256 integrity digest over the serialized response content.
+    /// Only present when an HMAC key is configured (via --hmac-key or HMAC_KEY_PATH).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hmac: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -643,6 +652,7 @@ pub fn compact_context_with_memory_sink(
                 context_steps: context_steps.clone(),
                 plan_state: plan_state.clone(),
                 structural_floor: structural_floor.clone(),
+                hmac: None,
             };
             let outcome = archive_response_to_memory(&compact_response, sink)?;
             receipt.semantic_memory_fact_ids = outcome.record_ids;
@@ -663,7 +673,7 @@ pub fn compact_context_with_memory_sink(
         }
     }
 
-    Ok(CompactResponse {
+    let mut response = CompactResponse {
         receipt,
         allocation_plan: plan,
         compacted_messages,
@@ -671,7 +681,18 @@ pub fn compact_context_with_memory_sink(
         context_steps,
         plan_state,
         structural_floor,
-    })
+        hmac: None,
+    };
+    // HMAC signing — load key if configured and sign serialized response
+    if let Some(ref key_path) = request.hmac_key_path {
+        if let Ok(key) = receipt_index::load_hmac_key(Path::new(key_path)) {
+            if let Ok(serialized) = serde_json::to_string(&response) {
+                let hmac = receipt_index::sign_receipt_content(&serialized, &key);
+                response.hmac = Some(hmac);
+            }
+        }
+    }
+    Ok(response)
 }
 
 pub fn filter_recall_candidate(candidate: &RecallCandidate, query: &str) -> RecallFilterResult {
