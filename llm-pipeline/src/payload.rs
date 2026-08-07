@@ -12,13 +12,14 @@ use crate::exec_ctx::ExecCtx;
 use crate::trace::TraceId;
 use crate::PipelineError;
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use stack_ids::TraceCtx;
 use std::future::Future;
 use std::pin::Pin;
 
 /// Token accounting information returned by an LLM provider.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TokenUsage {
     /// Number of tokens consumed by the prompt.
     pub prompt_tokens: u32,
