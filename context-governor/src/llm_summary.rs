@@ -312,8 +312,8 @@ fn format_fallback_refs(receipt: &ContextCompactionReceiptV1) -> String {
                     r.item_id,
                     r.start_index,
                     r.end_index,
-                    &r.content_blake3,
-                    &r.content_sha256,
+                    r.content_blake3,
+                    r.content_sha256,
                     r.approx_tokens
                 )
             })

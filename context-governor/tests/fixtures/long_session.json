@@ -1,0 +1,92 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Coding assistant."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 0: Generated 0 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 1: Generated 100 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 2: Generated 200 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 3: Generated 300 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 4: Generated 400 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 5: Generated 500 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 6: Generated 600 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 7: Generated 700 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 8: Generated 800 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 9: Generated 900 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 10: Generated 1000 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 11: Generated 1100 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 12: Generated 1200 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 13: Generated 1300 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 14: Generated 1400 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 15: Generated 1500 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 16: Generated 1600 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 17: Generated 1700 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 18: Generated 1800 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "assistant",
+      "content": "Turn 19: Generated 1900 lines of analysis output with detailed recommendations."
+    },
+    {
+      "role": "user",
+      "content": "Summarize the key findings."
+    }
+  ]
+}

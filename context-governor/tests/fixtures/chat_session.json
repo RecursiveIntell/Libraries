@@ -1,0 +1,24 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful assistant."
+    },
+    {
+      "role": "user",
+      "content": "What is Rust?"
+    },
+    {
+      "role": "assistant",
+      "content": "Rust is a systems programming language focused on safety, speed, and concurrency."
+    },
+    {
+      "role": "user",
+      "content": "Show me an example."
+    },
+    {
+      "role": "assistant",
+      "content": "fn main() {\n    println!(\"Hello, world!\");\n}"
+    }
+  ]
+}

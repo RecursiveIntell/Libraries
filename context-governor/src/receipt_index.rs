@@ -657,3 +657,20 @@ fn sync_directory(path: &Path) -> Result<(), ContextGovernorError> {
     File::open(path)?.sync_all()?;
     Ok(())
 }
+
+// ── HMAC receipt integrity ────────────────────────────────────────────
+
+/// Compute an HMAC-SHA256 over receipt content for cross-session integrity.
+pub fn sign_receipt_content(content: &str, key: &[u8]) -> String {
+    use hmac::{Hmac, Mac};
+    use sha2::Sha256;
+    type HmacSha256 = Hmac<Sha256>;
+    let mut mac = HmacSha256::new_from_slice(key).expect("HMAC accepts any key length");
+    mac.update(content.as_bytes());
+    hex::encode(mac.finalize().into_bytes())
+}
+
+/// Verify receipt content against a stored HMAC digest.
+pub fn verify_receipt_integrity(content: &str, key: &[u8], expected: &str) -> bool {
+    sign_receipt_content(content, key) == expected
+}

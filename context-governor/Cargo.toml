@@ -48,9 +48,20 @@ uuid = { version = "1", features = ["v4", "serde"] }
 version = "0.32"
 features = ["bundled", "serde_json"]
 
+[dependencies.tiktoken-rs]
+version = "0.6"
+optional = true
+
+[dependencies.hmac]
+version = "0.12"
+
+[dependencies.hex]
+version = "0.4"
+
 [features]
 default = []
 sqlite-store = []
+tiktoken = ["dep:tiktoken-rs"]
 
 [dev-dependencies]
 tempfile = "3"

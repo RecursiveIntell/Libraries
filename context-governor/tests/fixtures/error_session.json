@@ -1,0 +1,16 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Build assistant."
+    },
+    {
+      "role": "tool",
+      "content": "error[E0308]: mismatched types\n  --> src/main.rs:10:5\nwarning: unused variable\n\ntest result: FAILED. 2 passed; 1 failed"
+    },
+    {
+      "role": "user",
+      "content": "Fix the type error."
+    }
+  ]
+}

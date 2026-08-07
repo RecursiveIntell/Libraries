@@ -89,11 +89,46 @@ fn tiktoken_counter_surface_falls_back_loudly_without_native_feature() {
         response.receipt.token_counter,
         TokenCounterKind::TiktokenCl100k
     );
+    #[cfg(not(feature = "tiktoken"))]
     assert!(response
         .receipt
         .warnings
         .iter()
         .any(|warning| warning.contains("tiktoken_cl100k requested")));
+    #[cfg(feature = "tiktoken")]
+    assert!(!response
+        .receipt
+        .warnings
+        .iter()
+        .any(|warning| warning.contains("tiktoken_cl100k requested")));
+}
+
+#[test]
+#[cfg(feature = "tiktoken")]
+fn tiktoken_counts_match_expected_cl100k() {
+    // "Hello, world!" is 4 tokens under cl100k_base.
+    let response = compact_context(CompactRequest {
+        session_id: "tiktoken-real".into(),
+        messages: vec![msg("user", "Hello, world!")],
+        policy: CompactionPolicy {
+            token_counter: TokenCounterKind::TiktokenCl100k,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    assert_eq!(
+        response.receipt.token_counter,
+        TokenCounterKind::TiktokenCl100k
+    );
+    assert_eq!(response.allocation_plan.items[0].approx_tokens, 4);
+    // No fallback warning when the native feature is compiled.
+    assert!(!response
+        .receipt
+        .warnings
+        .iter()
+        .any(|w| w.contains("tiktoken_cl100k requested")));
 }
 
 #[test]
