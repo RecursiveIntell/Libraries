@@ -1352,6 +1352,6 @@ scripts/compare_engines.py → verified working (58.1% reduction on long session
 
 ### Deferred (own focused passes)
 - **E1 full** function-level extraction (build_context_steps/build_step/extract_plan_state/classify_messages + compact_preview/count_tokens_text/contains_any/is_aggressive_allocator) — large dependency web, zero functional gain, high regression risk against green tree
-- **E2 adapter wiring** — Hermes plugin must consume the new CheckpointPolicy field
+- **E2 adapter wiring** — ✅ DONE 2026-08-07: PyO3 binding (`context-governor-python/src/lib.rs`) now exposes `unsafe_summary_policy`, `checkpoint_strategy`, `max_checkpoints` via `compact()` with parse helpers. Committed `751c2e93`.
 - **Cross-engine live-model eval** — needs real provider calls, not fixtures
 
