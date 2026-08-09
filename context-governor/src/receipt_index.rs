@@ -660,7 +660,10 @@ fn sync_directory(path: &Path) -> Result<(), ContextGovernorError> {
 
 // ── HMAC receipt integrity ────────────────────────────────────────────
 
-/// Compute an HMAC-SHA256 over receipt content for cross-session integrity.
+/// Compute an HMAC-SHA256 over caller-supplied bytes.
+///
+/// For JSON receipts, use [`canonical_json_payload`] first. Signing raw JSON
+/// text couples verification to whitespace and object-key order.
 pub fn sign_receipt_content(content: &str, key: &[u8]) -> String {
     use hmac::{Hmac, Mac};
     use sha2::Sha256;
@@ -670,9 +673,109 @@ pub fn sign_receipt_content(content: &str, key: &[u8]) -> String {
     hex::encode(mac.finalize().into_bytes())
 }
 
-/// Verify receipt content against a stored HMAC digest.
+/// Verify caller-supplied bytes against an HMAC digest in constant time.
 pub fn verify_receipt_integrity(content: &str, key: &[u8], expected: &str) -> bool {
-    sign_receipt_content(content, key) == expected
+    use hmac::{Hmac, Mac};
+    use sha2::Sha256;
+    type HmacSha256 = Hmac<Sha256>;
+    let Ok(expected_bytes) = hex::decode(expected) else {
+        return false;
+    };
+    let Ok(mut mac) = HmacSha256::new_from_slice(key) else {
+        return false;
+    };
+    mac.update(content.as_bytes());
+    mac.verify_slice(&expected_bytes).is_ok()
+}
+
+/// Produce the deterministic JSON payload covered by an HMAC.
+///
+/// The signature field is removed before serialization, so adding the HMAC
+/// cannot change the bytes being authenticated. This operates on parsed JSON,
+/// not source text, so formatting differences do not affect verification.
+pub fn canonical_json_payload(
+    value: &serde_json::Value,
+    signature_field: &str,
+) -> Result<String, ContextGovernorError> {
+    let mut unsigned = value.clone();
+    let Some(object) = unsigned.as_object_mut() else {
+        return Err(ContextGovernorError::Io(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "signed receipt must be a JSON object",
+        )));
+    };
+    object.remove(signature_field);
+    Ok(serde_json::to_string(&unsigned)?)
+}
+
+/// Compute a deterministic fingerprint of an HMAC key (first 8 hex chars of SHA256).
+pub fn key_fingerprint(key: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    hex::encode(&Sha256::digest(key)[..4])
+}
+
+/// A key ring: one active key + zero or more retired keys (for legacy verification).
+pub struct KeyRing {
+    pub active: Vec<u8>,
+    pub retired: Vec<(String, Vec<u8>)>, // (fingerprint, key)
+}
+
+impl KeyRing {
+    pub fn new(active: Vec<u8>) -> Self {
+        Self {
+            active,
+            retired: Vec::new(),
+        }
+    }
+
+    /// Try to verify a signed HMAC against any key in the ring.
+    /// Signs with the active key, verifies against all keys.
+    pub fn sign_and_verify(&self, content: &str, full_hmac: &str) -> bool {
+        // Full HMAC format: "fpr:signature" when stored in receipt
+        if let Some((fpr, sig)) = full_hmac.split_once(':') {
+            return self.verify_with_fingerprint(content, fpr, sig);
+        }
+        // Legacy: no fingerprint — try active key
+        verify_receipt_integrity(content, &self.active, full_hmac)
+    }
+
+    /// Sign a JSON value after removing its signature field.
+    pub fn sign_json(
+        &self,
+        value: &serde_json::Value,
+        signature_field: &str,
+    ) -> Result<String, ContextGovernorError> {
+        let payload = canonical_json_payload(value, signature_field)?;
+        Ok(format!(
+            "{}:{}",
+            key_fingerprint(&self.active),
+            sign_receipt_content(&payload, &self.active)
+        ))
+    }
+
+    /// Verify a JSON value against a detached field within that JSON object.
+    pub fn verify_json(&self, value: &serde_json::Value, signature_field: &str) -> bool {
+        let Some(signature) = value
+            .get(signature_field)
+            .and_then(serde_json::Value::as_str)
+        else {
+            return false;
+        };
+        canonical_json_payload(value, signature_field)
+            .is_ok_and(|payload| self.sign_and_verify(&payload, signature))
+    }
+
+    fn verify_with_fingerprint(&self, content: &str, fpr: &str, sig: &str) -> bool {
+        if fpr == key_fingerprint(&self.active) {
+            return verify_receipt_integrity(content, &self.active, sig);
+        }
+        for (retired_fpr, retired_key) in &self.retired {
+            if fpr == *retired_fpr {
+                return verify_receipt_integrity(content, retired_key, sig);
+            }
+        }
+        false
+    }
 }
 
 // ── Key lifecycle ───────────────────────────────────────────────────────
@@ -704,18 +807,36 @@ pub fn save_hmac_key(path: &Path, key: &[u8]) -> Result<(), ContextGovernorError
 /// Load an HMAC key from disk.
 pub fn load_hmac_key(path: &Path) -> Result<Vec<u8>, ContextGovernorError> {
     fs::read(path).map_err(|e| {
-        ContextGovernorError::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("failed to load HMAC key from {}: {}", path.display(), e),
-        ))
+        ContextGovernorError::Io(std::io::Error::other(format!(
+            "failed to load HMAC key from {}: {}",
+            path.display(),
+            e
+        )))
     })
+}
+
+/// The one-generation retired-key path associated with an active key path.
+pub fn retired_hmac_key_path(key_path: &Path) -> std::path::PathBuf {
+    std::path::PathBuf::from(format!("{}.bak", key_path.display()))
+}
+
+/// Load the active key plus the previous generation retained by rotation.
+pub fn load_hmac_key_ring(key_path: &Path) -> Result<KeyRing, ContextGovernorError> {
+    let active = load_hmac_key(key_path)?;
+    let mut ring = KeyRing::new(active);
+    let retired_path = retired_hmac_key_path(key_path);
+    if retired_path.exists() {
+        let retired = load_hmac_key(&retired_path)?;
+        ring.retired.push((key_fingerprint(&retired), retired));
+    }
+    Ok(ring)
 }
 
 /// Rotate the HMAC key: generate new, save to path, return old key for re-signing.
 pub fn rotate_hmac_key(key_path: &Path) -> Result<(Vec<u8>, Vec<u8>), ContextGovernorError> {
     let old = load_hmac_key(key_path)?;
     let new = generate_hmac_key();
-    let backup = key_path.with_extension("hmac.key.bak");
+    let backup = retired_hmac_key_path(key_path);
     if backup.exists() {
         fs::remove_file(&backup)?;
     }
@@ -728,16 +849,21 @@ pub fn rotate_hmac_key(key_path: &Path) -> Result<(Vec<u8>, Vec<u8>), ContextGov
     Ok((old, new))
 }
 
-/// Verify all receipts in a directory using the given HMAC key.
+/// Verify all signed receipts in a directory using a key ring.
+///
+/// This is deliberately read-only. Missing signatures, malformed JSON, unknown
+/// key fingerprints, and invalid signatures are failures; verification never
+/// mints a key or mutates a receipt.
 /// Returns (total, passed, failed_details).
 pub fn verify_all_receipts(
     dir: &Path,
-    key: &[u8],
+    ring: &KeyRing,
     receipt_ids: Option<&[String]>,
 ) -> (usize, usize, Vec<String>) {
     let mut total = 0usize;
     let mut passed = 0usize;
     let mut failures = Vec::new();
+
     let ids = receipt_ids.map(|s| s.iter().collect::<HashSet<_>>());
     for entry in fs::read_dir(dir).into_iter().flatten().flatten() {
         let path = entry.path();
@@ -757,18 +883,15 @@ pub fn verify_all_receipts(
         }
         total += 1;
         match fs::read_to_string(&path) {
-            Ok(content) => {
-                let sig = sign_receipt_content(&content, key);
-                // Store HMAC in the receipt for future verification
-                if let Ok(mut receipt) = serde_json::from_str::<serde_json::Value>(&content) {
-                    receipt["_hmac"] = serde_json::Value::String(sig.clone());
-                    if let Ok(signed) = serde_json::to_string_pretty(&receipt) {
-                        let _ = fs::write(&path, signed);
-                    }
+            Ok(content) => match serde_json::from_str::<serde_json::Value>(&content) {
+                Ok(receipt) if receipt.get("hmac").and_then(|v| v.as_str()).is_none() => {
+                    failures.push(format!("{name}: missing hmac"));
                 }
-                passed += 1;
-            }
-            Err(e) => failures.push(format!("{}: read error {}", name, e)),
+                Ok(receipt) if ring.verify_json(&receipt, "hmac") => passed += 1,
+                Ok(_) => failures.push(format!("{name}: HMAC verification failed")),
+                Err(_) => failures.push(format!("{name}: JSON parse error")),
+            },
+            Err(e) => failures.push(format!("{name}: read error {}", e)),
         }
     }
     (total, passed, failures)

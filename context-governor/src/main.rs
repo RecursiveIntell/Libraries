@@ -35,7 +35,12 @@ fn run() -> Result<(), ContextGovernorError> {
             let dir = arg_value(&args, "--dir").unwrap_or_else(|| ".context-governor".to_string());
             let response: CompactResponse = read_json_stdin("CompactResponse")?;
             let store = FileContextStore::new(dir);
-            print_json(&store.save_with_status(&response)?)
+            if let Some(key_path) = arg_value(&args, "--hmac-key") {
+                let key = receipt_index::load_hmac_key(Path::new(&key_path))?;
+                print_json(&store.save_with_status_with_hmac_key(&response, &key)?)
+            } else {
+                print_json(&store.save_with_status(&response)?)
+            }
         }
         "expand" => {
             let dir = required_arg(&args, "--dir")?;
@@ -176,23 +181,26 @@ fn run() -> Result<(), ContextGovernorError> {
             let dir = required_arg(&args, "--dir")?;
             let hmac_key_path = arg_value(&args, "--hmac-key");
             let receipt = arg_value(&args, "--receipt");
-            let key = load_key_or_fail(&hmac_key_path)?;
+            let ring = load_key_ring_or_fail(&hmac_key_path)?;
             let ids = receipt.as_ref().map(|id| vec![id.clone()]);
             let (total, passed, failures) =
-                receipt_index::verify_all_receipts(Path::new(&dir), &key, ids.as_deref());
+                receipt_index::verify_all_receipts(Path::new(&dir), &ring, ids.as_deref());
             println!("total={total} passed={passed} failed={}", failures.len());
             if !failures.is_empty() {
                 for f in &failures {
                     eprintln!("FAIL: {f}");
                 }
+                return Err(ContextGovernorError::Io(std::io::Error::other(
+                    "receipt HMAC verification failed",
+                )));
             }
             Ok(())
         }
         "key-status" => {
             let dir = arg_value(&args, "--dir").unwrap_or_else(|| ".".to_string());
             let hmac_key_path = arg_value(&args, "--hmac-key");
-            let key = load_key_or_fail(&hmac_key_path)?;
-            let key_hex = hex::encode(&key);
+            let ring = load_key_ring_or_fail(&hmac_key_path)?;
+            let key_hex = hex::encode(&ring.active);
             let receipt_count = std::fs::read_dir(Path::new(&dir))
                 .map(|entries| {
                     entries
@@ -209,15 +217,44 @@ fn run() -> Result<(), ContextGovernorError> {
                 .unwrap_or(0);
             let key_info = serde_json::json!({
                 "hex_prefix": &key_hex[..8],
-                "len": key.len(),
+                "len": ring.active.len(),
+                "retired_key_count": ring.retired.len(),
                 "receipt_count_in_dir": receipt_count,
             });
             print_json(&key_info)
         }
+        "key-init" => {
+            let path = hmac_key_path(&arg_value(&args, "--hmac-key"));
+            if path.exists() {
+                return Err(ContextGovernorError::Io(std::io::Error::new(
+                    std::io::ErrorKind::AlreadyExists,
+                    format!(
+                        "HMAC key already exists at {}; refusing to overwrite",
+                        path.display()
+                    ),
+                )));
+            }
+            let key = receipt_index::generate_hmac_key();
+            receipt_index::save_hmac_key(&path, &key)?;
+            print_json(&serde_json::json!({
+                "path": path,
+                "fingerprint": receipt_index::key_fingerprint(&key),
+                "len": key.len(),
+            }))
+        }
+        "key-rotate" => {
+            let path = hmac_key_path(&arg_value(&args, "--hmac-key"));
+            let (old, new) = receipt_index::rotate_hmac_key(&path)?;
+            print_json(&serde_json::json!({
+                "path": path,
+                "old_fingerprint": receipt_index::key_fingerprint(&old),
+                "new_fingerprint": receipt_index::key_fingerprint(&new),
+                "retired_key_path": receipt_index::retired_hmac_key_path(&path),
+            }))
+        }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  compact < request.json > response.json\n  finalize < response.json > finalized-response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  verify --dir DIR [--hmac-key PATH] [--receipt ID]
-  key-status --dir DIR [--hmac-key PATH]
+                "context-governor commands:\n  compact < request.json > response.json\n  finalize < response.json > finalized-response.json\n  store --dir DIR [--hmac-key PATH] < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  verify --dir DIR [--hmac-key PATH] [--receipt ID]\n  key-init [--hmac-key PATH]\n  key-rotate [--hmac-key PATH]\n+  key-status --dir DIR [--hmac-key PATH]
   parse-summary < summary.txt    (parses LLM output into structured fields)"
             );
             Ok(())
@@ -229,15 +266,20 @@ fn run() -> Result<(), ContextGovernorError> {
     }
 }
 
-fn load_key_or_fail(hmac_key_path: &Option<String>) -> Result<Vec<u8>, ContextGovernorError> {
-    let path = hmac_key_path.as_deref().unwrap_or_else(|| {
-        let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-        Box::leak(format!("{home}/.hermes/context-governor/hmac.key").into_boxed_str())
-    });
-    receipt_index::load_hmac_key(Path::new(path)).or_else(|_| {
-        let key = receipt_index::generate_hmac_key();
-        receipt_index::save_hmac_key(Path::new(path), &key).map(|_| key)
-    })
+fn hmac_key_path(hmac_key_path: &Option<String>) -> std::path::PathBuf {
+    hmac_key_path.as_ref().map_or_else(
+        || {
+            let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
+            std::path::PathBuf::from(format!("{home}/.hermes/context-governor/hmac.key"))
+        },
+        std::path::PathBuf::from,
+    )
+}
+
+fn load_key_ring_or_fail(
+    configured_key_path: &Option<String>,
+) -> Result<receipt_index::KeyRing, ContextGovernorError> {
+    receipt_index::load_hmac_key_ring(&hmac_key_path(configured_key_path))
 }
 
 #[derive(serde::Serialize)]

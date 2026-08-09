@@ -54,6 +54,8 @@ pub enum ContextGovernorError {
     Sqlite(String),
     #[error("LLM summary safety scan failed: {0}")]
     SummarySafetyFailed(String),
+    #[error("persisting a signed receipt requires the HMAC key so the final durable bytes can be re-signed")]
+    SignedReceiptRequiresKey,
 }
 
 impl From<rusqlite::Error> for ContextGovernorError {
@@ -683,14 +685,13 @@ pub fn compact_context_with_memory_sink(
         structural_floor,
         hmac: None,
     };
-    // HMAC signing — load key if configured and sign serialized response
+    // Sign a canonical JSON projection with the detached `hmac` field omitted.
+    // Failure to load a configured key is an error: silently returning an
+    // unsigned response would violate the caller's requested integrity mode.
     if let Some(ref key_path) = request.hmac_key_path {
-        if let Ok(key) = receipt_index::load_hmac_key(Path::new(key_path)) {
-            if let Ok(serialized) = serde_json::to_string(&response) {
-                let hmac = receipt_index::sign_receipt_content(&serialized, &key);
-                response.hmac = Some(hmac);
-            }
-        }
+        let ring = receipt_index::KeyRing::new(receipt_index::load_hmac_key(Path::new(key_path))?);
+        let value = serde_json::to_value(&response)?;
+        response.hmac = Some(ring.sign_json(&value, "hmac")?);
     }
     Ok(response)
 }
@@ -920,6 +921,10 @@ pub fn finalize_compacted_response(
     response.receipt.compacted_transcript_blake3 = hash_messages(&compacted_messages)?;
     response.receipt.compacted_transcript_sha256 = hash_messages_sha256(&compacted_messages)?;
     response.compacted_messages = compacted_messages;
+    // Finalization changes signed fields. There is intentionally no hidden key
+    // lookup or re-signing path here; callers that need a signed finalized
+    // receipt must supply a key to the explicit persistence operation.
+    response.hmac = None;
     Ok(response)
 }
 
@@ -2868,6 +2873,24 @@ impl FileContextStore {
         &self,
         response: &CompactResponse,
     ) -> Result<FileContextStoreSaveResultV1, ContextGovernorError> {
+        self.save_with_status_inner(response, None)
+    }
+
+    /// Persist a receipt after applying storage-derived fields, then sign those
+    /// final durable fields with the supplied HMAC key.
+    pub fn save_with_status_with_hmac_key(
+        &self,
+        response: &CompactResponse,
+        hmac_key: &[u8],
+    ) -> Result<FileContextStoreSaveResultV1, ContextGovernorError> {
+        self.save_with_status_inner(response, Some(hmac_key))
+    }
+
+    fn save_with_status_inner(
+        &self,
+        response: &CompactResponse,
+        hmac_key: Option<&[u8]>,
+    ) -> Result<FileContextStoreSaveResultV1, ContextGovernorError> {
         std::fs::create_dir_all(&self.root)?;
         let _lock = self.lock_store()?;
         let path = self.path_for_receipt(&response.receipt.receipt_id)?;
@@ -2888,6 +2911,17 @@ impl FileContextStore {
         } else {
             RecoveryDurabilityV1::Unavailable
         };
+        match hmac_key {
+            Some(key) => {
+                let ring = receipt_index::KeyRing::new(key.to_vec());
+                let value = serde_json::to_value(&persisted)?;
+                persisted.hmac = Some(ring.sign_json(&value, "hmac")?);
+            }
+            None if persisted.hmac.is_some() => {
+                return Err(ContextGovernorError::SignedReceiptRequiresKey);
+            }
+            None => {}
+        }
         let json = serde_json::to_vec_pretty(&persisted)?;
         let write_result = (|| -> Result<(), ContextGovernorError> {
             let mut temporary = std::fs::OpenOptions::new()
