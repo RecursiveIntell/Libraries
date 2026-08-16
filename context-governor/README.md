@@ -5,7 +5,8 @@ Crate-agnostic governed context compaction for AI agents.
 `context-governor` turns a long agent transcript into:
 
 - compacted messages suitable for reinjection into an agent prompt
-- a `ContextCompactionReceiptV1`
+- a single-generation `ContextCompactionReceiptV1`, or an append-only
+  recursive `ContextCompactionReceiptV2`
 - a `ContextAllocationPlanV1`
 - a structured loss/anchor report
 - exact fallback records recoverable by item id
@@ -38,6 +39,11 @@ agent transcript
 Core API:
 
 - `compact_context(CompactRequest) -> CompactResponse`
+- `compact_context_v2(CompactRequest) -> CompactResponseV2`
+- `FileContextStore::compact_next_v2` for restart-safe continuation
+- `FileContextStore::expand_lineage` for verified transitive exact fallback
+- `FileContextStore::{prepare_v2, activate_v2, discard_pending_v2}` for a
+  pending-to-active host commit fence
 - `filter_recall_candidate`
 - `context_expand`
 - `context_search`
@@ -47,6 +53,9 @@ Core API:
 Receipts and records:
 
 - `ContextCompactionReceiptV1`
+- `ContextCompactionReceiptV2`, `ParentReceiptRefV2`, and
+  `OriginalSourceRefV2` (see `docs/context-compaction-receipt-v2.md`)
+- `PendingReceiptInfoV2` and `ReceiptActivationRequestV2`
 - `ContextAllocationPlanV1`
 - `ContextItemV1`
 - `SummaryLossReportV1`
@@ -96,7 +105,11 @@ context-governor status --dir .ctx
 context-governor diff < response.json
 ```
 
-No-argument CLI mode remains backwards-compatible with `compact`.
+Those keyless commands are the V1/offline lane. Certified V2 commands require
+inherited governed key/snapshot descriptors and use
+`compact-v2` → `finalize-v2` → `prepare-v2` → host commit → `activate-v2`.
+See `docs/context-compaction-receipt-v2.md`; no-argument CLI mode remains
+backwards-compatible with `compact`.
 
 ## Quick start
 

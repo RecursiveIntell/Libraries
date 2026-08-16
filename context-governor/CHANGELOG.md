@@ -4,6 +4,17 @@
 
 ### Added
 
+- `ContextCompactionReceiptV2` with one-parent recursive lineage, monotonic
+  generations, explicit supersession, deterministic lineage digests, and
+  transitive original-source identities.
+- Append-only V2 file-store admission, restart-safe tip recovery, ancestry-aware
+  retention, and exact expansion through verified V1/V2 parent chains.
+- Governed CLI `compact-v2`, authenticated `finalize-v2`, and two-phase
+  `prepare-v2`/`pending-v2`/`activate-v2`/`discard-v2` surfaces for thin host
+  adapters; pending receipts are inert until the matching host transcript is
+  durably committed.
+- Independent V2 evidence HMACs keep exact provenance/source recovery
+  authenticated even when only the rebuildable summary projection is damaged.
 - Explicit `TokenCounterKind` recorded in compaction receipts.
 - `TokenCounterKind::ProviderChatApprox` for provider-style chat overhead estimates without pretending to be a native tokenizer.
 - `BudgetMode::{SoftWarn, HardCascade, FailClosed}` for honest budget behavior.
@@ -28,6 +39,13 @@
 
 ### Changed
 
+- Mixed receipt stores now discriminate on `receipt.schema`; V2 cannot be
+  silently deserialized and rewritten as V1.
+- Existing V1 receipts remain unchanged and require an explicit parent locator
+  before their proven exact leaves can seed a V2 bridge.
+- V2 authoritative operations require inherited governed descriptors. V1
+  verification accepts historical 8-hex fingerprints and legacy key lengths
+  without weakening V2's 32-byte key/full-ID requirement.
 - Compaction receipts now disclose token counter kind.
 - Summary text now includes structured anchors before lossy previews.
 - Receipt-only omitted items can still contribute content-kind-aware previews to the recovery summary while exact fallback remains authoritative.

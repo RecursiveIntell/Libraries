@@ -30,6 +30,12 @@ pub use llm_summary::*;
 
 pub mod receipt_index;
 
+pub mod key_authority;
+pub use key_authority::*;
+
+pub mod lineage;
+pub use lineage::*;
+
 #[cfg(feature = "sqlite-store")]
 pub mod sqlite_store;
 #[cfg(feature = "sqlite-store")]
@@ -40,6 +46,36 @@ const SUMMARY_PREFIX: &str = "[CONTEXT COMPACTION — RECEIPT-BACKED REFERENCE O
 
 #[derive(Debug, Error)]
 pub enum ContextGovernorError {
+    #[error("canonical active key is missing: {path}")]
+    CanonicalActiveKeyMissing { path: String },
+    #[error("key is unreadable: {path}")]
+    KeyUnreadable { path: String },
+    #[error("key has invalid length at {path}: expected 32 bytes, got {actual}")]
+    InvalidKeyLength { path: String, actual: usize },
+    #[error("key has invalid encoding at {path}")]
+    InvalidKeyEncoding { path: String },
+    #[error("key permissions are invalid at {path}")]
+    InvalidKeyPermissions { path: String },
+    #[error("key has the wrong owner at {path}")]
+    WrongKeyOwner { path: String },
+    #[error("key path is a symlink or escapes its governed root: {path}")]
+    KeyPathEscape { path: String },
+    #[error("computed key id mismatch: expected {expected}, got {actual}")]
+    ComputedKeyIdMismatch { expected: String, actual: String },
+    #[error("configured key id mismatch: expected {expected}, got {actual}")]
+    WrongConfiguredKeyId { expected: String, actual: String },
+    #[error("required historical key is unavailable: {key_id}")]
+    RequiredHistoricalKeyUnavailable { key_id: String },
+    #[error("compromised key cannot sign or admit certified ancestry: {key_id}")]
+    CompromisedKey { key_id: String },
+    #[error("legacy unbound key may not be bound or used: {path}")]
+    LegacyUnboundKeyUse { path: String },
+    #[error("conflicting active-key state: {reason}")]
+    ConflictingActiveKeyState { reason: String },
+    #[error("rollback key mismatch: expected {expected}, got {actual}")]
+    RollbackKeyMismatch { expected: String, actual: String },
+    #[error("configuration key path is outside canonical profile state: {path}")]
+    ConfigurationPathOutsideCanonicalState { path: String },
     #[error("cannot compact an empty message list")]
     EmptyMessages,
     #[error("serialization failed: {0}")]
@@ -56,6 +92,100 @@ pub enum ContextGovernorError {
     SummarySafetyFailed(String),
     #[error("persisting a signed receipt requires the HMAC key so the final durable bytes can be re-signed")]
     SignedReceiptRequiresKey,
+    #[error(
+        "compacted transcript integrity mismatch: expected blake3 {expected_blake3} / sha256 {expected_sha256}, got blake3 {actual_blake3} / sha256 {actual_sha256}"
+    )]
+    CompactedTranscriptIntegrityMismatch {
+        expected_blake3: String,
+        actual_blake3: String,
+        expected_sha256: String,
+        actual_sha256: String,
+    },
+    #[error("exact fallback integrity mismatch for {item_id}: {reason}")]
+    ExactFallbackIntegrityMismatch { item_id: String, reason: String },
+    #[error("unsupported context compaction receipt schema: {0}")]
+    UnsupportedReceiptSchema(String),
+    #[error("receipt already exists and issued receipts are append-only: {0}")]
+    ReceiptAlreadyExists(String),
+    #[error("recursive lineage integrity mismatch for {receipt_id}: {reason}")]
+    LineageIntegrityMismatch { receipt_id: String, reason: String },
+    #[error("recursive lineage for {receipt_id} is missing ancestor {ancestor_id}")]
+    LineageMissingAncestor {
+        receipt_id: String,
+        ancestor_id: String,
+    },
+    #[error(
+        "recursive lineage for session {session_id} has ambiguous active tips: {receipt_ids:?}"
+    )]
+    AmbiguousLineageTip {
+        session_id: String,
+        receipt_ids: Vec<String>,
+    },
+    #[error("recursive lineage target is ambiguous: {0}")]
+    AmbiguousLineageTarget(String),
+    #[error("receipt integrity evidence is required before {operation}, but {receipt_id} has no supported HMAC")]
+    ReceiptIntegrityMissing {
+        receipt_id: String,
+        operation: String,
+    },
+    #[error("receipt integrity verification failed before {operation} for {receipt_id}")]
+    ReceiptIntegrityFailed {
+        receipt_id: String,
+        operation: String,
+    },
+    #[error("receipt integrity policy is unavailable for {operation}: {reason}")]
+    ReceiptIntegrityUnavailable { operation: String, reason: String },
+    #[error("pending V2 receipt not found: {0}")]
+    PendingReceiptNotFound(String),
+    #[error("{0}")]
+    CommittedTranscriptMismatch(Box<CommittedTranscriptMismatchV2>),
+    #[error("generation overflow: parent receipt {receipt_id} is already at the maximum representable generation")]
+    GenerationOverflow { receipt_id: String },
+    #[error("V2 compaction would not save enough context: before {before} tokens, after {after} tokens, minimum savings {minimum_savings}")]
+    CompactionNoNetBenefit {
+        before: usize,
+        after: usize,
+        minimum_savings: usize,
+    },
+    #[error("V2 provenance metadata exceeds its configured bound: {actual_bytes} bytes > {maximum_bytes} bytes")]
+    ProvenanceBudgetExceeded {
+        actual_bytes: usize,
+        maximum_bytes: usize,
+    },
+    #[error(
+        "V2 lineage generation {generation} exceeds its configured maximum {maximum_generation}"
+    )]
+    LineageGenerationLimit {
+        generation: u32,
+        maximum_generation: u32,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CommittedTranscriptMismatchV2 {
+    pub receipt_id: String,
+    pub expected_count: usize,
+    pub actual_count: usize,
+    pub expected_blake3: String,
+    pub actual_blake3: String,
+    pub expected_sha256: String,
+    pub actual_sha256: String,
+}
+
+impl std::fmt::Display for CommittedTranscriptMismatchV2 {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            formatter,
+            "committed transcript does not match pending receipt {}: expected {} messages / blake3 {} / sha256 {}, got {} messages / blake3 {} / sha256 {}",
+            self.receipt_id,
+            self.expected_count,
+            self.expected_blake3,
+            self.expected_sha256,
+            self.actual_count,
+            self.actual_blake3,
+            self.actual_sha256
+        )
+    }
 }
 
 impl From<rusqlite::Error> for ContextGovernorError {
@@ -369,6 +499,37 @@ pub struct CompactRequest {
     pub hmac_key_path: Option<String>,
 }
 
+/// Untrusted operation data accepted by the certified V2 boundary.
+///
+/// This intentionally is not a type alias for ``CompactRequest``: V1 keeps
+/// its historical optional key path for offline compatibility, whereas a V2
+/// caller must never be able to select signing or verification authority.
+/// The authority is injected by the governed store after this payload is
+/// decoded.  `deny_unknown_fields` also turns legacy key selectors into a
+/// typed parse failure rather than silently ignoring them.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct CertifiedCompactRequest {
+    pub session_id: String,
+    pub messages: Vec<Message>,
+    #[serde(default)]
+    pub policy: CompactionPolicy,
+    #[serde(default)]
+    pub focus: Option<String>,
+}
+
+impl From<CertifiedCompactRequest> for CompactRequest {
+    fn from(value: CertifiedCompactRequest) -> Self {
+        Self {
+            session_id: value.session_id,
+            messages: value.messages,
+            policy: value.policy,
+            focus: value.focus,
+            hmac_key_path: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CompactionPolicy {
     pub target_tokens: usize,
@@ -388,6 +549,14 @@ pub struct CompactionPolicy {
     pub unsafe_summary_policy: UnsafeSummaryPolicy,
     #[serde(default)]
     pub checkpoint: CheckpointPolicy,
+    /// Certified V2-only safety limits. `None` retains legacy V1 behavior;
+    /// the Hermes governor supplies explicit values for live activation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_lineage_generation: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_provenance_bytes: Option<usize>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub min_net_savings_tokens: Option<usize>,
 }
 
 impl Default for CompactionPolicy {
@@ -404,6 +573,9 @@ impl Default for CompactionPolicy {
             token_counter: TokenCounterKind::ApproxChars,
             unsafe_summary_policy: UnsafeSummaryPolicy::FallbackExtract,
             checkpoint: CheckpointPolicy::default(),
+            max_lineage_generation: None,
+            max_provenance_bytes: None,
+            min_net_savings_tokens: None,
         }
     }
 }
@@ -901,6 +1073,116 @@ pub fn hash_text(text: &str) -> String {
 
 pub fn hash_text_sha256(text: &str) -> String {
     format!("{:x}", Sha256::digest(text.as_bytes()))
+}
+
+/// Verify the stored projection against the transcript identities bound into
+/// its receipt. This validates the rebuildable compacted view only; exact
+/// fallback has a separate per-item validator so it remains recoverable when a
+/// projection is corrupted but the exact source bytes are still intact.
+pub(crate) fn verify_compacted_projection_integrity(
+    response: &CompactResponse,
+) -> Result<(), ContextGovernorError> {
+    let actual_blake3 = hash_messages(&response.compacted_messages)?;
+    let actual_sha256 = hash_messages_sha256(&response.compacted_messages)?;
+    if actual_blake3 != response.receipt.compacted_transcript_blake3
+        || actual_sha256 != response.receipt.compacted_transcript_sha256
+    {
+        return Err(ContextGovernorError::CompactedTranscriptIntegrityMismatch {
+            expected_blake3: response.receipt.compacted_transcript_blake3.clone(),
+            actual_blake3,
+            expected_sha256: response.receipt.compacted_transcript_sha256.clone(),
+            actual_sha256,
+        });
+    }
+    Ok(())
+}
+
+/// Return one exact item only when its content and its persisted fallback
+/// reference still agree on both identity hashes. It intentionally does not
+/// depend on the rebuildable compacted projection.
+pub(crate) fn verified_exact_fallback_item<'a>(
+    response: &'a CompactResponse,
+    item_id: &str,
+) -> Result<&'a ExactStoredItemV1, ContextGovernorError> {
+    let item = response
+        .exact_store
+        .iter()
+        .find(|item| item.item_id == item_id)
+        .ok_or_else(|| ContextGovernorError::ReceiptNotFound(item_id.to_string()))?;
+    let actual_blake3 = hash_text(&item.content);
+    if actual_blake3 != item.content_blake3 {
+        return Err(ContextGovernorError::ExactFallbackIntegrityMismatch {
+            item_id: item_id.to_string(),
+            reason: format!(
+                "blake3 expected {}, got {}",
+                item.content_blake3, actual_blake3
+            ),
+        });
+    }
+    let fallback = response
+        .receipt
+        .exact_fallback_refs
+        .iter()
+        .find(|fallback| fallback.item_id == item_id)
+        .ok_or_else(|| ContextGovernorError::ExactFallbackIntegrityMismatch {
+            item_id: item_id.to_string(),
+            reason: "missing fallback reference".to_string(),
+        })?;
+    let actual_sha256 = hash_text_sha256(&item.content);
+    if fallback.content_blake3 != item.content_blake3 || fallback.content_sha256 != actual_sha256 {
+        return Err(ContextGovernorError::ExactFallbackIntegrityMismatch {
+            item_id: item_id.to_string(),
+            reason: format!(
+                "fallback hashes disagree (blake3 {}, sha256 {})",
+                fallback.content_blake3, fallback.content_sha256
+            ),
+        });
+    }
+    Ok(item)
+}
+
+/// Verify that every exact source has exactly one receipt-bound fallback
+/// reference and that no reference points at missing authoritative bytes.
+pub(crate) fn verify_exact_fallback_integrity(
+    response: &CompactResponse,
+) -> Result<(), ContextGovernorError> {
+    let exact_ids = response
+        .exact_store
+        .iter()
+        .map(|item| item.item_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let fallback_ids = response
+        .receipt
+        .exact_fallback_refs
+        .iter()
+        .map(|item| item.item_id.as_str())
+        .collect::<BTreeSet<_>>();
+    if exact_ids != fallback_ids
+        || exact_ids.len() != response.exact_store.len()
+        || fallback_ids.len() != response.receipt.exact_fallback_refs.len()
+    {
+        let item_id = exact_ids
+            .symmetric_difference(&fallback_ids)
+            .next()
+            .copied()
+            .unwrap_or("duplicate-item-id")
+            .to_string();
+        return Err(ContextGovernorError::ExactFallbackIntegrityMismatch {
+            item_id,
+            reason: "exact-store and fallback-reference identities differ".to_string(),
+        });
+    }
+    for item_id in exact_ids {
+        verified_exact_fallback_item(response, item_id)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn verify_response_integrity(
+    response: &CompactResponse,
+) -> Result<(), ContextGovernorError> {
+    verify_compacted_projection_integrity(response)?;
+    verify_exact_fallback_integrity(response)
 }
 
 /// Bind receipt hashes and token counts to the exact messages emitted by a
@@ -2111,9 +2393,18 @@ pub struct ContextSearchHit {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ContextExpandResult {
     pub item_id: String,
+    /// Exact recovery is scoped to the canonical UTF-8 text projection stored
+    /// by V1/V2. Provider-native multimodal payloads are not reconstructed by
+    /// this contract and must never be presented as byte-identical media.
+    #[serde(default = "default_exactness_scope")]
+    pub exactness_scope: String,
     pub content: String,
     pub content_blake3: String,
     pub truncated: bool,
+}
+
+fn default_exactness_scope() -> String {
+    "canonical_utf8_text_v1".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -2163,6 +2454,7 @@ pub fn context_expand(
             };
             ContextExpandResult {
                 item_id: item.item_id.clone(),
+                exactness_scope: default_exactness_scope(),
                 content,
                 content_blake3: item.content_blake3.clone(),
                 truncated,
@@ -2829,6 +3121,10 @@ pub struct FileContextStorePruneResultV1 {
     pub schema: String,
     pub kept_receipts: usize,
     pub removed_receipts: usize,
+    /// Receipts that matched the count-based removal window but remain
+    /// required by a retained recursive-lineage descendant.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub protected_receipt_ids: Vec<String>,
     pub total_bytes: u64,
     pub index_built: bool,
     pub last_receipt: Option<String>,
@@ -2852,14 +3148,41 @@ struct ReceiptFileInfo {
 
 #[derive(Debug, Clone)]
 pub struct FileContextStore {
-    root: std::path::PathBuf,
+    pub(crate) root: std::path::PathBuf,
+    /// A store with this ring is a certified receipt-consumption boundary:
+    /// no persisted receipt may influence lineage, expansion, retention, or
+    /// parent selection until its detached HMAC verifies. `new()` deliberately
+    /// remains inspection-compatible for pre-existing unsigned V1 evidence.
+    pub(crate) integrity_key_ring: Option<receipt_index::KeyRing>,
 }
 
 impl FileContextStore {
     pub fn new(root: impl AsRef<std::path::Path>) -> Self {
         Self {
             root: root.as_ref().to_path_buf(),
+            integrity_key_ring: None,
         }
+    }
+
+    /// Construct the authoritative V2 store used by a certified runtime.
+    /// This is intentionally explicit so legacy V1 inspection cannot be
+    /// mistaken for admission of unsigned provenance into exact recovery.
+    pub fn with_hmac_key(root: impl AsRef<std::path::Path>, hmac_key: &[u8]) -> Self {
+        Self::with_key_ring(root, receipt_index::KeyRing::new(hmac_key.to_vec()))
+    }
+
+    pub fn with_key_ring(
+        root: impl AsRef<std::path::Path>,
+        integrity_key_ring: receipt_index::KeyRing,
+    ) -> Self {
+        Self {
+            root: root.as_ref().to_path_buf(),
+            integrity_key_ring: Some(integrity_key_ring),
+        }
+    }
+
+    pub fn requires_verified_integrity(&self) -> bool {
+        self.integrity_key_ring.is_some()
     }
 
     pub fn save(
@@ -2891,6 +3214,15 @@ impl FileContextStore {
         response: &CompactResponse,
         hmac_key: Option<&[u8]>,
     ) -> Result<FileContextStoreSaveResultV1, ContextGovernorError> {
+        if response.receipt.schema != "ContextCompactionReceiptV1" {
+            return Err(ContextGovernorError::UnsupportedReceiptSchema(
+                response.receipt.schema.clone(),
+            ));
+        }
+        // Admission is the last safe point before an atomic rename replaces a
+        // previously valid receipt. Reject stale hashes, missing exact source,
+        // or mismatched fallback identities before creating durable bytes.
+        verify_response_integrity(response)?;
         std::fs::create_dir_all(&self.root)?;
         let _lock = self.lock_store()?;
         let path = self.path_for_receipt(&response.receipt.receipt_id)?;
@@ -2962,7 +3294,7 @@ impl FileContextStore {
         })
     }
 
-    pub fn load(&self, receipt_id: &str) -> Result<CompactResponse, ContextGovernorError> {
+    fn load_unverified(&self, receipt_id: &str) -> Result<CompactResponse, ContextGovernorError> {
         let path = self.path_for_receipt(receipt_id)?;
         if !path.exists() {
             return Err(ContextGovernorError::ReceiptNotFound(
@@ -2970,7 +3302,21 @@ impl FileContextStore {
             ));
         }
         let json = std::fs::read_to_string(path)?;
-        Ok(serde_json::from_str(&json)?)
+        let response: CompactResponse = serde_json::from_str(&json)?;
+        if response.receipt.schema != "ContextCompactionReceiptV1" {
+            return Err(ContextGovernorError::UnsupportedReceiptSchema(
+                response.receipt.schema,
+            ));
+        }
+        Ok(response)
+    }
+
+    /// Load an authoritative receipt only when its compacted projection still
+    /// matches the receipt-bound BLAKE3 and SHA-256 transcript identities.
+    pub fn load(&self, receipt_id: &str) -> Result<CompactResponse, ContextGovernorError> {
+        let response = self.load_unverified(receipt_id)?;
+        verify_response_integrity(&response)?;
+        Ok(response)
     }
 
     pub fn list_receipts(&self) -> Result<Vec<String>, ContextGovernorError> {
@@ -3012,15 +3358,27 @@ impl FileContextStore {
         let _lock = self.lock_store()?;
         let (receipts, _, _) = self.scan_receipts()?;
         let remove_count = receipts.len().saturating_sub(keep_last);
+        let protected_ancestors = self.lineage_protected_ancestor_ids()?;
+        let protected_receipt_ids = receipts
+            .iter()
+            .take(remove_count)
+            .filter(|info| protected_ancestors.contains(&info.receipt_id))
+            .map(|info| info.receipt_id.clone())
+            .collect::<Vec<_>>();
         let removed_receipt_ids = receipts
             .iter()
             .take(remove_count)
+            .filter(|info| !protected_ancestors.contains(&info.receipt_id))
             .map(|info| info.receipt_id.clone())
             .collect::<Vec<_>>();
-        for info in receipts.iter().take(remove_count) {
+        for info in receipts
+            .iter()
+            .take(remove_count)
+            .filter(|info| !protected_ancestors.contains(&info.receipt_id))
+        {
             std::fs::remove_file(&info.path)?;
         }
-        if remove_count > 0 {
+        if !removed_receipt_ids.is_empty() {
             Self::sync_directory(&self.root)?;
         }
         let index_built = match receipt_index::remove_if_present(&self.root, &removed_receipt_ids) {
@@ -3034,7 +3392,8 @@ impl FileContextStore {
         Ok(FileContextStorePruneResultV1 {
             schema: "FileContextStorePruneResultV1".to_string(),
             kept_receipts: remaining.len(),
-            removed_receipts: remove_count,
+            removed_receipts: removed_receipt_ids.len(),
+            protected_receipt_ids,
             total_bytes,
             index_built,
             last_receipt: remaining.last().map(|info| info.receipt_id.clone()),
@@ -3094,7 +3453,17 @@ impl FileContextStore {
         item_id: &str,
         max_chars: usize,
     ) -> Result<ContextExpandResult, ContextGovernorError> {
-        let response = self.load(receipt_id)?;
+        // Exact recovery deliberately bypasses the projection validator: a
+        // damaged summary must not block recovery of separately hash-validated
+        // original bytes. It cannot return an approximate replacement because
+        // `verified_exact_fallback_item` rejects any source/hash disagreement.
+        let response = self.load_unverified(receipt_id)?;
+        self.verify_versioned_for_use(
+            &VersionedCompactResponse::V1(Box::new(response.clone())),
+            false,
+            "exact expansion",
+        )?;
+        verified_exact_fallback_item(&response, item_id)?;
         context_expand(&response, item_id, max_chars)
             .ok_or_else(|| ContextGovernorError::ReceiptNotFound(item_id.to_string()))
     }
@@ -3105,6 +3474,7 @@ impl FileContextStore {
         top_k: usize,
         scope: SearchScope,
     ) -> Result<Vec<StoredContextSearchHit>, ContextGovernorError> {
+        self.require_authority_if_v2_present("receipt search")?;
         if top_k == 0 {
             return Ok(Vec::new());
         }
@@ -3124,7 +3494,7 @@ impl FileContextStore {
             {
                 continue;
             }
-            let response = self.load(&receipt_id)?;
+            let response = self.load_versioned(&receipt_id)?.as_v1_projection();
             for hit in context_search(&response, query, top_k, scope) {
                 out.push(StoredContextSearchHit {
                     receipt_id: receipt_id.clone(),
@@ -3138,7 +3508,7 @@ impl FileContextStore {
         Ok(out)
     }
 
-    fn path_for_receipt(
+    pub(crate) fn path_for_receipt(
         &self,
         receipt_id: &str,
     ) -> Result<std::path::PathBuf, ContextGovernorError> {
@@ -3154,7 +3524,7 @@ impl FileContextStore {
         Ok(self.root.join(format!("{receipt_id}.json")))
     }
 
-    fn lock_store(&self) -> Result<rusqlite::Connection, ContextGovernorError> {
+    pub(crate) fn lock_store(&self) -> Result<rusqlite::Connection, ContextGovernorError> {
         let lock = rusqlite::Connection::open(self.root.join(".receipt-store-lock.sqlite3"))?;
         lock.busy_timeout(std::time::Duration::from_secs(30))?;
         lock.execute_batch(
@@ -3165,11 +3535,11 @@ impl FileContextStore {
         Ok(lock)
     }
 
-    fn invalidate_index(&self) -> Result<(), ContextGovernorError> {
+    pub(crate) fn invalidate_index(&self) -> Result<(), ContextGovernorError> {
         receipt_index::invalidate(&self.root)
     }
 
-    fn sync_directory(path: &std::path::Path) -> Result<(), ContextGovernorError> {
+    pub(crate) fn sync_directory(path: &std::path::Path) -> Result<(), ContextGovernorError> {
         std::fs::File::open(path)?.sync_all()?;
         Ok(())
     }

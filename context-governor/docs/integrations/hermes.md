@@ -1,9 +1,10 @@
 # Hermes Integration
 
-Hermes has a `context_governor` context-engine adapter at:
+The canonical Hermes source tree has the discoverable Ares adapter at:
 
 ```text
-~/.hermes/hermes-agent/plugins/context_engine/context_governor/__init__.py
+~/Coding/Ares/plugins/context_engine/ri-context-governor/__init__.py
+~/Coding/Ares/plugins/context_engine/_context_governor/__init__.py
 ```
 
 The adapter is intentionally thin. The Rust crate owns deterministic
@@ -17,22 +18,36 @@ ordering, runtime status, and safe fallback behavior.
 
    ```yaml
    context:
-     engine: context_governor
+    engine: ri-context-governor
    ```
 
 2. The adapter maps Hermes message dictionaries into `context_governor::Message`.
 3. Near the model threshold, it shells out to:
 
    ```bash
-   context-governor compact
+   context-governor compact-v2 --dir ~/.hermes/context-governor \
+     --governed-key-fd FD --governed-snapshot-fd FD
    ```
 
 4. The adapter restores Hermes/OpenAI-specific fields from metadata.
 5. The latest user message is reasserted as the final active instruction.
 6. Tool-call/result pairs are sanitized so provider APIs do not reject compacted
    transcripts.
-7. The full `CompactResponse` is stored before optional LLM summary enhancement,
-   so the stored receipt matches the Rust output exactly.
+7. Any optional LLM replacement is sent to authenticated `finalize-v2` as
+   `{candidate, compacted_messages}`. Rust authenticates the original candidate,
+   rejects provenance changes, rebinds projection hashes, and re-signs.
+8. `prepare-v2` writes the finalized receipt under `.pending/`; it is not yet a
+   lineage tip and cannot appear in search or expansion.
+9. Hermes commits the normalized projection to SessionDB, then calls
+   `activate-v2` with the exact expected governor messages. An abort calls
+   `discard-v2` instead.
+10. After a crash, `pending-v2` returns authenticated expected messages, hashes,
+    generation, and creation time so Hermes can narrowly rehydrate fields its
+    DB does not round-trip and activate only a committed exact match.
+
+V1 receipts remain readable and locally expandable. They are never selected as
+recursive parents automatically; an explicit `--parent-receipt` is required to
+bridge one verified V1 receipt into a V2 generation-2 lineage.
 
 ## Store
 
@@ -41,16 +56,29 @@ Default profile-local store:
 ```text
 ~/.hermes/context-governor/
   ctxr_<uuid>.json
+  .pending/ctxr_<uuid>.json
 ```
 
-The adapter prunes old receipts according to its local retention setting. The
-crate CLI can still operate directly on this directory:
+Count-based pruning cannot remove a receipt still referenced by a retained V2
+descendant. The crate CLI can operate directly on this directory:
 
 ```bash
-context-governor search --dir ~/.hermes/context-governor --query NEEDLE
-context-governor expand --dir ~/.hermes/context-governor --receipt ctxr_... --item ctxi_...
-context-governor status --dir ~/.hermes/context-governor
+context-governor search --dir ~/.hermes/context-governor --query NEEDLE \
+  --governed-key-fd FD --governed-snapshot-fd FD
+context-governor expand --dir ~/.hermes/context-governor --receipt ctxr_... --item ctxi_... \
+  --governed-key-fd FD --governed-snapshot-fd FD
+context-governor status --dir ~/.hermes/context-governor \
+  --governed-key-fd FD --governed-snapshot-fd FD
 ```
+
+For recursive receipts, `--item` may be a transitive `ctxs_...` source ID or a
+unique legacy exact item ID. Expansion verifies every ancestor and returns
+bytes from the originating receipt, never summary prose.
+
+Governed authority means inherited `--governed-key-fd` and
+`--governed-snapshot-fd` arguments, plus a
+`--governed-retired-key-fd KEY_ID:FD` for each retained key. Caller-selected key
+paths are rejected on every certified V2 command.
 
 ## Tools Exposed To Hermes
 
@@ -91,6 +119,11 @@ Recommended modes:
 - `hard_cascade` when strict prompt target matters and exact fallback remains
   recoverable.
 - `fail_closed` only when refusal is better than any overflow.
+
+`summary_max_chars` limits only the prompt-visible projection. It does not
+truncate authenticated source evidence or exact fallback; omitted detail stays
+recoverable by receipt/source ID. A host should select the cap from its prompt
+budget and fall back to the deterministic projection when an LLM exceeds it.
 
 ## Fallback Behavior
 
