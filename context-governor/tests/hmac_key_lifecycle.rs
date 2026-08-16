@@ -110,6 +110,51 @@ fn multi_key_ring_verifies_old_receipts() {
 }
 
 #[test]
+fn literal_v1_eight_hex_signature_with_legacy_key_length_verifies() {
+    // Literal fixture from the historical V1 wire format: short key material,
+    // 8-hex SHA-256 fingerprint prefix, and HMAC over canonical JSON without
+    // the detached `hmac` field.
+    let fixture = serde_json::json!({
+        "receipt_id": "ctxr_legacy_literal",
+        "schema": "ContextCompactionReceiptV1",
+        "value": 7,
+        "hmac": "94eeb7bb:19758fd3c9d0b11fd6a665eb696425a801779fe4be1c29d96f4d78f9efd05b94"
+    });
+    let ring = KeyRing::new(b"legacy-key".to_vec());
+    assert!(ring.verify_json(&fixture, "hmac"));
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("ctxr_legacy_literal.json"),
+        serde_json::to_vec_pretty(&fixture).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        verify_all_receipts(dir.path(), &ring, None),
+        (1, 1, Vec::new())
+    );
+
+    let mut full_id_fixture = fixture;
+    full_id_fixture["hmac"] = serde_json::Value::String(
+        "94eeb7bbe979dd0d2f0bb085172b76a1bc9e61789839480834a9bcb5aaf9c6ef:19758fd3c9d0b11fd6a665eb696425a801779fe4be1c29d96f4d78f9efd05b94"
+            .to_string(),
+    );
+    assert!(ring.verify_json(&full_id_fixture, "hmac"));
+}
+
+#[test]
+fn legacy_keyring_loader_accepts_short_v1_verification_key_only() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("legacy-v1.key");
+    std::fs::write(&path, b"legacy-key").unwrap();
+    assert!(load_hmac_key(&path).is_err());
+    let ring = load_hmac_key_ring(&path).unwrap();
+    assert_eq!(ring.active, b"legacy-key");
+    // V2/current signing remains strict and cannot mint a full key identity
+    // from this historical verification-only material.
+    assert!(ring.active_key_id().is_err());
+}
+
+#[test]
 fn fingerprint_is_deterministic() {
     let key = generate_hmac_key();
     assert_eq!(key_fingerprint(&key), key_fingerprint(&key));

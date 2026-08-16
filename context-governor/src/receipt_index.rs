@@ -349,8 +349,7 @@ fn rebuild_index(
 fn load_indexed_receipt(
     fingerprint: &ReceiptFingerprint,
 ) -> Result<IndexedReceipt, ContextGovernorError> {
-    let bytes = fs::read(&fingerprint.path)?;
-    let response: CompactResponse = serde_json::from_slice(&bytes)?;
+    let response = crate::lineage::versioned_projection_from_path(&fingerprint.path)?;
     indexed_receipt(fingerprint, &response)
 }
 
@@ -708,16 +707,34 @@ pub fn canonical_json_payload(
     Ok(serde_json::to_string(&unsigned)?)
 }
 
-/// Compute a deterministic fingerprint of an HMAC key (first 8 hex chars of SHA256).
+/// Display-only fingerprint. It is never a receipt identity or binding.
 pub fn key_fingerprint(key: &[u8]) -> String {
     use sha2::{Digest, Sha256};
     hex::encode(&Sha256::digest(key)[..4])
 }
 
+fn full_key_digest(key: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    hex::encode(Sha256::digest(key))
+}
+
+/// Canonical key identity: full lowercase SHA-256 of exactly 32 bytes.
+pub fn key_id(key: &[u8]) -> Result<String, ContextGovernorError> {
+    if key.len() != 32 {
+        return Err(ContextGovernorError::InvalidKeyLength {
+            path: "in-memory key".to_string(),
+            actual: key.len(),
+        });
+    }
+    Ok(full_key_digest(key))
+}
+
 /// A key ring: one active key + zero or more retired keys (for legacy verification).
+#[derive(Debug, Clone)]
 pub struct KeyRing {
     pub active: Vec<u8>,
-    pub retired: Vec<(String, Vec<u8>)>, // (fingerprint, key)
+    pub retired: Vec<(String, Vec<u8>)>, // (full key ID, key)
+    pub compromised: HashSet<String>,
 }
 
 impl KeyRing {
@@ -725,7 +742,12 @@ impl KeyRing {
         Self {
             active,
             retired: Vec::new(),
+            compromised: HashSet::new(),
         }
+    }
+
+    pub fn active_key_id(&self) -> Result<String, ContextGovernorError> {
+        key_id(&self.active)
     }
 
     /// Try to verify a signed HMAC against any key in the ring.
@@ -736,6 +758,12 @@ impl KeyRing {
             return self.verify_with_fingerprint(content, fpr, sig);
         }
         // Legacy: no fingerprint — try active key
+        let active_full_id = full_key_digest(&self.active);
+        let active_short_id = key_fingerprint(&self.active);
+        if self.compromised.contains(&active_full_id) || self.compromised.contains(&active_short_id)
+        {
+            return false;
+        }
         verify_receipt_integrity(content, &self.active, full_hmac)
     }
 
@@ -745,10 +773,16 @@ impl KeyRing {
         value: &serde_json::Value,
         signature_field: &str,
     ) -> Result<String, ContextGovernorError> {
+        let active_key_id = self.active_key_id()?;
+        if self.compromised.contains(&active_key_id) {
+            return Err(ContextGovernorError::CompromisedKey {
+                key_id: active_key_id,
+            });
+        }
         let payload = canonical_json_payload(value, signature_field)?;
         Ok(format!(
             "{}:{}",
-            key_fingerprint(&self.active),
+            active_key_id,
             sign_receipt_content(&payload, &self.active)
         ))
     }
@@ -766,11 +800,28 @@ impl KeyRing {
     }
 
     fn verify_with_fingerprint(&self, content: &str, fpr: &str, sig: &str) -> bool {
-        if fpr == key_fingerprint(&self.active) {
+        let active_full_id = full_key_digest(&self.active);
+        let active_short_id = key_fingerprint(&self.active);
+        if fpr == active_full_id || fpr == active_short_id {
+            if self.compromised.contains(fpr)
+                || self.compromised.contains(&active_full_id)
+                || self.compromised.contains(&active_short_id)
+            {
+                return false;
+            }
             return verify_receipt_integrity(content, &self.active, sig);
         }
-        for (retired_fpr, retired_key) in &self.retired {
-            if fpr == *retired_fpr {
+        for (declared_id, retired_key) in &self.retired {
+            let full_id = full_key_digest(retired_key);
+            let short_id = key_fingerprint(retired_key);
+            if fpr == declared_id || fpr == full_id || fpr == short_id {
+                if self.compromised.contains(fpr)
+                    || self.compromised.contains(declared_id)
+                    || self.compromised.contains(&full_id)
+                    || self.compromised.contains(&short_id)
+                {
+                    return false;
+                }
                 return verify_receipt_integrity(content, retired_key, sig);
             }
         }
@@ -806,13 +857,27 @@ pub fn save_hmac_key(path: &Path, key: &[u8]) -> Result<(), ContextGovernorError
 
 /// Load an HMAC key from disk.
 pub fn load_hmac_key(path: &Path) -> Result<Vec<u8>, ContextGovernorError> {
-    fs::read(path).map_err(|e| {
-        ContextGovernorError::Io(std::io::Error::other(format!(
-            "failed to load HMAC key from {}: {}",
-            path.display(),
-            e
-        )))
-    })
+    let key = fs::read(path).map_err(|_| ContextGovernorError::KeyUnreadable {
+        path: path.display().to_string(),
+    })?;
+    key_id(&key)?;
+    Ok(key)
+}
+
+/// Load historical V1 verification material. Legacy releases accepted HMAC
+/// keys of arbitrary non-zero length and stored only an 8-hex fingerprint.
+/// This loader is never used by V2 governed authority or signing paths.
+pub fn load_legacy_hmac_key(path: &Path) -> Result<Vec<u8>, ContextGovernorError> {
+    let key = fs::read(path).map_err(|_| ContextGovernorError::KeyUnreadable {
+        path: path.display().to_string(),
+    })?;
+    if key.is_empty() {
+        return Err(ContextGovernorError::InvalidKeyLength {
+            path: path.display().to_string(),
+            actual: 0,
+        });
+    }
+    Ok(key)
 }
 
 /// The one-generation retired-key path associated with an active key path.
@@ -822,12 +887,94 @@ pub fn retired_hmac_key_path(key_path: &Path) -> std::path::PathBuf {
 
 /// Load the active key plus the previous generation retained by rotation.
 pub fn load_hmac_key_ring(key_path: &Path) -> Result<KeyRing, ContextGovernorError> {
-    let active = load_hmac_key(key_path)?;
+    let active = load_legacy_hmac_key(key_path)?;
     let mut ring = KeyRing::new(active);
     let retired_path = retired_hmac_key_path(key_path);
     if retired_path.exists() {
-        let retired = load_hmac_key(&retired_path)?;
-        ring.retired.push((key_fingerprint(&retired), retired));
+        let retired = load_legacy_hmac_key(&retired_path)?;
+        ring.retired.push((full_key_digest(&retired), retired));
+    }
+    Ok(ring)
+}
+
+/// Load Ares-managed active and retained keys. Lifecycle metadata remains an
+/// Ares concern; this function only turns an already-governed keyring into
+/// cryptographic verification material and checks each declared identity.
+pub fn load_governed_key_ring(
+    active_path: &Path,
+    keyring_path: &Path,
+) -> Result<KeyRing, ContextGovernorError> {
+    let active = load_hmac_key(active_path)?;
+    let active_id = key_id(&active)?;
+    let raw =
+        fs::read_to_string(keyring_path).map_err(|_| ContextGovernorError::KeyUnreadable {
+            path: keyring_path.display().to_string(),
+        })?;
+    let value: serde_json::Value =
+        serde_json::from_str(&raw).map_err(|_| ContextGovernorError::InvalidKeyEncoding {
+            path: keyring_path.display().to_string(),
+        })?;
+    let configured = value
+        .get("active_key_id")
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(|| ContextGovernorError::ConflictingActiveKeyState {
+            reason: "keyring has no active_key_id".to_string(),
+        })?;
+    if configured != active_id {
+        return Err(ContextGovernorError::WrongConfiguredKeyId {
+            expected: configured.to_string(),
+            actual: active_id,
+        });
+    }
+    let compromised: HashSet<String> = value
+        .get("compromised_key_ids")
+        .and_then(serde_json::Value::as_array)
+        .map(|values| {
+            values
+                .iter()
+                .filter_map(serde_json::Value::as_str)
+                .map(str::to_string)
+                .collect()
+        })
+        .unwrap_or_default();
+    if compromised.contains(configured) {
+        return Err(ContextGovernorError::CompromisedKey {
+            key_id: configured.to_string(),
+        });
+    }
+    let mut ring = KeyRing::new(active);
+    ring.compromised = compromised;
+    let retired_ids = value
+        .get("retired_key_ids")
+        .and_then(serde_json::Value::as_array)
+        .ok_or_else(|| ContextGovernorError::ConflictingActiveKeyState {
+            reason: "keyring has no retired_key_ids".to_string(),
+        })?;
+    let root = keyring_path
+        .parent()
+        .ok_or_else(|| ContextGovernorError::KeyPathEscape {
+            path: keyring_path.display().to_string(),
+        })?;
+    for value in retired_ids {
+        let Some(retired_id) = value.as_str() else {
+            return Err(ContextGovernorError::InvalidKeyEncoding {
+                path: keyring_path.display().to_string(),
+            });
+        };
+        let path = root.join("retired").join(format!("{retired_id}.key"));
+        let key = load_hmac_key(&path).map_err(|_| {
+            ContextGovernorError::RequiredHistoricalKeyUnavailable {
+                key_id: retired_id.to_string(),
+            }
+        })?;
+        let actual = key_id(&key)?;
+        if actual != retired_id {
+            return Err(ContextGovernorError::ComputedKeyIdMismatch {
+                expected: retired_id.to_string(),
+                actual,
+            });
+        }
+        ring.retired.push((retired_id.to_string(), key));
     }
     Ok(ring)
 }

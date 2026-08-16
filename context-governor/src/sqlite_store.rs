@@ -47,7 +47,13 @@ pub struct RehydrationQueryV1 {
     pub top_k: usize,
 }
 
-/// Trait for durable context stores.
+/// Legacy V1-only storage trait.
+///
+/// This feature-gated API predates `ContextCompactionReceiptV2`; it has no
+/// parent graph, V2 receipt identity, or receipt-HMAC admission boundary.
+/// It is retained for isolated V1/test consumers only. Certified governor
+/// runtime persistence is exclusively `FileContextStore` plus its append-only
+/// receipt files and rebuildable index; do not add V2 methods here.
 pub trait ContextStore {
     fn save(&self, response: &CompactResponse) -> Result<StoreSaveReceiptV1, ContextGovernorError>;
     fn load(&self, receipt_id: &str) -> Result<CompactResponse, ContextGovernorError>;
@@ -109,7 +115,11 @@ pub struct StorePruneResultV1 {
     pub total_bytes: u64,
 }
 
-/// SQLite-backed implementation of `ContextStore`.
+/// SQLite-backed legacy V1 cache, not a V2 provenance authority.
+///
+/// In particular, its replacement-style rows must never be used to persist
+/// or reconstruct recursive lineage. The default crate feature set excludes
+/// this module and the CLI has no route to it.
 pub struct SqliteContextStore {
     conn: Connection,
     path: std::path::PathBuf,
@@ -696,6 +706,7 @@ pub fn context_rehydrate(
         context_steps: vec![],
         plan_state: crate::PlanStateV1::default(),
         structural_floor: crate::StructuralFloorV1::default(),
+        hmac: None,
     })
 }
 
@@ -737,6 +748,7 @@ mod tests {
                 ..Default::default()
             },
             focus: Some("France capital".to_string()),
+            hmac_key_path: None,
         }
     }
 

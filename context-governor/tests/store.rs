@@ -1,6 +1,7 @@
 use context_governor::{
-    compact_context, context_expand, context_search, CompactRequest, CompactionPolicy,
-    ExactRecoveryStateV1, FileContextStore, Message, SearchScope,
+    compact_context, context_expand, context_search, finalize_compacted_response, hash_text,
+    hash_text_sha256, CompactRequest, CompactionPolicy, ExactRecoveryStateV1, FileContextStore,
+    Message, SearchScope,
 };
 
 fn msg(role: &str, content: &str) -> Message {
@@ -258,12 +259,23 @@ fn overwriting_a_receipt_updates_the_persisted_index_in_place() {
 
     for item in &mut response.exact_store {
         item.content = item.content.replace("OLD_INDEX_TOKEN", "NEW_INDEX_TOKEN");
+        item.content_blake3 = hash_text(&item.content);
+        let fallback = response
+            .receipt
+            .exact_fallback_refs
+            .iter_mut()
+            .find(|fallback| fallback.item_id == item.item_id)
+            .unwrap();
+        fallback.content_blake3 = item.content_blake3.clone();
+        fallback.content_sha256 = hash_text_sha256(&item.content);
     }
     for message in &mut response.compacted_messages {
         message.content = message
             .content
             .replace("OLD_INDEX_TOKEN", "NEW_INDEX_TOKEN");
     }
+    let compacted_messages = response.compacted_messages.clone();
+    response = finalize_compacted_response(response, compacted_messages).unwrap();
     store.save(&response).unwrap();
 
     let fresh = FileContextStore::new(dir.path());
@@ -544,12 +556,23 @@ fn external_receipt_replacement_is_reconciled_without_stale_hits() {
         item.content = item
             .content
             .replace("EXTERNAL_OLD_NEEDLE", "EXTERNAL_NEW_NEEDLE");
+        item.content_blake3 = hash_text(&item.content);
+        let fallback = response
+            .receipt
+            .exact_fallback_refs
+            .iter_mut()
+            .find(|fallback| fallback.item_id == item.item_id)
+            .unwrap();
+        fallback.content_blake3 = item.content_blake3.clone();
+        fallback.content_sha256 = hash_text_sha256(&item.content);
     }
     for message in &mut response.compacted_messages {
         message.content = message
             .content
             .replace("EXTERNAL_OLD_NEEDLE", "EXTERNAL_NEW_NEEDLE");
     }
+    let compacted_messages = response.compacted_messages.clone();
+    response = finalize_compacted_response(response, compacted_messages).unwrap();
     let receipt_path = dir
         .path()
         .join(format!("{}.json", response.receipt.receipt_id));
@@ -589,4 +612,62 @@ fn expand_rejects_tampered_exact_content() {
     assert!(FileContextStore::new(dir.path())
         .expand(&receipt_id, &item_id, 100_000)
         .is_err());
+}
+
+#[test]
+fn summary_projection_tamper_is_rejected_but_exact_fallback_remains_available() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FileContextStore::new(dir.path());
+    let response = indexed_fixture(
+        "tamper-summary",
+        &format!("{} SUMMARY_TAMPER_NEEDLE", "historical ".repeat(300)),
+    );
+    let receipt_id = response.receipt.receipt_id.clone();
+    let item_id = response.exact_store[0].item_id.clone();
+    let expected_exact = response.exact_store[0].content.clone();
+    store.save(&response).unwrap();
+
+    let path = dir.path().join(format!("{receipt_id}.json"));
+    let mut persisted: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    persisted["compacted_messages"][0]["content"] =
+        serde_json::Value::String("tampered projection only".into());
+    std::fs::write(&path, serde_json::to_vec_pretty(&persisted).unwrap()).unwrap();
+
+    let load_error = store.load(&receipt_id).unwrap_err();
+    assert!(
+        load_error
+            .to_string()
+            .contains("compacted transcript integrity mismatch"),
+        "unexpected integrity error: {load_error}"
+    );
+    assert!(store
+        .search("tampered projection", 10, SearchScope::All)
+        .is_err());
+
+    let exact = store.expand(&receipt_id, &item_id, 100_000).unwrap();
+    assert_eq!(exact.content, expected_exact);
+}
+
+#[test]
+fn invalid_overwrite_is_rejected_before_replacing_valid_receipt() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FileContextStore::new(dir.path());
+    let response = indexed_fixture(
+        "reject-invalid-overwrite",
+        &format!("{} ORIGINAL_DURABLE_NEEDLE", "historical ".repeat(300)),
+    );
+    let receipt_id = response.receipt.receipt_id.clone();
+    store.save(&response).unwrap();
+    let durable_baseline = store.load(&receipt_id).unwrap();
+
+    let mut invalid_projection = response.clone();
+    invalid_projection.compacted_messages[0].content = "unbound replacement".into();
+    assert!(store.save(&invalid_projection).is_err());
+    assert_eq!(store.load(&receipt_id).unwrap(), durable_baseline);
+
+    let mut missing_source = response.clone();
+    missing_source.exact_store.clear();
+    assert!(store.save(&missing_source).is_err());
+    assert_eq!(store.load(&receipt_id).unwrap(), durable_baseline);
 }
