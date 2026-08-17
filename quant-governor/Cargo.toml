@@ -9,7 +9,7 @@ authors = [" Libraries Authors"]
 repository = "https://github.com/RecursiveIntell/Libraries"
 homepage = "https://github.com/RecursiveIntell/Libraries"
 keywords = ["quantization", "governance", "compression", "policy"]
-categories = ["compression", "policy", "encoding"]
+categories = ["compression", "encoding", "data-structures"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
