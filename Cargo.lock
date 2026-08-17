@@ -1028,6 +1028,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cobs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fa961b519f0b462e3a3b4a34b64d119eeaca1d59af726fe450bbba07a9fc0a1"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "codespan-reporting"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1929,6 +1938,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ef6b89e5b37196644d8796de5268852ff179b44e96276cf4290264843743bb7"
 
 [[package]]
+name = "embedded-io"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef1a6892d9eef45c8fa6b9e0086428a2cca8491aca8f787c534a3d6d0bcb3ced"
+
+[[package]]
+name = "embedded-io"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
+
+[[package]]
 name = "encoding_rs"
 version = "0.8.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2055,7 +2076,7 @@ dependencies = [
 
 [[package]]
 name = "fib-quant"
-version = "0.1.0-beta.1"
+version = "0.1.0-alpha.1"
 dependencies = [
  "bincode 1.3.3",
  "blake3",
@@ -2066,6 +2087,28 @@ dependencies = [
  "rand 0.8.6",
  "rand_chacha 0.3.1",
  "rand_distr 0.4.3",
+ "serde",
+ "serde_json",
+ "statrs 0.17.1",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "fib-quant"
+version = "0.1.0-beta.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3af15d39f9a2932f9abfd3253334a20fd14f9e9222d6a1e8df81e2b17e1ebd00"
+dependencies = [
+ "blake3",
+ "cc",
+ "gpu-backend",
+ "half",
+ "nalgebra 0.33.3",
+ "postcard",
+ "rand 0.8.6",
+ "rand_chacha 0.3.1",
+ "rand_distr 0.4.3",
+ "rayon",
  "serde",
  "serde_json",
  "statrs 0.17.1",
@@ -2804,6 +2847,17 @@ dependencies = [
  "glib-sys",
  "libc",
  "system-deps",
+]
+
+[[package]]
+name = "gpu-backend"
+version = "0.1.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fd7d101776abfd5b1112a0978f8102136a45992bda7113af444ab527a20f5d0"
+dependencies = [
+ "blake3",
+ "serde",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -4997,6 +5051,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "postcard"
+version = "1.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6764c3b5dd454e283a30e6dfe78e9b31096d9e32036b5d1eaac7a6119ccb9a24"
+dependencies = [
+ "cobs",
+ "embedded-io 0.4.0",
+ "embedded-io 0.6.1",
+ "serde",
+]
+
+[[package]]
 name = "potential_utf"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6059,7 +6125,7 @@ name = "scr-runtime-compression"
 version = "0.1.1"
 dependencies = [
  "chrono",
- "fib-quant",
+ "fib-quant 0.1.0-beta.4",
  "quant-governor",
  "serde",
  "serde_json",
