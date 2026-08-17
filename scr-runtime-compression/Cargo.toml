@@ -18,7 +18,10 @@ quant-governor = { version = "0.1.1", path = "../quant-governor" }
 
 # Optional codec dependencies — brought in by feature flags
 turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
-fib-quant = { version = "0.1.0-beta.1", path = "../fib-quant", optional = true }
+# Published fib-quant betas (0.1.0-beta.1..=beta.4) carry the decode API; the
+# local Libraries/fib-quant snapshot is an older alpha and must not be
+# published, so the dependency is version-only.
+fib-quant = { version = "0.1.0-beta.1", optional = true }
 
 [features]
 default = ["turbo", "fib"]
