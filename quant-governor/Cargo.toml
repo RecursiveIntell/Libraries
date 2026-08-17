@@ -1,13 +1,13 @@
 [package]
 name = "quant-governor"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.75"
 description = "Governance policy routing for governed compression"
 license = "MIT"
 authors = [" Libraries Authors"]
-repository = "https://github.com/nousresearch/Libraries"
-homepage = "https://github.com/nousresearch/Libraries"
+repository = "https://github.com/RecursiveIntell/Libraries"
+homepage = "https://github.com/RecursiveIntell/Libraries"
 keywords = ["quantization", "governance", "compression", "policy"]
 categories = ["compression", "policy", "encoding"]
 
