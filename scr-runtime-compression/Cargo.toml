@@ -1,24 +1,24 @@
 [package]
 name = "scr-runtime-compression"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.75"
 description = "Runtime integration adapter for semantic-memory compression layer — CompressedSearchPath and ExactFallbackAdapter delegates to turbo-quant/fib-quant"
 license = "MIT"
 authors = ["Libraries Authors"]
-repository = "https://github.com/nousresearch/Libraries"
+repository = "https://github.com/RecursiveIntell/Libraries"
 keywords = ["compression", "runtime", "semantic-memory", "quantization", "adapter"]
-categories = ["compression", "runtime", "memory"]
+categories = ["compression", "encoding"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 thiserror = "1"
 chrono = { version = "0.4", features = ["serde"] }
-quant-governor = { path = "../quant-governor" }
+quant-governor = { version = "0.1.1", path = "../quant-governor" }
 
 # Optional codec dependencies — brought in by feature flags
-turbo-quant = { path = "../turbo-quant", optional = true }
-fib-quant = { path = "../fib-quant", optional = true }
+turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
+fib-quant = { version = "0.1.0-beta.1", path = "../fib-quant", optional = true }
 
 [features]
 default = ["turbo", "fib"]
