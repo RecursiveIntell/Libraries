@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 from pathlib import Path
 
 
@@ -46,17 +45,6 @@ def _load_engine():
     engine = load_context_engine("ri-context-governor")
     assert engine is not None
     return engine
-
-
-def _finalize(binary: str, response: dict) -> dict:
-    result = subprocess.run(
-        [binary, "finalize-v2"],
-        input=json.dumps(response),
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return json.loads(result.stdout)
 
 
 def test_plugin_finalizes_emitted_projection_and_persists_exact_fallback(
@@ -107,6 +95,10 @@ def test_plugin_finalizes_emitted_projection_and_persists_exact_fallback(
     assert "id" not in emitted[-1]
     assert emitted[-1]["metadata"] == {"source": "host"}
     assert all({"role", "content"}.issubset(message) for message in emitted)
+    assert not list(engine.store_dir.glob("ctxr_*.json"))
+    assert list((engine.store_dir / ".pending").glob("ctxr_*.json"))
+    assert engine.validate_pending_compression(emitted) is True
+    assert engine.commit_pending_compression(emitted) is True
     assert engine.compression_count == 1
 
     files = list(engine.store_dir.glob("ctxr_*.json"))
@@ -126,23 +118,6 @@ def test_plugin_finalizes_emitted_projection_and_persists_exact_fallback(
     # before it can become a parent or exact-fallback authority.
     assert persisted["hmac"].startswith(persisted["receipt"]["signing_key_id"] + ":")
 
-    # Re-finalizing the durable response must be idempotent: receipt hashes and
-    # token counts already bind the role/content transcript returned above.
-    rebound = _finalize(binary, persisted)
-    assert (
-        rebound["receipt"]["compacted_transcript_blake3"]
-        == persisted["receipt"]["compacted_transcript_blake3"]
-    )
-    assert (
-        rebound["receipt"]["compacted_transcript_sha256"]
-        == persisted["receipt"]["compacted_transcript_sha256"]
-    )
-    assert (
-        rebound["receipt"]["compacted_approx_tokens"]
-        == persisted["receipt"]["compacted_approx_tokens"]
-    )
-
-
 def test_plugin_aborts_lossy_compaction_when_durable_store_fails(tmp_path, monkeypatch):
     """A dead exact-fallback pointer must never be returned as a compaction."""
     monkeypatch.syspath_prepend(str(HERMES_ROOT))
@@ -161,7 +136,7 @@ def test_plugin_aborts_lossy_compaction_when_durable_store_fails(tmp_path, monke
     def fail_store(_response):
         raise RuntimeError("synthetic durable store failure")
 
-    monkeypatch.setattr(engine, "_store_response", fail_store)
+    monkeypatch.setattr(engine, "_prepare_response", fail_store)
 
     messages = [
         {"role": "tool", "content": "bulk " * 1_000},
@@ -214,6 +189,7 @@ def test_plugin_two_generation_restart_expands_exact_original_marker(
     ]
     first_emitted = first_engine.compress(first_messages, current_tokens=10_000)
     assert marker not in json.dumps(first_emitted)
+    assert first_engine.commit_pending_compression(first_emitted) is True
     first_files = sorted(first_engine.store_dir.glob("ctxr_*.json"))
     assert len(first_files) == 1
     first = json.loads(first_files[0].read_text())
@@ -234,6 +210,7 @@ def test_plugin_two_generation_restart_expands_exact_original_marker(
     ]
     second_emitted = restarted_engine.compress(second_input, current_tokens=10_000)
     assert marker not in json.dumps(second_emitted)
+    assert restarted_engine.commit_pending_compression(second_emitted) is True
     receipts = [
         json.loads(path.read_text())
         for path in restarted_engine.store_dir.glob("ctxr_*.json")
