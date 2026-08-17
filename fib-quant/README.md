@@ -16,7 +16,7 @@ fib-quant provides CPU reference paths for spherical-block quantization, determi
 
 fib-quant is the **cold-tier codec** in poly-kv. It handles shared context that's large, stable, and accessed by many agents:
 
-```
+```text
 ┌──────────────────────────────────┐
 │    CPU reference KV artifacts     │  ← optional `kv` feature
 │    Typed shape, profile, receipt   │
