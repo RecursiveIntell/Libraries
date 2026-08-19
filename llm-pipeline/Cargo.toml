@@ -1,6 +1,6 @@
 [package]
 name = "llm-pipeline"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Josh"]
 license = "MIT"
@@ -18,9 +18,13 @@ openai = []
 anthropic = []
 
 [dependencies]
-llm-output-parser = { path = "../llm-output-parser" }
-llm-tool-runtime = { path = "../llm-tool-runtime" }
-stack-ids = { path = "../stack-ids" }
+# NOTE: llm-output-parser / llm-tool-runtime / stack-ids use registry versions
+# (matching agent-graph-mcp's resolved versions) instead of local paths so that
+# the shared types (ToolRegistry, StagePayload, etc.) are the SAME crate instance
+# and type-check. This is required for the reasoning-effort patch to compile.
+llm-output-parser = "0.2"
+llm-tool-runtime = "0.1"
+stack-ids = "0.1"
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
 serde = { version = "1", features = ["derive"] }

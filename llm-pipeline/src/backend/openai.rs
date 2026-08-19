@@ -134,6 +134,22 @@ impl OpenAiBackend {
             body["response_format"] = json!({"type": "json_object"});
         }
 
+        // Reasoning control for models that think by default (e.g. tencent/hy3,
+        // poolside/laguna via Nous Portal). We KEEP reasoning for answer quality
+        // — per user directive — but cap it at "medium" so reasoning does not
+        // consume the entire token budget and starve `content` (which the daemon
+        // then rejects as "no usable assistant result").
+        // Verified on hy3:free, max_tokens=500:
+        //   reasoning_effort="medium" -> finish=stop, content_len=262, reasoning_len=1231
+        //   reasoning_effort="high"   -> finish=length, content_len=0  (FAILS)
+        //   reasoning_effort="none"   -> finish=stop, content_len=45  (no reasoning)
+        // The "none" branch stays for explicit thinking-disabled callers.
+        if request.config.thinking {
+            body["reasoning_effort"] = json!("medium");
+        } else {
+            body["reasoning_effort"] = json!("none");
+        }
+
         match &request.constraint {
             GenerationConstraint::None => {}
             GenerationConstraint::JsonSchema(schema) => {
@@ -282,14 +298,35 @@ impl Backend for OpenAiBackend {
 
         let json_resp: Value = resp.json().await?;
 
-        let text = json_resp
+        // Extract the assistant message object once so we can fall back to
+        // reasoning/thinking content when `content` is empty or null.
+        let message = json_resp
             .get("choices")
             .and_then(|c| c.get(0))
-            .and_then(|c| c.get("message"))
+            .and_then(|c| c.get("message"));
+
+        let content_text = message
             .and_then(|m| m.get("content"))
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .to_string();
+
+        // Some providers (e.g. tencent/hy3, Qwen thinking mode)emit their
+        // answer in a `reasoning` / `reasoning_details` field and leave
+        // `content` null or empty when the token budget is consumed by
+        // reasoning first. Without this fallback the node receives an empty
+        // string and the daemon rejects it as "no usable assistant result".
+        let reasoning_text = message
+            .and_then(|m| m.get("reasoning"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+
+        let text = if content_text.trim().is_empty() && !reasoning_text.trim().is_empty() {
+            reasoning_text
+        } else {
+            content_text
+        };
 
         Ok(LlmResponse {
             text,
@@ -341,13 +378,40 @@ impl Backend for OpenAiBackend {
         let mut stream = resp.bytes_stream();
         let mut decoder = SseDecoder::new();
         let mut accumulated = String::new();
+        let mut reasoning = String::new();
 
         while let Some(chunk) = stream.next().await {
             let chunk = chunk.map_err(PipelineError::Request)?;
             for json_val in decoder.decode(&chunk) {
-                if let Some(content) = json_val
+                let choice = json_val
                     .get("choices")
-                    .and_then(|c| c.get(0))
+                    .and_then(|c| c.get(0));
+
+                // Capture reasoning chunks from the delta (reasoning models like
+                // tencent/hy3 emit their answer under delta.reasoning, not delta.content).
+                if let Some(reasoning_text) = choice
+                    .and_then(|c| c.get("delta"))
+                    .and_then(|d| d.get("reasoning"))
+                    .and_then(|v| v.as_str())
+                {
+                    if !reasoning_text.is_empty() {
+                        reasoning.push_str(reasoning_text);
+                        on_token(reasoning_text.to_string());
+                    }
+                }
+
+                // Capture the final message-level reasoning as a fallback.
+                if let Some(final_reasoning) = choice
+                    .and_then(|c| c.get("reasoning"))
+                    .and_then(|v| v.as_str())
+                {
+                    if !final_reasoning.is_empty() && reasoning.is_empty() {
+                        reasoning = final_reasoning.to_string();
+                    }
+                }
+
+                // Content chunk (existing behavior).
+                if let Some(content) = choice
                     .and_then(|c| c.get("delta"))
                     .and_then(|d| d.get("content"))
                     .and_then(|v| v.as_str())
@@ -362,9 +426,22 @@ impl Backend for OpenAiBackend {
 
         // Flush remaining SSE buffer
         for json_val in decoder.flush() {
-            if let Some(content) = json_val
+            let choice = json_val
                 .get("choices")
-                .and_then(|c| c.get(0))
+                .and_then(|c| c.get(0));
+
+            if let Some(reasoning_text) = choice
+                .and_then(|c| c.get("delta"))
+                .and_then(|d| d.get("reasoning"))
+                .and_then(|v| v.as_str())
+            {
+                if !reasoning_text.is_empty() {
+                    reasoning.push_str(reasoning_text);
+                    on_token(reasoning_text.to_string());
+                }
+            }
+
+            if let Some(content) = choice
                 .and_then(|c| c.get("delta"))
                 .and_then(|d| d.get("content"))
                 .and_then(|v| v.as_str())
@@ -376,8 +453,17 @@ impl Backend for OpenAiBackend {
             }
         }
 
+        // When reasoning consumed the entire token budget (hy3 behavior), content
+        // is empty/None and the full answer lives in the reasoning stream. Use it
+        // so the node receives usable text instead of an empty string.
+        let text = if accumulated.is_empty() && !reasoning.is_empty() {
+            reasoning
+        } else {
+            accumulated
+        };
+
         Ok(LlmResponse {
-            text: accumulated,
+            text,
             status,
             metadata: None,
             provider_meta: ProviderMeta::default(),
