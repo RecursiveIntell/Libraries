@@ -1,0 +1,26 @@
+{
+  "schema": "LibrariesReconciliationPrecheckV1",
+  "recorded_at_utc": "2026-08-22",
+  "root": "/home/sikmindz/Coding/Libraries",
+  "branch": "main",
+  "head": "af428e703aa2b8373f6609ae1094a61e7cfa5ebb",
+  "upstream": "origin/main",
+  "porcelain_entries_observed": 213,
+  "scope": "root truth-plane gate repair only",
+  "allowed_paths": [
+    "02_MASTER_ISSUE_MATRIX.md",
+    "06_RISK_REGISTER.md",
+    "scripts/check_manifest_truth.sh",
+    "docs/receipts/reconciliation-20260822/"
+  ],
+  "forbidden_paths": [
+    "all active crate source",
+    "_salvage_from_libraries2/**",
+    "nested gitlinks",
+    "stack-monitor*",
+    "scr-runtime/**",
+    "release/closeout_receipt_v1.json",
+    "STATUS_DASHBOARD.md"
+  ],
+  "rollback": "Remove only the two compatibility pointers, revert the one gate-script hunk, and remove this additive receipt directory; do not reset or clean the mixed worktree."
+}

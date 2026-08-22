@@ -1,0 +1,45 @@
+[package]
+name = "stack-monitor"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "LLM activity monitor for the RecursiveIntell local-first AI stack — captures tracing events, llm-pipeline events, and stack-ids trace context into a queryable SQLite store"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/stack-monitor"
+
+[dependencies]
+rusqlite = { workspace = true, features = ["bundled"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "sync", "time", "signal"] }
+tracing = { workspace = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+stack-ids = { version = "0.1.3", path = "../stack-ids" }
+stack-observation = { version = "0.1.0", path = "../stack-observation" }
+llm-pipeline = { version = "0.2.1", path = "../llm-pipeline" }
+chrono = { workspace = true, features = ["serde"] }
+thiserror = { workspace = true }
+async-trait = { workspace = true }
+llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime", optional = true }
+semantic-memory = { version = "0.5.15", path = "../semantic-memory", default-features = false, features = ["brute-force"], optional = true }
+anyhow = "1"
+uuid = { workspace = true, features = ["v4"] }
+blake3 = "1.8.3"
+schemars = "0.8.22"
+dirs = "5"
+
+# Agent-graph event bridge (optional; enables AgentGraphMonitorSink).
+agent-graph = { version = "0.2.0", path = "../agent-graph", optional = true }
+
+[features]
+default = []
+# Enables the agent-graph EventSink bridge (AgentGraphMonitorSink).
+agent-graph-bridge = ["dep:agent-graph"]
+# Enables the llm-tool-runtime ToolReceiptSink bridge.
+tool-runtime-bridge = ["dep:llm-tool-runtime"]
+# Enables the public semantic-memory Embedder observation wrapper.
+semantic-memory-bridge = ["dep:semantic-memory"]
+
+[dev-dependencies]
+tempfile = { workspace = true }

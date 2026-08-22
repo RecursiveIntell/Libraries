@@ -1,0 +1,46 @@
+{
+  "schema": "LibrariesCandidateChangeReceiptV1",
+  "version": 1,
+  "run_id": "agent-graph-python-candidate-20260822",
+  "source_identity": {
+    "root": "/home/sikmindz/Coding/Libraries",
+    "branch": "main",
+    "head": "af428e703aa2b8373f6609ae1094a61e7cfa5ebb",
+    "dirty_entries_before_candidate": 213
+  },
+  "owner": "agent-graph-python / Agent Graph; stack-monitor dependency owner",
+  "changed_paths": [
+    "02_MASTER_ISSUE_MATRIX.md",
+    "06_RISK_REGISTER.md",
+    "agent-graph-python/**",
+    "llm-pipeline-python/Cargo.toml",
+    "stack-observation/**",
+    "stack-monitor/**",
+    "scripts/check_current_closeout_lane.py",
+    "scripts/check_manifest_truth.sh",
+    "docs/receipts/reconciliation-20260822/"
+  ],
+  "checks": [
+    {"id": "P-001", "status": "PASS", "detail": "five repeated isolated live IPC runs"},
+    {"id": "P-002", "status": "PASS", "detail": "23 stack-monitor library tests"},
+    {"id": "P-003", "status": "PASS", "detail": "stack-monitor clean-candidate default Clippy"},
+    {"id": "P-004", "status": "PASS", "detail": "agent-graph-python Cargo target exited 0 with 0 tests discovered"},
+    {"id": "P-005", "status": "PASS", "detail": "agent-graph-python strict all-feature Clippy"},
+    {"id": "P-006", "status": "PASS", "detail": "isolated CPython 3.14 wheel/import/graph/observability smoke"},
+    {"id": "P-007", "status": "PASS", "detail": "full workspace all-target tests exited 0"},
+    {"id": "P-008", "status": "PASS", "detail": "workspace all-feature Clippy exited 0"},
+    {"id": "P-009", "status": "PASS", "detail": "semantic-memory Poly-KV/FibQuant feature matrix compiled offline"},
+    {"id": "P-010", "status": "PASS", "detail": "llm-pipeline all-feature Clippy and tests passed"},
+    {"id": "P-011", "status": "PASS", "detail": "semantic-memory all-feature tests exited 0"},
+    {"id": "P-013", "status": "PASS", "detail": "nested Poly-KV all-feature tests exited 0; FibQuant adapter and pool tests passed"},
+    {"id": "P-014", "status": "PASS", "detail": "clean agent-graph-python observability test/Clippy gates"},
+    {"id": "P-015", "status": "PASS", "detail": "clean stack-monitor default test/Clippy gates"},
+    {"id": "P-016", "status": "PASS", "detail": "clean stack-observation test/Clippy gates"}
+  ],
+  "remaining_delta": [
+    "clean candidate/source-binding release evidence"
+  ],
+  "rollback": "Revert only the admitted path set listed above and remove this candidate packet; preserve all unrelated dirty paths and optional sibling feature work.",
+  "complete": true,
+  "evidence_state": "bounded_candidate_locally_verified_release_blocked"
+}

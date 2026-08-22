@@ -1,0 +1,46 @@
+{
+  "schema": "LibrariesReconciliationReceiptV1",
+  "version": 1,
+  "run_id": "reconciliation-20260822",
+  "source_identity": {
+    "root": "/home/sikmindz/Coding/Libraries",
+    "branch": "main",
+    "head": "af428e703aa2b8373f6609ae1094a61e7cfa5ebb",
+    "upstream": "origin/main",
+    "dirty_entries_before_pass": 213
+  },
+  "goal": "Repair stale root truth-plane expectations without touching mixed active source or changing release claims.",
+  "changed_paths": [
+    "02_MASTER_ISSUE_MATRIX.md",
+    "06_RISK_REGISTER.md",
+    "scripts/check_manifest_truth.sh",
+    "scripts/check_current_closeout_lane.py",
+    "docs/receipts/reconciliation-20260822/"
+  ],
+  "checks": [
+    {"id": "L-001", "command": "bash scripts/check_pack_truth.sh", "status": "PASS"},
+    {"id": "L-002", "command": "python3 scripts/check_root_archive_manifest.py", "status": "PASS"},
+    {"id": "L-003", "command": "bash scripts/check_manifest_truth.sh", "status": "PASS"},
+    {"id": "L-004", "command": "bash scripts/check_repo_surface.sh", "status": "PASS"},
+    {"id": "L-005", "command": "bash scripts/check_doc_truth.sh", "status": "PASS"},
+    {"id": "L-006", "command": "python3 scripts/check_current_closeout_lane.py", "status": "PASS", "scope": "structural only; historical receipt explicitly reported"},
+    {"id": "L-007", "command": "git diff --check", "status": "PASS"},
+    {"id": "L-008", "command": "cargo check --workspace", "status": "PASS"},
+    {"id": "L-008B", "command": "cargo test --workspace --all-targets --locked --no-fail-fast", "status": "PASS"},
+    {"id": "L-011", "command": "make gate", "status": "FAIL", "scope": "read-only verifier", "findings": ["snapshot mismatch", "captured_at mismatch", "gate result mismatch", "missing source_binding"]},
+    {"id": "L-012", "command": "python3 scripts/record_release_evidence.py", "status": "BLOCKED", "reason": "recorder refuses dirty tree unless forensic --allow-dirty is supplied"}
+  ],
+  "not_run": [
+    "make release-lane and authoritative evidence recording",
+    "authoritative evidence recording and release-lane mutation",
+    "fresh archive generation"
+  ],
+  "blocked_claims": [
+    "current release readiness",
+    "complete mixed-worktree remediation",
+    "production or public maturity"
+  ],
+  "rollback": "Remove only the two compatibility pointers, revert the two gate-script edits, and remove this additive receipt directory. Do not git reset, clean, delete salvage data, or rewrite the historical release receipt.",
+  "complete": false,
+  "evidence_state": "bounded_truth_plane_verified_release_blocked"
+}

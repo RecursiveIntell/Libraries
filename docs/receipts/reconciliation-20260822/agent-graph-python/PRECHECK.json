@@ -1,0 +1,30 @@
+{
+  "schema": "LibrariesCandidatePrecheckV1",
+  "version": 1,
+  "run_id": "agent-graph-python-candidate-20260822",
+  "recorded_at_utc": "2026-08-22",
+  "root": "/home/sikmindz/Coding/Libraries",
+  "branch": "main",
+  "head": "af428e703aa2b8373f6609ae1094a61e7cfa5ebb",
+  "dirty_entries_observed": 213,
+  "goal": "Admit one bounded agent-graph-python packaging surface and its stack-monitor live-IPC dependency repair without widening scope.",
+  "allowed_paths": [
+    "agent-graph-python/python/agent_graph/__init__.py",
+    "agent-graph-python/README.md",
+    "llm-pipeline-python/Cargo.toml",
+    "stack-monitor/src/live_ipc.rs",
+    "stack-monitor/src/transport.rs",
+    "docs/receipts/reconciliation-20260822/"
+  ],
+  "forbidden_paths": [
+    "agent-graph-python/src/lib.rs",
+    "agent-graph-python/src/observability.rs",
+    "agent-graph-python/Cargo.toml",
+    "all other active crate source",
+    "release/closeout_receipt_v1.json",
+    "STATUS_DASHBOARD.md",
+    "nested salvage/gitlink/generated trees"
+  ],
+  "owner": "Agent Graph owner; stack-monitor owner for dependency bug",
+  "rollback": "Revert only the three source/docs paths above and remove this additive candidate receipt directory; do not reset or clean the mixed worktree."
+}
