@@ -17,10 +17,9 @@ use crate::{
 use reqwest::Client;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::cell::RefCell;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
-    Arc,
+    Arc, Mutex,
 };
 use tokio::sync::mpsc;
 
@@ -46,7 +45,7 @@ where
     cancellation: Option<Arc<AtomicBool>>,
     _phantom: std::marker::PhantomData<T>,
     /// The last execution receipt, populated after each `execute_*` call.
-    last_receipt: RefCell<Option<PipelineExecutionReceiptV1>>,
+    last_receipt: Mutex<Option<PipelineExecutionReceiptV1>>,
 }
 
 impl<T> std::fmt::Debug for Pipeline<T>
@@ -84,7 +83,10 @@ where
 
     /// Returns the last execution receipt, if any.
     pub fn last_receipt(&self) -> Option<PipelineExecutionReceiptV1> {
-        self.last_receipt.borrow().clone()
+        self.last_receipt
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .clone()
     }
 
     /// Check whether cancellation has been requested.
@@ -203,6 +205,7 @@ where
                     .as_ref()
                     .map(|u| u.completion_tokens as u64)
                     .unwrap_or(0),
+                retrieved_context: self.context.retrieved_context.clone(),
             });
 
             // Emit RetryDecisionReceiptV1 entries from diagnostics if present.
@@ -263,7 +266,10 @@ where
             outcome: ExecutionOutcome::Success,
             recorded_time: chrono::Utc::now(),
         };
-        *self.last_receipt.borrow_mut() = Some(receipt);
+        *self
+            .last_receipt
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(receipt);
 
         Ok(PipelineResult {
             final_output,
@@ -432,7 +438,7 @@ where
             context: self.context,
             cancellation: self.cancellation,
             _phantom: std::marker::PhantomData,
-            last_receipt: RefCell::new(None),
+            last_receipt: Mutex::new(None),
         })
     }
 }

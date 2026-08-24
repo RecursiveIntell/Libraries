@@ -1,0 +1,14 @@
+{
+  "name": "ares-observatory-ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

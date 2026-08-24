@@ -146,6 +146,8 @@ pub struct RunManager {
     inner: Arc<Mutex<Inner>>,
     counter: Arc<AtomicU64>,
     checkpoint_store: Option<Arc<dyn agent_graph::checkpoint_store::CheckpointStore>>,
+    #[cfg(feature = "observability")]
+    monitor: Option<Arc<dyn stack_monitor::ObservationEmitter>>,
 }
 struct Inner {
     runs: HashMap<String, RunRecord>,
@@ -163,6 +165,8 @@ impl Default for RunManager {
             })),
             counter: Arc::new(AtomicU64::new(1)),
             checkpoint_store: None,
+            #[cfg(feature = "observability")]
+            monitor: None,
         }
     }
 }
@@ -173,6 +177,15 @@ impl RunManager {
         store: Option<Arc<dyn agent_graph::checkpoint_store::CheckpointStore>>,
     ) -> Self {
         self.checkpoint_store = store;
+        self
+    }
+
+    #[cfg(feature = "observability")]
+    pub fn with_monitor(
+        mut self,
+        monitor: Option<Arc<dyn stack_monitor::ObservationEmitter>>,
+    ) -> Self {
+        self.monitor = monitor;
         self
     }
 
@@ -460,6 +473,8 @@ impl RunManager {
                 cancelled: cancelled.clone(),
                 cancellation: cancellation.clone(),
                 events: events.clone(),
+                #[cfg(feature = "observability")]
+                monitor: self.monitor.clone(),
                 checkpoint_store: self.checkpoint_store.clone(),
             },
         )?;
@@ -852,11 +867,10 @@ impl RunManager {
                 &run.state,
                 &run.receipt,
             );
-            // Once durably persisted, release heavy in-memory state.
-            // The run data is available via SQLite (graph_run_receipt, graph_run_events).
+            // State and final_state are bounded by MAX_STATE_BYTES and remain available
+            // for synchronous read-side projections. Release the heavier event/receipt
+            // collections after durable persistence.
             if status == "durable_terminal" {
-                run.state = Value::Null;
-                run.final_state = Value::Null;
                 run.steps = Vec::new();
                 run.events = VecDeque::new();
                 run.receipt = Value::Null;

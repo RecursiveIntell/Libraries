@@ -7,12 +7,15 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
-use std::sync::OnceLock;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, OnceLock};
 use tokio::runtime::Runtime;
 use tokio::sync::mpsc;
 
+#[cfg(all(feature = "observability", unix))]
+mod observability;
 static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+static PYTHON_STREAM_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 fn runtime() -> &'static Runtime {
     RUNTIME.get_or_init(|| {
         tokio::runtime::Builder::new_multi_thread()
@@ -213,68 +216,81 @@ impl StateGraph {
     }
 
     fn stream(&self, py: Python<'_>, initial: Option<Py<PyAny>>) -> PyResult<Vec<PyAgentState>> {
-        // The core runtime's EventSink is bridged to this synchronous Python
-        // API through a bounded Tokio channel.  Execution is performed on
-        // the shared runtime; Python only drains the channel after it has
-        // finished, so no Python callback is ever invoked from a Tokio worker.
-        let (tx, mut rx) = mpsc::channel::<StreamEvent>(256);
-        let sink: Arc<dyn EventSink> = Arc::new(ChannelEventSink::new(tx));
-        let graph = StateGraph {
-            nodes: self
-                .nodes
-                .iter()
-                .map(|(k, v)| (k.clone(), v.clone_ref(py)))
-                .collect(),
-            edges: self.edges.clone(),
-            routers: self
-                .routers
-                .iter()
-                .map(|(k, v)| (k.clone(), v.clone_ref(py)))
-                .collect(),
-        };
-        let initial = initial.map(|value| value.clone_ref(py));
-        let result = runtime().block_on(async move {
-            tokio::task::spawn_blocking(move || {
-                Python::attach(|py| {
-                    sink.emit(GraphEvent::RunStart {
-                        run_id: "python-stream".into(),
-                        trace_id: "python-stream".into(),
-                        trace_ctx: None,
-                        graph_name: None,
-                    });
-                    let result = graph.invoke(py, initial);
-                    sink.emit(GraphEvent::RunEnd {
-                        run_id: "python-stream".into(),
-                        trace_id: "python-stream".into(),
-                        trace_ctx: None,
-                    });
-                    result
-                })
-            })
-            .await
-            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?
-        })?;
-
-        // Drain all events emitted by the execution.  The event stream is
-        // intentionally returned as Python dictionaries, matching the rest
-        // of this binding's JSON-oriented API.
-        let mut events = Vec::new();
-        while let Ok(event) = rx.try_recv() {
-            let value =
-                serde_json::to_value(event).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-            events.push(value_to_py(py, &value)?);
-        }
-        // Preserve the existing return type while making the execution real;
-        // callers can inspect the emitted event dictionaries via stream_events.
-        let _ = events;
+        let (result, _) = execute_stream(self, py, initial)?;
         Ok(vec![result])
     }
+
+    fn stream_events(
+        &self,
+        py: Python<'_>,
+        initial: Option<Py<PyAny>>,
+    ) -> PyResult<Vec<Py<PyAny>>> {
+        let (_, events) = execute_stream(self, py, initial)?;
+        Ok(events)
+    }
+}
+
+fn execute_stream(
+    this: &StateGraph,
+    py: Python<'_>,
+    initial: Option<Py<PyAny>>,
+) -> PyResult<(PyAgentState, Vec<Py<PyAny>>)> {
+    // The event channel is bounded and drained only after execution completes.
+    let invocation = PYTHON_STREAM_SEQUENCE.fetch_add(1, Ordering::Relaxed) + 1;
+    let run_id = format!("python-stream-{invocation}");
+    let trace_id = format!("python-trace-{invocation}");
+    let (tx, mut rx) = mpsc::channel::<StreamEvent>(256);
+    let sink: Arc<dyn EventSink> = Arc::new(ChannelEventSink::new(tx));
+    let graph = StateGraph {
+        nodes: this
+            .nodes
+            .iter()
+            .map(|(key, value)| (key.clone(), value.clone_ref(py)))
+            .collect(),
+        edges: this.edges.clone(),
+        routers: this
+            .routers
+            .iter()
+            .map(|(key, value)| (key.clone(), value.clone_ref(py)))
+            .collect(),
+    };
+    let initial = initial.map(|value| value.clone_ref(py));
+    let result = runtime().block_on(async move {
+        tokio::task::spawn_blocking(move || {
+            Python::attach(|py| {
+                sink.emit(GraphEvent::RunStart {
+                    run_id: run_id.clone(),
+                    trace_id: trace_id.clone(),
+                    trace_ctx: None,
+                    graph_name: None,
+                });
+                let result = graph.invoke(py, initial);
+                sink.emit(GraphEvent::RunEnd {
+                    run_id,
+                    trace_id,
+                    trace_ctx: None,
+                });
+                result
+            })
+        })
+        .await
+        .map_err(|error| PyRuntimeError::new_err(error.to_string()))?
+    })?;
+    let mut events = Vec::new();
+    while let Ok(event) = rx.try_recv() {
+        let value = serde_json::to_value(event)
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+        events.push(value_to_py(py, &value)?);
+    }
+    Ok((result, events))
 }
 
 #[pymodule]
 fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<StateGraph>()?;
     m.add_class::<PyAgentState>()?;
+    #[cfg(all(feature = "observability", unix))]
+    m.add_class::<observability::ObservationClient>()?;
     m.add("START", agent_graph::START)?;
     m.add("END", agent_graph::END)?;
     Ok(())

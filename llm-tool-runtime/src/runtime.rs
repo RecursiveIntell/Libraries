@@ -10,6 +10,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
+/// Compatibility alias retained for the published 0.1.0 API.
+pub use crate::ToolError as ToolRuntimeError;
+
 #[async_trait]
 pub trait ApprovalPolicy: Send + Sync {
     async fn evaluate(

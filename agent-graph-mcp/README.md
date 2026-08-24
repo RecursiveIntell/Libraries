@@ -187,6 +187,15 @@ The specification validator enforces finite limits, including:
 
 Treat these as runtime admission limits, not tuning suggestions.
 
+## Optional stack-monitor observability
+
+Build with `--features observability` to make `CompileContext.monitor` available. When a caller
+supplies a `stack_monitor::MonitorClient`, the compiler mirrors canonical Agent Graph events
+through `AgentGraphObservationSink` without blocking graph execution. When the feature is enabled,
+`AgentGraphServer` automatically connects to `ARES_OBSERVATORY_SOCKET` (or the default XDG
+collector socket) and retains the bounded client for its lifetime. Default builds do not depend on
+stack-monitor.
+
 ## MCP tool surface
 
 The server exposes typed JSON schemas generated from Rust parameter structs. The main tool groups are:

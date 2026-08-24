@@ -1065,7 +1065,7 @@ impl PersistentStore {
             .transaction()
             .map_err(|e| format!("terminal transaction begin error: {e}"))?;
         let changed = tx.execute(
-            "UPDATE executions SET status = ?2, final_state_json = ?3, total_nodes = ?4,
+            "UPDATE executions SET status = ?2, final_state_json = CASE WHEN ?3 = 'null' THEN final_state_json ELSE ?3 END, total_nodes = ?4,
              finished_at = CASE WHEN ?2 IN ('completed','failed','cancelled') THEN datetime('now') ELSE finished_at END
              WHERE run_id = ?1",
             params![run_id, status, final_state_json, total_nodes as i64],
@@ -1073,14 +1073,16 @@ impl PersistentStore {
         if changed != 1 {
             return Err(format!("terminal projection run '{run_id}' was not found"));
         }
-        tx.execute("DELETE FROM events WHERE run_id = ?1", params![run_id])
-            .map_err(|e| format!("terminal event reset error: {e}"))?;
-        for (seq, event_type, event_json) in events {
-            tx.execute(
-                "INSERT INTO events (run_id, seq, event_type, event_json) VALUES (?1, ?2, ?3, ?4)",
-                params![run_id, *seq, event_type, event_json],
-            )
-            .map_err(|e| format!("terminal event insert error: {e}"))?;
+        if !events.is_empty() {
+            tx.execute("DELETE FROM events WHERE run_id = ?1", params![run_id])
+                .map_err(|e| format!("terminal event reset error: {e}"))?;
+            for (seq, event_type, event_json) in events {
+                tx.execute(
+                    "INSERT INTO events (run_id, seq, event_type, event_json) VALUES (?1, ?2, ?3, ?4)",
+                    params![run_id, *seq, event_type, event_json],
+                )
+                .map_err(|e| format!("terminal event insert error: {e}"))?;
+            }
         }
         #[cfg(test)]
         if self
@@ -1091,7 +1093,11 @@ impl PersistentStore {
         }
         tx.execute(
             "INSERT INTO terminal_receipts (run_id, receipt_json, bundle_json, receipt_digest) VALUES (?1, ?2, ?3, ?4)
-             ON CONFLICT(run_id) DO UPDATE SET receipt_json=excluded.receipt_json, bundle_json=excluded.bundle_json, receipt_digest=excluded.receipt_digest, persisted_at=datetime('now')",
+             ON CONFLICT(run_id) DO UPDATE SET
+               receipt_json = CASE WHEN excluded.receipt_json = 'null' THEN terminal_receipts.receipt_json ELSE excluded.receipt_json END,
+               bundle_json = CASE WHEN excluded.bundle_json = 'null' THEN terminal_receipts.bundle_json ELSE excluded.bundle_json END,
+               receipt_digest = CASE WHEN excluded.receipt_json = 'null' THEN terminal_receipts.receipt_digest ELSE excluded.receipt_digest END,
+               persisted_at = datetime('now')",
             params![run_id, receipt_json, bundle_json, receipt_digest],
         ).map_err(|e| format!("terminal receipt insert error: {e}"))?;
         tx.commit()

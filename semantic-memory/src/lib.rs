@@ -94,6 +94,8 @@ pub mod evidence_gap;
 mod forgetting;
 pub mod journal;
 mod procedural_memory;
+/// Public read-only metadata for externally retained LLM receipts.
+pub mod receipt_metadata;
 pub mod transition_contracts;
 mod transition_verifier;
 pub use db::{bytes_to_embedding, decode_f32_le, embedding_to_bytes};
@@ -193,6 +195,7 @@ pub use procedural_memory::{
     ProcedureTestReceiptV1, ProcedureValidationV1, PROCEDURAL_MEMORY_ARTIFACT_V1,
     PROCEDURE_LIFECYCLE_RECEIPT_V1, PROCEDURE_TEST_RECEIPT_V1,
 };
+pub use receipt_metadata::{LlmReceiptMetadataV1, LLM_RECEIPT_METADATA_V1};
 pub use shadow_policy::{
     compare_shadow_execution_v1, evaluate_shadow_policy_promotion_v1, shadow_policy_digest,
     ActiveShadowPolicyV1, PromotionDecisionReceiptV1, PromotionDispositionV1, PromotionEvidenceV1,
@@ -1013,7 +1016,7 @@ impl MemoryStore {
     /// runs migrations, and initializes the HNSW index.
     ///
     /// When the `candle-embedder` feature is enabled, this defaults to
-    /// [`CandleEmbedder`] (in-process, pure-Rust, no Ollama required).
+    /// `CandleEmbedder` (in-process, pure-Rust, no Ollama required).
     /// Otherwise it defaults to [`OllamaEmbedder`].
     pub fn open(config: MemoryConfig) -> Result<Self, MemoryError> {
         let config = config.normalize_and_validate()?;

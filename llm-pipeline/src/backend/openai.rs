@@ -383,9 +383,7 @@ impl Backend for OpenAiBackend {
         while let Some(chunk) = stream.next().await {
             let chunk = chunk.map_err(PipelineError::Request)?;
             for json_val in decoder.decode(&chunk) {
-                let choice = json_val
-                    .get("choices")
-                    .and_then(|c| c.get(0));
+                let choice = json_val.get("choices").and_then(|c| c.get(0));
 
                 // Capture reasoning chunks from the delta (reasoning models like
                 // tencent/hy3 emit their answer under delta.reasoning, not delta.content).
@@ -426,9 +424,7 @@ impl Backend for OpenAiBackend {
 
         // Flush remaining SSE buffer
         for json_val in decoder.flush() {
-            let choice = json_val
-                .get("choices")
-                .and_then(|c| c.get(0));
+            let choice = json_val.get("choices").and_then(|c| c.get(0));
 
             if let Some(reasoning_text) = choice
                 .and_then(|c| c.get("delta"))

@@ -178,7 +178,7 @@ impl ToolLoopRunner {
             .execute(
                 &tool_ctx,
                 &call,
-                request.execution_permit.clone(),
+                request.execution_permit.as_deref(),
                 ctx.cancel_flag(),
             )
             .await;
@@ -571,7 +571,10 @@ fn build_tool_ctx(ctx: &ExecCtx, request: &ToolLoopRequest, attempt_id: &Attempt
         scope: request.scope.clone(),
         dry_run: request.dry_run,
         approval_grant: request.approval_grant.clone(),
-        execution_permit: request.execution_permit.clone(),
+        execution_permit: request
+            .execution_permit
+            .as_ref()
+            .map(|permit| (**permit).clone()),
         idempotency_key: None,
         caller: format!("llm-pipeline:{}", request.model),
         planner_stage: request.planner_stage.clone(),

@@ -6,6 +6,7 @@
 //! logging, progress tracking, or streaming UIs.
 
 use stack_ids::{AttemptId, TrialId};
+use stack_observation::{Correlation, LifecycleStatus, ObservationEnvelope, ObservationKind};
 use std::sync::Arc;
 
 /// Events emitted during payload execution.
@@ -121,9 +122,103 @@ pub trait EventHandler: Send + Sync {
 
 /// Emit an event if a handler is present. No-op otherwise.
 pub(crate) fn emit(handler: &Option<Arc<dyn EventHandler>>, event: Event) {
+    emit_global_observation(&event);
     if let Some(ref h) = handler {
         h.on_event(event);
     }
+}
+
+fn emit_global_observation(event: &Event) {
+    let (kind, status, summary, correlation) = match event {
+        Event::PayloadStart { name, kind } => (
+            ObservationKind::LlmCall,
+            LifecycleStatus::Started,
+            format!("payload '{}' ({kind}) started", name),
+            Correlation::default(),
+        ),
+        Event::Token { name, .. } => (
+            ObservationKind::TokenProgress,
+            LifecycleStatus::Streaming,
+            format!("payload '{}' streaming", name),
+            Correlation::default(),
+        ),
+        Event::PayloadEnd { name, ok } => (
+            ObservationKind::LlmCall,
+            if *ok {
+                LifecycleStatus::Completed
+            } else {
+                LifecycleStatus::Failed
+            },
+            format!("payload '{}' ended", name),
+            Correlation::default(),
+        ),
+        Event::RetryStart {
+            name,
+            attempt_id,
+            trial_id,
+            ..
+        } => (
+            ObservationKind::Retry,
+            LifecycleStatus::Retried,
+            format!("retry '{}' started", name),
+            Correlation {
+                attempt_id: Some(attempt_id.to_string()),
+                trial_id: Some(trial_id.to_string()),
+                ..Correlation::default()
+            },
+        ),
+        Event::RetryEnd {
+            name,
+            attempt_id,
+            success,
+            ..
+        } => (
+            ObservationKind::Retry,
+            if *success {
+                LifecycleStatus::Completed
+            } else {
+                LifecycleStatus::Failed
+            },
+            format!("retry '{}' ended", name),
+            Correlation {
+                attempt_id: Some(attempt_id.to_string()),
+                ..Correlation::default()
+            },
+        ),
+        Event::PartialParse { name, complete, .. } => (
+            ObservationKind::Parse,
+            if *complete {
+                LifecycleStatus::Completed
+            } else {
+                LifecycleStatus::Streaming
+            },
+            format!("partial parse for '{}'", name),
+            Correlation::default(),
+        ),
+        Event::TransportRetry { name, .. } => (
+            ObservationKind::Transport,
+            LifecycleStatus::Retried,
+            format!("transport retry for '{}'", name),
+            Correlation::default(),
+        ),
+        Event::CostUpdate { name, .. } => (
+            ObservationKind::Cost,
+            LifecycleStatus::Completed,
+            format!("cost update for '{}'", name),
+            Correlation::default(),
+        ),
+    };
+    let mut observation = ObservationEnvelope::metadata(
+        "llm-pipeline",
+        "llm-pipeline",
+        "global-event-dispatch",
+        stack_observation::next_global_sequence(),
+        kind,
+        status,
+        summary,
+    );
+    observation.correlation = correlation;
+    let _ = stack_observation::emit_global(observation);
 }
 
 /// An [`EventHandler`] backed by a closure.

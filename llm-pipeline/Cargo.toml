@@ -1,6 +1,6 @@
 [package]
 name = "llm-pipeline"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 authors = ["Josh"]
 license = "MIT"
@@ -18,13 +18,12 @@ openai = []
 anthropic = []
 
 [dependencies]
-# NOTE: llm-output-parser / llm-tool-runtime / stack-ids use registry versions
-# (matching agent-graph-mcp's resolved versions) instead of local paths so that
-# the shared types (ToolRegistry, StagePayload, etc.) are the SAME crate instance
-# and type-check. This is required for the reasoning-effort patch to compile.
+# Keep local workspace consumers on one canonical contract instance. Using the
+# registry copy here creates duplicate ToolReceiptSink and ToolDescriptor types
+# alongside the local forge-engine integration.
 llm-output-parser = "0.2"
-llm-tool-runtime = "0.1"
-stack-ids = "0.1"
+llm-tool-runtime = { path = "../llm-tool-runtime" }
+stack-ids = { path = "../stack-ids" }
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
 serde = { version = "1", features = ["derive"] }
@@ -37,6 +36,7 @@ chrono = "0.4"
 fastrand = "2"
 uuid = { version = "1", features = ["v4"] }
 tracing = "0.1"
+stack-observation = { path = "../stack-observation" }
 sha2 = "0.10"
 hmac = "0.12"
 hex = "0.4"

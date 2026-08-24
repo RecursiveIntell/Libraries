@@ -32,6 +32,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 
 # Logging
 tracing = "0.1"
+stack-observation = { path = "../stack-observation" }
 
 # Shared identity/trace primitives
 stack-ids = { path = "../stack-ids" }

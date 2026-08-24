@@ -1,0 +1,22 @@
+:root { color-scheme: dark; font: 14px system-ui, sans-serif; }
+body { margin: 0; background: #0d1117; color: #d7dee8; }
+header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid #263241; }
+h1, h2 { margin: 0; } h1 { font-size: 20px; } h2 { font-size: 15px; margin-bottom: 10px; }
+button, input { border: 1px solid #334155; border-radius: 6px; background: #111827; color: #dbeafe; padding: 7px 10px; }
+button { border-color: #3b82f6; background: #172554; cursor: pointer; }
+main { padding: 20px 24px; } #health { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; } .tab.active { background: #1d4ed8; color: white; }
+.content { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; }
+.controls { display: flex; gap: 8px; margin-bottom: 12px; } #search { width: 100%; box-sizing: border-box; }
+#timeline, #trace, #graph { display: grid; gap: 8px; align-content: start; }
+.event, .waterfall-row, .node-card { display: grid; gap: 10px; align-items: center; padding: 10px; border: 1px solid #263241; border-radius: 8px; background: #111827; }
+.event { grid-template-columns: 80px 120px 1fr auto; } .waterfall-row { grid-template-columns: 80px 130px 1fr 150px 90px auto; }
+.node-card { grid-template-columns: 1fr auto auto auto; } .event button, .waterfall-row button, .node-card button { padding: 4px 8px; font-size: 12px; }
+.badge { border: 1px solid #334155; border-radius: 999px; padding: 5px 10px; color: #a5b4fc; }
+.warning { border-color: #a16207; color: #facc15; } .muted { color: #8492a6; } .kind { color: #93c5fd; } .status { color: #86efac; font-size: 12px; }
+.coverage-grid { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0; }
+.empty, .error { padding: 24px; border: 1px dashed #334155; border-radius: 8px; color: #94a3b8; } .error { color: #fca5a5; border-color: #7f1d1d; }
+#inspector { min-height: 260px; padding: 14px; border: 1px solid #263241; border-radius: 8px; background: #111827; position: sticky; top: 18px; align-self: start; }
+#inspector dl { display: grid; grid-template-columns: 105px 1fr; gap: 6px; margin: 0 0 12px; } #inspector dt { color: #8492a6; }
+#inspector dd { margin: 0; overflow-wrap: anywhere; } #inspector pre { max-height: 320px; overflow: auto; white-space: pre-wrap; color: #c4b5fd; font-size: 12px; }
+@media (max-width: 1050px) { .content { grid-template-columns: 1fr; } #inspector { position: static; } .waterfall-row { grid-template-columns: 70px 100px 1fr 100px; } .waterfall-row button { grid-column: 4; } }

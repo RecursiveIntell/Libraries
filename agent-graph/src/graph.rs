@@ -7,7 +7,7 @@ use crate::command::NodeOutput;
 use crate::config::GraphConfig;
 use crate::edge::EdgeType;
 use crate::error::{AgentGraphError, Result};
-use crate::event_sink::{ChannelEventSink, EventSink, NoopEventSink};
+use crate::event_sink::{ChannelEventSink, EventSink, GlobalObservationSink};
 use crate::executor::Executor;
 use crate::interrupt::InterruptConfig;
 use crate::node::Node;
@@ -68,21 +68,20 @@ impl AgentGraph {
         &self,
         stream_tx: Option<mpsc::Sender<StreamEvent>>,
     ) -> Arc<dyn EventSink> {
+        let global = Arc::new(GlobalObservationSink);
+        let mut sinks: Vec<Arc<dyn EventSink>> = vec![global];
+        if let Some(configured) = &self.event_sink {
+            sinks.push(configured.clone());
+        }
         if let Some(tx) = stream_tx {
-            // Streaming path: wrap the channel
-            if let Some(ref configured_sink) = self.event_sink {
-                // Both configured sink and channel: composite
-                Arc::new(crate::event_sink::CompositeEventSink::new(vec![
-                    configured_sink.clone(),
-                    Arc::new(ChannelEventSink::new(tx)),
-                ]))
-            } else {
-                Arc::new(ChannelEventSink::new(tx))
-            }
-        } else if let Some(ref sink) = self.event_sink {
-            sink.clone()
+            sinks.push(Arc::new(ChannelEventSink::new(tx)));
+        }
+        if sinks.len() == 1 {
+            sinks
+                .pop()
+                .unwrap_or_else(|| Arc::new(GlobalObservationSink))
         } else {
-            Arc::new(NoopEventSink)
+            Arc::new(crate::event_sink::CompositeEventSink::new(sinks))
         }
     }
 

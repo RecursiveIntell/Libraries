@@ -7,11 +7,13 @@ description = "Python bindings for llm-pipeline"
 [lib]
 name = "_native"
 crate-type = ["cdylib"]
+# Python extension modules are not standalone Rust API documentation targets.
+doc = false
 
 [dependencies]
 llm-pipeline = { path = "../llm-pipeline" }
-pyo3 = { version = "0.28.3", features = ["extension-module"] }
-pyo3-async-runtimes = { version = "0.28", features = ["tokio-runtime"] }
+pyo3 = { version = "0.29.2", features = ["extension-module"] }
+pyo3-async-runtimes = { version = "0.29.0", features = ["tokio-runtime"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 # Override native-tls with rustls to prevent OpenSSL/Python ssl module conflict

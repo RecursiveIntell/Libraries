@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::stream::StreamEvent;
+use stack_observation::{Correlation, LifecycleStatus, ObservationEnvelope, ObservationKind};
 
 /// Structured runtime event emitted during graph execution.
 ///
@@ -216,6 +217,186 @@ pub struct NoopEventSink;
 
 impl EventSink for NoopEventSink {
     fn emit(&self, _event: GraphEvent) {}
+}
+
+/// Global automatic observation sink. It is a no-op until a host installs a
+/// `stack-observation` sink, so graph execution remains backward-compatible.
+pub(crate) struct GlobalObservationSink;
+
+impl EventSink for GlobalObservationSink {
+    fn emit(&self, event: GraphEvent) {
+        let (kind, status, summary, correlation) = match &event {
+            GraphEvent::RunStart {
+                run_id,
+                graph_name,
+                trace_ctx,
+                ..
+            } => (
+                ObservationKind::GraphRun,
+                LifecycleStatus::Started,
+                format!(
+                    "graph run '{}' started",
+                    graph_name.as_deref().unwrap_or("unnamed")
+                ),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    parent_span_id: trace_ctx.as_ref().and_then(|ctx| ctx.parent_id.clone()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::RunEnd {
+                run_id, trace_ctx, ..
+            } => (
+                ObservationKind::GraphRun,
+                LifecycleStatus::Completed,
+                "graph run ended".into(),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    parent_span_id: trace_ctx.as_ref().and_then(|ctx| ctx.parent_id.clone()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::NodeStart {
+                run_id,
+                node_id,
+                trace_ctx,
+                attempt_id,
+                trial_id,
+                ..
+            } => (
+                ObservationKind::GraphNode,
+                LifecycleStatus::Started,
+                format!("node '{}' started", node_id),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    node_id: Some(node_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    parent_span_id: trace_ctx.as_ref().and_then(|ctx| ctx.parent_id.clone()),
+                    attempt_id: attempt_id.as_ref().map(|id| id.to_string()),
+                    trial_id: trial_id.as_ref().map(|id| id.to_string()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::NodeEnd {
+                run_id,
+                node_id,
+                outcome,
+                trace_ctx,
+                attempt_id,
+                trial_id,
+                ..
+            } => (
+                ObservationKind::GraphNode,
+                match outcome {
+                    NodeOutcomeKind::Success => LifecycleStatus::Completed,
+                    NodeOutcomeKind::Failed => LifecycleStatus::Failed,
+                    NodeOutcomeKind::Interrupted => LifecycleStatus::Cancelled,
+                },
+                format!("node '{}' ended", node_id),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    node_id: Some(node_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    parent_span_id: trace_ctx.as_ref().and_then(|ctx| ctx.parent_id.clone()),
+                    attempt_id: attempt_id.as_ref().map(|id| id.to_string()),
+                    trial_id: trial_id.as_ref().map(|id| id.to_string()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::Token {
+                run_id,
+                node_id,
+                trace_ctx,
+                ..
+            } => (
+                ObservationKind::TokenProgress,
+                LifecycleStatus::Streaming,
+                format!("node '{}' streaming", node_id),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    node_id: Some(node_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::CheckpointWritten {
+                run_id, trace_ctx, ..
+            }
+            | GraphEvent::SuperstepStart {
+                run_id, trace_ctx, ..
+            }
+            | GraphEvent::SuperstepEnd {
+                run_id, trace_ctx, ..
+            } => (
+                ObservationKind::Receipt,
+                LifecycleStatus::Health,
+                "graph lifecycle checkpoint/superstep".into(),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::InterruptRaised {
+                run_id,
+                node_id,
+                trace_ctx,
+                ..
+            } => (
+                ObservationKind::GraphNode,
+                LifecycleStatus::Cancelled,
+                "graph interrupt raised".into(),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    node_id: Some(node_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::StateUpdate {
+                run_id,
+                node_id,
+                updates,
+                trace_ctx,
+                ..
+            } => (
+                ObservationKind::GraphNode,
+                LifecycleStatus::Streaming,
+                format!("node '{}' updated {} state keys", node_id, updates.len()),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    node_id: Some(node_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    ..Correlation::default()
+                },
+            ),
+            GraphEvent::ParallelCancellation {
+                run_id, trace_ctx, ..
+            } => (
+                ObservationKind::GraphRun,
+                LifecycleStatus::Cancelled,
+                "parallel graph branches cancelled".into(),
+                Correlation {
+                    run_id: Some(run_id.clone()),
+                    trace_id: trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone()),
+                    ..Correlation::default()
+                },
+            ),
+        };
+        let mut observation = ObservationEnvelope::metadata(
+            "agent-graph",
+            "agent-graph",
+            "global-event-sink",
+            stack_observation::next_global_sequence(),
+            kind,
+            status,
+            summary,
+        );
+        observation.correlation = correlation;
+        let _ = stack_observation::emit_global(observation);
+    }
 }
 
 /// Event sink that forwards to a `tokio::sync::mpsc::Sender<StreamEvent>`.

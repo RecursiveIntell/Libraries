@@ -12,7 +12,7 @@ use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let api_key = std::env::var("ANTHROPIC_API_KEY").expect("set ANTHROPIC_API_KEY");
+    let api_key = std::env::var("ANTHROPIC_API_KEY")?;
 
     let ctx = ExecCtx::builder("https://api.anthropic.com")
         .backend(std::sync::Arc::new(AnthropicBackend::new(api_key)))

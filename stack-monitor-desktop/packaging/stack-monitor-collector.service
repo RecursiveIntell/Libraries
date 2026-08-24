@@ -1,0 +1,22 @@
+[Unit]
+Description=Ares Observatory stack-monitor collector
+After=graphical-session.target
+
+[Service]
+Type=simple
+RuntimeDirectory=ares-observatory
+RuntimeDirectoryMode=0700
+StateDirectory=ares-observatory
+StateDirectoryMode=0700
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+ExecStart=/usr/bin/env stack-monitor-collector --socket %t/ares-observatory/collector.sock --live-socket %t/ares-observatory/live.sock --database %S/ares-observatory/activity.db --capacity 4096
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%t/ares-observatory %S/ares-observatory
+
+[Install]
+WantedBy=default.target

@@ -23,7 +23,7 @@ This is a **0.1.0 private monorepo binding**, not a standalone replacement for t
 In particular:
 
 - `StateGraph.compile()` currently returns successfully without performing visible validation.
-- `StateGraph.stream()` currently drains emitted events internally but returns a one-element list containing the resulting `AgentState`; the drained event dictionaries are not exposed by the current method return value.
+- `StateGraph.stream()` preserves its existing one-element `AgentState` return. `StateGraph.stream_events()` exposes the bounded drained event dictionaries as a separate explicit API.
 - Graph execution is bounded by a maximum of 100 loop iterations.
 - Python callbacks are invoked synchronously during `invoke`/the underlying stream execution.
 - The binding depends on the sibling path crate `../agent-graph`; this repository does not provide an independently published engine package.
@@ -53,7 +53,7 @@ maturin develop
 After `maturin develop`, the following exercises the state binding and the exported graph markers:
 
 ```python
-from agent_graph_python import AgentState, START, END
+from agent_graph import AgentState, START, END
 
 state = AgentState({"inputs": {"message": "hello"}})
 
@@ -67,7 +67,7 @@ print(START, END)
 A minimal graph uses Python callables as nodes. A node receives an `AgentState`; returning a dictionary merges those key/value pairs into the state:
 
 ```python
-from agent_graph_python import AgentState, START, END, StateGraph
+from agent_graph import AgentState, START, END, StateGraph
 
 graph = StateGraph(None)
 graph.add_node("greet", lambda state: {"message": "hello"})
@@ -75,7 +75,7 @@ graph.add_edge(START, "greet")
 graph.add_edge("greet", END)
 graph.compile()
 
-result = graph.invoke(AgentState({"name": "Ada"}))
+result = graph.invoke({"name": "Ada"})
 print(result.as_dict())
 ```
 
@@ -111,6 +111,14 @@ Methods:
 - `compile()`: currently a successful no-op.
 - `invoke(initial=None)`: execute from edges leaving `START`, process nodes and routers, deduplicate next nodes per iteration, and return the resulting `AgentState`.
 - `stream(initial=None)`: execute through the event-sink bridge and return the current one-element list containing the resulting `AgentState`.
+- `stream_events(initial=None)`: execute through the same bounded event-sink bridge and return JSON-compatible event dictionaries.
+
+When built with the optional `observability` feature on Unix, the native module also exposes:
+
+- `ObservationClient(socket_path, capacity=256)`: bounded client for canonical observation envelopes.
+- `ObservationClient.emit(event_dict)`: submit one JSON-compatible `ObservationEnvelope` dictionary and return `accepted`, `dropped`, or `collector_unavailable`.
+- `ObservationClient.stats()`: return producer send/drop counters.
+- `ObservationClient.close()`: stop the background sender.
 
 ## Architecture
 
@@ -132,7 +140,7 @@ The JSON boundary is a compatibility seam, not a general Python object bridge. V
 - A node's returned dictionary is merged into state. A non-dictionary return value is ignored for state updates, although the callback itself still ran.
 - A conditional router result must be a string, list of strings, or `None` to affect routing. Other result types fall back to ordinary outgoing edges.
 - `START` and `END` are treated as control markers during traversal. Cycles are not rejected by `compile`; execution stops after 100 iterations.
-- `stream` uses a bounded event channel and currently does not return the drained event dictionaries. Do not rely on event records being available through the Python return value until the API changes.
+- `stream` uses a bounded event channel. `stream_events()` returns the drained event dictionaries; `stream()` retains the historical final-state-only return shape.
 - The extension imports Python's `json` module at runtime. A Python environment that cannot import `json` cannot use the conversion boundary.
 
 ## Verification
@@ -144,7 +152,7 @@ cargo check --manifest-path Cargo.toml
 python -m pip install --upgrade maturin
 maturin develop
 python - <<'PY'
-from agent_graph_python import AgentState, START, END
+from agent_graph import AgentState, START, END
 
 state = AgentState({"inputs": {"message": "hello"}})
 assert state.get("inputs") == {"message": "hello"}

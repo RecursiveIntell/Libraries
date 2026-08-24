@@ -39,7 +39,10 @@ package_has_key() {
   ' "$cargo_file"
 }
 
-mapfile -t cargo_files < <(rg --files -g 'Cargo.toml' | sort)
+# The root gate validates active workspace manifests only. Salvaged source
+# bundles are historical inputs and may intentionally lack package README files;
+# admitting them here would make archived material a shadow owner of root truth.
+mapfile -t cargo_files < <(rg --files -g 'Cargo.toml' -g '!_salvage_from_libraries2/**' -g '!docs/**' -g '!target/**' | sort)
 if [[ ${#cargo_files[@]} -eq 0 ]]; then
   echo "manifest truth check skipped (no Cargo.toml files found)"
   exit 0

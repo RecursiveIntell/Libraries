@@ -1,0 +1,14 @@
+[package]
+name = "stack-observation"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Dependency-light versioned observation contract for the RecursiveIntell stack"
+license = "MIT"
+
+[dependencies]
+chrono = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true, features = ["serde", "v4"] }

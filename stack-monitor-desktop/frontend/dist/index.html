@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ares Observatory</title>
+    <script type="module" crossorigin src="/assets/index-t2fNPciK.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-AOae9Ee-.css">
+  </head>
+  <body>
+    <header><h1>✦ Ares Observatory</h1><button id="refresh">Refresh</button></header>
+    <main>
+      <section id="health"></section>
+      <section id="coverage"></section>
+      <nav class="tabs" aria-label="observability views">
+        <button class="tab active" data-view="timeline">Timeline</button>
+        <button class="tab" data-view="trace">Trace waterfall</button>
+        <button class="tab" data-view="graph">Agent Graph</button>
+      </nav>
+      <section class="content">
+        <div><div class="controls"><input id="search" type="search" placeholder="Filter observable execution…" /><button id="export" type="button">Export JSONL</button></div>
+          <section id="timeline"></section><section id="trace" hidden></section><section id="graph" hidden></section>
+        </div>
+        <aside id="inspector"><div class="empty">Select an observation.</div></aside>
+      </section>
+    </main>
+  </body>
+</html>
