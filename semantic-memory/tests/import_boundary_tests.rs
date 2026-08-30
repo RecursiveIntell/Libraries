@@ -34,14 +34,19 @@ use semantic_memory::compat::legacy_import_envelope::{
 };
 use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder};
 use semantic_memory_forge::{
-    CausalQuestion, CausalRoleHint, ConstraintSeedKind, DispatchOutcomeV1, EpisodeBundleV1,
-    EvidenceBundle, EvidenceBundleId, ExecutionContextV1, ExportAuthority, ExportConfidenceClass,
-    ExportRecordSemanticsV3, ForgeExportMeta, OutcomeSpec, ProjectionVisibilityClass,
-    TreatmentSpec,
+    BilatticeTruthV1, CausalQuestion, CausalRoleHint, ClaimStateV13, ConstraintSeedKind,
+    ContradictionWitnessV1, DegradationKindV1, DispatchOutcomeV1, EpisodeBundleV1,
+    EvidenceAdmissibilityV1, EvidenceBundle, EvidenceBundleId, ExactnessLevelV1,
+    ExecutionContextV1, ExportAuthority, ExportConfidenceClass, ExportRecordSemanticsV3,
+    ForgeExportMeta, OutcomeSpec, ProjectionVisibilityClass, QualityVectorV1, RetractionRecordV1,
+    SemanticViewV1, SupportExprV1, SupportPolarityV1, SupportProvenanceKindV1, SupportSetV1,
+    SupportTokenV1, TreatmentSpec, CLAIM_STATE_V13_SCHEMA, CONTRADICTION_WITNESS_V1_SCHEMA,
+    RETRACTION_RECORD_V1_SCHEMA, SUPPORT_SET_V1_SCHEMA,
 };
 use stack_ids::{
-    AssertionGroupId, ClaimFamilyId, ClaimId, ClaimVersionId, ContentDigest, EntityId, EnvelopeId,
-    EpisodeId, ScopeKey, TraceCtx,
+    AssertionGroupId, ClaimFamilyId, ClaimId, ClaimStateId, ClaimVersionId, ContentDigest,
+    ContradictionWitnessId, EntityId, EnvelopeId, EpisodeId, RetractionRecordId, ScopeKey,
+    SemanticsProfileId, SupportSetId, TraceCtx,
 };
 use tempfile::TempDir;
 
@@ -846,7 +851,7 @@ async fn canonical_v2_batch_import_preserves_export_meta_receipts() {
 async fn canonical_v3_batch_import_preserves_kernel_payload_receipts() {
     let (store, _dir) = test_store();
     let evidence_bundle = make_evidence_bundle("evidence-kernel-v3");
-    let batch = ProjectionImportBatchV3 {
+    let mut batch = ProjectionImportBatchV3 {
         source_envelope_id: EnvelopeId::new("env-kernel-v3"),
         schema_version: PROJECTION_IMPORT_BATCH_V3_SCHEMA.into(),
         export_schema_version: Some("export_envelope_v3".into()),
@@ -1000,6 +1005,84 @@ async fn canonical_v3_batch_import_preserves_kernel_payload_receipts() {
             }),
         }],
     };
+    // V13 remains source-owned assertion/adjudication evidence. The projection
+    // must retain it byte-for-byte and must not promote `Both` to an action.
+    let support_digest = ContentDigest::compute(b"support-set-kernel-v3");
+    batch.support_sets = vec![SupportSetV1 {
+        schema_version: SUPPORT_SET_V1_SCHEMA.into(),
+        support_set_id: SupportSetId::new("support-set-kernel-v3"),
+        claim_id: ClaimId::new("claim-kernel-v3"),
+        semantics_profile_id: SemanticsProfileId::new("semantics-profile-v13"),
+        support_tokens: vec![
+            SupportTokenV1 {
+                token_id: "support-token".into(),
+                kind: SupportProvenanceKindV1::EvidenceRef,
+                reference: "evidence:kernel-v3".into(),
+                polarity: SupportPolarityV1::Supports,
+            },
+            SupportTokenV1 {
+                token_id: "refute-token".into(),
+                kind: SupportProvenanceKindV1::ClaimVersion,
+                reference: "claim-version:prior".into(),
+                polarity: SupportPolarityV1::Refutes,
+            },
+        ],
+        support_expr: SupportExprV1::AnyOf {
+            children: vec![
+                SupportExprV1::Token {
+                    token_id: "support-token".into(),
+                },
+                SupportExprV1::Token {
+                    token_id: "refute-token".into(),
+                },
+            ],
+        },
+        content_digest: support_digest.clone(),
+    }];
+    batch.contradiction_witnesses = vec![ContradictionWitnessV1 {
+        schema_version: CONTRADICTION_WITNESS_V1_SCHEMA.into(),
+        contradiction_witness_id: ContradictionWitnessId::new("witness-kernel-v3"),
+        claim_id: ClaimId::new("claim-kernel-v3"),
+        conflicting_token_ids: vec!["support-token".into(), "refute-token".into()],
+        summary: Some("support and refutation coexist".into()),
+    }];
+    batch.retraction_records = vec![RetractionRecordV1 {
+        schema_version: RETRACTION_RECORD_V1_SCHEMA.into(),
+        retraction_record_id: RetractionRecordId::new("retraction-kernel-v3"),
+        claim_id: ClaimId::new("claim-kernel-v3"),
+        retracted_claim_version_id: ClaimVersionId::new("claim-version-prior"),
+        superseded_by_claim_version_id: Some(ClaimVersionId::new("claim-version-kernel-v3")),
+        effective_recorded_at: "2026-03-14T12:05:00Z".into(),
+        reason: "canonical refutation record".into(),
+        cascade_required: true,
+        delta_summary: Some("recompute dependent views".into()),
+    }];
+    batch.claim_states_v13 = vec![ClaimStateV13 {
+        schema_version: CLAIM_STATE_V13_SCHEMA.into(),
+        claim_state_id: ClaimStateId::new("claim-state-kernel-v3"),
+        claim_id: ClaimId::new("claim-kernel-v3"),
+        claim_version_id: Some(ClaimVersionId::new("claim-version-kernel-v3")),
+        semantics_profile_id: SemanticsProfileId::new("semantics-profile-v13"),
+        view: SemanticViewV1::Canonical,
+        bilattice_truth: BilatticeTruthV1::Both,
+        support_set_id: Some(SupportSetId::new("support-set-kernel-v3")),
+        support_set_digest: Some(support_digest),
+        quality_vector: QualityVectorV1 {
+            exactness: ExactnessLevelV1::Conservative,
+            degradation: vec![DegradationKindV1::ExactnessDowngraded],
+            freshness: Some("current".into()),
+            replay_limited: false,
+            execution_contaminated: false,
+        },
+        evidence_admissibility: EvidenceAdmissibilityV1::Admissible,
+        contradiction_witness_id: Some(ContradictionWitnessId::new("witness-kernel-v3")),
+        valid_from: Some("2026-03-01T00:00:00Z".into()),
+        valid_to: None,
+        tx_from: "2026-03-14T12:05:00Z".into(),
+        tx_to: None,
+        proof_obligations_remaining: vec!["resolve contradiction".into()],
+        policy_action_allowed: false,
+    }];
 
     let result = store.import_projection_batch(&batch).await.unwrap();
     assert_eq!(result.status, "complete");
@@ -1032,6 +1115,21 @@ async fn canonical_v3_batch_import_preserves_kernel_payload_receipts() {
         .expect("kernel receipt should deserialize")
         .expect("kernel receipt should be present");
     assert_eq!(rebuilt.source_envelope_id.as_str(), "env-kernel-v3");
+    assert_eq!(rebuilt.support_sets, batch.support_sets);
+    assert_eq!(
+        rebuilt.contradiction_witnesses,
+        batch.contradiction_witnesses
+    );
+    assert_eq!(rebuilt.retraction_records, batch.retraction_records);
+    assert_eq!(rebuilt.claim_states_v13, batch.claim_states_v13);
+    assert_eq!(
+        rebuilt.claim_states_v13[0].bilattice_truth,
+        BilatticeTruthV1::Both
+    );
+    assert!(
+        !rebuilt.claim_states_v13[0].policy_action_allowed,
+        "unresolved both-truth state must not gain action authority in projection"
+    );
 
     let claims = store
         .query_claim_versions({

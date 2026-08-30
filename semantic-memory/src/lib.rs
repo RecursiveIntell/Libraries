@@ -128,6 +128,7 @@ pub mod discord;
 pub(crate) mod documents;
 pub mod embedder;
 pub(crate) mod episodes;
+pub use episodes::EpisodeAsOfRow;
 pub mod error;
 /// Contradiction-detection evaluation harness (RAMDocs-style P/R/F1).
 #[cfg(feature = "decoder")]
