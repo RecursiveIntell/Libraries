@@ -209,3 +209,32 @@ async fn test_sqlite_saver_basic() {
 
     std::fs::remove_file(db_path).ok();
 }
+
+#[cfg(feature = "checkpointing")]
+#[tokio::test]
+async fn test_sqlite_saver_preserves_scheduler_frontier() {
+    let db_path =
+        std::env::temp_dir().join(format!("agent-graph-frontier-{}.db", uuid::Uuid::new_v4()));
+    let db_path = db_path.to_string_lossy().into_owned();
+    let saver = SqliteSaver::new(&db_path).unwrap();
+
+    let state = AgentState::new();
+    state.set("key", "value").await.unwrap();
+    let checkpoint = agent_graph::checkpoint::Checkpoint {
+        execution_id: "sqlite-frontier-thread".to_string(),
+        timestamp: chrono::Utc::now(),
+        current_node: "join".to_string(),
+        iteration: 11,
+        state: state.snapshot().await,
+        step_number: 17,
+        active_nodes: vec!["fanout-left".to_string(), "fanout-right".to_string()],
+    };
+
+    saver.save(&checkpoint).await.unwrap();
+    let loaded = saver.load("sqlite-frontier-thread").await.unwrap().unwrap();
+
+    assert_eq!(loaded.step_number, 17);
+    assert_eq!(loaded.active_nodes, checkpoint.active_nodes);
+    saver.clear("sqlite-frontier-thread").await.unwrap();
+    std::fs::remove_file(db_path).ok();
+}
