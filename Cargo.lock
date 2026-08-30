@@ -38,7 +38,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
  "tokio",
  "tokio-test",
@@ -78,6 +78,8 @@ dependencies = [
  "pyo3",
  "pyo3-async-runtimes",
  "serde_json",
+ "stack-monitor",
+ "stack-observation",
  "tokio",
 ]
 
@@ -123,7 +125,7 @@ dependencies = [
  "chrono",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tauri",
  "tempfile",
  "thiserror 2.0.18",
@@ -344,7 +346,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
 ]
 
@@ -1081,7 +1083,7 @@ dependencies = [
  "reqwest 0.12.28",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
  "tokio",
  "tokio-tungstenite",
@@ -1138,7 +1140,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
 ]
 
@@ -1150,10 +1152,10 @@ dependencies = [
  "forge-memory-bridge",
  "recursive-kernel-core",
  "schemars 0.8.22",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
@@ -1189,7 +1191,7 @@ dependencies = [
  "remote-oracle-admission",
  "schemars 0.8.22",
  "semantic-memory",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde_json",
  "spec-execution",
  "tempfile",
@@ -1731,11 +1733,32 @@ dependencies = [
 
 [[package]]
 name = "dirs"
+version = "5.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44c45a9d03d6676652bcb5e724c7e988de1acad23a711b5217ab9cbecbec2225"
+dependencies = [
+ "dirs-sys 0.4.1",
+]
+
+[[package]]
+name = "dirs"
 version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3e8aa94d75141228480295a7d0e7feb620b1a5ad9f12bc40be62411e38cce4e"
 dependencies = [
- "dirs-sys",
+ "dirs-sys 0.5.0",
+]
+
+[[package]]
+name = "dirs-sys"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "520f05a5cbd335fae5a99ff7a6ab8627577660ee5cfd6a94a6a929b52ff0321c"
+dependencies = [
+ "libc",
+ "option-ext",
+ "redox_users 0.4.6",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -1746,7 +1769,7 @@ checksum = "e01a3366d27ee9890022452ee61b2b63a67e6f13f58900b651ff5665f0bb1fab"
 dependencies = [
  "libc",
  "option-ext",
- "redox_users",
+ "redox_users 0.5.2",
  "windows-sys 0.61.2",
 ]
 
@@ -1758,7 +1781,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
@@ -1898,7 +1921,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
 ]
 
@@ -2071,7 +2094,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
@@ -2236,7 +2259,7 @@ dependencies = [
  "forge-memory-bridge",
  "forge-policy",
  "glob",
- "llm-tool-runtime",
+ "llm-tool-runtime 0.1.0",
  "mindstate-core",
  "once_cell",
  "petgraph",
@@ -2245,12 +2268,12 @@ dependencies = [
  "rusqlite",
  "sandbox-workspace",
  "semantic-memory",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
  "similar",
  "stabilizer-core",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -2266,10 +2289,10 @@ version = "0.1.1"
 dependencies = [
  "chrono",
  "schemars 0.8.22",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
  "uuid",
 ]
@@ -2292,17 +2315,17 @@ dependencies = [
  "kernel-execution",
  "kernel-oracles",
  "knowledge-runtime",
- "llm-tool-runtime",
+ "llm-tool-runtime 0.1.0",
  "mechanism-runtime",
  "recursive-kernel-core",
  "reqwest 0.12.28",
  "rusqlite",
  "schemars 0.8.22",
  "semantic-memory",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -3632,7 +3655,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -3701,10 +3724,10 @@ dependencies = [
  "proptest",
  "recursive-kernel-core",
  "semantic-memory",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde_json",
  "spec-execution",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tempfile",
  "tokio",
  "verification-adjudication",
@@ -3722,7 +3745,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
@@ -3736,10 +3759,10 @@ dependencies = [
  "proptest",
  "recursive-kernel-core",
  "schemars 0.8.22",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
@@ -3765,10 +3788,10 @@ dependencies = [
  "recursive-kernel-core",
  "schemars 0.8.22",
  "semantic-memory",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -3924,8 +3947,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "llm-pipeline"
+name = "llm-output-parser"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efe4ba1ac4771a452d7a09197a989b1c84e1996c156b19cc20940ad07d0b2a7d"
+dependencies = [
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "llm-pipeline"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3935,14 +3970,14 @@ dependencies = [
  "futures",
  "hex",
  "hmac",
- "llm-output-parser",
- "llm-tool-runtime",
+ "llm-output-parser 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "llm-tool-runtime 0.1.1",
  "reqwest 0.12.28",
  "semantic-memory",
  "serde",
  "serde_json",
  "sha2 0.10.9",
- "stack-ids",
+ "stack-ids 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -3970,10 +4005,29 @@ dependencies = [
  "async-trait",
  "chrono",
  "schemars 0.8.22",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "llm-tool-runtime"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2651cafd1acd6c93a67478a43a5604732fec5e565191446c293a368d50484772"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "schemars 0.8.22",
+ "semantic-memory-forge 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde",
+ "serde_json",
+ "stack-ids 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
@@ -4082,7 +4136,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
 ]
 
@@ -4671,7 +4725,7 @@ name = "ollama-vision"
 version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
- "llm-output-parser",
+ "llm-output-parser 0.2.0",
  "reqwest 0.12.28",
  "serde",
  "serde_json",
@@ -5176,7 +5230,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "thiserror 2.0.18",
  "tracing",
  "verification-policy",
@@ -5226,9 +5280,9 @@ checksum = "1d8f70e07b9c3962945a74e59ca1c511bba65b6419468acc217c457d93f3c740"
 
 [[package]]
 name = "pyo3"
-version = "0.28.3"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91fd8e38a3b50ed1167fb981cd6fd60147e091784c427b8f7183a7ee32c31c12"
+checksum = "4688ddedf473e32662b9b067670129a8afb8c18e351482c70d62ba4a88171e8b"
 dependencies = [
  "libc",
  "once_cell",
@@ -5240,9 +5294,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-async-runtimes"
-version = "0.28.0"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e7364a95bf00e8377bbf9b0f09d7ff9715a29d8fcf93b47d1a967363b973178"
+checksum = "b3ef68daa7316a3fac65e5e18b2203f010346de1c1c53456811a2624673ab046"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -5254,18 +5308,18 @@ dependencies = [
 
 [[package]]
 name = "pyo3-build-config"
-version = "0.28.3"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e368e7ddfdeb98c9bca7f8383be1648fd84ab466bf2bc015e94008db6d35611e"
+checksum = "f41027e41b4bd03f6e60f9f417fe24a6341a6bb744edd62b6f709f2a52ea30e9"
 dependencies = [
  "target-lexicon 0.13.5",
 ]
 
 [[package]]
 name = "pyo3-ffi"
-version = "0.28.3"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f29e10af80b1f7ccaf7f69eace800a03ecd13e883acfacc1e5d0988605f651e"
+checksum = "e591a95526fead067432c3b3a33fc74770b87b1e04e73671090d9c2055a2b327"
 dependencies = [
  "libc",
  "pyo3-build-config",
@@ -5273,9 +5327,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros"
-version = "0.28.3"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df6e520eff47c45997d2fc7dd8214b25dd1310918bbb2642156ef66a67f29813"
+checksum = "73225868fc1cd84eef2c3c230ddb91273bf1de46aeb8a4248da76d32a0924a1c"
 dependencies = [
  "proc-macro2",
  "pyo3-macros-backend",
@@ -5285,13 +5339,12 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros-backend"
-version = "0.28.3"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4cdc218d835738f81c2338f822078af45b4afdf8b2e33cbb5916f108b813acb"
+checksum = "571575aa3749fa6216757dd47d2a3e7ef360f329a40f0666a9fbd14889024952"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
- "pyo3-build-config",
  "quote",
  "syn 2.0.117",
 ]
@@ -5605,7 +5658,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
@@ -5624,6 +5677,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
 dependencies = [
  "bitflags 2.11.0",
+]
+
+[[package]]
+name = "redox_users"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
+dependencies = [
+ "getrandom 0.2.17",
+ "libredox",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -5693,7 +5757,7 @@ dependencies = [
  "attestation-exchange",
  "schemars 0.8.22",
  "serde",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
@@ -6207,11 +6271,11 @@ dependencies = [
  "rusqlite",
  "schemars 0.8.22",
  "scr-runtime-compression",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
  "sha2 0.10.9",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tempfile",
  "thiserror 2.0.18",
  "tokenizers 0.23.1",
@@ -6231,7 +6295,23 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
+ "thiserror 2.0.18",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "semantic-memory-forge"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "784b92a931e1060f99a6f5381a50a7a3658500b4a015210e44b575b32a979a4c"
+dependencies = [
+ "chrono",
+ "schemars 0.8.22",
+ "serde",
+ "serde_json",
+ "stack-ids 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
  "tracing",
  "uuid",
@@ -6494,7 +6574,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32824fab5e16e6c4d86dc1ba84489390419a39f97699852b66480bb87d297ed8"
 dependencies = [
  "bstr",
- "dirs",
+ "dirs 6.0.0",
  "os_str_bytes",
 ]
 
@@ -6652,7 +6732,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tracing",
 ]
 
@@ -6692,6 +6772,58 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "stack-ids"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0878cf4a0cec2fe5661b8606642287401eee5448182372317e1bdabeccf8500"
+dependencies = [
+ "blake3",
+ "chrono",
+ "schemars 0.8.22",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "stack-monitor"
+version = "0.1.0"
+dependencies = [
+ "agent-graph",
+ "anyhow",
+ "async-trait",
+ "blake3",
+ "chrono",
+ "dirs 5.0.1",
+ "llm-pipeline",
+ "llm-tool-runtime 0.1.0",
+ "rusqlite",
+ "schemars 0.8.22",
+ "semantic-memory",
+ "serde",
+ "serde_json",
+ "stack-ids 0.1.3",
+ "stack-observation",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "stack-observation"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
  "uuid",
 ]
 
@@ -6962,7 +7094,7 @@ dependencies = [
  "anyhow",
  "bytes",
  "cookie",
- "dirs",
+ "dirs 6.0.0",
  "dunce",
  "embed_plist",
  "getrandom 0.3.4",
@@ -7012,7 +7144,7 @@ checksum = "4aa1f9055fc23919a54e4e125052bed16ed04aef0487086e758fe01a67b451c7"
 dependencies = [
  "anyhow",
  "cargo_toml",
- "dirs",
+ "dirs 6.0.0",
  "glob",
  "heck 0.5.0",
  "json-patch",
@@ -7073,7 +7205,7 @@ dependencies = [
  "job-queue",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "tauri",
  "tempfile",
  "tokio",
@@ -7782,7 +7914,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "15edbb0d80583e85ee8df283410038e17314df5cba30da2087a54a85216c0773"
 dependencies = [
  "crossbeam-channel",
- "dirs",
+ "dirs 6.0.0",
  "libappindicator",
  "muda",
  "objc2",
@@ -8093,7 +8225,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "verification-calibration",
  "verification-control",
  "verification-policy",
@@ -8106,7 +8238,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "verification-control",
 ]
 
@@ -8115,23 +8247,23 @@ name = "verification-control"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "llm-tool-runtime",
+ "llm-tool-runtime 0.1.0",
  "schemars 0.8.22",
- "semantic-memory-forge",
+ "semantic-memory-forge 0.1.1",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
 ]
 
 [[package]]
 name = "verification-policy"
 version = "0.1.0"
 dependencies = [
- "llm-tool-runtime",
+ "llm-tool-runtime 0.1.0",
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "stack-ids",
+ "stack-ids 0.1.3",
  "verification-control",
 ]
 
@@ -8779,6 +8911,15 @@ dependencies = [
 
 [[package]]
 name = "windows-sys"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "677d2418bec65e3338edb076e806bc1ec15693c5d0104683f2efe857f61056a9"
+dependencies = [
+ "windows-targets 0.48.5",
+]
+
+[[package]]
+name = "windows-sys"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
@@ -9221,7 +9362,7 @@ dependencies = [
  "block2",
  "cookie",
  "crossbeam-channel",
- "dirs",
+ "dirs 6.0.0",
  "dom_query",
  "dpi",
  "dunce",
@@ -9390,7 +9531,7 @@ dependencies = [
  "colored",
  "const-str",
  "ctor 1.0.11",
- "dirs",
+ "dirs 6.0.0",
  "futures",
  "git-version",
  "humantime",
