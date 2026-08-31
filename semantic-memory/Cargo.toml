@@ -199,6 +199,11 @@ name = "multi_principal_policy"
 path = "tests/multi_principal_policy.rs"
 required-features = ["testing"]
 
+[[test]]
+name = "dr05_conformance_pack"
+path = "tests/dr05_conformance_pack.rs"
+required-features = ["testing"]
+
 # LIB-005: inherit workspace lint policy
 [lints]
 workspace = true

@@ -3,11 +3,13 @@ use crate::db;
 use crate::db::IndexOpKind;
 use crate::error::MemoryError;
 use crate::quantize::{self, Quantizer};
-use crate::types::{EpisodeMeta, EpisodeOutcome, VerificationStatus};
+use crate::types::{EpisodeAsOfReceiptV1, EpisodeMeta, EpisodeOutcome, VerificationStatus};
 use crate::{build_episode_search_text, verification_status_for_outcome, MemoryStore};
+use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection};
 use stack_ids::{DigestBuilder, TraceCtx};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use uuid::Uuid;
 
 // ─── Centralized episode identity helpers ──────────────────────────────
 
@@ -129,6 +131,436 @@ pub(crate) fn create_episode(
     })
 }
 
+/// A single winning version row returned by [`MemoryStore::episode_as_of`].
+///
+/// One row per version family (supersession chain) that has a current version
+/// at the queried valid/recorded cutoffs.
+#[derive(Debug, Clone, PartialEq)]
+pub struct EpisodeAsOfRow {
+    /// Episode id of the winning version row.
+    pub episode_id: String,
+    /// Document id — the record identity the version family is anchored to.
+    pub document_id: String,
+    /// Metadata of the winning version, including its `valid_time`.
+    pub meta: EpisodeMeta,
+}
+
+/// Content-addressed identity of one episode version row (blake3), used to
+/// chain supersession. It binds the immutable row/document scope and every
+/// semantic field carried by `EpisodeMeta`; distinct sibling rows with identical
+/// visible payloads must not alias one another's lineage.
+fn episode_fact_digest(
+    episode_id: &str,
+    document_id: &str,
+    cause_ids_json: &str,
+    meta: &EpisodeMeta,
+) -> Result<String, MemoryError> {
+    let verification_json = serde_json::to_string(&meta.verification_status)
+        .map_err(|error| MemoryError::Other(error.to_string()))?;
+    let mut digest_builder = DigestBuilder::new();
+    digest_builder.update_str("semantic-memory.episode.v2");
+    digest_builder.separator();
+    digest_builder.update_str(episode_id);
+    digest_builder.separator();
+    digest_builder.update_str(document_id);
+    digest_builder.separator();
+    digest_builder.update_str(cause_ids_json);
+    digest_builder.separator();
+    digest_builder.update_str(meta.effect_type.as_str());
+    digest_builder.separator();
+    digest_builder.update_str(meta.outcome.as_str());
+    digest_builder.separator();
+    digest_builder.update(&meta.confidence.to_le_bytes());
+    digest_builder.separator();
+    digest_builder.update_str(&verification_json);
+    digest_builder.separator();
+    match &meta.experiment_id {
+        Some(experiment_id) => {
+            digest_builder.update_str("experiment:present");
+            digest_builder.separator();
+            digest_builder.update_str(experiment_id);
+        }
+        None => {
+            digest_builder.update_str("experiment:absent");
+        }
+    }
+    digest_builder.separator();
+    match meta.valid_time {
+        Some(valid_time) => {
+            digest_builder.update_str("valid_time:present");
+            digest_builder.separator();
+            digest_builder.update_str(&valid_time.to_rfc3339());
+        }
+        None => {
+            digest_builder.update_str("valid_time:absent");
+        }
+    }
+    Ok(format!("blake3:{}", digest_builder.finalize().hex()))
+}
+
+/// Parse a stored TEXT timestamp. Accepts RFC 3339 (canonical writes) and the
+/// legacy `datetime('now')` form (`YYYY-MM-DD HH:MM:SS`, naive UTC).
+fn parse_db_time(raw: &str) -> Option<DateTime<Utc>> {
+    if let Ok(dt) = DateTime::parse_from_rfc3339(raw) {
+        return Some(dt.with_timezone(&Utc));
+    }
+    chrono::NaiveDateTime::parse_from_str(raw, "%Y-%m-%d %H:%M:%S")
+        .ok()
+        .map(|naive| DateTime::from_naive_utc_and_offset(naive, Utc))
+}
+
+/// Assign a family (root row index) to each row index by walking `superseded_by`
+/// links (child -> parent digest). Dangling links, duplicate digests, cycles,
+/// and excessive chain depth are corruption: callers must fail closed rather
+/// than presenting a silently split or arbitrary temporal view.
+fn assign_version_families(
+    superseded_by: &[Option<String>],
+    fact_digests: &[Option<String>],
+) -> Result<Vec<usize>, MemoryError> {
+    let mut digest_index: HashMap<&str, usize> = HashMap::new();
+    for (i, digest) in fact_digests.iter().enumerate() {
+        if let Some(digest) = digest {
+            if digest_index.insert(digest.as_str(), i).is_some() {
+                return Err(MemoryError::CorruptData {
+                    table: "episodes",
+                    row_id: format!("index:{i}"),
+                    detail: "duplicate episode fact_digest in version family".to_string(),
+                });
+            }
+        }
+    }
+
+    let mut family_of: Vec<usize> = (0..superseded_by.len()).collect();
+    for i in 0..superseded_by.len() {
+        let mut current = i;
+        let mut visited: HashSet<usize> = HashSet::from([current]);
+        for _ in 0..64 {
+            let Some(predecessor_digest) = &superseded_by[current] else {
+                break;
+            };
+            let predecessor = digest_index
+                .get(predecessor_digest.as_str())
+                .copied()
+                .ok_or_else(|| MemoryError::CorruptData {
+                    table: "episodes",
+                    row_id: format!("index:{current}"),
+                    detail: format!("dangling superseded_by digest: {predecessor_digest}"),
+                })?;
+            if !visited.insert(predecessor) {
+                return Err(MemoryError::CorruptData {
+                    table: "episodes",
+                    row_id: format!("index:{current}"),
+                    detail: "cycle in episode supersession chain".to_string(),
+                });
+            }
+            current = predecessor;
+        }
+        if superseded_by[current].is_some() {
+            return Err(MemoryError::CorruptData {
+                table: "episodes",
+                row_id: format!("index:{i}"),
+                detail: "episode supersession chain exceeds maximum depth 64".to_string(),
+            });
+        }
+        family_of[i] = current;
+    }
+    Ok(family_of)
+}
+
+/// Canonical append-supersede write: insert a NEW version row with explicit
+/// bitemporal fields. The optional predecessor is an exact `episode_id`, not a
+/// document-wide heuristic: siblings can share one document without being
+/// merged into one semantic version family. Unlike the legacy `upsert_episode`
+/// (which UPDATEs the row in place), prior rows are never modified, so
+/// recorded-time as-of queries remain meaningful.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn append_episode_version(
+    conn: &Connection,
+    episode_id: &str,
+    supersedes_episode_id: Option<&str>,
+    document_id: &str,
+    meta: &EpisodeMeta,
+    search_text: &str,
+    embedding_bytes: &[u8],
+    q8_bytes: Option<&[u8]>,
+    trace_id: Option<&str>,
+    recorded_time: Option<DateTime<Utc>>,
+) -> Result<String, MemoryError> {
+    let cause_ids_json =
+        serde_json::to_string(&meta.cause_ids).map_err(|e| MemoryError::Other(e.to_string()))?;
+    let verification_json = serde_json::to_string(&meta.verification_status)
+        .map_err(|e| MemoryError::Other(e.to_string()))?;
+    let item_key = episode_item_key(episode_id);
+
+    db::with_transaction(conn, |tx| {
+        let exists: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM documents WHERE id = ?1)",
+            params![document_id],
+            |row| row.get(0),
+        )?;
+        if !exists {
+            return Err(MemoryError::DocumentNotFound(document_id.to_string()));
+        }
+
+        // The predecessor is explicit. A document may have independent sibling
+        // episode families, so selecting "latest in document" would silently
+        // widen a version chain across identities.
+        let prior_fact_digest: Option<String> = match supersedes_episode_id {
+            Some(predecessor_id) => {
+                let digest: Option<String> = tx
+                    .query_row(
+                        "SELECT fact_digest FROM episodes
+                         WHERE episode_id = ?1 AND document_id = ?2",
+                        params![predecessor_id, document_id],
+                        |row| row.get(0),
+                    )
+                    .map_err(|err| match err {
+                        rusqlite::Error::QueryReturnedNoRows => {
+                            MemoryError::EpisodeNotFound(predecessor_id.to_string())
+                        }
+                        other => MemoryError::Database(other),
+                    })?;
+                Some(digest.ok_or_else(|| {
+                    MemoryError::CorruptData {
+                        table: "episodes",
+                        row_id: predecessor_id.to_string(),
+                        detail: "predecessor lacks a fact_digest and cannot anchor a version chain"
+                            .to_string(),
+                    }
+                })?)
+            }
+            None => None,
+        };
+
+        let new_fact_digest = episode_fact_digest(episode_id, document_id, &cause_ids_json, meta)?;
+        let valid_time_sql = meta.valid_time.map(|dt| format!("'{}'", dt.to_rfc3339()));
+        let recorded_time_sql = recorded_time.map(|dt| format!("'{}'", dt.to_rfc3339()));
+
+        tx.execute(
+            &format!(
+                "INSERT INTO episodes
+                    (episode_id, document_id, cause_ids, effect_type, outcome, confidence,
+                     verification_status, experiment_id, search_text, embedding, embedding_q8,
+                     trace_id, updated_at, valid_time, recorded_time, superseded_by, fact_digest)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, datetime('now'),
+                         {}, {}, ?13, ?14)",
+                valid_time_sql.as_deref().unwrap_or("NULL"),
+                recorded_time_sql.as_deref().unwrap_or("NULL"),
+            ),
+            params![
+                episode_id,
+                document_id,
+                cause_ids_json,
+                meta.effect_type,
+                meta.outcome.as_str(),
+                meta.confidence,
+                verification_json,
+                meta.experiment_id,
+                search_text,
+                embedding_bytes,
+                q8_bytes,
+                trace_id,
+                prior_fact_digest,
+                new_fact_digest,
+            ],
+        )?;
+
+        // Insert FTS mapping
+        tx.execute(
+            "INSERT INTO episodes_rowid_map (episode_id, document_id) VALUES (?1, ?2)",
+            params![episode_id, document_id],
+        )?;
+        let fts_rowid: i64 = tx.query_row(
+            "SELECT rowid FROM episodes_rowid_map WHERE episode_id = ?1",
+            params![episode_id],
+            |row| row.get(0),
+        )?;
+        tx.execute(
+            "INSERT INTO episodes_fts (rowid, content) VALUES (?1, ?2)",
+            params![fts_rowid, search_text],
+        )?;
+
+        sync_causal_edges(tx, episode_id, &meta.cause_ids)?;
+
+        #[cfg(feature = "hnsw")]
+        db::queue_pending_index_op(tx, &item_key, "episode", IndexOpKind::Upsert)?;
+        db::invalidate_derived_vector_artifact(tx, &item_key)?;
+        Ok(episode_id.to_string())
+    })
+}
+
+/// Run the recorded-time-max-wins as-of query over episode version rows,
+/// mirroring `bitemporal_runtime::as_of_query` reference semantics:
+/// per version family (supersession chain), the winner is the version with the
+/// greatest `recorded_time` among rows with `recorded_time <= cutoff` and
+/// `valid_time <= valid`; exact recorded-time ties break by insertion order
+/// (smallest rowid wins), matching the reference store's first-inserted tie
+/// rule for deterministic fixtures.
+pub(crate) fn episode_as_of_query(
+    conn: &Connection,
+    valid_time: DateTime<Utc>,
+    recorded_time: DateTime<Utc>,
+) -> Result<(Vec<EpisodeAsOfRow>, EpisodeAsOfReceiptV1), MemoryError> {
+    struct VersionRow {
+        episode_id: String,
+        document_id: String,
+        cause_ids_raw: String,
+        effect_type: String,
+        outcome_raw: String,
+        confidence: f32,
+        verification_status_raw: String,
+        experiment_id: Option<String>,
+        valid_time: DateTime<Utc>,
+        recorded_time: DateTime<Utc>,
+        superseded_by: Option<String>,
+        fact_digest: Option<String>,
+        rowid: i64,
+    }
+
+    let mut stmt = conn.prepare(
+        "SELECT episode_id, document_id, cause_ids, effect_type, outcome, confidence,
+                verification_status, experiment_id, valid_time, recorded_time,
+                superseded_by, fact_digest, rowid
+         FROM episodes
+         WHERE recorded_time IS NOT NULL AND valid_time IS NOT NULL",
+    )?;
+    let loaded = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, f32>(5)?,
+                row.get::<_, String>(6)?,
+                row.get::<_, Option<String>>(7)?,
+                row.get::<_, String>(8)?,
+                row.get::<_, String>(9)?,
+                row.get::<_, Option<String>>(10)?,
+                row.get::<_, Option<String>>(11)?,
+                row.get::<_, i64>(12)?,
+            ))
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let mut rows = Vec::with_capacity(loaded.len());
+    for (
+        episode_id,
+        document_id,
+        cause_ids_raw,
+        effect_type,
+        outcome_raw,
+        confidence,
+        verification_status_raw,
+        experiment_id,
+        valid_raw,
+        recorded_raw,
+        superseded_by,
+        fact_digest,
+        rowid,
+    ) in loaded
+    {
+        let valid_time_dt = parse_db_time(&valid_raw).ok_or_else(|| {
+            MemoryError::Other(format!(
+                "episode {episode_id}: unparseable valid_time '{valid_raw}'"
+            ))
+        })?;
+        let recorded_time_dt = parse_db_time(&recorded_raw).ok_or_else(|| {
+            MemoryError::Other(format!(
+                "episode {episode_id}: unparseable recorded_time '{recorded_raw}'"
+            ))
+        })?;
+        rows.push(VersionRow {
+            episode_id,
+            document_id,
+            cause_ids_raw,
+            effect_type,
+            outcome_raw,
+            confidence,
+            verification_status_raw,
+            experiment_id,
+            valid_time: valid_time_dt,
+            recorded_time: recorded_time_dt,
+            superseded_by,
+            fact_digest,
+            rowid,
+        });
+    }
+
+    // Assign families over ALL stored version rows before applying the temporal
+    // cutoff. A later-recorded predecessor can be outside a historic cutoff;
+    // excluding it before chain traversal would split a still-connected family.
+    let all_superseded_by: Vec<Option<String>> =
+        rows.iter().map(|row| row.superseded_by.clone()).collect();
+    let all_fact_digests: Vec<Option<String>> =
+        rows.iter().map(|row| row.fact_digest.clone()).collect();
+    let families = assign_version_families(&all_superseded_by, &all_fact_digests)?;
+    let eligible: Vec<usize> = (0..rows.len())
+        .filter(|&i| rows[i].recorded_time <= recorded_time && rows[i].valid_time <= valid_time)
+        .collect();
+
+    // Winner per family: max recorded_time; tie -> min rowid (insertion order).
+    let mut winner_by_family: BTreeMap<usize, usize> = BTreeMap::new();
+    for &row_idx in &eligible {
+        let fam = families[row_idx];
+        match winner_by_family.get(&fam) {
+            Some(&w_idx) => {
+                let better = rows[row_idx].recorded_time > rows[w_idx].recorded_time
+                    || (rows[row_idx].recorded_time == rows[w_idx].recorded_time
+                        && rows[row_idx].rowid < rows[w_idx].rowid);
+                if better {
+                    winner_by_family.insert(fam, row_idx);
+                }
+            }
+            None => {
+                winner_by_family.insert(fam, row_idx);
+            }
+        }
+    }
+
+    let mut winner_rows: Vec<&VersionRow> = winner_by_family.values().map(|&i| &rows[i]).collect();
+    winner_rows
+        .sort_by(|a, b| (&a.document_id, &a.episode_id).cmp(&(&b.document_id, &b.episode_id)));
+
+    let mut result = Vec::with_capacity(winner_rows.len());
+    for w in &winner_rows {
+        let meta = EpisodeMeta {
+            cause_ids: db::parse_string_list_json(
+                "episodes",
+                &w.document_id,
+                "cause_ids",
+                &w.cause_ids_raw,
+            )?,
+            effect_type: w.effect_type.clone(),
+            outcome: db::parse_episode_outcome(&w.episode_id, &w.outcome_raw)?,
+            confidence: w.confidence,
+            verification_status: db::parse_verification_status(
+                &w.episode_id,
+                &w.verification_status_raw,
+            )?,
+            experiment_id: w.experiment_id.clone(),
+            valid_time: Some(w.valid_time),
+            fact_digest: w.fact_digest.clone(),
+        };
+        result.push(EpisodeAsOfRow {
+            episode_id: w.episode_id.clone(),
+            document_id: w.document_id.clone(),
+            meta,
+        });
+    }
+
+    let receipt = EpisodeAsOfReceiptV1 {
+        query_id: Uuid::new_v4().to_string(),
+        as_of_valid: valid_time,
+        as_of_recorded: recorded_time,
+        episode_count: result.len(),
+        episode_ids: result.iter().map(|r| r.episode_id.clone()).collect(),
+        excluded_superseded: eligible.len() - result.len(),
+    };
+    Ok((result, receipt))
+}
+
 /// Legacy compatibility: upsert the primary episode for a document.
 ///
 /// If an episode already exists for this document, updates the first one.
@@ -188,17 +620,8 @@ pub(crate) fn upsert_episode(
                 .flatten();
 
             // Compute content-addressed digest of the new fact payload.
-            let mut digest_builder = DigestBuilder::new();
-            digest_builder.update_str("semantic-memory.episode.v1");
-            digest_builder.separator();
-            digest_builder.update_str(&cause_ids_json);
-            digest_builder.separator();
-            digest_builder.update_str(meta.effect_type.as_str());
-            digest_builder.separator();
-            digest_builder.update_str(meta.outcome.as_str());
-            digest_builder.separator();
-            digest_builder.update(&meta.confidence.to_le_bytes());
-            let new_fact_digest = format!("blake3:{}", digest_builder.finalize().hex());
+            let new_fact_digest =
+                episode_fact_digest(&episode_id, document_id, &cause_ids_json, meta)?;
 
             // valid_time: when this episode fact is true in the domain
             let valid_time_sql: Option<String> =
@@ -795,6 +1218,88 @@ impl MemoryStore {
         Ok(created_ep_id)
     }
 
+    /// Append a NEW episode version row with explicit bitemporal fields
+    /// (TRUTH-001 canonical append-supersede path).
+    ///
+    /// Unlike the legacy `ingest_episode`/`upsert_episode` (which update the
+    /// row in place), this INSERTs a fresh row: `valid_time` and `fact_digest`
+    /// come from `meta`; `supersedes_episode_id` is the exact predecessor in
+    /// the same document (or `None` for a root); `recorded_time` is either
+    /// explicit (deterministic fixtures) or the current wall clock. Prior rows
+    /// are never modified, so `episode_as_of` remains meaningful.
+    pub async fn append_episode_version(
+        &self,
+        episode_id: &str,
+        supersedes_episode_id: Option<&str>,
+        document_id: &str,
+        meta: &EpisodeMeta,
+        recorded_time: Option<chrono::DateTime<chrono::Utc>>,
+    ) -> Result<String, MemoryError> {
+        self.validate_content("episodes.effect_type", &meta.effect_type)?;
+        Self::validate_confidence(meta.confidence)?;
+        let doc_id = document_id.to_string();
+        let doc_id_for_read = doc_id.clone();
+        let meta = meta.clone();
+        let (document_title, document_context) = self
+            .with_read_conn(move |conn| load_episode_context(conn, &doc_id_for_read))
+            .await?;
+        let search_text = build_episode_search_text(&document_title, &document_context, &meta);
+        let embedding = self
+            .embed_text_internal(&search_text, crate::EmbeddingPurpose::Document)
+            .await?;
+        self.validate_embedding_dimensions(&embedding)?;
+        let embedding_bytes = db::embedding_to_bytes(&embedding);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
+        let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
+            .quantize(&embedding)
+            .map(|vector| quantize::pack_quantized(&vector))
+            .ok();
+
+        let ep_id = episode_id.to_string();
+        let predecessor_id = supersedes_episode_id.map(str::to_string);
+        let created_ep_id = self
+            .with_write_conn(move |conn| {
+                crate::episodes::append_episode_version(
+                    conn,
+                    &ep_id,
+                    predecessor_id.as_deref(),
+                    &doc_id,
+                    &meta,
+                    &search_text,
+                    &embedding_bytes,
+                    q8_bytes.as_deref(),
+                    None,
+                    recorded_time,
+                )
+            })
+            .await?;
+
+        #[cfg(feature = "hnsw")]
+        self.sync_pending_hnsw_ops_best_effort("append_episode_version")
+            .await;
+
+        Ok(created_ep_id)
+    }
+
+    /// As-of query over episode version rows (TRUTH-001 parity surface).
+    ///
+    /// Mirrors `bitemporal_runtime::as_of_query` reference semantics: per
+    /// version family the winner is the row with the greatest `recorded_time`
+    /// among rows recorded at or before `recorded_time` and valid at or before
+    /// `valid_time`; exact recorded-time ties break by insertion order. Returns
+    /// the winning rows and a typed [`EpisodeAsOfReceiptV1`] with truthful
+    /// winner/exclusion counts. Storage-time ownership remains SQLite-only.
+    pub async fn episode_as_of(
+        &self,
+        valid_time: chrono::DateTime<chrono::Utc>,
+        recorded_time: chrono::DateTime<chrono::Utc>,
+    ) -> Result<(Vec<EpisodeAsOfRow>, EpisodeAsOfReceiptV1), MemoryError> {
+        self.with_read_conn(move |conn| {
+            crate::episodes::episode_as_of_query(conn, valid_time, recorded_time)
+        })
+        .await
+    }
+
     /// Retrieve an episode by its episode_id.
     pub async fn get_episode(
         &self,
@@ -980,5 +1485,94 @@ impl MemoryStore {
             search_episodes(conn, et.as_deref(), outcome_owned.as_ref(), limit)
         })
         .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{assign_version_families, episode_fact_digest};
+    use crate::types::{EpisodeMeta, EpisodeOutcome, VerificationStatus};
+
+    fn digest_meta(effect_type: &str) -> EpisodeMeta {
+        EpisodeMeta {
+            cause_ids: vec!["cause".to_string()],
+            effect_type: effect_type.to_string(),
+            outcome: EpisodeOutcome::Pending,
+            confidence: 0.5,
+            verification_status: VerificationStatus::Unverified,
+            experiment_id: None,
+            valid_time: None,
+            fact_digest: None,
+        }
+    }
+
+    #[test]
+    fn digest_binds_scope_identity_and_semantic_fields() {
+        let meta = digest_meta("effect-a");
+        let base =
+            episode_fact_digest("episode-a", "document-a", "[\"cause\"]", &meta).expect("digest");
+        assert_ne!(
+            base,
+            episode_fact_digest("episode-b", "document-a", "[\"cause\"]", &meta)
+                .expect("different episode identity")
+        );
+        assert_ne!(
+            base,
+            episode_fact_digest("episode-a", "document-b", "[\"cause\"]", &meta)
+                .expect("different document scope")
+        );
+        assert_ne!(
+            base,
+            episode_fact_digest(
+                "episode-a",
+                "document-a",
+                "[\"cause\"]",
+                &digest_meta("effect-b"),
+            )
+            .expect("different semantic payload")
+        );
+    }
+
+    #[test]
+    fn families_follow_chain_links() {
+        // v0 root (no link), v1 -> v0, v2 -> v1.
+        let superseded_by = vec![None, Some("d0".into()), Some("d1".into())];
+        let digests = vec![Some("d0".into()), Some("d1".into()), Some("d2".into())];
+        let families = assign_version_families(&superseded_by, &digests).expect("valid chain");
+        assert_eq!(families, vec![0, 0, 0]);
+    }
+
+    #[test]
+    fn dangling_link_fails_closed() {
+        let superseded_by = vec![Some("missing".into())];
+        let digests = vec![Some("d1".into())];
+        let error = assign_version_families(&superseded_by, &digests).expect_err("dangling link");
+        assert!(error.to_string().contains("dangling superseded_by"));
+    }
+
+    #[test]
+    fn cyclic_links_fail_closed() {
+        let superseded_by = vec![Some("db".into()), Some("da".into())];
+        let digests = vec![Some("da".into()), Some("db".into())];
+        let error = assign_version_families(&superseded_by, &digests).expect_err("cycle");
+        assert!(error.to_string().contains("cycle in episode"));
+    }
+
+    #[test]
+    fn duplicate_digests_fail_closed() {
+        let superseded_by = vec![None, None];
+        let digests = vec![Some("same".into()), Some("same".into())];
+        let error =
+            assign_version_families(&superseded_by, &digests).expect_err("duplicate digest");
+        assert!(error.to_string().contains("duplicate episode fact_digest"));
+    }
+
+    #[test]
+    fn branch_two_versions_supersede_same_parent() {
+        // Two children link to the same parent digest: one family of three.
+        let superseded_by = vec![None, Some("d0".into()), Some("d0".into())];
+        let digests = vec![Some("d0".into()), Some("d1".into()), Some("d2".into())];
+        let families = assign_version_families(&superseded_by, &digests).expect("valid branch");
+        assert_eq!(families, vec![0, 0, 0]);
     }
 }
