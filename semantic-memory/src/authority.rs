@@ -926,20 +926,52 @@ fn execute_compiled_transition(
             ));
         }
         if verification.disposition == TransitionDisposition::Quarantine {
-            let record = build_transition_record(key, permit, candidate, verification, None);
+            let record = build_transition_record(
+                key,
+                permit,
+                candidate,
+                verification,
+                None,
+                uuid::Uuid::new_v4().to_string(),
+                Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string(),
+            );
             insert_transition_record(tx, &record)?;
             return Ok(MemoryTransitionOutcomeV1::Quarantined { record });
         }
 
         let mutation = mutation_from_candidate(&candidate, &candidate_digest)?;
-        let authority_receipt =
-            execute_mutation_tx(tx, permit, key, mutation, fault, prepared, journal)?;
+        let owner_valid_at = Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true);
+        let owner_recorded_at = Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true);
+        let transition_record_id = uuid::Uuid::new_v4().to_string();
+        let authority_receipt_id = uuid::Uuid::new_v4().to_string();
+        let supersession_context =
+            matches!(candidate.operation, TransitionOperation::Supersede { .. }).then(|| {
+                SupersessionEnvelopeContext {
+                    transition_digest: verification.verification_digest.clone(),
+                    owner_valid_at: owner_valid_at.clone(),
+                    owner_recorded_at: owner_recorded_at.clone(),
+                    transition_record_id: transition_record_id.clone(),
+                    authority_receipt_id: authority_receipt_id.clone(),
+                }
+            });
+        let authority_receipt = execute_mutation_tx(
+            tx,
+            permit,
+            key,
+            mutation,
+            fault,
+            prepared,
+            journal,
+            supersession_context,
+        )?;
         let record = build_transition_record(
             key,
             permit,
             candidate,
             verification.clone(),
             Some(authority_receipt.receipt_id.clone()),
+            transition_record_id,
+            owner_recorded_at,
         );
         insert_transition_record(tx, &record)?;
         Ok(MemoryTransitionOutcomeV1::Committed {
@@ -956,10 +988,12 @@ fn build_transition_record(
     candidate: MemoryTransitionCandidateV1,
     verification: MemoryTransitionVerificationV1,
     authority_receipt_id: Option<String>,
+    record_id: String,
+    created_at: String,
 ) -> MemoryTransitionRecordV1 {
     MemoryTransitionRecordV1 {
         schema_version: MEMORY_TRANSITION_RECORD_V1.into(),
-        record_id: uuid::Uuid::new_v4().to_string(),
+        record_id,
         caller_idempotency_key: key.to_string(),
         principal: permit.principal.clone(),
         caller_id: permit.caller_id.clone(),
@@ -968,7 +1002,7 @@ fn build_transition_record(
         candidate,
         verification,
         authority_receipt_id,
-        created_at: Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string(),
+        created_at,
     }
 }
 
@@ -1053,7 +1087,7 @@ fn execute_mutation(
     // Safety: this closure owns every canonical authority write and only commits after the
     // mutation journal, epoch, lineage, and receipt are complete.
     with_transaction(conn, |tx| {
-        execute_mutation_tx(tx, permit, key, mutation, fault, prepared, journal)
+        execute_mutation_tx(tx, permit, key, mutation, fault, prepared, journal, None)
     })
 }
 
@@ -1065,6 +1099,7 @@ fn execute_mutation_tx(
     fault: &Arc<Mutex<Option<AuthorityFaultStage>>>,
     mut prepared: Option<FactEmbedding>,
     journal: Option<(String, String, u64)>,
+    supersession_context: Option<SupersessionEnvelopeContext>,
 ) -> Result<AuthorityReceiptV1, MemoryError> {
     let kind = mutation.kind();
     let origin_label = effective_origin_label(tx, permit, &mutation)?;
@@ -1135,6 +1170,32 @@ fn execute_mutation_tx(
     let affected_json = serde_json::to_string(&affected_ids)
         .map_err(|e| MemoryError::Other(format!("serialize affected IDs: {e}")))?;
     let committed_at = Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string();
+    let supersession_outbox = match (
+        journal.as_ref(),
+        supersession_context.as_ref(),
+        &mutation,
+        target.as_ref(),
+    ) {
+        (
+            Some((device_id, store_id, stream_epoch)),
+            Some(context),
+            Mutation::Supersede { .. },
+            Some(target),
+        ) => Some(SupersessionOutbox {
+            device_id: device_id.clone(),
+            store_id: store_id.clone(),
+            stream_epoch: *stream_epoch,
+            old_fact_id: target.fact_id.clone(),
+            new_fact_id: fact_id.clone(),
+            transition_digest: context.transition_digest.clone(),
+            owner_valid_at: context.owner_valid_at.clone(),
+            owner_recorded_at: context.owner_recorded_at.clone(),
+            transition_record_id: context.transition_record_id.clone(),
+            authority_receipt_id: context.authority_receipt_id.clone(),
+            authority_digest: origin_label_digest.clone(),
+        }),
+        _ => None,
+    };
 
     fault_gate(fault, AuthorityFaultStage::BeforeJournal)?;
     tx.execute(
@@ -1211,7 +1272,10 @@ fn execute_mutation_tx(
     fault_gate(fault, AuthorityFaultStage::AfterEpoch)?;
 
     let after_snapshot_id = snapshot_id(tx, after_epoch)?;
-    let receipt_id = uuid::Uuid::new_v4().to_string();
+    let receipt_id = supersession_context
+        .as_ref()
+        .map(|context| context.authority_receipt_id.clone())
+        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
     let mut receipt = AuthorityReceiptV1 {
         schema_version: RECEIPT_SCHEMA.to_string(),
         receipt_id,
@@ -1231,6 +1295,71 @@ fn execute_mutation_tx(
         committed_at,
     };
     receipt.receipt_digest = digest_serialized(&receipt_without_digest(&receipt)?)?;
+    if let Some(outbox) = supersession_outbox {
+        let old_content: String = tx.query_row(
+            "SELECT content FROM facts WHERE id = ?1",
+            params![outbox.old_fact_id],
+            |row| row.get(0),
+        )?;
+        let predecessor_digest = crate::journal::semantic_predecessor_digest(&old_content);
+        let current_head_digest =
+            crate::journal::semantic_head_digest(&outbox.old_fact_id, &predecessor_digest);
+        let (namespace, content, source, metadata_raw): (
+            String,
+            String,
+            Option<String>,
+            Option<String>,
+        ) = tx.query_row(
+            "SELECT namespace, content, source, metadata FROM facts WHERE id = ?1",
+            params![outbox.new_fact_id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+        )?;
+        let metadata = metadata_raw
+            .map(|raw| serde_json::from_str(&raw))
+            .transpose()
+            .map_err(|error| MemoryError::CorruptData {
+                table: "facts",
+                row_id: outbox.new_fact_id.clone(),
+                detail: format!("invalid replacement metadata JSON: {error}"),
+            })?;
+        let replacement_payload =
+            crate::journal::encode_fact_create_payload(&crate::journal::FactCreatePayloadV1 {
+                fact_id: outbox.new_fact_id.clone(),
+                namespace,
+                content,
+                source,
+                metadata,
+            })?;
+        let payload = crate::journal::encode_fact_supersede_payload(
+            &crate::journal::FactSupersedePayloadV1 {
+                schema_version: crate::journal::FACT_SUPERSEDE_PAYLOAD_SCHEMA.into(),
+                old_fact_id: outbox.old_fact_id,
+                new_fact_id: outbox.new_fact_id,
+                replacement_payload_digest: crate::journal::payload_digest(&replacement_payload),
+                replacement_payload,
+                semantic_predecessor_digest: predecessor_digest,
+                current_head_digest,
+                owner_valid_at: outbox.owner_valid_at,
+                owner_recorded_at: outbox.owner_recorded_at,
+                authority_digest: outbox.authority_digest,
+                authority_receipt_id: outbox.authority_receipt_id,
+                authority_receipt_digest: receipt.receipt_digest.clone(),
+                transition_record_id: outbox.transition_record_id,
+                transition_digest: outbox.transition_digest,
+                receipt_id: receipt.receipt_id.clone(),
+                receipt_digest: receipt.receipt_digest.clone(),
+            },
+        )?;
+        crate::journal::append_verified_in_tx(
+            tx,
+            &outbox.device_id,
+            &outbox.store_id,
+            outbox.stream_epoch,
+            crate::journal::FACT_SUPERSEDE_OPERATION,
+            crate::journal::FACT_SUPERSEDE_PAYLOAD_SCHEMA,
+            &payload,
+        )?;
+    }
     let receipt_json = serde_json::to_string(&receipt)
         .map_err(|e| MemoryError::Other(format!("serialize authority receipt: {e}")))?;
 
@@ -1402,6 +1531,29 @@ struct FactEmbedding {
     q8: Option<Vec<u8>>,
     sparse: Option<crate::SparseWeights>,
     sparse_representation: Option<String>,
+}
+
+#[derive(Clone)]
+struct SupersessionEnvelopeContext {
+    transition_digest: String,
+    owner_valid_at: String,
+    owner_recorded_at: String,
+    transition_record_id: String,
+    authority_receipt_id: String,
+}
+
+struct SupersessionOutbox {
+    device_id: String,
+    store_id: String,
+    stream_epoch: u64,
+    old_fact_id: String,
+    new_fact_id: String,
+    transition_digest: String,
+    owner_valid_at: String,
+    owner_recorded_at: String,
+    transition_record_id: String,
+    authority_receipt_id: String,
+    authority_digest: String,
 }
 
 fn apply_lineage_transition(
