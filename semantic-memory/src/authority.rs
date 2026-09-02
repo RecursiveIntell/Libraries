@@ -1222,10 +1222,10 @@ fn execute_mutation_tx(
     // Governed appends also enter the verified mutation outbox in this same
     // transaction. The outbox row carries the exact canonical payload the
     // replica replays (fact ID, namespace, content, source, metadata) plus the
-    // digest chain allocated by the replication stream. Only fact.create has an
-    // admitted replication contract today; supersede/redact intentionally emit
-    // no outbox row, and a store without construction-time replication identity
-    // remains local-only.
+    // digest chain allocated by the replication stream. Fact-create is emitted
+    // directly below; a governed fact-supersede with its required authority
+    // transition context is emitted after receipt construction. Redact remains
+    // local-only, as does any store without construction-time replication identity.
     if let Some((device_id, store_id, stream_epoch)) = journal {
         if let Mutation::Append {
             namespace,

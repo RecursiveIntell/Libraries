@@ -151,17 +151,26 @@ async fn apply_duplicate_stale_and_tamper_are_closed() {
             old_fact_id: old.into()
         }
     );
+    assert_eq!(
+        s.apply_verified_fact_supersede(stale.clone())
+            .await
+            .unwrap(),
+        ReplicaApplyOutcome::StalePredecessor {
+            old_fact_id: old.into()
+        },
+        "an exact stale retry must remain a conflict"
+    );
     let next = supersede(
         new,
         "new",
         "00000000-0000-0000-0000-000000000008",
-        4,
-        stale.envelope_digest,
+        3,
+        e.envelope_digest,
     );
     assert_eq!(
         s.apply_verified_fact_supersede(next).await.unwrap(),
         ReplicaApplyOutcome::Applied {
-            sequence: 4,
+            sequence: 3,
             fact_id: "00000000-0000-0000-0000-000000000008".into()
         }
     );

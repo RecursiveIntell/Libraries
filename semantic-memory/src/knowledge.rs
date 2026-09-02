@@ -1570,25 +1570,12 @@ impl MemoryStore {
                 )
                 .optional()?;
             if old_content.is_none() || superseded.is_some() {
-                if create_stream {
-                    tx.execute(
-                        "INSERT INTO replication_inbox_streams(home_device_id,store_id,stream_epoch,next_sequence,head_digest) VALUES(?1,?2,?3,1,?4)",
-                        rusqlite::params![&envelope.home_device_id, &envelope.store_id, epoch, GENESIS_PREDECESSOR.as_slice()],
-                    )?;
-                }
-                tx.execute(
-                    "INSERT INTO replication_inbox(home_device_id,store_id,stream_epoch,sequence,operation_kind,payload_schema,payload,payload_digest,predecessor_digest,envelope_digest,fact_id) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
-                    rusqlite::params![&envelope.home_device_id, &envelope.store_id, epoch, envelope.sequence, &envelope.operation_kind, &envelope.payload_schema, &envelope.payload, envelope.payload_digest.as_slice(), envelope.predecessor_digest.as_slice(), envelope.envelope_digest.as_slice(), &payload.old_fact_id],
-                )?;
-                if tx.execute(
-                    "UPDATE replication_inbox_streams SET next_sequence=?4,head_digest=?5,updated_at=datetime('now') WHERE home_device_id=?1 AND store_id=?2 AND stream_epoch=?3 AND next_sequence=?6 AND head_digest=?7",
-                    rusqlite::params![&envelope.home_device_id, &envelope.store_id, epoch, envelope.sequence + 1, envelope.envelope_digest.as_slice(), envelope.sequence, head.as_slice()],
-                )? != 1 {
-                    return Err(MemoryError::Other(
-                        "replication inbox stream allocator lost ownership".into(),
-                    ));
-                }
-                tx.commit()?;
+                // A semantic conflict is not an accepted stream event. Do not
+                // persist it as applied or advance the receiver head: otherwise
+                // an exact retry hits the inbox duplicate path and is promoted
+                // from StalePredecessor to Duplicate/accepted without a semantic
+                // mutation. Leaving the stream unchanged makes the conflict
+                // replay-stable and blocks later owner events until recovery.
                 return Ok(ReplicaApplyOutcome::StalePredecessor {
                     old_fact_id: payload.old_fact_id.clone(),
                 });
