@@ -80,7 +80,7 @@ const STRATEGIES: &[Strategy] = &[
 ];
 
 fn build_patch(s: &Strategy) -> StructuredPatch {
-    let context_lines: Vec<String> = s.context.lines().map(|l| l.to_string()).collect();
+    let _context_lines: Vec<String> = s.context.lines().map(|l| l.to_string()).collect();
     let ops = match s.op_kind {
         "delete" => vec![EditOp::Delete {
             range: LineRange {
@@ -131,8 +131,10 @@ async fn main() {
 
     // Create forge DB if it doesn't exist yet (schema will be created on first write)
     let store = ForgeStore::open(&db_path).expect("open forge db");
-    let mut config = ForgeConfig::default();
-    config.sealed_allow_host_backend = true;
+    let config = ForgeConfig {
+        sealed_allow_host_backend: true,
+        ..Default::default()
+    };
 
     let suite = load_suite(&fixture_dir).expect("load fixture suite");
     println!(

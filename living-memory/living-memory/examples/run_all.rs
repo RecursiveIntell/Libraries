@@ -125,8 +125,10 @@ async fn main() {
     });
 
     let store = ForgeStore::open(&db_path).expect("open forge db");
-    let mut config = ForgeConfig::default();
-    config.sealed_allow_host_backend = true;
+    let config = ForgeConfig {
+        sealed_allow_host_backend: true,
+        ..Default::default()
+    };
 
     let suite = load_suite(&fixture_dir).expect("load fixture suite");
     println!(

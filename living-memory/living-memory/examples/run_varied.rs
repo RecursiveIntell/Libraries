@@ -22,7 +22,7 @@ use forge_engine::runtime::patch::types::{
     Anchor, EditOp, FileEdit, FileMode, LineRange, StructuredPatch,
 };
 use forge_engine::store::ForgeStore;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 fn build_patch_for_task(task_id: &str) -> StructuredPatch {
     match task_id {
@@ -133,8 +133,10 @@ async fn main() {
     });
 
     let store = ForgeStore::open(&db_path).expect("open forge db");
-    let mut config = ForgeConfig::default();
-    config.sealed_allow_host_backend = true;
+    let config = ForgeConfig {
+        sealed_allow_host_backend: true,
+        ..Default::default()
+    };
 
     let suite = load_suite(&fixture_dir).expect("load fixture suite");
     println!("Suite: {} ({} tasks)\n", suite.name, suite.tasks.len());
