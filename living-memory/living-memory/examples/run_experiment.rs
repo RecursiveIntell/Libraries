@@ -3,7 +3,6 @@
 //!
 //! Usage: cargo run --example run_experiment -- <fixture-dir> <forge-db-path>
 
-
 // Example runner: aborting on a missing fixture or an unopenable DB is the
 // intended behavior for a manual experiment harness, and every sibling
 // example in this directory does the same. The workspace warns on
