@@ -36,6 +36,21 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+      # The root workspace pulls Tauri (via ai-batch-queue, stack-monitor-desktop,
+      # and tauri-queue), whose glib-sys/gtk-sys build scripts shell out to
+      # pkg-config. Without these system packages `cargo clippy --workspace`
+      # fails before any crate of ours is checked. See
+      # https://v2.tauri.app/start/prerequisites/#linux
+      - name: Install Tauri Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libglib2.0-dev \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            pkg-config
       - name: Workspace ${{ matrix.workspace }}
         run: |
           if [ "${{ matrix.workspace }}" = "root" ]; then

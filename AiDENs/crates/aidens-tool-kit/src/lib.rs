@@ -365,9 +365,9 @@ impl ToolRegistryV1 {
         reason_codes.dedup();
         let exposure_material = format!(
             "declared={declared:?}|registered={registered:?}|executable={executable_ids:?}|exposed={exposed:?}|hidden={hidden:?}|blocked={blocked:?}|sandbox={sandbox}",
-            declared = &declared_tool_ids,
-            registered = &registered_tool_ids,
-            executable_ids = &executable_tool_ids,
+            declared = declared_tool_ids,
+            registered = registered_tool_ids,
+            executable_ids = executable_tool_ids,
             sandbox = sandbox_root
                 .as_ref()
                 .cloned()
