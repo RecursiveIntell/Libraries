@@ -93,7 +93,7 @@ fib-quant-codec = []
 # poly-kv two-tier compressed KV cache pool for shared context compression.
 # Enables ProveKvPoolCandidateOnly search policy for approximate candidate
 # generation from compressed embedding pools.
-poly-kv-codec = ["dep:poly-kv"]
+poly-kv-codec = ["dep:poly-kv", "poly-kv/fibquant-adapter", "poly-kv/turbo-quant-adapter"]
 # In-process Candle embedder (pure-Rust, CPU-only, no Ollama required).
 # When enabled, MemoryStore::open() defaults to CandleEmbedder instead of
 # OllamaEmbedder. Ollama remains available via MemoryStore::open_with_embedder
