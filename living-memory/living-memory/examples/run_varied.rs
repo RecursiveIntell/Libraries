@@ -3,6 +3,12 @@
 //!
 //! Usage: cargo run --example run_varied -- <fixture-dir> <forge-db-path>
 
+// Example runner: aborting on a missing fixture or an unopenable DB is the
+// intended behavior for a manual experiment harness, and every sibling
+// example in this directory does the same. The workspace warns on
+// expect_used and CI promotes warnings with -D warnings.
+#![allow(clippy::expect_used)]
+
 use forge_engine::adapters::CargoAdapter;
 use forge_engine::cea::instrumentation::attribute_effects;
 use forge_engine::cea::store::update_graph;
