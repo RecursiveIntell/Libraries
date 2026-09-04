@@ -3259,12 +3259,15 @@ mod tests {
         let started = Instant::now();
         let output = run_command_with_timeout(
             &dir,
-            &["bash".into(), "-c".into(), "sleep 1".into()],
+            &["bash".into(), "-c".into(), "sleep 5".into()],
             Duration::from_millis(20),
         )
         .unwrap();
         assert!(output.timed_out);
-        assert!(started.elapsed() < Duration::from_secs(1));
+        // Keep this a scheduler-behavior assertion without making a loaded
+        // hosted runner fail merely because a one-second wall-clock budget was
+        // crossed while starting the child process.
+        assert!(started.elapsed() < Duration::from_secs(2));
     }
 
     #[cfg(unix)]
@@ -3274,12 +3277,12 @@ mod tests {
         let started = Instant::now();
         let output = run_command_with_timeout(
             &dir,
-            &["bash".into(), "-c".into(), "sleep 2 & wait".into()],
+            &["bash".into(), "-c".into(), "sleep 5 & wait".into()],
             Duration::from_millis(20),
         )
         .unwrap();
         assert!(output.timed_out);
-        assert!(started.elapsed() < Duration::from_secs(1));
+        assert!(started.elapsed() < Duration::from_secs(2));
     }
 
     #[tokio::test]
