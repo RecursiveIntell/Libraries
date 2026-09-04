@@ -50,6 +50,14 @@ jobs:
             --command "python3 scripts/check_root_archive_manifest.py" \
             --command "python3 scripts/check_public_api_docs.py" \
             --command "bash scripts/check_schema_compat.sh"; then
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("STATUS_EVIDENCE_MANIFEST.json").read_text())
+          for item in manifest.get("proof_results", []):
+              if item.get("result") != "pass":
+                  print(f"::error title=release gate::{item.get('command')} failed")
+          PY
             python3 -c "import json, pathlib; m=json.loads(pathlib.Path('STATUS_EVIDENCE_MANIFEST.json').read_text()); print('failed release gates:'); [print(item['command'] + ': ' + next((r['stderr']['path'] for r in m.get('source_binding', {}).get('command_receipts', []) if r['command'] == item['command']), '<no stderr>')) for item in m.get('proof_results', []) if item['result'] != 'pass']"
             exit 1
           fi
