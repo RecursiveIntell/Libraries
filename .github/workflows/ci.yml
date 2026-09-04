@@ -31,7 +31,25 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libxdo-dev
-          if ! python3 scripts/record_release_evidence.py; then
+          # The workspace matrix owns Rust fmt/clippy/test/doc proof. Keep this
+          # gate focused on source/contract/release-surface checks so a second
+          # full compilation lane cannot time out or create a false CI failure.
+          if ! python3 scripts/record_release_evidence.py \
+            --command "bash scripts/check_pack_truth.sh" \
+            --command "bash scripts/check_repo_surface.sh" \
+            --command "bash scripts/check_doc_truth.sh" \
+            --command "bash scripts/check_manifest_truth.sh" \
+            --command "python3 scripts/check_commit_permit_paths.py" \
+            --command "python3 scripts/check_constitutional_vocab.py" \
+            --command "python3 scripts/check_mandatory_artifact_refs.py" \
+            --command "bash scripts/check_schema_registry_uniqueness.sh" \
+            --command "bash scripts/check_no_prod_panics.sh" \
+            --command "bash scripts/check_mirror_discipline.sh" \
+            --command "bash scripts/check_hotspot_budgets.sh" \
+            --command "python3 scripts/check_public_type_drift.py" \
+            --command "python3 scripts/check_root_archive_manifest.py" \
+            --command "python3 scripts/check_public_api_docs.py" \
+            --command "bash scripts/check_schema_compat.sh"; then
             python3 -c "import json, pathlib; m=json.loads(pathlib.Path('STATUS_EVIDENCE_MANIFEST.json').read_text()); print('failed release gates:'); [print(item['command'] + ': ' + next((r['stderr']['path'] for r in m.get('source_binding', {}).get('command_receipts', []) if r['command'] == item['command']), '<no stderr>')) for item in m.get('proof_results', []) if item['result'] != 'pass']"
             exit 1
           fi
