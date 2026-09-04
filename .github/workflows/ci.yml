@@ -31,7 +31,10 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libxdo-dev
-          python3 scripts/record_release_evidence.py
+          if ! python3 scripts/record_release_evidence.py; then
+            python3 -c "import json, pathlib; m=json.loads(pathlib.Path('STATUS_EVIDENCE_MANIFEST.json').read_text()); print('failed release gates:'); [print(item['command'] + ': ' + next((r['stderr']['path'] for r in m.get('source_binding', {}).get('command_receipts', []) if r['command'] == item['command']), '<no stderr>')) for item in m.get('proof_results', []) if item['result'] != 'pass']"
+            exit 1
+          fi
       - run: make gate
 
   # CI-001: Certify every required workspace independently.
