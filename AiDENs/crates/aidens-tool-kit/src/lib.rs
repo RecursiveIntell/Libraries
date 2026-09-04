@@ -1600,18 +1600,29 @@ fn terminate_unix_process_group(child_pid: u32) -> anyhow::Result<()> {
 }
 
 fn resolve_allowed_command_executable(command: &str) -> anyhow::Result<PathBuf> {
-    let candidates: &[&str] = match command {
-        "cargo" => &[
-            "/usr/bin/cargo",
-            "/usr/local/bin/cargo",
-            "/root/.cargo/bin/cargo",
+    // Keep the executable name fixed and allowlisted, but support both distro
+    // Cargo installations and rustup-managed toolchains. GitHub-hosted runners
+    // install Cargo under `$HOME/.cargo/bin`, while local Fedora installations
+    // commonly provide `/usr/bin/cargo`.
+    let mut candidates = match command {
+        "cargo" => vec![
+            PathBuf::from("/usr/bin/cargo"),
+            PathBuf::from("/usr/local/bin/cargo"),
+            PathBuf::from("/root/.cargo/bin/cargo"),
         ],
-        "bash" => &["/usr/bin/bash", "/bin/bash"],
+        "bash" => vec![PathBuf::from("/usr/bin/bash"), PathBuf::from("/bin/bash")],
         other => bail!("command executable is not in the fixed allowlist: {other}"),
     };
+    if command == "cargo" {
+        if let Some(cargo_home) = std::env::var_os("CARGO_HOME") {
+            candidates.push(PathBuf::from(cargo_home).join("bin/cargo"));
+        }
+        if let Some(home) = std::env::var_os("HOME") {
+            candidates.push(PathBuf::from(home).join(".cargo/bin/cargo"));
+        }
+    }
     candidates
-        .iter()
-        .map(PathBuf::from)
+        .into_iter()
         .find(|path| path.is_file())
         .ok_or_else(|| anyhow!("allowed command executable not found in fixed paths: {command}"))
 }
