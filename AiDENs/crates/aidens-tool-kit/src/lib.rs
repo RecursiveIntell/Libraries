@@ -1580,23 +1580,72 @@ fn terminate_timed_out_command(child: &mut Child, command_label: &str) -> bool {
     true
 }
 
+#[cfg(target_os = "linux")]
+fn collect_linux_descendants(pid: u32, descendants: &mut Vec<u32>) {
+    let children_path = format!("/proc/{pid}/task/{pid}/children");
+    let Ok(children) = std::fs::read_to_string(children_path) else {
+        return;
+    };
+    for child in children
+        .split_whitespace()
+        .filter_map(|value| value.parse::<u32>().ok())
+    {
+        collect_linux_descendants(child, descendants);
+        descendants.push(child);
+    }
+}
+
 #[cfg(unix)]
 fn terminate_unix_process_group(child_pid: u32) -> anyhow::Result<()> {
+    // Killing only the group leader is insufficient when a shell places a
+    // background command in a separate process group. Those descendants can
+    // retain stdout/stderr pipes and make wait_with_output() block until the
+    // original command timeout expires. Snapshot and kill descendants first,
+    // then terminate the dedicated process group as a second boundary.
+    let mut targets = Vec::new();
+    #[cfg(target_os = "linux")]
+    collect_linux_descendants(child_pid, &mut targets);
+    targets.push(child_pid);
+
+    let mut terminated = false;
+    for pid in targets.into_iter().rev() {
+        let pid_arg = pid.to_string();
+        for kill_path in ["/bin/kill", "/usr/bin/kill"] {
+            if !Path::new(kill_path).exists() {
+                continue;
+            }
+            let status = Command::new(kill_path)
+                .args(["-KILL", "--", &pid_arg])
+                .env_clear()
+                .status()
+                .with_context(|| format!("failed to invoke fixed kill executable {kill_path}"))?;
+            if status.success() {
+                terminated = true;
+                break;
+            }
+        }
+    }
+
     let process_group = format!("-{child_pid}");
     for kill_path in ["/bin/kill", "/usr/bin/kill"] {
         if !Path::new(kill_path).exists() {
             continue;
         }
         let status = Command::new(kill_path)
-            .args(["-KILL", &process_group])
+            .args(["-KILL", "--", &process_group])
             .env_clear()
             .status()
             .with_context(|| format!("failed to invoke fixed kill executable {kill_path}"))?;
         if status.success() {
-            return Ok(());
+            terminated = true;
+            break;
         }
     }
-    bail!("no fixed kill executable could terminate process group {process_group}")
+    if terminated {
+        Ok(())
+    } else {
+        bail!("no fixed kill executable could terminate process group {process_group}")
+    }
 }
 
 fn resolve_allowed_command_executable(command: &str) -> anyhow::Result<PathBuf> {
