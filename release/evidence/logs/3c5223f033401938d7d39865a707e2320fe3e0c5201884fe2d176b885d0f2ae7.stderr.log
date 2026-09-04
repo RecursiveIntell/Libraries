@@ -1,0 +1,5 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/work/dr-libraries-20260902/quant-governor/Cargo.toml
+workspace: /home/sikmindz/work/dr-libraries-20260902/Cargo.toml
+   Compiling stack-monitor-desktop v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/stack-monitor-desktop)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.96s

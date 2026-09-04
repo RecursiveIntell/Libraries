@@ -50,8 +50,12 @@ This bundle is designed for `~/Coding/Libraries` and the package `Libraries-libr
    cargo test -p fib-quant
    ```
 
-## Why this bundle uses Codex features
+## Current repository gate
 
+The current source-bound validation entry point is `make gate`. It verifies the
+active repository pack, release evidence, and supported build lane.
+
+## Why this bundle uses Codex features
 - `AGENTS.md` / skill: durable repo-local instructions.
 - Hooks: deterministic guardrails at prompt/stop boundaries.
 - Phase prompts: bounded work slices.

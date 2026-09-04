@@ -1478,6 +1478,137 @@ impl MemoryStore {
         Ok(outcome)
     }
 
+    /// Apply a closed fact-supersede envelope on the canonical owner shard.
+    /// The replacement fact, immutable supersession edge, inbox evidence, and
+    /// stream-head advance commit together; stale lineage targets are typed.
+    pub async fn apply_verified_fact_supersede(
+        &self,
+        envelope: crate::journal::FactSupersedeReplicaEnvelopeV1,
+    ) -> Result<crate::journal::ReplicaApplyOutcome, MemoryError> {
+        use crate::journal::{
+            validate_fact_supersede_replica_envelope, ReplicaApplyOutcome, GENESIS_PREDECESSOR,
+        };
+        let payload = validate_fact_supersede_replica_envelope(&envelope)?;
+        let replacement: crate::journal::FactCreatePayloadV1 =
+            serde_json::from_slice(&payload.replacement_payload).map_err(|error| {
+                MemoryError::CorruptData {
+                    table: "replication_inbox",
+                    row_id: envelope.sequence.to_string(),
+                    detail: format!(
+                        "validated fact-supersede replacement could not decode: {error}"
+                    ),
+                }
+            })?;
+        let duplicate = self.with_read_conn({
+            let device = envelope.home_device_id.clone(); let store = envelope.store_id.clone();
+            let epoch = i64::try_from(envelope.stream_epoch).map_err(|_| MemoryError::InvalidConfig { field: "replication.stream_epoch", reason: "does not fit SQLite INTEGER".into() })?;
+            let sequence = envelope.sequence; let digest = envelope.envelope_digest;
+            move |conn| Ok(conn.query_row("SELECT envelope_digest FROM replication_inbox WHERE home_device_id=?1 AND store_id=?2 AND stream_epoch=?3 AND sequence=?4", rusqlite::params![device, store, epoch, sequence], |row| row.get::<_, Vec<u8>>(0)).optional()?.map(|stored| if stored.as_slice() == digest.as_slice() { ReplicaApplyOutcome::Duplicate { sequence } } else { ReplicaApplyOutcome::Fork { sequence } }))
+        }).await?;
+        if let Some(outcome) = duplicate {
+            return Ok(outcome);
+        }
+        self.validate_content("fact.content", &replacement.content)?;
+        let (embedding, sparse, sparse_representation) = self
+            .embed_text_with_sparse_internal(
+                &replacement.content,
+                crate::EmbeddingPurpose::Document,
+            )
+            .await?;
+        self.validate_embedding_dimensions(&embedding)?;
+        let embedding_bytes = db::embedding_to_bytes(&embedding);
+        let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
+            .quantize(&embedding)
+            .map(|value| quantize::pack_quantized(&value))
+            .ok();
+        let limit = self.inner.config.limits.max_facts_per_namespace;
+        let outcome = self.with_write_conn(move |conn| {
+            let epoch = i64::try_from(envelope.stream_epoch).map_err(|_| MemoryError::InvalidConfig { field: "replication.stream_epoch", reason: "does not fit SQLite INTEGER".into() })?;
+            let tx = conn.unchecked_transaction()?;
+            let existing: Option<Vec<u8>> = tx.query_row("SELECT envelope_digest FROM replication_inbox WHERE home_device_id=?1 AND store_id=?2 AND stream_epoch=?3 AND sequence=?4", rusqlite::params![&envelope.home_device_id, &envelope.store_id, epoch, envelope.sequence], |row| row.get(0)).optional()?;
+            if let Some(stored) = existing { return Ok(if stored.as_slice() == envelope.envelope_digest.as_slice() { ReplicaApplyOutcome::Duplicate { sequence: envelope.sequence } } else { ReplicaApplyOutcome::Fork { sequence: envelope.sequence } }); }
+            let stream: Option<(i64, i64, Vec<u8>)> = tx.query_row("SELECT stream_epoch,next_sequence,head_digest FROM replication_inbox_streams WHERE home_device_id=?1 AND store_id=?2", rusqlite::params![&envelope.home_device_id, &envelope.store_id], |row| Ok((row.get(0)?,row.get(1)?,row.get(2)?))).optional()?;
+            let (expected, head, create_stream) = match stream { Some((active, expected, bytes)) => { let active = u64::try_from(active).map_err(|_| MemoryError::CorruptData { table: "replication_inbox_streams", row_id: envelope.store_id.clone(), detail: "negative stream epoch".into() })?; if active != envelope.stream_epoch { return Ok(ReplicaApplyOutcome::EpochConflict { active, received: envelope.stream_epoch }); } let head: [u8;32] = bytes.try_into().map_err(|bytes:Vec<u8>| MemoryError::CorruptData { table:"replication_inbox_streams", row_id: envelope.store_id.clone(), detail: format!("head digest must be 32 bytes, got {}", bytes.len()) })?; (expected,head,false) }, None => (1,GENESIS_PREDECESSOR,true) };
+            if envelope.sequence > expected { return Ok(ReplicaApplyOutcome::Gap { expected, received: envelope.sequence }); }
+            if envelope.sequence < expected || envelope.predecessor_digest != head { return Ok(ReplicaApplyOutcome::Fork { sequence: envelope.sequence }); }
+            let old_content: Option<String> = tx
+                .query_row(
+                    "SELECT content FROM facts WHERE id=?1",
+                    [&payload.old_fact_id],
+                    |row| row.get(0),
+                )
+                .optional()?;
+            if let Some(content) = old_content.as_deref() {
+                let predecessor = crate::journal::semantic_predecessor_digest(content);
+                let head = crate::journal::semantic_head_digest(
+                    &payload.old_fact_id,
+                    &predecessor,
+                );
+                if payload.semantic_predecessor_digest != predecessor
+                    || payload.current_head_digest != head
+                {
+                    return Err(MemoryError::CorruptData {
+                        table: "replication_inbox",
+                        row_id: envelope.sequence.to_string(),
+                        detail: "fact-supersede semantic lineage digest mismatch".into(),
+                    });
+                }
+            }
+            let superseded: Option<i64> = tx
+                .query_row(
+                    "SELECT 1
+                     FROM graph_edges
+                     WHERE target=?1
+                       AND is_invalidated = 0
+                       AND COALESCE(
+                           json_extract(edge_type, '$.relation'),
+                           json_extract(edge_type, '$.entity.relation')
+                       ) = 'supersedes'
+                     LIMIT 1",
+                    [format!("fact:{}", payload.old_fact_id)],
+                    |row| row.get(0),
+                )
+                .optional()?;
+            if old_content.is_none() || superseded.is_some() {
+                // A semantic conflict is not an accepted stream event. Do not
+                // persist it as applied or advance the receiver head: otherwise
+                // an exact retry hits the inbox duplicate path and is promoted
+                // from StalePredecessor to Duplicate/accepted without a semantic
+                // mutation. Leaving the stream unchanged makes the conflict
+                // replay-stable and blocks later owner events until recovery.
+                return Ok(ReplicaApplyOutcome::StalePredecessor {
+                    old_fact_id: payload.old_fact_id.clone(),
+                });
+            }
+            if tx
+                .query_row(
+                    "SELECT 1 FROM facts WHERE id=?1",
+                    [&replacement.fact_id],
+                    |row| row.get::<_, i64>(0),
+                )
+                .optional()?
+                .is_some()
+            {
+                return Ok(ReplicaApplyOutcome::Fork {
+                    sequence: envelope.sequence,
+                });
+            }
+            let count: usize = tx.query_row("SELECT COUNT(*) FROM facts WHERE namespace=?1", [&replacement.namespace], |row| row.get(0))?;
+            if count >= limit { return Err(MemoryError::NamespaceFull { namespace: replacement.namespace.clone(), count, limit }); }
+            insert_fact_in_tx(&tx, &replacement.fact_id, &replacement.namespace, &replacement.content, &embedding_bytes, q8_bytes.as_deref(), replacement.source.as_deref(), replacement.metadata.as_ref())?;
+            if let Some((weights, representation)) = sparse.as_ref().zip(sparse_representation.as_deref()) { db::store_sparse_vector(&tx, &format!("fact:{}", replacement.fact_id), weights, representation)?; }
+            tx.execute("INSERT INTO graph_edges(id,source,target,edge_type,weight,content_digest,recorded_at,valid_time,recorded_time) VALUES (?1,?2,?3,'{\"entity\":{\"relation\":\"supersedes\"}}',1,?4,?5,?6,?5)", rusqlite::params![payload.receipt_id, format!("fact:{}", replacement.fact_id), format!("fact:{}", payload.old_fact_id), payload.receipt_digest, payload.owner_recorded_at, payload.owner_valid_at])?;
+            if create_stream { tx.execute("INSERT INTO replication_inbox_streams(home_device_id,store_id,stream_epoch,next_sequence,head_digest) VALUES(?1,?2,?3,1,?4)", rusqlite::params![&envelope.home_device_id,&envelope.store_id,epoch,GENESIS_PREDECESSOR.as_slice()])?; }
+            tx.execute("INSERT INTO replication_inbox(home_device_id,store_id,stream_epoch,sequence,operation_kind,payload_schema,payload,payload_digest,predecessor_digest,envelope_digest,fact_id) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)", rusqlite::params![&envelope.home_device_id,&envelope.store_id,epoch,envelope.sequence,&envelope.operation_kind,&envelope.payload_schema,&envelope.payload,envelope.payload_digest.as_slice(),envelope.predecessor_digest.as_slice(),envelope.envelope_digest.as_slice(),&replacement.fact_id])?;
+            if tx.execute("UPDATE replication_inbox_streams SET next_sequence=?4,head_digest=?5,updated_at=datetime('now') WHERE home_device_id=?1 AND store_id=?2 AND stream_epoch=?3 AND next_sequence=?6 AND head_digest=?7", rusqlite::params![&envelope.home_device_id,&envelope.store_id,epoch,envelope.sequence+1,envelope.envelope_digest.as_slice(),envelope.sequence,head.as_slice()])? != 1 { return Err(MemoryError::Other("replication inbox stream allocator lost ownership".into())); }
+            tx.commit()?; Ok(ReplicaApplyOutcome::Applied { sequence: envelope.sequence, fact_id: replacement.fact_id })
+        }).await?;
+        if matches!(outcome, crate::journal::ReplicaApplyOutcome::Applied { .. }) {
+            self.clear_search_cache();
+        }
+        Ok(outcome)
+    }
+
     /// **DANGER**: This physically mutates/deletes a truth-bearing row.
     /// This is admin-only and gated behind the `admin-ops` feature.
     /// Default agent-facing APIs should use supersession (add a new fact

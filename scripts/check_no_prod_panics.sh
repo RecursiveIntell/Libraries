@@ -19,7 +19,7 @@ declare -A allowlist=()
 while IFS= read -r entry; do
   [[ -n "$entry" ]] || continue
   allowlist["$entry"]=1
-done < <(jq -r '.[]' "$allowlist_path")
+done < <(jq -r '.[] | if type == "string" then . else .entry end' "$allowlist_path")
 
 pattern='\.unwrap[[:space:]]*\(|\.expect[[:space:]]*\(|\<panic![[:space:]]*\(|\<todo![[:space:]]*\(|\<unimplemented![[:space:]]*\('
 errors=0
@@ -64,7 +64,7 @@ for crate in "${supported_crates[@]}"; do
         fi
       fi
     done < <(awk '
-      /^#\[cfg\(test\)\]/ { in_test=1; depth=0; seen_brace=0; next }
+      /^#\[cfg\([^]]*test[^]]*\)\]/ { in_test=1; depth=0; seen_brace=0; next }
       in_test { for(i=1;i<=length($0);i++){c=substr($0,i,1); if(c=="{"){depth++;seen_brace=1}; if(c=="}")depth--}; if(seen_brace && depth<=0)in_test=0; next }
       {print}
     ' "$target" | nl -ba -w1 -s:)

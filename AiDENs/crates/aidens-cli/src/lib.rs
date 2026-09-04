@@ -1356,10 +1356,7 @@ pub fn coding_command(command: CodingCommand) -> Result<String> {
                 source_map,
                 changed_files,
                 commands_run,
-                receipt_ids: receipt_ids
-                    .into_iter()
-                    .map(|receipt_id| ArtifactId::new(receipt_id))
-                    .collect(),
+                receipt_ids: receipt_ids.into_iter().map(ArtifactId::new).collect(),
                 blockers,
                 notes,
             });

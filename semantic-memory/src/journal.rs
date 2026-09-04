@@ -12,6 +12,8 @@ use sha2::{Digest, Sha256};
 
 pub const FACT_CREATE_OPERATION: &str = "fact.create";
 pub const FACT_CREATE_PAYLOAD_SCHEMA: &str = "semantic_memory.fact.create.v1";
+pub const FACT_SUPERSEDE_OPERATION: &str = "fact.supersede";
+pub const FACT_SUPERSEDE_PAYLOAD_SCHEMA: &str = "semantic_memory.fact.supersede.v1";
 pub const VERIFIED_RECORD_STATE: &str = "verified_v1";
 pub const LEGACY_RECORD_STATE: &str = "legacy_unverified";
 pub const GENESIS_PREDECESSOR: [u8; 32] = [0; 32];
@@ -49,6 +51,64 @@ pub struct FactCreateReplicaEnvelopeV1 {
     pub envelope_digest: [u8; 32],
 }
 
+/// Closed receiver-side representation of one verified fact-supersede record.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FactSupersedeReplicaEnvelopeV1 {
+    pub home_device_id: String,
+    pub store_id: String,
+    pub stream_epoch: u64,
+    pub sequence: i64,
+    pub operation_kind: String,
+    pub payload_schema: String,
+    pub payload: Vec<u8>,
+    pub payload_digest: [u8; 32],
+    pub predecessor_digest: [u8; 32],
+    pub envelope_digest: [u8; 32],
+}
+
+impl FactSupersedeReplicaEnvelopeV1 {
+    /// Recompute the two transport digests after an intentional local test or
+    /// owner-side envelope transformation. It does not validate or reinterpret
+    /// the operation/payload family; receiver admission remains strict.
+    pub fn reseal(&mut self) {
+        self.payload_digest = payload_digest(&self.payload);
+        self.envelope_digest = envelope_digest(
+            &self.home_device_id,
+            &self.store_id,
+            self.stream_epoch,
+            self.sequence,
+            &self.operation_kind,
+            &self.payload_schema,
+            &self.predecessor_digest,
+            &self.payload_digest,
+        );
+    }
+}
+
+/// Canonical fact-supersession payload. Replacement bytes are not reconstructed
+/// by a receiver and all evidence references are syntax-validated before apply.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FactSupersedePayloadV1 {
+    pub schema_version: String,
+    pub old_fact_id: String,
+    pub new_fact_id: String,
+    pub replacement_payload_digest: [u8; 32],
+    pub replacement_payload: Vec<u8>,
+    pub semantic_predecessor_digest: String,
+    pub current_head_digest: String,
+    pub owner_valid_at: String,
+    pub owner_recorded_at: String,
+    pub authority_digest: String,
+    pub authority_receipt_id: String,
+    pub authority_receipt_digest: String,
+    pub transition_record_id: String,
+    pub transition_digest: String,
+    pub receipt_id: String,
+    pub receipt_digest: String,
+}
+
 /// Durable receiver decision for a fact-create record.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -58,11 +118,36 @@ pub enum ReplicaApplyOutcome {
     Fork { sequence: i64 },
     Gap { expected: i64, received: i64 },
     EpochConflict { active: u64, received: u64 },
+    StalePredecessor { old_fact_id: String },
 }
 
 pub fn encode_fact_create_payload(payload: &FactCreatePayloadV1) -> Result<Vec<u8>, MemoryError> {
     serde_json::to_vec(payload)
         .map_err(|error| MemoryError::DigestError(format!("fact-create payload encoding: {error}")))
+}
+
+pub fn encode_fact_supersede_payload(
+    payload: &FactSupersedePayloadV1,
+) -> Result<Vec<u8>, MemoryError> {
+    serde_json::to_vec(payload).map_err(|error| {
+        MemoryError::DigestError(format!("fact-supersede payload encoding: {error}"))
+    })
+}
+
+/// Digest the exact owner-side predecessor content; distinct from stream lineage.
+pub fn semantic_predecessor_digest(content: &str) -> String {
+    blake3::hash(content.as_bytes()).to_hex().to_string()
+}
+
+/// Digest the owner-selected semantic head from fact identity and predecessor.
+pub fn semantic_head_digest(fact_id: &str, predecessor_digest: &str) -> String {
+    blake3::hash(
+        serde_json::to_vec(&(fact_id, predecessor_digest))
+            .expect("tuple serialization is infallible")
+            .as_slice(),
+    )
+    .to_hex()
+    .to_string()
 }
 
 /// Domain-separated SHA-256 over length-prefixed exact fields.
@@ -124,6 +209,40 @@ pub struct JournalEntry {
     pub envelope_digest: [u8; 32],
     pub record_state: String,
     pub created_at: String,
+}
+
+impl From<JournalEntry> for FactCreateReplicaEnvelopeV1 {
+    fn from(entry: JournalEntry) -> Self {
+        Self {
+            home_device_id: entry.home_device_id,
+            store_id: entry.store_id,
+            stream_epoch: entry.stream_epoch,
+            sequence: entry.sequence,
+            operation_kind: entry.operation_kind,
+            payload_schema: entry.payload_schema,
+            payload: entry.payload,
+            payload_digest: entry.payload_digest,
+            predecessor_digest: entry.predecessor_digest,
+            envelope_digest: entry.envelope_digest,
+        }
+    }
+}
+
+impl From<JournalEntry> for FactSupersedeReplicaEnvelopeV1 {
+    fn from(entry: JournalEntry) -> Self {
+        Self {
+            home_device_id: entry.home_device_id,
+            store_id: entry.store_id,
+            stream_epoch: entry.stream_epoch,
+            sequence: entry.sequence,
+            operation_kind: entry.operation_kind,
+            payload_schema: entry.payload_schema,
+            payload: entry.payload,
+            payload_digest: entry.payload_digest,
+            predecessor_digest: entry.predecessor_digest,
+            envelope_digest: entry.envelope_digest,
+        }
+    }
 }
 
 /// V37 migration retained for compatibility. These rows have no cryptographic
@@ -302,6 +421,131 @@ pub fn validate_fact_create_replica_envelope(
     Ok(payload)
 }
 
+/// Validate a strict fact-supersede envelope without accepting operation-family fallbacks.
+pub fn validate_fact_supersede_replica_envelope(
+    envelope: &FactSupersedeReplicaEnvelopeV1,
+) -> Result<FactSupersedePayloadV1, MemoryError> {
+    validate_stream_identity(
+        &envelope.home_device_id,
+        &envelope.store_id,
+        envelope.stream_epoch,
+    )?;
+    if envelope.sequence < 1 {
+        return Err(MemoryError::InvalidConfig {
+            field: "replication.sequence",
+            reason: "must be positive".into(),
+        });
+    }
+    if envelope.operation_kind != FACT_SUPERSEDE_OPERATION
+        || envelope.payload_schema != FACT_SUPERSEDE_PAYLOAD_SCHEMA
+    {
+        return Err(MemoryError::NotImplemented(format!(
+            "replication operation/schema not admitted: {}/{}",
+            envelope.operation_kind, envelope.payload_schema
+        )));
+    }
+    if envelope.payload_digest != payload_digest(&envelope.payload) {
+        return Err(MemoryError::DigestError(
+            "fact-supersede replica payload digest mismatch".into(),
+        ));
+    }
+    if envelope.envelope_digest
+        != envelope_digest(
+            &envelope.home_device_id,
+            &envelope.store_id,
+            envelope.stream_epoch,
+            envelope.sequence,
+            &envelope.operation_kind,
+            &envelope.payload_schema,
+            &envelope.predecessor_digest,
+            &envelope.payload_digest,
+        )
+    {
+        return Err(MemoryError::DigestError(
+            "fact-supersede replica envelope digest mismatch".into(),
+        ));
+    }
+    let payload: FactSupersedePayloadV1 =
+        serde_json::from_slice(&envelope.payload).map_err(|error| MemoryError::CorruptData {
+            table: "replication_inbox",
+            row_id: envelope.sequence.to_string(),
+            detail: format!("invalid fact-supersede payload: {error}"),
+        })?;
+    if payload.schema_version != FACT_SUPERSEDE_PAYLOAD_SCHEMA {
+        return Err(MemoryError::CorruptData {
+            table: "replication_inbox",
+            row_id: envelope.sequence.to_string(),
+            detail: "fact-supersede payload schema mismatch".into(),
+        });
+    }
+    let valid_uuid = |value: &str| uuid::Uuid::parse_str(value).is_ok();
+    if !valid_uuid(&payload.old_fact_id)
+        || !valid_uuid(&payload.new_fact_id)
+        || payload.old_fact_id == payload.new_fact_id
+        || !valid_uuid(&payload.authority_receipt_id)
+        || !valid_uuid(&payload.transition_record_id)
+        || !valid_uuid(&payload.receipt_id)
+    {
+        return Err(MemoryError::CorruptData {
+            table: "replication_inbox",
+            row_id: envelope.sequence.to_string(),
+            detail: "fact-supersede IDs must be distinct UUIDs".into(),
+        });
+    }
+    let is_hex_digest =
+        |value: &str| value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit());
+    if !is_hex_digest(&payload.semantic_predecessor_digest)
+        || !is_hex_digest(&payload.current_head_digest)
+        || !is_hex_digest(&payload.authority_receipt_digest)
+        || !is_hex_digest(&payload.transition_digest)
+        || !is_hex_digest(&payload.receipt_digest)
+        || !payload
+            .authority_digest
+            .strip_prefix("blake3:")
+            .is_some_and(is_hex_digest)
+    {
+        return Err(MemoryError::CorruptData {
+            table: "replication_inbox",
+            row_id: envelope.sequence.to_string(),
+            detail: "invalid fact-supersede evidence digest reference".into(),
+        });
+    }
+    if chrono::DateTime::parse_from_rfc3339(&payload.owner_valid_at).is_err()
+        || chrono::DateTime::parse_from_rfc3339(&payload.owner_recorded_at).is_err()
+    {
+        return Err(MemoryError::CorruptData {
+            table: "replication_inbox",
+            row_id: envelope.sequence.to_string(),
+            detail: "invalid fact-supersede owner timestamp".into(),
+        });
+    }
+    if payload.replacement_payload_digest != payload_digest(&payload.replacement_payload) {
+        return Err(MemoryError::DigestError(
+            "fact-supersede replacement payload digest mismatch".into(),
+        ));
+    }
+    let replacement: FactCreatePayloadV1 = serde_json::from_slice(&payload.replacement_payload)
+        .map_err(|error| MemoryError::CorruptData {
+            table: "replication_inbox",
+            row_id: envelope.sequence.to_string(),
+            detail: format!("invalid fact-supersede replacement payload: {error}"),
+        })?;
+    if replacement.fact_id != payload.new_fact_id
+        || !valid_uuid(&replacement.fact_id)
+        || replacement.namespace.is_empty()
+        || replacement.namespace.trim() != replacement.namespace
+        || replacement.namespace.chars().any(char::is_control)
+        || replacement.content.is_empty()
+    {
+        return Err(MemoryError::CorruptData {
+            table: "replication_inbox",
+            row_id: envelope.sequence.to_string(),
+            detail: "invalid fact-supersede replacement identity or content".into(),
+        });
+    }
+    Ok(payload)
+}
+
 fn digest_from_blob(column: usize, bytes: Vec<u8>) -> Result<[u8; 32], rusqlite::Error> {
     bytes.try_into().map_err(|bytes: Vec<u8>| {
         rusqlite::Error::FromSqlConversionFailure(
@@ -353,7 +597,11 @@ pub fn append_verified_in_tx(
     payload: &[u8],
 ) -> Result<JournalEntry, MemoryError> {
     validate_stream_identity(home_device_id, store_id, stream_epoch)?;
-    if operation_kind != FACT_CREATE_OPERATION || payload_schema != FACT_CREATE_PAYLOAD_SCHEMA {
+    if !matches!(
+        (operation_kind, payload_schema),
+        (FACT_CREATE_OPERATION, FACT_CREATE_PAYLOAD_SCHEMA)
+            | (FACT_SUPERSEDE_OPERATION, FACT_SUPERSEDE_PAYLOAD_SCHEMA)
+    ) {
         return Err(MemoryError::NotImplemented(format!(
             "replication operation/schema not admitted: {operation_kind}/{payload_schema}"
         )));
@@ -652,9 +900,11 @@ pub fn export_verified_contiguous(
                 },
             });
         }
-        if entry.operation_kind != FACT_CREATE_OPERATION
-            || entry.payload_schema != FACT_CREATE_PAYLOAD_SCHEMA
-            || entry.record_state != VERIFIED_RECORD_STATE
+        if !matches!(
+            (entry.operation_kind.as_str(), entry.payload_schema.as_str()),
+            (FACT_CREATE_OPERATION, FACT_CREATE_PAYLOAD_SCHEMA)
+                | (FACT_SUPERSEDE_OPERATION, FACT_SUPERSEDE_PAYLOAD_SCHEMA)
+        ) || entry.record_state != VERIFIED_RECORD_STATE
         {
             return Ok(corrupt(
                 entries,

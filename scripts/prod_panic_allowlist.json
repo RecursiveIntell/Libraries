@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "entry": "semantic-memory/src/journal.rs:146",
+    "reason": "Tuple serialization is over borrowed strings and cannot fail under the derived serde implementation; the digest API is intentionally infallible."
+  },
+  {
+    "entry": "semantic-memory/src/origin_authority.rs:321",
+    "reason": "Compatibility builder preserves its infallible Self-returning API; policy digest serialization covers only derived, closed fields."
+  },
+  {
+    "entry": "semantic-memory/src/origin_authority.rs:328",
+    "reason": "Compatibility builder preserves its infallible Self-returning API; policy digest serialization covers only derived, closed fields."
+  },
+  {
+    "entry": "semantic-memory/src/origin_authority.rs:510",
+    "reason": "Operator-origin constants are closed literals and are validated by the constructor before entering the compatibility Self-returning API."
+  },
+  {
+    "entry": "semantic-memory/src/origin_authority.rs:964",
+    "reason": "Access-request digest serializes closed serde-derived contract fields; the public digest API is intentionally infallible."
+  },
+  {
+    "entry": "semantic-memory/src/origin_authority.rs:985",
+    "reason": "Decision digest serializes closed serde-derived contract fields; the public decision API is intentionally infallible."
+  },
+  {
+    "entry": "semantic-memory/src/procedural_memory.rs:1724",
+    "reason": "Procedure digest serializes a closed serde contract; the digest helper is intentionally infallible and has no fallback semantics."
+  },
+  {
+    "entry": "semantic-memory/src/state_epistemics.rs:193",
+    "reason": "State-edge digest serializes a closed serde-derived value; the digest API is intentionally infallible."
+  },
+  {
+    "entry": "stack-ids/src/ids.rs:57",
+    "reason": "Legacy compatibility constructor retains its documented Self-returning API; callers needing typed failure use try_new."
+  }
+]

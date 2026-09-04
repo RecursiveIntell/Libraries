@@ -365,9 +365,9 @@ impl ToolRegistryV1 {
         reason_codes.dedup();
         let exposure_material = format!(
             "declared={declared:?}|registered={registered:?}|executable={executable_ids:?}|exposed={exposed:?}|hidden={hidden:?}|blocked={blocked:?}|sandbox={sandbox}",
-            declared = &declared_tool_ids,
-            registered = &registered_tool_ids,
-            executable_ids = &executable_tool_ids,
+            declared = declared_tool_ids,
+            registered = registered_tool_ids,
+            executable_ids = executable_tool_ids,
             sandbox = sandbox_root
                 .as_ref()
                 .cloned()
@@ -1580,38 +1580,98 @@ fn terminate_timed_out_command(child: &mut Child, command_label: &str) -> bool {
     true
 }
 
+#[cfg(target_os = "linux")]
+fn collect_linux_descendants(pid: u32, descendants: &mut Vec<u32>) {
+    let children_path = format!("/proc/{pid}/task/{pid}/children");
+    let Ok(children) = std::fs::read_to_string(children_path) else {
+        return;
+    };
+    for child in children
+        .split_whitespace()
+        .filter_map(|value| value.parse::<u32>().ok())
+    {
+        collect_linux_descendants(child, descendants);
+        descendants.push(child);
+    }
+}
+
 #[cfg(unix)]
 fn terminate_unix_process_group(child_pid: u32) -> anyhow::Result<()> {
+    // Killing only the group leader is insufficient when a shell places a
+    // background command in a separate process group. Those descendants can
+    // retain stdout/stderr pipes and make wait_with_output() block until the
+    // original command timeout expires. Snapshot and kill descendants first,
+    // then terminate the dedicated process group as a second boundary.
+    let mut targets = Vec::new();
+    #[cfg(target_os = "linux")]
+    collect_linux_descendants(child_pid, &mut targets);
+    targets.push(child_pid);
+
+    let mut terminated = false;
+    for pid in targets.into_iter().rev() {
+        let pid_arg = pid.to_string();
+        for kill_path in ["/bin/kill", "/usr/bin/kill"] {
+            if !Path::new(kill_path).exists() {
+                continue;
+            }
+            let status = Command::new(kill_path)
+                .args(["-KILL", "--", &pid_arg])
+                .env_clear()
+                .status()
+                .with_context(|| format!("failed to invoke fixed kill executable {kill_path}"))?;
+            if status.success() {
+                terminated = true;
+                break;
+            }
+        }
+    }
+
     let process_group = format!("-{child_pid}");
     for kill_path in ["/bin/kill", "/usr/bin/kill"] {
         if !Path::new(kill_path).exists() {
             continue;
         }
         let status = Command::new(kill_path)
-            .args(["-KILL", &process_group])
+            .args(["-KILL", "--", &process_group])
             .env_clear()
             .status()
             .with_context(|| format!("failed to invoke fixed kill executable {kill_path}"))?;
         if status.success() {
-            return Ok(());
+            terminated = true;
+            break;
         }
     }
-    bail!("no fixed kill executable could terminate process group {process_group}")
+    if terminated {
+        Ok(())
+    } else {
+        bail!("no fixed kill executable could terminate process group {process_group}")
+    }
 }
 
 fn resolve_allowed_command_executable(command: &str) -> anyhow::Result<PathBuf> {
-    let candidates: &[&str] = match command {
-        "cargo" => &[
-            "/usr/bin/cargo",
-            "/usr/local/bin/cargo",
-            "/root/.cargo/bin/cargo",
+    // Keep the executable name fixed and allowlisted, but support both distro
+    // Cargo installations and rustup-managed toolchains. GitHub-hosted runners
+    // install Cargo under `$HOME/.cargo/bin`, while local Fedora installations
+    // commonly provide `/usr/bin/cargo`.
+    let mut candidates = match command {
+        "cargo" => vec![
+            PathBuf::from("/usr/bin/cargo"),
+            PathBuf::from("/usr/local/bin/cargo"),
+            PathBuf::from("/root/.cargo/bin/cargo"),
         ],
-        "bash" => &["/usr/bin/bash", "/bin/bash"],
+        "bash" => vec![PathBuf::from("/usr/bin/bash"), PathBuf::from("/bin/bash")],
         other => bail!("command executable is not in the fixed allowlist: {other}"),
     };
+    if command == "cargo" {
+        if let Some(cargo_home) = std::env::var_os("CARGO_HOME") {
+            candidates.push(PathBuf::from(cargo_home).join("bin/cargo"));
+        }
+        if let Some(home) = std::env::var_os("HOME") {
+            candidates.push(PathBuf::from(home).join(".cargo/bin/cargo"));
+        }
+    }
     candidates
-        .iter()
-        .map(PathBuf::from)
+        .into_iter()
         .find(|path| path.is_file())
         .ok_or_else(|| anyhow!("allowed command executable not found in fixed paths: {command}"))
 }
@@ -3248,12 +3308,15 @@ mod tests {
         let started = Instant::now();
         let output = run_command_with_timeout(
             &dir,
-            &["bash".into(), "-c".into(), "sleep 1".into()],
+            &["bash".into(), "-c".into(), "sleep 5".into()],
             Duration::from_millis(20),
         )
         .unwrap();
         assert!(output.timed_out);
-        assert!(started.elapsed() < Duration::from_secs(1));
+        // Keep this a scheduler-behavior assertion without making a loaded
+        // hosted runner fail merely because a one-second wall-clock budget was
+        // crossed while starting the child process.
+        assert!(started.elapsed() < Duration::from_secs(2));
     }
 
     #[cfg(unix)]
@@ -3263,12 +3326,12 @@ mod tests {
         let started = Instant::now();
         let output = run_command_with_timeout(
             &dir,
-            &["bash".into(), "-c".into(), "sleep 2 & wait".into()],
+            &["bash".into(), "-c".into(), "sleep 5 & wait".into()],
             Duration::from_millis(20),
         )
         .unwrap();
         assert!(output.timed_out);
-        assert!(started.elapsed() < Duration::from_secs(1));
+        assert!(started.elapsed() < Duration::from_secs(2));
     }
 
     #[tokio::test]

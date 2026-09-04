@@ -13,10 +13,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # make gate verifies that the evidence-bound source commit is an
+          # ancestor of the checkout; shallow history makes that unverifiable.
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+      - name: Record CI source-bound evidence
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libxdo-dev
+          # The workspace matrix owns Rust fmt/clippy/test/doc proof. Keep this
+          # gate focused on source/contract/release-surface checks so a second
+          # full compilation lane cannot time out or create a false CI failure.
+          if ! python3 scripts/record_release_evidence.py \
+            --command "bash scripts/check_pack_truth.sh" \
+            --command "bash scripts/check_repo_surface.sh" \
+            --command "bash scripts/check_doc_truth.sh" \
+            --command "bash scripts/check_manifest_truth.sh" \
+            --command "python3 scripts/check_commit_permit_paths.py" \
+            --command "python3 scripts/check_constitutional_vocab.py" \
+            --command "python3 scripts/check_mandatory_artifact_refs.py" \
+            --command "bash scripts/check_schema_registry_uniqueness.sh" \
+            --command "bash scripts/check_no_prod_panics.sh" \
+            --command "bash scripts/check_mirror_discipline.sh" \
+            --command "bash scripts/check_hotspot_budgets.sh" \
+            --command "python3 scripts/check_public_type_drift.py" \
+            --command "python3 scripts/check_root_archive_manifest.py" \
+            --command "python3 scripts/check_public_api_docs.py" \
+            --command "bash scripts/check_schema_compat.sh"; then
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("STATUS_EVIDENCE_MANIFEST.json").read_text())
+          for item in manifest.get("proof_results", []):
+              if item.get("result") != "pass":
+                  print(f"::error title=release gate::{item.get('command')} failed")
+          PY
+            python3 -c "import json, pathlib; m=json.loads(pathlib.Path('STATUS_EVIDENCE_MANIFEST.json').read_text()); print('failed release gates:'); [print(item['command'] + ': ' + next((r['stderr']['path'] for r in m.get('source_binding', {}).get('command_receipts', []) if r['command'] == item['command']), '<no stderr>')) for item in m.get('proof_results', []) if item['result'] != 'pass']"
+            exit 1
+          fi
       - run: make gate
 
   # CI-001: Certify every required workspace independently.
@@ -39,6 +83,16 @@ jobs:
       - name: Workspace ${{ matrix.workspace }}
         run: |
           if [ "${{ matrix.workspace }}" = "root" ]; then
+            # The root workspace includes Tauri crates whose GTK stack is
+            # discovered through pkg-config on Ubuntu runners.
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends -y \
+              build-essential \
+              libssl-dev \
+              libwebkit2gtk-4.1-dev \
+              libayatana-appindicator3-dev \
+              librsvg2-dev \
+              libxdo-dev
             cargo fmt --all -- --check
             cargo clippy --workspace --all-targets --all-features -- -D warnings
             cargo test --workspace --all-targets --all-features
@@ -92,17 +146,6 @@ jobs:
       - name: scr-runtime-compression ${{ matrix.features }}
         run: cargo test -p scr-runtime-compression ${{ matrix.features }}
 
-  v25-production-closure:
-    runs-on: ubuntu-latest
-    needs: [hardening-gate, workspace-matrix, feature-lanes, codec-feature-lanes]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: bash scripts/check_v25_repo_truth.sh
-      - run: python3 scripts/check_v25_json_surface.py
-      - run: bash scripts/check_no_local_recomposition.sh
-      - run: python3 scripts/check_v25_production_closure.py
-      - run: bash scripts/run_v25_local_checks.sh
+  # The historical V25 production pack was superseded by the active V29
+  # closeout pack on 2026-03-30 (docs/archive/SUPERSESSION_INDEX.md). Its
+  # archived-only documents are intentionally not an active CI prerequisite.
