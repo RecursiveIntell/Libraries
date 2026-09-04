@@ -662,7 +662,11 @@ mod tests {
             base_dir: dir.path().to_path_buf(),
             ..Default::default()
         };
-        let store = MemoryStore::open(config).expect("open store");
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(semantic_memory::MockEmbedder::new(768)),
+        )
+        .expect("open store");
         let result = observe_governance(&store).await;
         // GOV-001: Default mode is Strict, so missing governance fails closed.
         assert!(
@@ -684,7 +688,11 @@ mod tests {
             base_dir: dir.path().to_path_buf(),
             ..Default::default()
         };
-        let store = MemoryStore::open(config).expect("open store");
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(semantic_memory::MockEmbedder::new(768)),
+        )
+        .expect("open store");
 
         // Insert governance claims directly into the claim_versions table.
         insert_governance_claim(&store, predicates::EFFECT_PREFLIGHT, "commit_eligible").await;
@@ -742,7 +750,11 @@ mod tests {
             base_dir: dir.path().to_path_buf(),
             ..Default::default()
         };
-        let store = MemoryStore::open(config).expect("open store");
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(semantic_memory::MockEmbedder::new(768)),
+        )
+        .expect("open store");
 
         insert_governance_claim(&store, predicates::CONTINUITY_INCIDENT_ACTIVE, "true").await;
 
@@ -825,7 +837,11 @@ mod tests {
             base_dir: dir.path().to_path_buf(),
             ..Default::default()
         };
-        let store = MemoryStore::open(config).expect("open store");
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(semantic_memory::MockEmbedder::new(768)),
+        )
+        .expect("open store");
         let result = observe_governance_with_mode(&store, GovernanceMode::Strict).await;
         assert!(
             result.is_err(),
@@ -845,7 +861,11 @@ mod tests {
             base_dir: dir.path().to_path_buf(),
             ..Default::default()
         };
-        let store = MemoryStore::open(config).expect("open store");
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(semantic_memory::MockEmbedder::new(768)),
+        )
+        .expect("open store");
         insert_governance_claim(&store, predicates::ASSURANCE_READY, "true").await;
 
         let result = observe_governance_with_mode(&store, GovernanceMode::Strict).await;
@@ -867,7 +887,11 @@ mod tests {
             base_dir: dir.path().to_path_buf(),
             ..Default::default()
         };
-        let store = MemoryStore::open(config).expect("open store");
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(semantic_memory::MockEmbedder::new(768)),
+        )
+        .expect("open store");
         let result = observe_governance_with_mode(&store, GovernanceMode::FailOpen).await;
         assert!(result.is_ok(), "fail-open mode should not error");
         let obs = result.unwrap();
