@@ -1,0 +1,5 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/work/dr-libraries-20260902/quant-governor/Cargo.toml
+workspace: /home/sikmindz/work/dr-libraries-20260902/Cargo.toml
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.32s
+     Running `target/debug/contract-schema-gen --check schemas`
