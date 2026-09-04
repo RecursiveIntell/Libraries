@@ -4,9 +4,17 @@ set -euo pipefail
 ROOT="${1:-.}"
 cd "$ROOT"
 
-if ! command -v rg >/dev/null 2>&1; then
-  echo "manifest truth check failed: rg is required" >&2
-  exit 1
+# The manifest check must inspect the repository source surface, not mutable
+# untracked files. Git is already required by the source-bound evidence flow and
+# provides the canonical tracked manifest inventory on every CI runner.
+mapfile -t cargo_files < <(
+  git ls-files -- 'Cargo.toml' '*/Cargo.toml' |
+    awk '!/^_salvage_from_libraries2\// && !/^docs\// && !/^target\//' |
+    sort
+)
+if [[ ${#cargo_files[@]} -eq 0 ]]; then
+  echo "manifest truth check skipped (no tracked Cargo.toml files found)"
+  exit 0
 fi
 
 extract_package_value() {
