@@ -46,8 +46,8 @@
     "make release-lane": "pass"
   },
   "source_binding": {
-    "commit_sha": "6eda0a94b83b832f5218866e3481bc1fd0db527e",
-    "tree_sha": "00a93a238b30e60dfb7f50f9d592a788e1be770a88a402709c47658e030bcdad",
+    "commit_sha": "efb4be37676dae2d7f56813f5c04c00969c86cc3",
+    "tree_sha": "359b7aa15cb0a22a84e0956de5505741fa67de72e8eaef4266db9776a12489f1",
     "cargo_lock_sha256": "bf0c58a059d6b06f85e6bd3bc9b6985bf7351f9cc4eafd096dffbd47a9fa0b62",
     "toolchain": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6",
     "platform": "Linux-7.2.3-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
@@ -69,9 +69,9 @@
           "bytes": 0
         },
         "stderr": {
-          "path": "release/evidence/logs/93198727988d3cefd55c9ea125724817c3645d2c3b1bbc17fad0846bb2db748a.stderr.log",
-          "sha256": "93198727988d3cefd55c9ea125724817c3645d2c3b1bbc17fad0846bb2db748a",
-          "bytes": 1322
+          "path": "release/evidence/logs/15f947d60dff6f50ccfcad8501183bdfbfd6eb1f7c2fa67c10182602e3d0e56f.stderr.log",
+          "sha256": "15f947d60dff6f50ccfcad8501183bdfbfd6eb1f7c2fa67c10182602e3d0e56f",
+          "bytes": 423
         }
       },
       {
@@ -384,9 +384,9 @@
           "bytes": 34
         },
         "stderr": {
-          "path": "release/evidence/logs/59c5050d412ae87b049b2282fdf5651b475ca9041b50b01ade623577dcbe592f.stderr.log",
-          "sha256": "59c5050d412ae87b049b2282fdf5651b475ca9041b50b01ade623577dcbe592f",
-          "bytes": 873
+          "path": "release/evidence/logs/192a4736bc1d117dff8f00aece26529218e8e828b6880ed0ab4bc8dd573d2a14.stderr.log",
+          "sha256": "192a4736bc1d117dff8f00aece26529218e8e828b6880ed0ab4bc8dd573d2a14",
+          "bytes": 379
         }
       },
       {
@@ -400,14 +400,14 @@
         "exit_code": 0,
         "result": "pass",
         "stdout": {
-          "path": "release/evidence/logs/197d416ecc17258d4bfa81bc95f781e9927811d4a34ca9e20b26320259002a2d.stdout.log",
-          "sha256": "197d416ecc17258d4bfa81bc95f781e9927811d4a34ca9e20b26320259002a2d",
+          "path": "release/evidence/logs/206a48f120c48fed803f149fd92225c21826e36bbe47ae0f7a6c76f4172d0b2b.stdout.log",
+          "sha256": "206a48f120c48fed803f149fd92225c21826e36bbe47ae0f7a6c76f4172d0b2b",
           "bytes": 101413
         },
         "stderr": {
-          "path": "release/evidence/logs/c5cbff27c5e0fde0d7c0b1dba4c59c9de8627dee14d46a91f2ebb0351bfe8cca.stderr.log",
-          "sha256": "c5cbff27c5e0fde0d7c0b1dba4c59c9de8627dee14d46a91f2ebb0351bfe8cca",
-          "bytes": 16574
+          "path": "release/evidence/logs/5efc160c101aefd1e273e14334501012170ae6aa234083fdb6a5d47c9cb3113b.stderr.log",
+          "sha256": "5efc160c101aefd1e273e14334501012170ae6aa234083fdb6a5d47c9cb3113b",
+          "bytes": 15380
         }
       }
     ]
@@ -540,7 +540,7 @@
   },
   "evidence_manifest": {
     "path": "STATUS_EVIDENCE_MANIFEST.json",
-    "sha256": "6d9e939f219b87af8d7a8a9f7e942c09fa9e4d9aab1d18a7aff83d02cb61f01e"
+    "sha256": "f3a6d3ae2d0be747a726d8947760610e3d63ded0ec66d5c48082590f4d9d9630"
   },
   "risk_register": {
     "path": "06_RISK_REGISTER.md",
