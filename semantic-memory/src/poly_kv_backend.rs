@@ -177,7 +177,10 @@ impl PolyKvBackend {
     }
 
     fn build_pool(&self) -> Result<SharedKvPool, MemoryError> {
-        let pending = self.pending.lock().map_err(|_| MemoryError::Other("poly-kv pending mutex poisoned".into()))?;
+        let pending = self
+            .pending
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv pending mutex poisoned".into()))?;
         if pending.is_empty() {
             return Err(MemoryError::Other("no embeddings to build pool".into()));
         }
@@ -248,7 +251,10 @@ impl PolyKvBackend {
     }
 
     fn get_or_build_pool(&self) -> Result<SharedKvPool, MemoryError> {
-        let mut guard = self.pool.lock().map_err(|_| MemoryError::Other("poly-kv pool mutex poisoned".into()))?;
+        let mut guard = self
+            .pool
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv pool mutex poisoned".into()))?;
         if let Some(ref pool) = *guard {
             return Ok(pool.clone());
         }
@@ -267,9 +273,18 @@ impl VectorBackend for PolyKvBackend {
                 vector.len()
             )));
         }
-        let mut pending = self.pending.lock().map_err(|_| MemoryError::Other("poly-kv pending mutex poisoned".into()))?;
-        let mut key_index = self.key_index.lock().map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
-        let mut count = self.count.lock().map_err(|_| MemoryError::Other("poly-kv count mutex poisoned".into()))?;
+        let mut pending = self
+            .pending
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv pending mutex poisoned".into()))?;
+        let mut key_index = self
+            .key_index
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
+        let mut count = self
+            .count
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv count mutex poisoned".into()))?;
 
         // If key already exists, remove old block.
         if let Some(&old_idx) = key_index.get(&key) {
@@ -303,14 +318,26 @@ impl VectorBackend for PolyKvBackend {
         key_index.insert(key, token_idx);
         *count += 1;
         // Invalidate cached pool.
-        *self.pool.lock().map_err(|_| MemoryError::Other("poly-kv pool mutex poisoned".into()))? = None;
+        *self
+            .pool
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv pool mutex poisoned".into()))? = None;
         Ok(())
     }
 
     fn delete(&self, key: &str) -> Result<(), MemoryError> {
-        let mut key_index = self.key_index.lock().map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
-        let mut pending = self.pending.lock().map_err(|_| MemoryError::Other("poly-kv pending mutex poisoned".into()))?;
-        let mut count = self.count.lock().map_err(|_| MemoryError::Other("poly-kv count mutex poisoned".into()))?;
+        let mut key_index = self
+            .key_index
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
+        let mut pending = self
+            .pending
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv pending mutex poisoned".into()))?;
+        let mut count = self
+            .count
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv count mutex poisoned".into()))?;
 
         if let Some(&idx) = key_index.get(key) {
             if idx < pending.len() {
@@ -324,7 +351,10 @@ impl VectorBackend for PolyKvBackend {
                 }
             }
             *count -= 1;
-            *self.pool.lock().map_err(|_| MemoryError::Other("poly-kv pool mutex poisoned".into()))? = None;
+            *self
+                .pool
+                .lock()
+                .map_err(|_| MemoryError::Other("poly-kv pool mutex poisoned".into()))? = None;
         }
         Ok(())
     }
@@ -341,7 +371,10 @@ impl VectorBackend for PolyKvBackend {
                 query.len()
             )));
         }
-        let count = *self.count.lock().map_err(|_| MemoryError::Other("poly-kv count mutex poisoned".into()))?;
+        let count = *self
+            .count
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv count mutex poisoned".into()))?;
         if count == 0 {
             return Ok(Vec::new());
         }
@@ -355,7 +388,10 @@ impl VectorBackend for PolyKvBackend {
                 .attention_topk_compressed(0, 0, query, top_k.min(count))
                 .map_err(|e| MemoryError::Other(format!("poly-kv search: {e}")))?;
 
-            let key_index = self.key_index.lock().map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
+            let key_index = self
+                .key_index
+                .lock()
+                .map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
             // Reverse lookup: token_index → key
             let idx_to_key: HashMap<usize, String> =
                 key_index.iter().map(|(k, v)| (*v, k.clone())).collect();
@@ -381,7 +417,10 @@ impl VectorBackend for PolyKvBackend {
                 .decode_layer(LayerId(0))
                 .map_err(|e| MemoryError::Other(format!("decode: {e}")))?;
             let all_values = decoded.value.data;
-            let key_index = self.key_index.lock().map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
+            let key_index = self
+                .key_index
+                .lock()
+                .map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
             let idx_to_key: HashMap<usize, String> =
                 key_index.iter().map(|(k, v)| (*v, k.clone())).collect();
             let mut scored: Vec<(String, f32)> = (0..count)
@@ -422,7 +461,10 @@ impl VectorBackend for PolyKvBackend {
         let persisted = store
             .persist(&pool)
             .map_err(|e| MemoryError::Other(format!("poly-kv save: {e}")))?;
-        let key_index = self.key_index.lock().map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
+        let key_index = self
+            .key_index
+            .lock()
+            .map_err(|_| MemoryError::Other("poly-kv key index mutex poisoned".into()))?;
         let keys_path = dir.join(format!("{_basename}.keys.json"));
         let key_bytes = serde_json::to_vec(&*key_index)
             .map_err(|e| MemoryError::Other(format!("poly-kv key map encode: {e}")))?;
