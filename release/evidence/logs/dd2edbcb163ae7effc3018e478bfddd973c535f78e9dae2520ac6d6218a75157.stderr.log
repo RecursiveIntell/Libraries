@@ -1,0 +1,12 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/work/dr-libraries-20260902/quant-governor/Cargo.toml
+workspace: /home/sikmindz/work/dr-libraries-20260902/Cargo.toml
+   Compiling pyo3-ffi v0.29.2
+    Checking forge-pilot v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/forge-pilot)
+   Compiling stack-monitor-desktop v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/stack-monitor-desktop)
+   Compiling pyo3 v0.29.2
+    Checking contract-schema-gen v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/contract-schema-gen)
+    Checking pyo3-async-runtimes v0.29.0
+    Checking agent-graph-python v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/agent-graph-python)
+    Checking llm-pipeline-python v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/llm-pipeline-python)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.92s

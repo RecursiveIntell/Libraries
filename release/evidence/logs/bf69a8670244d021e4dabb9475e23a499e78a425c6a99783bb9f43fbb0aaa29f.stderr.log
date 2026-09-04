@@ -1,0 +1,7 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/work/dr-libraries-20260902/quant-governor/Cargo.toml
+workspace: /home/sikmindz/work/dr-libraries-20260902/Cargo.toml
+   Compiling forge-pilot v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/forge-pilot)
+   Compiling contract-schema-gen v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/contract-schema-gen)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.85s
+     Running `target/debug/contract-schema-gen --check schemas`
