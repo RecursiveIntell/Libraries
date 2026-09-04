@@ -1,15 +1,18 @@
 {
   "archive_mode": "logical_supersession_map",
-  "generated_at": "2026-03-30",
+  "generated_at": "2026-09-04",
   "active_root_closeout_pack": [
     "README.md",
     "00_START_HERE.md",
     "01_MASTER_ISSUE_TENSOR.json",
-    "02_MASTER_ISSUE_MATRIX.md",
+    "02_PHASE_PLAN.md",
     "03_IMPLEMENTATION_PLAYBOOK.md",
     "04_EXACT_FILE_TOUCH_MAP.md",
     "05_TEST_AND_CONFORMANCE_PLAN.md",
-    "06_RISK_REGISTER.md",
+    "06_VALIDATION_COMMANDS.md",
+    "07_ROLLBACK_AND_QUARANTINE.md",
+    "08_FINAL_AUDITOR_HANDOFF.md",
+    "09_CODEX_FEATURES_AND_INSTALL.md",
     "10_HOSTILE_AUDIT_CLAUDE.md",
     "11_HOSTILE_AUDIT_GPT.md",
     "11_HOSTILE_AUDIT_GPT_TENSOR.json",
@@ -18,6 +21,7 @@
     "CONFORMANCE_GATES.md",
     "PACK_MANIFEST.json",
     "PROMPT.md",
+    "RISK_REGISTER.md",
     "SCOPE_NOTES.md",
     "SOURCE_BASIS.md",
     "STATUS_DASHBOARD.md",
@@ -34,11 +38,14 @@
       "superseded_by": [
         "00_START_HERE.md",
         "01_MASTER_ISSUE_TENSOR.json",
-        "02_MASTER_ISSUE_MATRIX.md",
+        "02_PHASE_PLAN.md",
         "03_IMPLEMENTATION_PLAYBOOK.md",
         "04_EXACT_FILE_TOUCH_MAP.md",
         "05_TEST_AND_CONFORMANCE_PLAN.md",
-        "06_RISK_REGISTER.md",
+        "06_VALIDATION_COMMANDS.md",
+        "07_ROLLBACK_AND_QUARANTINE.md",
+        "08_FINAL_AUDITOR_HANDOFF.md",
+        "09_CODEX_FEATURES_AND_INSTALL.md",
         "10_HOSTILE_AUDIT_CLAUDE.md",
         "11_HOSTILE_AUDIT_GPT.md"
       ]
@@ -60,7 +67,6 @@
       "archived_count": 72,
       "superseded_by": [
         "01_MASTER_ISSUE_TENSOR.json",
-        "02_MASTER_ISSUE_MATRIX.md",
         "03_IMPLEMENTATION_PLAYBOOK.md",
         "STATUS_EVIDENCE_MANIFEST.json"
       ]

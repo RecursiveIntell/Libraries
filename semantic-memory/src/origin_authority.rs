@@ -383,23 +383,39 @@ impl OriginAuthorityLabelV1 {
         if derived_content_digest.trim().is_empty() {
             return Err("derived content digest must be non-empty".into());
         }
-        let risk = ancestors.iter().map(|label| label.risk).max().unwrap();
+        let risk = ancestors
+            .iter()
+            .map(|label| label.risk)
+            .max()
+            .ok_or_else(|| "derived origin requires at least one ancestor".to_string())?;
+        let recall = ancestors
+            .iter()
+            .map(|label| label.scopes.recall)
+            .min()
+            .ok_or_else(|| "derived origin requires at least one ancestor".to_string())?;
+        let assertion = ancestors
+            .iter()
+            .map(|label| label.scopes.assertion)
+            .min()
+            .ok_or_else(|| "derived origin requires at least one ancestor".to_string())?;
+        let action = ancestors
+            .iter()
+            .map(|label| label.scopes.action)
+            .min()
+            .ok_or_else(|| "derived origin requires at least one ancestor".to_string())?;
+        let revocation_status = ancestors
+            .iter()
+            .map(|label| label.revocation_status)
+            .max_by_key(|status| match status {
+                RevocationStatusV1::Active => 0,
+                RevocationStatusV1::PendingReview => 1,
+                RevocationStatusV1::Revoked => 2,
+            })
+            .ok_or_else(|| "derived origin requires at least one ancestor".to_string())?;
         let scopes = AuthorityScopesV1 {
-            recall: ancestors
-                .iter()
-                .map(|label| label.scopes.recall)
-                .min()
-                .unwrap(),
-            assertion: ancestors
-                .iter()
-                .map(|label| label.scopes.assertion)
-                .min()
-                .unwrap(),
-            action: ancestors
-                .iter()
-                .map(|label| label.scopes.action)
-                .min()
-                .unwrap(),
+            recall,
+            assertion,
+            action,
         };
         let principal = if ancestors
             .iter()
@@ -457,15 +473,7 @@ impl OriginAuthorityLabelV1 {
             revocation_reference: ancestors
                 .iter()
                 .find_map(|label| label.revocation_reference.clone()),
-            revocation_status: ancestors
-                .iter()
-                .map(|label| label.revocation_status)
-                .max_by_key(|status| match status {
-                    RevocationStatusV1::Active => 0,
-                    RevocationStatusV1::PendingReview => 1,
-                    RevocationStatusV1::Revoked => 2,
-                })
-                .unwrap(),
+            revocation_status,
             audience: audience.clone(),
             ancestor_digests,
             derivation_kind: Some(kind),

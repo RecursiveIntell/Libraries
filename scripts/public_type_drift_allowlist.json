@@ -1,11 +1,29 @@
 {
   "allowlist": [
     {
+      "name": "CrateReceiptV1",
+      "owners": ["contract-schema-gen", "stack-ids"],
+      "reason": "Existing cross-crate receipt shapes remain intentionally distinct until canonical contract extraction."
+    },
+    {
       "name": "ExecutionStopReason",
-      "owners": [
-        "kernel-execution",
-        "verification-control"
-      ]
+      "owners": ["kernel-execution", "verification-control"],
+      "reason": "Execution and control layers carry distinct owner-local stop contracts."
+    },
+    {
+      "name": "Outcome",
+      "owners": ["contract-schema-gen", "stack-ids"],
+      "reason": "Existing cross-crate outcome shapes remain intentionally distinct until canonical contract extraction."
+    },
+    {
+      "name": "RefutationResult",
+      "owners": ["semantic-memory", "semantic-memory-forge"],
+      "reason": "Memory retrieval and forge export retain separate owner-local refutation contracts."
+    },
+    {
+      "name": "Syndrome",
+      "owners": ["recursive-kernel-core", "semantic-memory"],
+      "reason": "Kernel and memory layers retain separate syndrome contracts at their boundary."
     }
   ]
 }

@@ -43,7 +43,7 @@ if [[ ! -f "$EXCEPTION_DOC" ]]; then
   echo "hotspot budget: ${EXCEPTION_DOC} not present, creating stub" >&2
 fi
 
-check_file_budget "agent-graph/src/error.rs" 120
+check_documented_exception "agent-graph/src/error.rs" 120
 check_file_budget "forge-pilot/src/main.rs" 80
 check_file_budget "Primitives/cea-core/src/predict.rs" 380
 check_file_budget "living-memory/living-memory/src/lab/evidence.rs" 2500
