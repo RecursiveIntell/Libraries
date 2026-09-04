@@ -4,22 +4,21 @@
 //! Usage: cargo run --example run_experiment -- <fixture-dir> <forge-db-path>
 
 use forge_engine::adapters::CargoAdapter;
-use forge_engine::cea::instrumentation::{attribute_effects, AttributedRunResult};
+use forge_engine::cea::instrumentation::attribute_effects;
 use forge_engine::cea::store::update_graph;
 use forge_engine::config::ForgeConfig;
 use forge_engine::exec::host::HostBackend;
 use forge_engine::experiment::{ExperimentConfig, PairedExperimentRunner};
 use forge_engine::lab::evaluate::compute_scores;
-use forge_engine::lab::suite::{load_suite, EvalTask};
+use forge_engine::lab::suite::load_suite;
 use forge_engine::runtime::patch::apply::LineAttributionMap;
-use forge_engine::runtime::patch::types::{Anchor, LineRange};
+use forge_engine::runtime::patch::types::Anchor;
 use forge_engine::runtime::patch::types::{EditOp, FileEdit, FileMode, StructuredPatch};
 use forge_engine::store::ForgeStore;
-use forge_engine::ForgeConfig as FC;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     let fixture_dir = args
         .get(1)
@@ -31,14 +30,16 @@ async fn main() {
     });
 
     // Open forge store
-    let store = ForgeStore::open(&db_path).expect("open forge db");
+    let store = ForgeStore::open(&db_path)?;
 
     // Config with host backend allowed (not sealed)
-    let mut config = ForgeConfig::default();
-    config.sealed_allow_host_backend = true;
+    let config = ForgeConfig {
+        sealed_allow_host_backend: true,
+        ..Default::default()
+    };
 
     // Load evaluation suite
-    let suite = load_suite(&fixture_dir).expect("load fixture suite");
+    let suite = load_suite(&fixture_dir)?;
     println!("Suite: {} ({} tasks)", suite.name, suite.tasks.len());
 
     let backend = HostBackend::new(&config);
@@ -78,12 +79,6 @@ async fn main() {
 
         match result {
             Ok(experiment) => {
-                let fmt_ok =
-                    experiment.baseline_result.fmt_pass && experiment.patched_result.fmt_pass;
-                let clippy_ok =
-                    experiment.baseline_result.clippy_pass && experiment.patched_result.clippy_pass;
-                let test_ok =
-                    experiment.baseline_result.test_pass && experiment.patched_result.test_pass;
                 println!(
                     "  baseline: fmt={} clippy={} test={}",
                     experiment.baseline_result.fmt_pass,
@@ -147,4 +142,5 @@ async fn main() {
 
     println!("\n=== DONE ===");
     println!("forge db: {}", db_path.display());
+    Ok(())
 }

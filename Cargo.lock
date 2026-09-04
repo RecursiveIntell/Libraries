@@ -5070,6 +5070,7 @@ version = "0.1.0-alpha.1"
 dependencies = [
  "bincode 2.0.1",
  "blake3",
+ "fib-quant 0.1.0-alpha.1",
  "quant-codec-core",
  "serde",
  "serde_json",

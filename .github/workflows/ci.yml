@@ -39,6 +39,16 @@ jobs:
       - name: Workspace ${{ matrix.workspace }}
         run: |
           if [ "${{ matrix.workspace }}" = "root" ]; then
+            # The root workspace includes Tauri crates whose GTK stack is
+            # discovered through pkg-config on Ubuntu runners.
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends -y \
+              build-essential \
+              libssl-dev \
+              libwebkit2gtk-4.1-dev \
+              libayatana-appindicator3-dev \
+              librsvg2-dev \
+              libxdo-dev
             cargo fmt --all -- --check
             cargo clippy --workspace --all-targets --all-features -- -D warnings
             cargo test --workspace --all-targets --all-features

@@ -107,7 +107,7 @@ fn build_unique_patches(fixture_path: &Path, task_id: &str) -> Vec<(String, Stru
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     let fixture_dir = args
         .get(1)
@@ -118,11 +118,13 @@ async fn main() {
             .join(".recall-coding/forge/forge.db")
     });
 
-    let store = ForgeStore::open(&db_path).expect("open forge db");
-    let mut config = ForgeConfig::default();
-    config.sealed_allow_host_backend = true;
+    let store = ForgeStore::open(&db_path)?;
+    let config = ForgeConfig {
+        sealed_allow_host_backend: true,
+        ..Default::default()
+    };
 
-    let suite = load_suite(&fixture_dir).expect("load fixture suite");
+    let suite = load_suite(&fixture_dir)?;
     println!(
         "Fixture: {}  Tasks: {}",
         fixture_dir.display(),
@@ -290,4 +292,5 @@ async fn main() {
         total_edges,
         db_path.display()
     );
+    Ok(())
 }

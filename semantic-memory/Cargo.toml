@@ -87,12 +87,12 @@ rl-routing = ["routing"]
 subgraph-pruning = ["subtraction"]
 testing = []
 turbo-quant-codec = ["dep:turbo-quant", "dep:quant-governor", "dep:scr-runtime-compression"]
-# Reserved capability gate for FibQuant-backed candidate generation. The runtime
-# path must fail explicitly until a truthful FibQuant artifact adapter is wired.
-fib-quant-codec = []
+# FibQuant-backed candidate generation owns the PolyKV adapter dependency. Keep
+# the dependency feature mapping explicit so `--all-features` cannot compile
+# semantic-memory's FibQuant path against a raw PolyKV build.
+fib-quant-codec = ["dep:poly-kv", "poly-kv/fibquant-adapter"]
 # poly-kv two-tier compressed KV cache pool for shared context compression.
-# Enables ProveKvPoolCandidateOnly search policy for approximate candidate
-# generation from compressed embedding pools.
+# Enables the bridge and backend types without implicitly enabling FibQuant.
 poly-kv-codec = ["dep:poly-kv"]
 # In-process Candle embedder (pure-Rust, CPU-only, no Ollama required).
 # When enabled, MemoryStore::open() defaults to CandleEmbedder instead of

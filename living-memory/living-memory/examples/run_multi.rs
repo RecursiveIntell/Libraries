@@ -74,7 +74,6 @@ const STRATEGIES: &[Strategy] = &[
 ];
 
 fn build_patch(s: &Strategy) -> StructuredPatch {
-    let context_lines: Vec<String> = s.context.lines().map(|l| l.to_string()).collect();
     let ops = match s.op_kind {
         "delete" => vec![EditOp::Delete {
             range: LineRange {
@@ -112,7 +111,7 @@ fn build_patch(s: &Strategy) -> StructuredPatch {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     let fixture_dir = args
         .get(1)
@@ -124,11 +123,13 @@ async fn main() {
     });
 
     // Create forge DB if it doesn't exist yet (schema will be created on first write)
-    let store = ForgeStore::open(&db_path).expect("open forge db");
-    let mut config = ForgeConfig::default();
-    config.sealed_allow_host_backend = true;
+    let store = ForgeStore::open(&db_path)?;
+    let config = ForgeConfig {
+        sealed_allow_host_backend: true,
+        ..Default::default()
+    };
 
-    let suite = load_suite(&fixture_dir).expect("load fixture suite");
+    let suite = load_suite(&fixture_dir)?;
     println!(
         "Suite: {} ({} tasks, {} strategies)\n",
         suite.name,
@@ -217,4 +218,5 @@ async fn main() {
         "edges: {}  no-triples: {}  dups: {}",
         total_edges, total_no_triples, total_dups
     );
+    Ok(())
 }
