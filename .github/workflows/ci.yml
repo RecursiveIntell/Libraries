@@ -146,17 +146,6 @@ jobs:
       - name: scr-runtime-compression ${{ matrix.features }}
         run: cargo test -p scr-runtime-compression ${{ matrix.features }}
 
-  v25-production-closure:
-    runs-on: ubuntu-latest
-    needs: [hardening-gate, workspace-matrix, feature-lanes, codec-feature-lanes]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: bash scripts/check_v25_repo_truth.sh
-      - run: python3 scripts/check_v25_json_surface.py
-      - run: bash scripts/check_no_local_recomposition.sh
-      - run: python3 scripts/check_v25_production_closure.py
-      - run: bash scripts/run_v25_local_checks.sh
+  # The historical V25 production pack was superseded by the active V29
+  # closeout pack on 2026-03-30 (docs/archive/SUPERSESSION_INDEX.md). Its
+  # archived-only documents are intentionally not an active CI prerequisite.
