@@ -1,0 +1,2 @@
+LIB-004 hotspot diff cap exceeded: semantic-memory has 1362 changed lines (cap 500)
+  Consider splitting into smaller PRs or documenting the exception.

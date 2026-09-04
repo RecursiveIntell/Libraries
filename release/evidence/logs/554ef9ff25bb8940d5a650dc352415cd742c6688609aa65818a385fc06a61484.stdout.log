@@ -1,0 +1,16 @@
+public api doc coverage report
+forge-pilot: documented 69/69 public functions
+profile-runtime: documented 44/44 public functions
+effect-runtime: documented 43/43 public functions
+verification-policy: documented 50/50 public functions
+semantic-memory-forge: documented 35/35 public functions
+assurance-runtime: compatibility-name crate, documented 0/21 public functions
+attestation-exchange: compatibility-name crate, documented 0/15 public functions
+authority-delegation: compatibility-name crate, documented 0/21 public functions
+constitutional-memory: compatibility-name crate, documented 0/3 public functions
+continuity-runtime: compatibility-name crate, documented 0/34 public functions
+discovery-portfolio: compatibility-name crate, documented 0/1 public functions
+federated-settlement: compatibility-name crate, documented 0/3 public functions
+mechanism-runtime: compatibility-name crate, documented 0/2 public functions
+spec-execution: compatibility-name crate, documented 0/3 public functions
+public api doc coverage check passed

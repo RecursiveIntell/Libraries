@@ -1,0 +1,7 @@
+public type drift report
+CrateReceiptV1: contract-schema-gen, stack-ids
+ExecutionStopReason: kernel-execution, verification-control
+Outcome: contract-schema-gen, stack-ids
+RefutationResult: semantic-memory, semantic-memory-forge
+Syndrome: recursive-kernel-core, semantic-memory
+public type drift check passed with 5 allowlisted duplicate name(s)

@@ -1,0 +1,10 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/sikmindz/work/dr-libraries-20260902/quant-governor/Cargo.toml
+workspace: /home/sikmindz/work/dr-libraries-20260902/Cargo.toml
+   Compiling semantic-memory v0.5.15 (/home/sikmindz/work/dr-libraries-20260902/semantic-memory)
+   Compiling knowledge-runtime v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/knowledge-runtime)
+   Compiling forge-engine v0.2.0 (/home/sikmindz/work/dr-libraries-20260902/living-memory/living-memory)
+   Compiling forge-pilot v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/forge-pilot)
+   Compiling contract-schema-gen v0.1.0 (/home/sikmindz/work/dr-libraries-20260902/contract-schema-gen)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.68s
+     Running `target/debug/contract-schema-gen --check schemas`

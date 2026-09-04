@@ -1,7 +1,10 @@
 {
-  "snapshot": "2026-05-13-hardening-closeout",
-  "captured_at": "2026-05-13",
-  "captured_at_local": "2026-05-13T13:08:23-05:00",
+  "schema_version": "libraries.status-evidence.v2",
+  "snapshot": "2026-09-04-source-bound-release-evidence",
+  "captured_at": "2026-09-04",
+  "captured_at_utc": "2026-09-04T09:15:37+00:00",
+  "tree_was_clean_before_recording": true,
+  "dirty_status_before_recording": [],
   "gate_definition": {
     "path": "scripts/release_gate_set.py",
     "sha256": "6640386b859b75bd122be3f8970fc8b5cfb7b75d48e02a8d433c0346656e36bf",
@@ -81,21 +84,391 @@
     },
     {
       "command": "python3 scripts/check_root_archive_manifest.py",
-      "result": "fail"
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/check_public_api_docs.py",
+      "result": "pass"
+    },
+    {
+      "command": "bash scripts/check_schema_compat.sh",
+      "result": "pass"
+    },
+    {
+      "command": "make release-lane",
+      "result": "pass"
     }
   ],
-  "artifact_files": [
-    "STATUS_DASHBOARD.md",
-    "SUPPORT_PROFILE.md",
-    "scripts/release_gate_set.py",
-    "scripts/check_no_prod_panics.sh",
-    "scripts/public_type_drift_allowlist.json",
-    "docs/archive/root_closeout_history/manifest.json",
-    "release/closeout_receipt_v1.json"
-  ],
+  "source_binding": {
+    "commit_sha": "6eda0a94b83b832f5218866e3481bc1fd0db527e",
+    "tree_sha": "00a93a238b30e60dfb7f50f9d592a788e1be770a88a402709c47658e030bcdad",
+    "cargo_lock_sha256": "bf0c58a059d6b06f85e6bd3bc9b6985bf7351f9cc4eafd096dffbd47a9fa0b62",
+    "toolchain": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6",
+    "platform": "Linux-7.2.3-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+    "workspace_inventory_sha256": "66543494af9ee42a9dd86602eefdcb92be7e80ee32595c3700fbf6ebfc7c057a",
+    "command_receipts": [
+      {
+        "command": "cargo check --workspace",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "cargo check --workspace"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        "stderr": {
+          "path": "release/evidence/logs/93198727988d3cefd55c9ea125724817c3645d2c3b1bbc17fad0846bb2db748a.stderr.log",
+          "sha256": "93198727988d3cefd55c9ea125724817c3645d2c3b1bbc17fad0846bb2db748a",
+          "bytes": 1322
+        }
+      },
+      {
+        "command": "bash scripts/check_pack_truth.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_pack_truth.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/b2493c75b0cb4ebae1ccd0611e177cf3b976c7a35674b142b7d10604f037c035.stdout.log",
+          "sha256": "b2493c75b0cb4ebae1ccd0611e177cf3b976c7a35674b142b7d10604f037c035",
+          "bytes": 37
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "bash scripts/check_repo_surface.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_repo_surface.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/ff992129f71c619ce105a2e2a1ae9b6acc862ce010489e8d61b73547cd343aa9.stdout.log",
+          "sha256": "ff992129f71c619ce105a2e2a1ae9b6acc862ce010489e8d61b73547cd343aa9",
+          "bytes": 26
+        },
+        "stderr": {
+          "path": "release/evidence/logs/cae8effe5873f05fd2ebd24a2ee9bd379c59942479173c449266ce24f80a6378.stderr.log",
+          "sha256": "cae8effe5873f05fd2ebd24a2ee9bd379c59942479173c449266ce24f80a6378",
+          "bytes": 197
+        }
+      },
+      {
+        "command": "bash scripts/check_doc_truth.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_doc_truth.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/4c90e9306cb348d4afcf1833f1287906adecda1e46d7a3ba4ee6b7c6ae46d5e7.stdout.log",
+          "sha256": "4c90e9306cb348d4afcf1833f1287906adecda1e46d7a3ba4ee6b7c6ae46d5e7",
+          "bytes": 23
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "bash scripts/check_manifest_truth.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_manifest_truth.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/f3f15895a804d18027bae16dafaa120df2b8f152c92069d230d2b7a640af83c4.stdout.log",
+          "sha256": "f3f15895a804d18027bae16dafaa120df2b8f152c92069d230d2b7a640af83c4",
+          "bytes": 28
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "python3 scripts/check_commit_permit_paths.py",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "python3 scripts/check_commit_permit_paths.py"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/ba6789ccedb445a5cb0ab2431551dec205dcf8ceacd39b02d4b3883953cb1eb2.stdout.log",
+          "sha256": "ba6789ccedb445a5cb0ab2431551dec205dcf8ceacd39b02d4b3883953cb1eb2",
+          "bytes": 103
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "python3 scripts/check_constitutional_vocab.py",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "python3 scripts/check_constitutional_vocab.py"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/c5f62c7cfa1b94e9b9b44e464ccf8ddc925e4c9cc9b393261b84914b687ea71f.stdout.log",
+          "sha256": "c5f62c7cfa1b94e9b9b44e464ccf8ddc925e4c9cc9b393261b84914b687ea71f",
+          "bytes": 34
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "python3 scripts/check_mandatory_artifact_refs.py",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "python3 scripts/check_mandatory_artifact_refs.py"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/390835e80e201ce46d9454b5d0cd3219b7c603370bdd543e0a8f2528ae798687.stdout.log",
+          "sha256": "390835e80e201ce46d9454b5d0cd3219b7c603370bdd543e0a8f2528ae798687",
+          "bytes": 37
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "bash scripts/check_schema_registry_uniqueness.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_schema_registry_uniqueness.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/ff791ee04c8c86c3fe6bdf52dec2fec93e0c02630ab6970c0cb6a4cb18d0e300.stdout.log",
+          "sha256": "ff791ee04c8c86c3fe6bdf52dec2fec93e0c02630ab6970c0cb6a4cb18d0e300",
+          "bytes": 41
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "bash scripts/check_no_prod_panics.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_no_prod_panics.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/e283648c2c589745553f4aecfc8044be6e89695214dab6cb8c460f2810c0ffce.stdout.log",
+          "sha256": "e283648c2c589745553f4aecfc8044be6e89695214dab6cb8c460f2810c0ffce",
+          "bytes": 76
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "bash scripts/check_mirror_discipline.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_mirror_discipline.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/509105bfa98a6cc874db9bc9bf4f43596b19cafa0e73e5c79c4b4fffc3721187.stdout.log",
+          "sha256": "509105bfa98a6cc874db9bc9bf4f43596b19cafa0e73e5c79c4b4fffc3721187",
+          "bytes": 54
+        },
+        "stderr": {
+          "path": "release/evidence/logs/7d08081a531b42672d9f11408a6bd5aa6afd43e1553a17940101ff2eb8595eec.stderr.log",
+          "sha256": "7d08081a531b42672d9f11408a6bd5aa6afd43e1553a17940101ff2eb8595eec",
+          "bytes": 122
+        }
+      },
+      {
+        "command": "bash scripts/check_hotspot_budgets.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_hotspot_budgets.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/540057075ba56fdefd2853e20e435cec0ddd1e647ec98a8aed6b79b16ef6b875.stdout.log",
+          "sha256": "540057075ba56fdefd2853e20e435cec0ddd1e647ec98a8aed6b79b16ef6b875",
+          "bytes": 29
+        },
+        "stderr": {
+          "path": "release/evidence/logs/b1bccdf73501ac85d524d65b814807c4e11f400c700b6b6f2ff7fb58808a797e.stderr.log",
+          "sha256": "b1bccdf73501ac85d524d65b814807c4e11f400c700b6b6f2ff7fb58808a797e",
+          "bytes": 152
+        }
+      },
+      {
+        "command": "python3 scripts/check_public_type_drift.py",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "python3 scripts/check_public_type_drift.py"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/9d1e67d51b4fccf89d61cdda814d6098611a559e033c3a96f07652c90f85a521.stdout.log",
+          "sha256": "9d1e67d51b4fccf89d61cdda814d6098611a559e033c3a96f07652c90f85a521",
+          "bytes": 346
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "python3 scripts/check_root_archive_manifest.py",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "python3 scripts/check_root_archive_manifest.py"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/f43e13eb5e6192c2e58e72c73ffd5443db557e6c04ca46eb3de02972a592a2e7.stdout.log",
+          "sha256": "f43e13eb5e6192c2e58e72c73ffd5443db557e6c04ca46eb3de02972a592a2e7",
+          "bytes": 35
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "python3 scripts/check_public_api_docs.py",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "python3 scripts/check_public_api_docs.py"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/554ef9ff25bb8940d5a650dc352415cd742c6688609aa65818a385fc06a61484.stdout.log",
+          "sha256": "554ef9ff25bb8940d5a650dc352415cd742c6688609aa65818a385fc06a61484",
+          "bytes": 1038
+        },
+        "stderr": {
+          "path": "release/evidence/logs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      {
+        "command": "bash scripts/check_schema_compat.sh",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "bash scripts/check_schema_compat.sh"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/a30827f3e3723619216195c8df6a51a0a02d58a9c194e142682004306db5bf03.stdout.log",
+          "sha256": "a30827f3e3723619216195c8df6a51a0a02d58a9c194e142682004306db5bf03",
+          "bytes": 34
+        },
+        "stderr": {
+          "path": "release/evidence/logs/59c5050d412ae87b049b2282fdf5651b475ca9041b50b01ade623577dcbe592f.stderr.log",
+          "sha256": "59c5050d412ae87b049b2282fdf5651b475ca9041b50b01ade623577dcbe592f",
+          "bytes": 873
+        }
+      },
+      {
+        "command": "make release-lane",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "make release-lane"
+        ],
+        "cwd": ".",
+        "exit_code": 0,
+        "result": "pass",
+        "stdout": {
+          "path": "release/evidence/logs/197d416ecc17258d4bfa81bc95f781e9927811d4a34ca9e20b26320259002a2d.stdout.log",
+          "sha256": "197d416ecc17258d4bfa81bc95f781e9927811d4a34ca9e20b26320259002a2d",
+          "bytes": 101413
+        },
+        "stderr": {
+          "path": "release/evidence/logs/c5cbff27c5e0fde0d7c0b1dba4c59c9de8627dee14d46a91f2ebb0351bfe8cca.stderr.log",
+          "sha256": "c5cbff27c5e0fde0d7c0b1dba4c59c9de8627dee14d46a91f2ebb0351bfe8cca",
+          "bytes": 16574
+        }
+      }
+    ]
+  },
   "notes": [
-    "This ledger is generated by scripts/run_release_gates.py from the canonical gate list in scripts/release_gate_set.py.",
-    "make gate reruns the same commands in the same order and rewrites this ledger before regenerating the closeout receipt.",
-    "The receipt is a derivative artifact. It must not be treated as independent proof of gate success."
+    "Recorded by the explicit record-release-evidence path; verification is read-only.",
+    "Every selected command has an exit code and content-addressed stdout/stderr logs.",
+    "A failed command is recorded as failed; it is never omitted or rewritten by verification."
   ]
 }
