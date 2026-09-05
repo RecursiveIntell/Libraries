@@ -92,6 +92,21 @@ pub fn parse_key(s: &str) -> Result<Vec<u8>> {
     }
     Ok(k)
 }
+pub fn parse_key_file(path: &Path) -> Result<Vec<u8>> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mode = std::fs::metadata(path)?.permissions().mode();
+        if mode & 0o077 != 0 {
+            return Err(Error::Invalid(
+                "key file must not be group- or world-readable".into(),
+            ));
+        }
+    }
+    let key = std::fs::read_to_string(path)?;
+    parse_key(key.trim())
+}
+
 pub fn receipt_path(cwd: &Path, id: &str) -> std::path::PathBuf {
     cwd.join(".aew/receipts").join(format!("{id}.json"))
 }

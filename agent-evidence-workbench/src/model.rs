@@ -74,6 +74,8 @@ pub struct CheckResult {
     pub stderr_digest: String,
     pub duration_ms: u128,
     pub passed: bool,
+    #[serde(default)]
+    pub redaction_count: usize,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RunReport {

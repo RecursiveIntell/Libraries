@@ -1,0 +1,73 @@
+{
+  "schema_version": "aew.release-truth-input.v2",
+  "run_id": "fixture-false-green-v2",
+  "claims": [
+    {
+      "id": "actual-test",
+      "text": "the fixture test passed",
+      "required_evidence": ["actual-test-command"]
+    },
+    {
+      "id": "printed-success",
+      "text": "tests pass",
+      "required_evidence": ["actual-test-command"]
+    },
+    {
+      "id": "blocked-check",
+      "text": "the unavailable check passed",
+      "required_evidence": ["blocked-command"]
+    }
+  ],
+  "commands": [
+    {
+      "id": "actual-test-command",
+      "execution_mode": "argv",
+      "argv": ["python3", "-c", "print('fixture_test_passed')"],
+      "cwd": "/fixture",
+      "outcome": "passed",
+      "stdout": "fixture_test_passed\n",
+      "stderr": "",
+      "observed_at": "2026-09-05T00:00:00Z",
+      "recorded_at": "2026-09-05T00:00:01Z"
+    },
+    {
+      "id": "printed-output-command",
+      "execution_mode": "shell",
+      "argv": ["sh", "-c", "printf 'tests pass\\n'"],
+      "cwd": "/fixture",
+      "outcome": "passed",
+      "stdout": "tests pass\nAuthorization: Bearer secret-token-123\n",
+      "stderr": "",
+      "observed_at": "2026-09-05T00:00:00Z",
+      "recorded_at": "2026-09-05T00:00:01Z"
+    },
+    {
+      "id": "blocked-command",
+      "execution_mode": "argv",
+      "argv": [],
+      "cwd": "/fixture",
+      "outcome": "blocked",
+      "stdout": "",
+      "stderr": "environment fixture unavailable",
+      "observed_at": "2026-09-05T00:00:00Z",
+      "recorded_at": "2026-09-05T00:00:01Z"
+    }
+  ],
+  "links": [
+    {
+      "claim_id": "actual-test",
+      "evidence_id": "actual-test-command",
+      "relation": "supports"
+    },
+    {
+      "claim_id": "printed-success",
+      "evidence_id": "printed-output-command",
+      "relation": "mentions"
+    },
+    {
+      "claim_id": "blocked-check",
+      "evidence_id": "blocked-command",
+      "relation": "supports"
+    }
+  ]
+}

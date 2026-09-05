@@ -1,14 +1,12 @@
 use agent_evidence_workbench::{
-    adjudicator::adjudicate,
     cli::{Cli, Commands},
-    collector::snapshot_repo,
+    collector::{snapshot_repo, source_snapshot_v2},
     extractor::extract_claims,
     model::*,
     receipt,
     report::generate_markdown,
     run::run_command,
     storage,
-    verifier::verify_claims,
 };
 use chrono::Utc;
 use clap::Parser;
@@ -21,32 +19,27 @@ fn item(
     exit: Option<i32>,
     dur: u128,
 ) -> EvidenceItem {
+    let redacted = agent_evidence_workbench::v2::redact_text(content);
     EvidenceItem {
-        id: hex::encode(Sha256::digest(format!("{}:{}", source, content).as_bytes())),
+        id: hex::encode(Sha256::digest(
+            format!("{}:{}", source, redacted.text).as_bytes(),
+        )),
         kind,
         source: source.into(),
-        digest: hex::encode(Sha256::digest(content.as_bytes())),
-        summary: content.chars().take(200).collect(),
+        digest: hex::encode(Sha256::digest(redacted.text.as_bytes())),
+        summary: redacted.text.chars().take(200).collect(),
         exit_code: exit,
         duration_ms: dur,
     }
 }
 async fn resolved(mut r: RunReport) -> anyhow::Result<RunReport> {
-    let statuses = verify_claims(&r.claims, &r.checks, &r.diff).await;
-    for (c, s) in r.claims.iter_mut().zip(statuses) {
-        c.status = s;
+    // V1 regex extraction and substring matching are retained only for legacy
+    // inspection. They are not release-grade adjudication and cannot emit a
+    // verified claim or a Clean verdict. Use the explicit V2 input contract.
+    for claim in &mut r.claims {
+        claim.status = ClaimStatus::NotChecked;
     }
-    r.verdict = if r
-        .claims
-        .iter()
-        .any(|c| c.status == ClaimStatus::Contradicted)
-    {
-        RunVerdict::Failed
-    } else if r.claims.iter().all(|c| c.status == ClaimStatus::Verified) {
-        RunVerdict::Clean
-    } else {
-        RunVerdict::Partial
-    };
+    r.verdict = RunVerdict::Partial;
     Ok(r)
 }
 fn load(cwd: &Path, id: &str) -> anyhow::Result<RunReport> {
@@ -100,7 +93,8 @@ async fn main() -> anyhow::Result<()> {
             println!("{}", generate_markdown(&r));
         }
         Commands::ImportTranscript { name, transcript } => {
-            let text = fs::read_to_string(&transcript)?;
+            let raw_text = fs::read_to_string(&transcript)?;
+            let text = agent_evidence_workbench::v2::redact_text(&raw_text).text;
             let claims = extract_claims(&text);
             let ev = item(
                 EvidenceKind::Transcript,
@@ -188,19 +182,162 @@ async fn main() -> anyhow::Result<()> {
                 serde_json::to_string_pretty(&load(&cwd, &id)?.evidence_manifest)?
             );
         }
-        Commands::Adjudicate { run_id } => {
-            let r = load(&cwd, &run_id)?;
-            for c in &r.claims {
-                println!(
-                    "{}: {:?}",
-                    c.id,
-                    adjudicate(c, &r.evidence_manifest).judgment.support_state
-                );
-            }
+        Commands::Adjudicate { .. } => {
+            anyhow::bail!(
+                "legacy V1 adjudication is disabled: use evaluate-v2 with explicit claim/evidence links"
+            )
         }
-        Commands::Sign { run_id, key_hex } => {
+        Commands::VerifyLibrariesRelease { repo } => println!(
+            "{}",
+            serde_json::to_string_pretty(
+                &agent_evidence_workbench::libraries_release::verify_libraries_release(&repo)?,
+            )?
+        ),
+        Commands::InspectLibrariesRelease { repo } => println!(
+            "{}",
+            serde_json::to_string_pretty(
+                &agent_evidence_workbench::libraries_release::inspect_libraries_release(&repo)?,
+            )?
+        ),
+        Commands::SnapshotV2 => println!(
+            "{}",
+            serde_json::to_string_pretty(&source_snapshot_v2(&cwd)?)?
+        ),
+        Commands::CaptureV2 {
+            input,
+            evidence_id,
+            cmd,
+        } => {
+            let raw = fs::read_to_string(&input)?;
+            let mut parsed: agent_evidence_workbench::v2::ReleaseTruthInputV2 =
+                serde_json::from_str(&raw)?;
+            if parsed
+                .commands
+                .iter()
+                .any(|command| command.id == evidence_id)
+            {
+                anyhow::bail!("capture evidence id already exists")
+            }
+            let (program, args) = cmd
+                .split_first()
+                .ok_or_else(|| anyhow::anyhow!("command required"))?;
+            let pre = source_snapshot_v2(&cwd)?;
+            let observed_at = Utc::now().to_rfc3339();
+            let check = run_command(program, args, &cwd).await?;
+            let post = source_snapshot_v2(&cwd)?;
+            let mut normalized_pre = pre.clone();
+            let mut normalized_post = post.clone();
+            normalized_pre.observed_at.clear();
+            normalized_post.observed_at.clear();
+            if normalized_pre != normalized_post {
+                anyhow::bail!(
+                    "captured command changed repository source state; V2 capture is fail-closed"
+                )
+            }
+            parsed
+                .commands
+                .push(agent_evidence_workbench::v2::CommandEvidenceV2 {
+                    id: evidence_id,
+                    execution_mode: "argv".into(),
+                    argv: cmd,
+                    cwd: cwd.display().to_string(),
+                    outcome: if check.passed {
+                        agent_evidence_workbench::v2::CommandOutcomeV2::Passed
+                    } else {
+                        agent_evidence_workbench::v2::CommandOutcomeV2::Failed
+                    },
+                    stdout: check.stdout,
+                    stderr: check.stderr,
+                    observed_at,
+                    recorded_at: Utc::now().to_rfc3339(),
+                });
+            parsed.source_binding =
+                Some(agent_evidence_workbench::v2::SourceBindingV2 { pre, post });
+            let (sanitized, redaction_count) =
+                agent_evidence_workbench::v2::sanitize_input(&parsed);
+            let report = agent_evidence_workbench::v2::evaluate(&sanitized)?;
+            let run_id = report.run_id.clone();
+            let event = agent_evidence_workbench::v2::RunEventV2 {
+                schema_version: "aew.run-event.v2".into(),
+                event_id: format!("capture-{}", report.canonical_digest),
+                kind: "release_truth_command_captured".into(),
+                payload: serde_json::json!({
+                    "input": sanitized,
+                    "report": report.clone(),
+                    "redaction_count": redaction_count,
+                }),
+                observed_at: Utc::now().to_rfc3339(),
+                recorded_at: Utc::now().to_rfc3339(),
+            };
+            let recorded_event = storage::append_v2_event(&cwd, &run_id, &event)?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "report": report,
+                    "redaction_count": redaction_count,
+                    "recorded_event": recorded_event,
+                }))?
+            );
+        }
+        Commands::EvaluateV2 { input, record } => {
+            let raw = fs::read_to_string(&input)?;
+            let parsed: agent_evidence_workbench::v2::ReleaseTruthInputV2 =
+                serde_json::from_str(&raw)?;
+            let (sanitized, redaction_count) =
+                agent_evidence_workbench::v2::sanitize_input(&parsed);
+            let binding = sanitized
+                .source_binding
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("V2 source_binding is required"))?;
+            let mut expected_pre = binding.pre.clone();
+            let mut expected_post = binding.post.clone();
+            expected_pre.observed_at.clear();
+            expected_post.observed_at.clear();
+            let mut observed = source_snapshot_v2(&cwd)?;
+            observed.observed_at.clear();
+            if expected_pre != observed || expected_post != observed {
+                anyhow::bail!("current repository does not match the declared V2 source binding")
+            }
+            let report = agent_evidence_workbench::v2::evaluate(&sanitized)?;
+            let run_id = report.run_id.clone();
+            let mut recorded_event = None;
+            if record {
+                let observed_at = sanitized
+                    .commands
+                    .first()
+                    .map(|command| command.observed_at.clone())
+                    .unwrap_or_else(|| Utc::now().to_rfc3339());
+                let recorded_at = sanitized
+                    .commands
+                    .first()
+                    .map(|command| command.recorded_at.clone())
+                    .unwrap_or_else(|| "not_observed".into());
+                let event = agent_evidence_workbench::v2::RunEventV2 {
+                    schema_version: "aew.run-event.v2".into(),
+                    event_id: format!("evaluation-{}", report.canonical_digest),
+                    kind: "release_truth_evaluated".into(),
+                    payload: serde_json::json!({
+                        "input": sanitized,
+                        "report": report.clone(),
+                        "redaction_count": redaction_count,
+                    }),
+                    observed_at,
+                    recorded_at,
+                };
+                recorded_event = Some(storage::append_v2_event(&cwd, &run_id, &event)?);
+            }
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "report": report,
+                    "redaction_count": redaction_count,
+                    "recorded_event": recorded_event,
+                }))?
+            );
+        }
+        Commands::Sign { run_id, key_file } => {
             let r = load(&cwd, &run_id)?;
-            let k = receipt::parse_key(&key_hex)?;
+            let k = receipt::parse_key_file(&key_file)?;
             let x = receipt::sign(&run_id, &r, &k, None);
             let p = receipt::receipt_path(&cwd, &run_id);
             fs::create_dir_all(p.parent().unwrap())?;
@@ -211,9 +348,9 @@ async fn main() -> anyhow::Result<()> {
                 x.report_digest
             );
         }
-        Commands::VerifyReceipt { run_id, key_hex } => {
+        Commands::VerifyReceipt { run_id, key_file } => {
             let r = load(&cwd, &run_id)?;
-            let k = receipt::parse_key(&key_hex)?;
+            let k = receipt::parse_key_file(&key_file)?;
             let x: receipt::RunReceiptV1 =
                 serde_json::from_slice(&fs::read(receipt::receipt_path(&cwd, &run_id))?)?;
             let valid = receipt::verify(&x, &k, &r);
@@ -232,18 +369,20 @@ async fn main() -> anyhow::Result<()> {
         Commands::Promote {
             run_id,
             memory_dir,
-            key_hex,
-        } => promote(&cwd, &run_id, &memory_dir, &key_hex).await?,
+            key_file,
+        } => {
+            let key = receipt::parse_key_file(&key_file)?;
+            promote(&cwd, &run_id, &memory_dir, &key).await?
+        }
     }
     Ok(())
 }
 #[cfg(feature = "semantic-memory")]
-async fn promote(cwd: &Path, id: &str, dir: &Path, key: &str) -> anyhow::Result<()> {
+async fn promote(cwd: &Path, id: &str, dir: &Path, key: &[u8]) -> anyhow::Result<()> {
     let r = load(cwd, id)?;
-    let k = receipt::parse_key(key)?;
     let x: receipt::RunReceiptV1 =
         serde_json::from_slice(&fs::read(receipt::receipt_path(cwd, id))?)?;
-    if !receipt::verify(&x, &k, &r) {
+    if !receipt::verify(&x, key, &r) {
         anyhow::bail!("receipt invalid or does not match report")
     };
     let cfg = semantic_memory::MemoryConfig {
@@ -270,6 +409,6 @@ async fn promote(cwd: &Path, id: &str, dir: &Path, key: &str) -> anyhow::Result<
     Ok(())
 }
 #[cfg(not(feature = "semantic-memory"))]
-async fn promote(_: &Path, _: &str, _: &Path, _: &str) -> anyhow::Result<()> {
+async fn promote(_: &Path, _: &str, _: &Path, _: &[u8]) -> anyhow::Result<()> {
     anyhow::bail!("promote requires cargo feature semantic-memory")
 }
