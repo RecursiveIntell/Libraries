@@ -79,6 +79,14 @@ pub enum Commands {
         #[arg(long)]
         key_file: PathBuf,
     },
+    Prove {
+        #[arg(long)]
+        run_id: String,
+        #[arg(long)]
+        claim: String,
+        #[arg(trailing_var_arg = true, required = true)]
+        cmd: Vec<String>,
+    },
     Promote {
         run_id: String,
         #[arg(long)]

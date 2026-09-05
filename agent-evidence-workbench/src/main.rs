@@ -366,6 +366,82 @@ async fn main() -> anyhow::Result<()> {
                 anyhow::bail!("receipt verification failed")
             }
         }
+        Commands::Prove { run_id, claim, cmd } => {
+            storage::validate_id(&run_id)?;
+            if claim.trim().is_empty() {
+                anyhow::bail!("claim must not be empty")
+            }
+            let parsed = agent_evidence_workbench::v2::ReleaseTruthInputV2 {
+                schema_version: agent_evidence_workbench::v2::RELEASE_TRUTH_INPUT_V2.into(),
+                run_id,
+                claims: vec![agent_evidence_workbench::v2::ExplicitClaimV2 {
+                    id: "claim".into(),
+                    text: claim,
+                    required_evidence: vec!["command".into()],
+                }],
+                commands: Vec::new(),
+                links: vec![agent_evidence_workbench::v2::ClaimEvidenceLinkV2 {
+                    claim_id: "claim".into(),
+                    evidence_id: "command".into(),
+                    relation: agent_evidence_workbench::v2::EvidenceRelationV2::Supports,
+                }],
+                source_binding: None,
+            };
+            let (program, args) = cmd
+                .split_first()
+                .ok_or_else(|| anyhow::anyhow!("command required"))?;
+            let pre = source_snapshot_v2(&cwd)?;
+            let observed_at = Utc::now().to_rfc3339();
+            let check = run_command(program, args, &cwd).await?;
+            let post = source_snapshot_v2(&cwd)?;
+            let mut normalized_pre = pre.clone();
+            let mut normalized_post = post.clone();
+            normalized_pre.observed_at.clear();
+            normalized_post.observed_at.clear();
+            if normalized_pre != normalized_post {
+                anyhow::bail!(
+                    "proved command changed repository source state; proof capture is fail-closed"
+                )
+            }
+            let mut parsed = parsed;
+            parsed
+                .commands
+                .push(agent_evidence_workbench::v2::CommandEvidenceV2 {
+                    id: "command".into(),
+                    execution_mode: "argv".into(),
+                    argv: cmd,
+                    cwd: cwd.display().to_string(),
+                    outcome: if check.passed {
+                        agent_evidence_workbench::v2::CommandOutcomeV2::Passed
+                    } else {
+                        agent_evidence_workbench::v2::CommandOutcomeV2::Failed
+                    },
+                    stdout: check.stdout,
+                    stderr: check.stderr,
+                    observed_at,
+                    recorded_at: Utc::now().to_rfc3339(),
+                });
+            parsed.source_binding =
+                Some(agent_evidence_workbench::v2::SourceBindingV2 { pre, post });
+            let (sanitized, redaction_count) =
+                agent_evidence_workbench::v2::sanitize_input(&parsed);
+            let report = agent_evidence_workbench::v2::evaluate(&sanitized)?;
+            let event = agent_evidence_workbench::v2::RunEventV2 {
+                schema_version: "aew.run-event.v2".into(),
+                event_id: format!("proof-{}", report.canonical_digest),
+                kind: "release_truth_proved".into(),
+                payload: serde_json::json!({"input": sanitized, "report": report.clone(), "redaction_count": redaction_count}),
+                observed_at: Utc::now().to_rfc3339(),
+                recorded_at: Utc::now().to_rfc3339(),
+            };
+            let recorded_event = storage::append_v2_event(&cwd, &report.run_id, &event)?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(
+                    &serde_json::json!({"report": report, "redaction_count": redaction_count, "recorded_event": recorded_event})
+                )?
+            );
+        }
         Commands::Promote {
             run_id,
             memory_dir,

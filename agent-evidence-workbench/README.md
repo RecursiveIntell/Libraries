@@ -2,6 +2,18 @@
 
 AEW stores local legacy reports plus a **provisional V2 deterministic policy evaluator**. V2 uses explicit claim/evidence links and AEW does not issue a terminal release decision; downstream release-decision authority is outside this crate. New V1 `Run` and `Verify` operations rewrite extracted claims to `NotChecked` and `Partial`; V1 regex extraction is not release-grade adjudication. Existing persisted reports are not migrated or automatically reclassified and must not be used as release evidence.
 
+## Fast local evidence capture
+
+To capture one local argv result and bind it to one explicitly stated claim, use the V2 capture path directly:
+
+```bash
+aew prove --run-id lint-check \
+  --claim "The current unstaged diff has no whitespace errors detected by git diff --check" \
+  -- git diff --check
+```
+
+This captures local pre/post source snapshots, records one provisional V2 event, and prints its report, digest, support state, redaction count, and local event path. If the pre/post repository snapshots differ, AEW aborts evaluation and event recording. It does not revert effects produced by the command. It is not a terminal release decision or independent attestation.
+
 ## Opt-in Hermes observer
 
 The observer is deliberately not registered in Hermes configuration. It attempts to append valid JSON input lines to `AEW_EVENTS_PATH`; malformed lines, a missing path, and processing exceptions are ignored. It is a best-effort local observer, not a lossless or non-blocking transport.

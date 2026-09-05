@@ -190,3 +190,50 @@ fn capture_v2_executes_the_bound_command_and_records_a_real_source_pair() {
     .expect("event text");
     assert!(event.contains("fixture_test_passed"));
 }
+
+#[test]
+fn prove_cli_builds_a_single_claim_source_bound_evidence_packet() {
+    let directory = tempdir().expect("tempdir");
+    let repo = directory.path().join("repository");
+    fs::create_dir_all(&repo).expect("repository directory");
+    let repo = repo.as_path();
+    command(&["git", "init", "-q"], repo);
+    command(
+        &["git", "config", "user.email", "fixture@example.invalid"],
+        repo,
+    );
+    command(&["git", "config", "user.name", "AEW Fixture"], repo);
+    fs::write(repo.join("README.md"), "fixture\n").expect("fixture source");
+    command(&["git", "add", "README.md"], repo);
+    command(&["git", "commit", "-qm", "fixture"], repo);
+
+    let binary = env!("CARGO_BIN_EXE_aew");
+    let output = Command::new(binary)
+        .args([
+            "prove",
+            "--run-id",
+            "friendly-proof",
+            "--claim",
+            "the fixture command completed",
+            "--",
+            "python3",
+            "-c",
+            "print('proof-ok')",
+        ])
+        .current_dir(repo)
+        .output()
+        .expect("prove process launches");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let proved: EvaluateOutput = serde_json::from_slice(&output.stdout).expect("proof JSON");
+    assert_eq!(proved.report.run_id, "friendly-proof");
+    assert_eq!(proved.report.claims.len(), 1);
+    assert_eq!(
+        proved.report.claims[0].support_state,
+        SupportState::Supported
+    );
+    assert!(proved.recorded_event.is_some());
+}
