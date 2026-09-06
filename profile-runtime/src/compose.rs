@@ -85,6 +85,8 @@ pub struct CompositionOutcomeV1 {
 pub enum CompositionError {
     #[error("profile set does not match applicability context")]
     ApplicabilityMismatch,
+    #[error("policy contribution source profile is not admitted: {profile_ref}")]
+    UnadmittedContribution { profile_ref: String },
     #[error("unsupported fold configuration for family '{family}' key '{key}'")]
     UnsupportedFold { family: String, key: String },
     #[error("digest computation failed: {reason}")]
@@ -96,6 +98,7 @@ impl CompositionError {
     pub fn kind(&self) -> &'static str {
         match self {
             Self::ApplicabilityMismatch => "applicability_mismatch",
+            Self::UnadmittedContribution { .. } => "unadmitted_contribution",
             Self::UnsupportedFold { .. } => "unsupported_fold",
             Self::DigestFailed { .. } => "digest_failed",
         }
@@ -125,9 +128,33 @@ pub fn compose_profile_runtime(
 
     let generated_at = generated_at.into();
     let active_exceptions = active_exceptions(context, exceptions);
+    let mut used_exception_ids = BTreeSet::new();
 
     let mut grouped: BTreeMap<GroupKey, Vec<&ObligationContributionV1>> = BTreeMap::new();
+    let admitted_profiles = profile_set
+        .all_profile_refs()
+        .into_iter()
+        .collect::<BTreeSet<_>>();
     for contribution in contributions {
+        if !admitted_profiles.contains(&contribution.source_profile_ref) {
+            return Err(CompositionError::UnadmittedContribution {
+                profile_ref: contribution.source_profile_ref.clone(),
+            });
+        }
+        let rule = rule_set
+            .family_rule(&contribution.obligation_family)
+            .ok_or_else(|| CompositionError::UnsupportedFold {
+                family: contribution.obligation_family.clone(),
+                key: contribution.obligation_key.clone(),
+            })?;
+        if rule.fold_class != contribution.fold_class
+            || rule.output_kind != contribution.output_kind
+        {
+            return Err(CompositionError::UnsupportedFold {
+                family: contribution.obligation_family.clone(),
+                key: contribution.obligation_key.clone(),
+            });
+        }
         grouped
             .entry(GroupKey {
                 family: contribution.obligation_family.clone(),
@@ -147,6 +174,7 @@ pub fn compose_profile_runtime(
         let matched_exception_ids = matched_exception_ids(&group, &active_exceptions, rule_set);
         let matched_exception_classes =
             matched_exception_classes(&group, &active_exceptions, rule_set);
+        used_exception_ids.extend(matched_exception_ids.iter().cloned());
         let blocking_contributions: Vec<_> = group
             .iter()
             .copied()
@@ -314,6 +342,12 @@ pub fn compose_profile_runtime(
         }
     }
 
+    let used_exceptions = active_exceptions
+        .iter()
+        .copied()
+        .filter(|exception| used_exception_ids.contains(&exception.profile_exception_bundle_id))
+        .collect::<Vec<_>>();
+
     entries.sort_by(|a, b| {
         (
             &a.output_kind,
@@ -355,25 +389,45 @@ pub fn compose_profile_runtime(
     let tenancy_obligations = collect_strings_by_kind(&entries, CompiledObligationKindV1::Tenancy);
     let assurance_obligations =
         collect_strings_by_kind(&entries, CompiledObligationKindV1::Assurance);
-    let monitoring_obligations =
-        collect_strings_by_kind(&entries, CompiledObligationKindV1::Monitor);
+    let monitoring_obligations = merge_strings(
+        collect_strings_by_kind(&entries, CompiledObligationKindV1::Monitor),
+        exception_values(&used_exceptions, |exception| {
+            &exception.added_monitoring_obligations
+        }),
+    );
     let continuity_obligations =
         collect_strings_by_kind(&entries, CompiledObligationKindV1::Continuity);
     let effect_obligations = collect_strings_by_kind(&entries, CompiledObligationKindV1::Effect);
     let delegation_obligations =
         collect_strings_by_kind(&entries, CompiledObligationKindV1::Delegation);
-    let replay_obligations = collect_strings_by_kind(&entries, CompiledObligationKindV1::Replay);
+    let replay_obligations = merge_strings(
+        collect_strings_by_kind(&entries, CompiledObligationKindV1::Replay),
+        exception_values(&used_exceptions, |exception| &exception.replay_expectations),
+    );
     let required_checks = collect_strings_by_kind(&entries, CompiledObligationKindV1::Check);
     let required_monitors = monitoring_obligations.clone();
     let required_evidence_obligations =
         collect_strings_by_kind(&entries, CompiledObligationKindV1::Evidence);
     let required_disclosure_obligations = disclosure_obligations.clone();
-    let required_rollback_obligations =
-        collect_strings_by_kind(&entries, CompiledObligationKindV1::Rollback);
-    let required_compensation_obligations =
-        collect_strings_by_kind(&entries, CompiledObligationKindV1::Compensation);
-    let required_post_hoc_review_obligations =
-        collect_strings_by_kind(&entries, CompiledObligationKindV1::PostHocReview);
+    let required_rollback_obligations = merge_strings(
+        collect_strings_by_kind(&entries, CompiledObligationKindV1::Rollback),
+        exception_values(&used_exceptions, |exception| &exception.cleanup_obligations),
+    );
+    let required_compensation_obligations = merge_strings(
+        collect_strings_by_kind(&entries, CompiledObligationKindV1::Compensation),
+        exception_values(&used_exceptions, |exception| {
+            &exception.compensation_obligations
+        }),
+    );
+    let required_post_hoc_review_obligations = merge_strings(
+        collect_strings_by_kind(&entries, CompiledObligationKindV1::PostHocReview),
+        exception_values(&used_exceptions, |exception| {
+            &exception.added_post_hoc_review_obligations
+        }),
+    );
+    let residual_exception_obligations = exception_values(&used_exceptions, |exception| {
+        &exception.residual_obligations
+    });
     let blocking_conflicts = conflicts.iter().any(|conflict| conflict.blocking);
     let current_mode_classification = if !hard_block_summary.is_empty() || blocking_conflicts {
         ConstitutionModeV1::Blocked
@@ -400,10 +454,7 @@ pub fn compose_profile_runtime(
         base_law_refs: vec!["v25_effective_constitution".into()],
         doctrine_refs: vec![REFERENCE_EVALUATOR_VERSION_V1.into()],
         admitted_profile_refs: profile_set.all_profile_refs(),
-        admitted_exception_refs: active_exceptions
-            .iter()
-            .map(|exception| exception.profile_exception_bundle_id.clone())
-            .collect(),
+        admitted_exception_refs: used_exception_ids.iter().cloned().collect(),
         current_mode_classification,
         hard_block_summary,
         active_warning_summary,
@@ -436,6 +487,7 @@ pub fn compose_profile_runtime(
         required_rollback_obligations,
         required_compensation_obligations,
         required_post_hoc_review_obligations,
+        residual_exception_obligations,
         promotion_eligibility_summary: eligibility_summary(
             effective_constitution.current_mode_classification,
             conflicts.iter().any(|entry| entry.blocking),
@@ -646,6 +698,12 @@ fn active_exceptions<'a>(
 ) -> Vec<&'a ProfileExceptionBundleV1> {
     let mut active = exceptions
         .iter()
+        .filter(|exception| {
+            context
+                .admitted_exception_refs
+                .iter()
+                .any(|id| id == &exception.profile_exception_bundle_id)
+        })
         .filter(|exception| exception.is_active_as_of(&context.valid_as_of))
         .filter(|exception| {
             exception.affected_context_refs.is_empty()
@@ -697,7 +755,32 @@ fn exception_matches_group(
     exception: &ProfileExceptionBundleV1,
     rule_set: &CompositionRuleSetV1,
 ) -> bool {
+    let Some(exception_rule) = rule_set
+        .exception_rules
+        .iter()
+        .find(|rule| rule.exception_class == exception.exception_class)
+    else {
+        return false;
+    };
+    if exception.reason.is_empty()
+        || exception.scope.is_empty()
+        || (exception_rule.requires_approval_refs && exception.approval_refs.is_empty())
+        || (exception_rule.requires_expiry && exception.expires_at.is_empty())
+        || (exception_rule.residual_obligations_mandatory
+            && exception.residual_obligations.is_empty())
+    {
+        return false;
+    }
     group.iter().any(|entry| {
+        let affects_profile = !exception.affected_profile_refs.is_empty()
+            && exception
+                .affected_profile_refs
+                .iter()
+                .any(|profile| profile == &entry.source_profile_ref);
+        let family_allowed = exception_rule
+            .allowed_obligation_families
+            .iter()
+            .any(|family| family == &entry.obligation_family);
         let allowed_by_group = entry
             .admissible_exception_classes
             .iter()
@@ -710,7 +793,7 @@ fn exception_matches_group(
                     .any(|class| class == &exception.exception_class)
             })
             .unwrap_or(false);
-        allowed_by_group || allowed_by_rule
+        affects_profile && family_allowed && (allowed_by_group || allowed_by_rule)
     })
 }
 
@@ -910,6 +993,26 @@ fn collect_strings_by_kind(
     values.sort();
     values.dedup();
     values
+}
+
+fn exception_values<F>(exceptions: &[&ProfileExceptionBundleV1], select: F) -> Vec<String>
+where
+    F: for<'a> Fn(&'a ProfileExceptionBundleV1) -> &'a Vec<String>,
+{
+    let mut values = exceptions
+        .iter()
+        .flat_map(|exception| select(exception).iter().cloned())
+        .collect::<Vec<_>>();
+    values.sort();
+    values.dedup();
+    values
+}
+
+fn merge_strings(mut left: Vec<String>, right: Vec<String>) -> Vec<String> {
+    left.extend(right);
+    left.sort();
+    left.dedup();
+    left
 }
 
 fn explanation_summary(

@@ -5,7 +5,10 @@ use profile_runtime::{
     ApplicabilityContextV1, CompiledObligationKindV1, CompositionRuleSetV1, FoldClassV1,
     ObligationContributionV1, ProfileExceptionBundleV1, ProfileRefGroupV1, ProfileSetV1,
 };
-use stack_ids::{ProfileExceptionBundleId, ResidencyPolicyProfileId};
+use stack_ids::{
+    AuditExtractionPolicyId, ProfileExceptionBundleId, ResidencyPolicyProfileId,
+    VendorEvidenceTranslationId,
+};
 use verification_policy::ResidencyPolicyProfileV1;
 
 #[test]
@@ -81,6 +84,27 @@ fn block_dominant_path_blocks_without_exception_and_admits_with_exception() {
         compensation_obligations: Vec::new(),
         recorded_at: "2026-03-16T13:31:00Z".into(),
     };
+
+    let unadmitted = compose_profile_runtime(
+        &context,
+        &profile_set,
+        &rule_set,
+        &contributions,
+        std::slice::from_ref(&exception),
+        "2026-03-16T14:00:07Z",
+    )
+    .expect("unadmitted exception remains nonauthorizing");
+    assert_eq!(
+        unadmitted
+            .effective_constitution
+            .current_mode_classification,
+        profile_runtime::ConstitutionModeV1::Blocked
+    );
+    assert!(unadmitted
+        .effective_constitution
+        .admitted_exception_refs
+        .is_empty());
+
     context.admitted_exception_refs = vec![exception.profile_exception_bundle_id.clone()];
 
     let admitted = compose_profile_runtime(
@@ -98,6 +122,30 @@ fn block_dominant_path_blocks_without_exception_and_admits_with_exception() {
         profile_runtime::ConstitutionModeV1::Blocked
     );
     assert!(admitted.compiled_obligation_set.block_entries.is_empty());
+    assert_eq!(
+        admitted.compiled_obligation_set.required_monitors,
+        vec!["cross_region_replay_monitor"]
+    );
+    assert_eq!(
+        admitted
+            .compiled_obligation_set
+            .required_post_hoc_review_obligations,
+        vec!["locality_exception_post_review"]
+    );
+    assert_eq!(
+        admitted
+            .compiled_obligation_set
+            .required_rollback_obligations,
+        vec!["delete_temp_copy_after_review"]
+    );
+    assert!(admitted
+        .effective_constitution
+        .replay_obligations
+        .contains(&"full_replay_provenance".into()));
+    assert!(admitted
+        .compiled_obligation_set
+        .residual_exception_obligations
+        .contains(&"encrypt_export".into()));
 
     let diff = diff_policy_impact(
         &blocked.effective_constitution,
@@ -112,6 +160,89 @@ fn block_dominant_path_blocks_without_exception_and_admits_with_exception() {
         .newly_admitted_paths
         .iter()
         .any(|path| path == "residency.forbidden_transfer_classes:customer_pii_to_non_us"));
+}
+
+#[test]
+fn unknown_fold_or_unselected_profile_cannot_enter_composition() {
+    let context = ApplicabilityContextV1::new(
+        "prod/payments",
+        None,
+        "2026-03-16T15:00:00Z",
+        "2026-03-16T15:00:02Z",
+        "audit_export",
+        "auditor",
+        vec!["role:auditor".into()],
+        None,
+        None,
+        Some("normal".into()),
+    );
+    let profile_set = ProfileSetV1::new(
+        context.applicability_context_id.clone(),
+        ProfileRefGroupV1 {
+            residency_policy_profile_id: Some(ResidencyPolicyProfileId::new("rpp_001")),
+            ..ProfileRefGroupV1::default()
+        },
+        vec!["constitutional-memory:v25".into()],
+    );
+    let rules = CompositionRuleSetV1::reference_v1();
+
+    for contribution in [
+        ObligationContributionV1::simple(
+            "unknown.family",
+            "unknown",
+            CompiledObligationKindV1::Effect,
+            FoldClassV1::Union,
+            vec!["allow".into()],
+            "rpp_001",
+            "unknown family",
+        ),
+        ObligationContributionV1::simple(
+            "residency.allowed_execution_regions",
+            "allowed_execution_regions",
+            CompiledObligationKindV1::Residency,
+            FoldClassV1::Union,
+            vec!["us-central".into()],
+            "rpp_001",
+            "wrong fold",
+        ),
+    ] {
+        assert_eq!(
+            compose_profile_runtime(
+                &context,
+                &profile_set,
+                &rules,
+                &[contribution],
+                &[],
+                "2026-03-16T15:00:03Z",
+            )
+            .expect_err("unknown or mismatched fold must fail")
+            .kind(),
+            "unsupported_fold"
+        );
+    }
+
+    let unselected = ObligationContributionV1::simple(
+        "residency.allowed_execution_regions",
+        "allowed_execution_regions",
+        CompiledObligationKindV1::Residency,
+        FoldClassV1::Intersection,
+        vec!["us-central".into()],
+        "rpp_unselected",
+        "unselected profile",
+    );
+    assert_eq!(
+        compose_profile_runtime(
+            &context,
+            &profile_set,
+            &rules,
+            &[unselected],
+            &[],
+            "2026-03-16T15:00:03Z",
+        )
+        .expect_err("unselected profile must fail")
+        .kind(),
+        "unadmitted_contribution"
+    );
 }
 
 #[test]
@@ -130,7 +261,11 @@ fn conflict_if_different_emits_conflict_set() {
     );
     let profile_set = ProfileSetV1::new(
         context.applicability_context_id.clone(),
-        ProfileRefGroupV1::default(),
+        ProfileRefGroupV1 {
+            audit_extraction_policy_id: Some(AuditExtractionPolicyId::new("aep_001")),
+            vendor_evidence_translation_id: Some(VendorEvidenceTranslationId::new("vet_001")),
+            ..ProfileRefGroupV1::default()
+        },
         vec!["constitutional-memory:v25".into()],
     );
     let rule_set = CompositionRuleSetV1::reference_v1();

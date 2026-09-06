@@ -180,9 +180,10 @@ pub use origin_authority::{
     CallerPrincipalV1, DelegationElevationLeaseV1, ElevationRequirementV1, GovernedAccessPurposeV1,
     GovernedAccessRequestV1, GovernedFactAccessV1, GovernedFactListResponseV1,
     GovernedGraphResponseV1, GovernedProjectionResponseV1, GovernedReplayResponseV1,
-    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, NamespaceScopeV1,
-    OriginAuthorityDecisionV1, OriginAuthorityLabelV1, OriginAuthorityRecordV1, OriginClassV1,
-    OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1, SubjectPrincipalV1,
+    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, GovernedWitnessedSearchResponseV1,
+    NamespaceScopeV1, OriginAuthorityDecisionV1, OriginAuthorityLabelV1, OriginAuthorityRecordV1,
+    OriginClassV1, OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1,
+    SubjectPrincipalV1,
 };
 pub use procedural_memory::{
     validate_procedure_artifact_v1, verify_procedure_lifecycle_receipt_v1,

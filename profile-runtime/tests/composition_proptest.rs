@@ -4,9 +4,11 @@
 
 use profile_runtime::{
     compose_profile_runtime, ApplicabilityContextV1, CompiledObligationKindV1,
-    CompositionRuleSetV1, FoldClassV1, ObligationContributionV1, ProfileRefGroupV1, ProfileSetV1,
+    CompositionRuleSetV1, FoldClassV1, ObligationContributionV1, ObligationFamilyRuleV1,
+    ProfileRefGroupV1, ProfileSetV1,
 };
 use proptest::prelude::*;
+use stack_ids::ResidencyPolicyProfileId;
 
 fn test_context() -> ApplicabilityContextV1 {
     ApplicabilityContextV1::new(
@@ -26,9 +28,27 @@ fn test_context() -> ApplicabilityContextV1 {
 fn test_profile_set(context: &ApplicabilityContextV1) -> ProfileSetV1 {
     ProfileSetV1::new(
         context.applicability_context_id.clone(),
-        ProfileRefGroupV1::default(),
+        ProfileRefGroupV1 {
+            residency_policy_profile_id: Some(ResidencyPolicyProfileId::new("rpp_test")),
+            ..ProfileRefGroupV1::default()
+        },
         vec!["test-source:v1".into()],
     )
+}
+
+fn test_rule_set(fold_class: FoldClassV1) -> CompositionRuleSetV1 {
+    let mut rules = CompositionRuleSetV1::reference_v1();
+    rules.family_rules.push(ObligationFamilyRuleV1 {
+        obligation_family: "test.family".into(),
+        fold_class,
+        output_kind: CompiledObligationKindV1::Check,
+        monotone_additions_expected: true,
+        block_on_unresolved_conflict: true,
+        admissible_exception_classes: Vec::new(),
+        downgrade_behavior: "blocked".into(),
+        explanation: "property-test-only qualified family".into(),
+    });
+    rules
 }
 
 fn make_contribution(
@@ -59,16 +79,15 @@ proptest! {
     ) {
         let context = test_context();
         let profile_set = test_profile_set(&context);
-        let rule_set = CompositionRuleSetV1::reference_v1();
+        let rule_set = test_rule_set(FoldClassV1::Union);
 
         let contributions: Vec<_> = values
             .iter()
-            .enumerate()
-            .map(|(i, v)| make_contribution(
+            .map(|v| make_contribution(
                 FoldClassV1::Union,
                 vec![v.clone()],
                 None,
-                &format!("source-{i}"),
+                "rpp_test",
             ))
             .collect();
 
@@ -106,7 +125,7 @@ proptest! {
     ) {
         let context = test_context();
         let profile_set = test_profile_set(&context);
-        let rule_set = CompositionRuleSetV1::reference_v1();
+        let rule_set = test_rule_set(FoldClassV1::Intersection);
 
         // Ensure at least one common element
         let common = base[0].clone();
@@ -115,7 +134,7 @@ proptest! {
                 FoldClassV1::Intersection,
                 base.clone(),
                 None,
-                "source-0",
+                "rpp_test",
             ),
         ];
         // Second contribution is a subset of base (common + maybe one more)
@@ -129,7 +148,7 @@ proptest! {
             FoldClassV1::Intersection,
             second_values.clone(),
             None,
-            "source-1",
+            "rpp_test",
         ));
 
         let outcome = compose_profile_runtime(
@@ -167,16 +186,15 @@ proptest! {
     ) {
         let context = test_context();
         let profile_set = test_profile_set(&context);
-        let rule_set = CompositionRuleSetV1::reference_v1();
+        let rule_set = test_rule_set(FoldClassV1::MinOfMaxima);
 
         let contributions: Vec<_> = values
             .iter()
-            .enumerate()
-            .map(|(i, &v)| make_contribution(
+            .map(|&v| make_contribution(
                 FoldClassV1::MinOfMaxima,
                 Vec::new(),
                 Some(v),
-                &format!("source-{i}"),
+                "rpp_test",
             ))
             .collect();
 
@@ -210,16 +228,15 @@ proptest! {
     ) {
         let context = test_context();
         let profile_set = test_profile_set(&context);
-        let rule_set = CompositionRuleSetV1::reference_v1();
+        let rule_set = test_rule_set(FoldClassV1::MaxOfMinima);
 
         let contributions: Vec<_> = values
             .iter()
-            .enumerate()
-            .map(|(i, &v)| make_contribution(
+            .map(|&v| make_contribution(
                 FoldClassV1::MaxOfMinima,
                 Vec::new(),
                 Some(v),
-                &format!("source-{i}"),
+                "rpp_test",
             ))
             .collect();
 

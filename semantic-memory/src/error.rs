@@ -67,6 +67,16 @@ pub enum MemoryError {
         receipt_id: String,
     },
 
+    /// Authority state changed while a governed witnessed read was being
+    /// materialized, so no coherent current-view witness can be issued.
+    #[error(
+        "Authority snapshot changed during governed retrieval: before {before_snapshot}, after {after_snapshot}"
+    )]
+    AuthoritySnapshotChanged {
+        before_snapshot: String,
+        after_snapshot: String,
+    },
+
     /// Raw BLOB data is not a valid embedding.
     #[error("Invalid embedding data: expected {expected_bytes} bytes, got {actual_bytes}")]
     InvalidEmbedding {
@@ -327,6 +337,7 @@ impl MemoryError {
             Self::SearchReceiptConflict { .. } => "search_receipt_conflict",
             Self::DigestError(_) => "digest_error",
             Self::SearchReceiptNotFound { .. } => "search_receipt_not_found",
+            Self::AuthoritySnapshotChanged { .. } => "authority_snapshot_changed",
             Self::InvalidEmbedding { .. } => "invalid_embedding",
             Self::ModelMismatch { .. } => "model_mismatch",
             Self::SessionNotFound(_) => "session_not_found",

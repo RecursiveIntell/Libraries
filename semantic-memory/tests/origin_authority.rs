@@ -358,3 +358,85 @@ async fn raw_compatibility_get_is_explicitly_ungoverned() {
     assert!(!governed.decision.allowed);
     assert!(governed.fact.is_none());
 }
+
+#[tokio::test]
+async fn governed_witnessed_search_binds_allowed_rows_decisions_and_one_authority_epoch() {
+    let (store, _tmp) = store();
+    let authority = store.authority();
+    authority
+        .append(
+            permit(
+                "principal:alice",
+                label(
+                    "principal:alice",
+                    &["principal:alice"],
+                    OriginRiskV1::Low,
+                    AuthorityScopeV1::Audience,
+                    AuthorityScopeV1::Denied,
+                    AuthorityScopeV1::Denied,
+                ),
+            ),
+            "governed-witnessed".into(),
+            "general".into(),
+            "governed witnessed sentinel".into(),
+            None,
+        )
+        .await
+        .unwrap();
+
+    let admitted = authority
+        .search_governed_witnessed(
+            "request:governed-witnessed".into(),
+            "governed witnessed sentinel",
+            Some(10),
+            access("principal:alice", GovernedAccessPurposeV1::Recall),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        admitted.schema_version,
+        "governed_witnessed_search_response_v1"
+    );
+    assert_eq!(admitted.response.results.len(), 1);
+    assert_eq!(admitted.retrieval_witness.ordered_result_ids.len(), 1);
+    assert_eq!(admitted.retrieval_witness.ordered_result_digests.len(), 1);
+    assert_eq!(
+        admitted.retrieval_witness.authority_snapshot_id,
+        admitted.authority_state.snapshot_id
+    );
+    assert_eq!(
+        admitted.retrieval_witness.retrieval_epoch,
+        admitted.authority_state.retrieval_epoch
+    );
+    assert!(admitted
+        .retrieval_witness
+        .stage_outcomes
+        .iter()
+        .any(|(stage, outcome)| stage == "authority_filter"
+            && *outcome == semantic_memory::StageOutcomeV1::Applied));
+    let old_content_only = blake3::hash(b"governed witnessed sentinel")
+        .to_hex()
+        .to_string();
+    assert_ne!(
+        admitted.retrieval_witness.ordered_result_digests[0], old_content_only,
+        "the witness digest must bind authority metadata, not content alone"
+    );
+
+    let denied = authority
+        .search_governed_witnessed(
+            "request:governed-witnessed-denied".into(),
+            "governed witnessed sentinel",
+            Some(10),
+            access("principal:bob", GovernedAccessPurposeV1::Recall),
+        )
+        .await
+        .unwrap();
+    assert!(denied.response.results.is_empty());
+    assert!(denied
+        .response
+        .decisions
+        .iter()
+        .any(|decision| !decision.allowed));
+    assert!(denied.retrieval_witness.ordered_result_ids.is_empty());
+    assert!(denied.retrieval_witness.ordered_result_digests.is_empty());
+}

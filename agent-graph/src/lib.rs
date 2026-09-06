@@ -32,26 +32,37 @@
 //! }
 //! ```
 
+pub mod acceleration_qualification;
+pub mod applicability;
 pub mod builder;
 pub mod checkpoint_store;
 pub mod checkpointer;
 pub mod command;
 pub mod config;
+pub mod consumer_bridge;
 pub mod edge;
 pub mod engine;
 pub mod error;
 pub mod event_sink;
+pub mod evidence_actions;
+pub mod evidence_join;
 pub mod execution_cursor;
 pub mod executor;
+pub mod forge_experiment;
 pub mod graph;
 pub mod interrupt;
 pub mod join;
+pub mod lifecycle;
+pub mod maintained_audit;
 pub mod node;
+pub mod operator_projection;
 pub mod outcome;
 pub mod payload;
 pub mod prelude;
 pub mod receipt;
+pub mod recipe_optimizer;
 pub mod reducer;
+pub mod remote_work;
 pub mod retry;
 pub mod router;
 pub mod state;

@@ -709,6 +709,17 @@ pub struct GovernedSearchResponseV1 {
     pub decisions: Vec<OriginAuthorityDecisionV1>,
 }
 
+/// A current-view governed retrieval whose exact admitted rows and authority
+/// decisions are bound to one stable authority epoch.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GovernedWitnessedSearchResponseV1 {
+    pub schema_version: String,
+    pub state_view: crate::StateView,
+    pub authority_state: crate::AuthorityStateV1,
+    pub response: GovernedSearchResponseV1,
+    pub retrieval_witness: crate::RetrievalWitnessV1,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GovernedFactListResponseV1 {
     pub facts: Vec<Fact>,
