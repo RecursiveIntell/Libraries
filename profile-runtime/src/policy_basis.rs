@@ -200,6 +200,7 @@ pub enum PolicyBasisError {
 }
 
 impl PolicyBasisError {
+    /// Returns the stable machine-readable error category for this policy-basis failure.
     pub fn kind(&self) -> &'static str {
         match self {
             Self::OwnerReferenceMismatch => "owner_reference_mismatch",

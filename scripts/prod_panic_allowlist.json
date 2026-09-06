@@ -16,11 +16,11 @@
     "reason": "Operator-origin constants are closed literals and are validated by the constructor before entering the compatibility Self-returning API."
   },
   {
-    "entry": "semantic-memory/src/origin_authority.rs:964",
+    "entry": "semantic-memory/src/origin_authority.rs:975",
     "reason": "Access-request digest serializes closed serde-derived contract fields; the public digest API is intentionally infallible."
   },
   {
-    "entry": "semantic-memory/src/origin_authority.rs:985",
+    "entry": "semantic-memory/src/origin_authority.rs:996",
     "reason": "Decision digest serializes closed serde-derived contract fields; the public decision API is intentionally infallible."
   },
   {

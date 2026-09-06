@@ -205,6 +205,12 @@
       },
       "type": "array"
     },
+    "residual_exception_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
     "schema_version": {
       "type": "string"
     },
