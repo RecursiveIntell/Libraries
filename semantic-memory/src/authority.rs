@@ -13,8 +13,8 @@ use crate::error::MemoryError;
 use crate::origin_authority::{
     decide, label_digest, GovernedAccessRequestV1, GovernedFactAccessV1,
     GovernedFactListResponseV1, GovernedGraphResponseV1, GovernedReplayResponseV1,
-    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, OriginAuthorityLabelV1,
-    OriginAuthorityRecordV1, OriginDerivationKindV1,
+    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, GovernedWitnessedSearchResponseV1,
+    OriginAuthorityLabelV1, OriginAuthorityRecordV1, OriginDerivationKindV1,
 };
 use crate::quantize::{self, Quantizer};
 use crate::transition_contracts::{
@@ -308,6 +308,89 @@ impl MemoryAuthority {
     ) -> Result<GovernedSearchResponseV1, MemoryError> {
         self.search_governed_with_view(query, top_k, request, crate::StateView::Current)
             .await
+    }
+
+    /// Governed retrieval with an optimistic coherent-snapshot witness.
+    ///
+    /// Search and per-result authority evaluation may require multiple pooled
+    /// SQLite reads. The monotonically increasing authority epoch is sampled
+    /// before, during, and after the operation; any intervening mutation fails
+    /// closed instead of attaching a later snapshot to earlier rows. Admitted
+    /// result digests bind the complete `SearchResult` and its canonical access
+    /// decision rather than content bytes alone.
+    pub async fn search_governed_witnessed(
+        &self,
+        request_id: String,
+        query: &str,
+        top_k: Option<usize>,
+        request: GovernedAccessRequestV1,
+    ) -> Result<GovernedWitnessedSearchResponseV1, MemoryError> {
+        if request_id.trim().is_empty() {
+            return Err(MemoryError::Other(
+                "governed witnessed retrieval request_id is empty".into(),
+            ));
+        }
+        let before = self.current_state().await?;
+        let response = self.search_governed(query, top_k, request).await?;
+        let mut retrieval_witness = crate::state_epistemics::witnessed_retrieval(
+            &self.store,
+            request_id,
+            query,
+            &response.results,
+        )
+        .await?;
+        let after = self.current_state().await?;
+        if before != after
+            || retrieval_witness.authority_snapshot_id != after.snapshot_id
+            || retrieval_witness.retrieval_epoch != after.retrieval_epoch
+        {
+            return Err(MemoryError::AuthoritySnapshotChanged {
+                before_snapshot: before.snapshot_id.0,
+                after_snapshot: after.snapshot_id.0,
+            });
+        }
+
+        let mut authority_bound_digests = Vec::with_capacity(response.results.len());
+        for result in &response.results {
+            let result_id = result.source.result_id();
+            let bare_id = result_id.strip_prefix("fact:").unwrap_or(&result_id);
+            let decision = response
+                .decisions
+                .iter()
+                .find(|decision| decision.allowed && decision.fact_id == bare_id)
+                .ok_or_else(|| {
+                    MemoryError::Other(format!(
+                        "governed result '{result_id}' has no matching allow decision"
+                    ))
+                })?;
+            let bytes = serde_json::to_vec(&serde_json::json!({
+                "result": result,
+                "authority_decision": decision,
+            }))
+            .map_err(|error| {
+                MemoryError::Other(format!(
+                    "governed witnessed result serialization failed: {error}"
+                ))
+            })?;
+            authority_bound_digests.push(blake3::hash(&bytes).to_hex().to_string());
+        }
+        retrieval_witness.ordered_result_digests = authority_bound_digests;
+        retrieval_witness.config_digest = blake3::hash(b"governed-witnessed-search-v1")
+            .to_hex()
+            .to_string();
+        retrieval_witness.stage_outcomes = vec![
+            ("retrieval".into(), crate::StageOutcomeV1::Applied),
+            ("authority_filter".into(), crate::StageOutcomeV1::Applied),
+            ("coherence_recheck".into(), crate::StageOutcomeV1::Applied),
+        ];
+
+        Ok(GovernedWitnessedSearchResponseV1 {
+            schema_version: "governed_witnessed_search_response_v1".into(),
+            state_view: crate::StateView::Current,
+            authority_state: after,
+            response,
+            retrieval_witness,
+        })
     }
 
     /// Read the current authority snapshot and retrieval epoch for cache validation.

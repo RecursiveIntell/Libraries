@@ -10,6 +10,7 @@ pub mod applicability;
 pub mod compose;
 pub mod constitution;
 pub mod exception;
+pub mod policy_basis;
 pub mod profile_set;
 pub mod rules;
 
@@ -18,5 +19,6 @@ pub use applicability::*;
 pub use compose::*;
 pub use constitution::*;
 pub use exception::*;
+pub use policy_basis::*;
 pub use profile_set::*;
 pub use rules::*;

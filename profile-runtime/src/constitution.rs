@@ -146,6 +146,8 @@ pub struct CompiledObligationSetV1 {
     pub required_compensation_obligations: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub required_post_hoc_review_obligations: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub residual_exception_obligations: Vec<String>,
     pub promotion_eligibility_summary: String,
     pub release_eligibility_summary: String,
     pub effect_eligibility_summary: String,
