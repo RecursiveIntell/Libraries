@@ -50,6 +50,21 @@ pub fn load_run(cwd: &Path, id: &str) -> Result<RunReport> {
     )?)?)
 }
 
+/// Loads one named V2 event from the canonical local run layout.
+/// Callers supply identifiers, never an arbitrary event path.
+pub fn load_v2_event(cwd: &Path, run_id: &str, event_id: &str) -> Result<RunEventV2> {
+    validate_id(run_id)?;
+    validate_id(event_id)?;
+    let path = event_path(cwd, run_id, event_id)?;
+    let metadata = fs::symlink_metadata(&path)?;
+    if !metadata.file_type().is_file() {
+        return Err(Error::Invalid("V2 event is not a regular file".into()));
+    }
+    let event: RunEventV2 = serde_json::from_slice(&fs::read(path)?)?;
+    crate::v2::validate_recorded_event_v2(&event, run_id, event_id)?;
+    Ok(event)
+}
+
 pub fn v2_run_dir(cwd: &Path, run_id: &str) -> Result<PathBuf> {
     validate_id(run_id)?;
     Ok(aew_dir(cwd).join("v2").join("runs").join(run_id))

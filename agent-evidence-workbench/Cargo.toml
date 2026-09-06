@@ -12,7 +12,7 @@ sha2 = { workspace = true }
 hex = "0.4"
 regex = "1"
 clap = { version = "4", features = ["derive"] }
-tokio = { workspace = true, features = ["rt", "process", "macros"] }
+tokio = { workspace = true, features = ["rt", "process", "macros", "io-util", "time"] }
 thiserror = { workspace = true }
 claim-ledger = { path = "../claim-ledger" }
 semantic-memory = { path = "../semantic-memory", optional = true }

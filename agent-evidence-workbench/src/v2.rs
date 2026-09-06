@@ -13,6 +13,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 pub const RELEASE_TRUTH_INPUT_V2: &str = "aew.release-truth-input.v2";
 pub const RELEASE_TRUTH_REPORT_V2: &str = "aew.release-truth-report.v2";
+pub const RUN_EVENT_V2: &str = "aew.run-event.v2";
 pub const PROVISIONAL_POLICY_METHOD: &str = "aew_provisional_deterministic_policy_v1";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -162,7 +163,11 @@ fn unique_ids(kind: &str, ids: impl Iterator<Item = String>) -> Result<()> {
     Ok(())
 }
 
-fn canonical_digest(input: &ReleaseTruthInputV2, report: &ReleaseTruthReportV2) -> Result<String> {
+/// Computes the digest used by recorded V2 report and event identities.
+pub fn canonical_report_digest(
+    input: &ReleaseTruthInputV2,
+    report: &ReleaseTruthReportV2,
+) -> Result<String> {
     let canonical = serde_json::json!({
         "schema_version": report.schema_version,
         "run_id": report.run_id,
@@ -173,6 +178,63 @@ fn canonical_digest(input: &ReleaseTruthInputV2, report: &ReleaseTruthReportV2) 
     });
     let bytes = serde_json::to_vec(&canonical)?;
     Ok(hex::encode(Sha256::digest(bytes)))
+}
+
+/// Validates the immutable V2 event envelope and the report digest it embeds.
+/// This deliberately does not re-evaluate the report, so historical events are
+/// not reclassified when they are inspected.
+pub fn validate_recorded_event_v2(
+    event: &RunEventV2,
+    expected_run_id: &str,
+    expected_event_id: &str,
+) -> Result<()> {
+    if event.schema_version != RUN_EVENT_V2 || event.event_id != expected_event_id {
+        return Err(Error::Invalid("malformed V2 event identity".into()));
+    }
+    if event.observed_at.trim().is_empty() || event.recorded_at.trim().is_empty() {
+        return Err(Error::Invalid("malformed V2 event timestamps".into()));
+    }
+    let content = event
+        .payload
+        .get("content")
+        .ok_or_else(|| Error::Invalid("missing V2 event content".into()))?;
+    let input: ReleaseTruthInputV2 = serde_json::from_value(
+        content
+            .get("input")
+            .cloned()
+            .ok_or_else(|| Error::Invalid("missing V2 event input".into()))?,
+    )?;
+    let report: ReleaseTruthReportV2 = serde_json::from_value(
+        content
+            .get("report")
+            .cloned()
+            .ok_or_else(|| Error::Invalid("missing V2 event report".into()))?,
+    )?;
+    if input.schema_version != RELEASE_TRUTH_INPUT_V2
+        || report.schema_version != RELEASE_TRUTH_REPORT_V2
+        || input.run_id != expected_run_id
+        || report.run_id != expected_run_id
+        || report.terminal_release_decision.is_some()
+        || input.source_binding.as_ref() != Some(&report.source_binding)
+    {
+        return Err(Error::Invalid("malformed V2 event content".into()));
+    }
+    let digest = canonical_report_digest(&input, &report)?;
+    if report.canonical_digest != digest {
+        return Err(Error::Invalid("V2 report canonical digest mismatch".into()));
+    }
+    let prefix = match event.kind.as_str() {
+        "release_truth_command_captured" => "capture",
+        "release_truth_evaluated" => "evaluation",
+        "release_truth_proved" => "proof",
+        _ => return Err(Error::Invalid("unsupported V2 event kind".into())),
+    };
+    if event.event_id != format!("{prefix}-{digest}") {
+        return Err(Error::Invalid(
+            "V2 event ID does not bind its report digest".into(),
+        ));
+    }
+    Ok(())
 }
 
 /// Evaluates only explicit requirements and explicit claim/evidence links.
@@ -373,7 +435,7 @@ pub fn evaluate(input: &ReleaseTruthInputV2) -> Result<ReleaseTruthReportV2> {
         terminal_release_decision: None,
         source_binding,
     };
-    report.canonical_digest = canonical_digest(input, &report)?;
+    report.canonical_digest = canonical_report_digest(input, &report)?;
     Ok(report)
 }
 

@@ -4,14 +4,14 @@ use agent_evidence_workbench::{
     extractor::extract_claims,
     model::*,
     receipt,
-    report::generate_markdown,
+    report::{generate_markdown, generate_v2_review_json, generate_v2_review_markdown},
     run::run_command,
     storage,
 };
 use chrono::Utc;
 use clap::Parser;
 use sha2::{Digest, Sha256};
-use std::{fs, path::Path};
+use std::{fs, io::Write, path::Path};
 fn item(
     kind: EvidenceKind,
     source: &str,
@@ -59,7 +59,7 @@ async fn main() -> anyhow::Result<()> {
             let (p, a) = cmd
                 .split_first()
                 .ok_or_else(|| anyhow::anyhow!("command required"))?;
-            let check = run_command(p, a, &cwd).await?;
+            let check = run_command(p, a, &cwd).await;
             let text = format!("{}\n{}", check.stdout, check.stderr);
             let claims = extract_claims(&text);
             let snap = snapshot_repo(&cwd, "").ok();
@@ -169,6 +169,19 @@ async fn main() -> anyhow::Result<()> {
             println!("{}", generate_markdown(&r));
         }
         Commands::Report { run_id, .. } => println!("{}", generate_markdown(&load(&cwd, &run_id)?)),
+        Commands::ReportV2 {
+            run_id,
+            event_id,
+            format,
+        } => {
+            let event = storage::load_v2_event(&cwd, &run_id, &event_id)?;
+            let rendered = match format.as_str() {
+                "json" => generate_v2_review_json(&event)?,
+                "markdown" => generate_v2_review_markdown(&event)?,
+                _ => unreachable!("clap validates the report-v2 format"),
+            };
+            println!("{rendered}");
+        }
         Commands::Claims { run_id } => {
             let id = run_id.ok_or_else(|| anyhow::anyhow!("run-id required for claims"))?;
             for c in load(&cwd, &id)?.claims {
@@ -223,7 +236,8 @@ async fn main() -> anyhow::Result<()> {
                 .ok_or_else(|| anyhow::anyhow!("command required"))?;
             let pre = source_snapshot_v2(&cwd)?;
             let observed_at = Utc::now().to_rfc3339();
-            let check = run_command(program, args, &cwd).await?;
+            let check = run_command(program, args, &cwd).await;
+            let execution_policy = check.policy;
             let post = source_snapshot_v2(&cwd)?;
             let mut normalized_pre = pre.clone();
             let mut normalized_post = post.clone();
@@ -241,11 +255,7 @@ async fn main() -> anyhow::Result<()> {
                     execution_mode: "argv".into(),
                     argv: cmd,
                     cwd: cwd.display().to_string(),
-                    outcome: if check.passed {
-                        agent_evidence_workbench::v2::CommandOutcomeV2::Passed
-                    } else {
-                        agent_evidence_workbench::v2::CommandOutcomeV2::Failed
-                    },
+                    outcome: check.outcome.to_v2_outcome(),
                     stdout: check.stdout,
                     stderr: check.stderr,
                     observed_at,
@@ -276,6 +286,8 @@ async fn main() -> anyhow::Result<()> {
                     "report": report,
                     "redaction_count": redaction_count,
                     "recorded_event": recorded_event,
+                    "execution_policy": execution_policy,
+                    "timeout_limitation": agent_evidence_workbench::model::TIMEOUT_LIMITATION,
                 }))?
             );
         }
@@ -383,7 +395,9 @@ async fn main() -> anyhow::Result<()> {
                 links: vec![agent_evidence_workbench::v2::ClaimEvidenceLinkV2 {
                     claim_id: "claim".into(),
                     evidence_id: "command".into(),
-                    relation: agent_evidence_workbench::v2::EvidenceRelationV2::Supports,
+                    // An argv observation is retained as evidence, but Prove does
+                    // not adjudicate a caller-supplied assertion from that fact.
+                    relation: agent_evidence_workbench::v2::EvidenceRelationV2::Mentions,
                 }],
                 source_binding: None,
             };
@@ -392,7 +406,9 @@ async fn main() -> anyhow::Result<()> {
                 .ok_or_else(|| anyhow::anyhow!("command required"))?;
             let pre = source_snapshot_v2(&cwd)?;
             let observed_at = Utc::now().to_rfc3339();
-            let check = run_command(program, args, &cwd).await?;
+            let check = run_command(program, args, &cwd).await;
+            let command_passed = check.passed;
+            let execution_policy = check.policy;
             let post = source_snapshot_v2(&cwd)?;
             let mut normalized_pre = pre.clone();
             let mut normalized_post = post.clone();
@@ -411,11 +427,7 @@ async fn main() -> anyhow::Result<()> {
                     execution_mode: "argv".into(),
                     argv: cmd,
                     cwd: cwd.display().to_string(),
-                    outcome: if check.passed {
-                        agent_evidence_workbench::v2::CommandOutcomeV2::Passed
-                    } else {
-                        agent_evidence_workbench::v2::CommandOutcomeV2::Failed
-                    },
+                    outcome: check.outcome.to_v2_outcome(),
                     stdout: check.stdout,
                     stderr: check.stderr,
                     observed_at,
@@ -426,6 +438,10 @@ async fn main() -> anyhow::Result<()> {
             let (sanitized, redaction_count) =
                 agent_evidence_workbench::v2::sanitize_input(&parsed);
             let report = agent_evidence_workbench::v2::evaluate(&sanitized)?;
+            let claim_supported = matches!(
+                report.claims.as_slice(),
+                [claim] if claim.support_state == claim_ledger::SupportState::Supported
+            );
             let event = agent_evidence_workbench::v2::RunEventV2 {
                 schema_version: "aew.run-event.v2".into(),
                 event_id: format!("proof-{}", report.canonical_digest),
@@ -437,10 +453,25 @@ async fn main() -> anyhow::Result<()> {
             let recorded_event = storage::append_v2_event(&cwd, &report.run_id, &event)?;
             println!(
                 "{}",
-                serde_json::to_string_pretty(
-                    &serde_json::json!({"report": report, "redaction_count": redaction_count, "recorded_event": recorded_event})
-                )?
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "report": report,
+                    "redaction_count": redaction_count,
+                    "recorded_event": recorded_event,
+                    "execution_policy": execution_policy,
+                    "timeout_limitation": agent_evidence_workbench::model::TIMEOUT_LIMITATION,
+                }))?
             );
+            std::io::stdout().flush()?;
+            if !command_passed {
+                anyhow::bail!(
+                    "proved command failed; evidence was recorded before the nonzero exit"
+                )
+            }
+            if !claim_supported {
+                anyhow::bail!(
+                    "proved claim was not established; evidence was recorded before the nonzero exit"
+                )
+            }
         }
         Commands::Promote {
             run_id,

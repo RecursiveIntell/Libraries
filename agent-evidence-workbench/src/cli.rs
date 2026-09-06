@@ -25,6 +25,13 @@ pub enum Commands {
         #[arg(long)]
         format: Option<String>,
     },
+    /// Render a local-only review packet from one recorded V2 event.
+    ReportV2 {
+        run_id: String,
+        event_id: String,
+        #[arg(long, default_value = "json", value_parser = ["json", "markdown"])]
+        format: String,
+    },
     Claims {
         run_id: Option<String>,
     },
