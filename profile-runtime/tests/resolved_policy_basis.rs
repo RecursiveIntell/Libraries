@@ -277,3 +277,34 @@ fn pr11_policy_rejects_expired_malformed_and_inverted_windows() {
         assert!(basis.validate().is_err());
     }
 }
+
+#[test]
+fn pr12_expiry_fold_uses_instants_and_keeps_malformed_constraints_visible() {
+    for expiry in ["2026-09-05T20:00:00-04:00", "invalidZ"] {
+        let context = context();
+        let profiles = profile_set(&context);
+        let rules = CompositionRuleSetV1::reference_v1();
+        let mut entries = contributions();
+        let mut extra = entries.last().unwrap().clone();
+        extra.expiry_at = Some(expiry.into());
+        entries.push(extra);
+        for _ in 0..2 {
+            let outcome = compose_profile_runtime(
+                &context,
+                &profiles,
+                &rules,
+                &entries,
+                &[],
+                "2026-09-05T20:00:02Z",
+            )
+            .unwrap();
+            let basis = resolve_policy_basis(&context, &profiles, &rules, &outcome, task_context());
+            if expiry == "invalidZ" {
+                assert!(basis.is_err());
+            } else {
+                assert_eq!(basis.unwrap().not_after, "2026-09-05T21:00:00Z");
+            }
+            entries.reverse();
+        }
+    }
+}

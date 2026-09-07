@@ -108,6 +108,79 @@ fn effect(key: &str) -> EffectRequest {
 }
 
 #[test]
+fn pr12_conflicting_requests_cannot_reuse_started_or_completed_effects() {
+    for completed in [false, true] {
+        for field in 0..4 {
+            let owner = owners();
+            let request = effect("shared");
+            let mut coordinator = LifecycleCoordinator::default();
+            if completed {
+                coordinator
+                    .record_effect_outcome(&request, "original-outcome")
+                    .unwrap();
+            } else {
+                coordinator.record_effect_started(&request).unwrap();
+            }
+            let mut conflict = request.clone();
+            match field {
+                0 => conflict.effect_ref = "different-effect".into(),
+                1 => conflict.generation += 1,
+                2 => conflict.valid_at += 1,
+                _ => conflict.recorded_at += 1,
+            }
+            owner.authority_generation.set(Some(conflict.generation));
+            assert_eq!(
+                coordinator.record_effect_started(&conflict),
+                Err(LifecycleReason::EffectBindingConflict)
+            );
+            assert_eq!(
+                coordinator.record_effect_outcome(&conflict, "wrong-outcome"),
+                Err(LifecycleReason::EffectBindingConflict)
+            );
+            assert_eq!(
+                coordinator.publish(&conflict, &owner).state,
+                LifecycleState::Blocked
+            );
+            assert_eq!(
+                coordinator.recover_effect(&conflict, &owner).state,
+                LifecycleState::Blocked
+            );
+            assert_eq!(
+                coordinator
+                    .reconcile_output_before_frontier(&conflict, &owner)
+                    .state,
+                LifecycleState::Blocked
+            );
+            assert_eq!(owner.effect_calls.get(), 0);
+            assert_eq!(owner.reconcile_calls.get(), 0);
+            let result = coordinator.recover_effect(&request, &owner);
+            assert_eq!(result.state, LifecycleState::Reconciled);
+            if completed {
+                assert_eq!(result.outcome_ref.as_deref(), Some("original-outcome"));
+            }
+        }
+    }
+}
+
+#[test]
+fn pr12_legacy_effect_snapshot_without_binding_cannot_reveal_outcome() {
+    let owner = owners();
+    let request = effect("legacy");
+    let mut coordinator = LifecycleCoordinator::default();
+    coordinator
+        .record_effect_outcome(&request, "outcome")
+        .unwrap();
+    let mut snapshot = serde_json::to_value(&coordinator).unwrap();
+    snapshot.as_object_mut().unwrap().remove("effect_bindings");
+    let mut restored: LifecycleCoordinator = serde_json::from_value(snapshot).unwrap();
+    assert_eq!(
+        restored.publish(&request, &owner).state,
+        LifecycleState::Blocked
+    );
+    assert_eq!(owner.effect_calls.get(), 0);
+}
+
+#[test]
 fn mig_09_old_reader_typed_rejects_new_cursor_semantics_or_reads_compatible_projection() {
     let cursor = CheckpointCursor::V2(CursorV2 {
         checkpoint_ref: "cp-1".into(),
@@ -212,7 +285,9 @@ fn life_01_output_before_frontier_crash_reconciles_without_duplicate_provider_ca
     let owners = owners();
     let mut coordinator = LifecycleCoordinator::default();
     let request = effect("life-01");
-    coordinator.record_effect_outcome(&request, "outcome:life-01");
+    coordinator
+        .record_effect_outcome(&request, "outcome:life-01")
+        .unwrap();
 
     let decision = coordinator.reconcile_output_before_frontier(&request, &owners);
     assert_eq!(decision.state, LifecycleState::Reconciled);
@@ -225,7 +300,7 @@ fn life_02_effect_before_receipt_becomes_ambiguous_reconcile_and_no_blind_retry(
     let owners = owners();
     let mut coordinator = LifecycleCoordinator::default();
     let request = effect("life-02");
-    coordinator.record_effect_started(&request);
+    coordinator.record_effect_started(&request).unwrap();
 
     let decision = coordinator.recover_effect(&request, &owners);
     assert_eq!(decision.state, LifecycleState::Reconciled);
@@ -265,7 +340,7 @@ fn life_06_expired_or_transferred_lease_fences_future_actions_and_preserves_star
     let mut coordinator = LifecycleCoordinator::default();
     let expired = CheckpointLease::new("cp-expired", "subject", 7, 15);
     let started = effect("lease-started");
-    coordinator.record_effect_started(&started);
+    coordinator.record_effect_started(&started).unwrap();
 
     let future = LifecycleCoordinator::resume_checkpoint(&expired, 20, &owners);
     let ambiguous = coordinator.recover_effect(&started, &owners);

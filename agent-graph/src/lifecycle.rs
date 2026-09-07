@@ -114,6 +114,7 @@ pub enum LifecycleReason {
     AuthorityUnavailable,
     LeaseExpired,
     AmbiguousStartedEffect,
+    EffectBindingConflict,
     ParentCancelled,
     ArtifactUnavailable,
     ArtifactUnpinned,
@@ -468,6 +469,8 @@ pub enum DurabilityFault {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct LifecycleCoordinator {
+    #[serde(default)]
+    effect_bindings: BTreeMap<String, EffectRequest>,
     effect_outcomes: BTreeMap<String, String>,
     started_effects: BTreeSet<String>,
     cancelled_parents: BTreeSet<String>,
@@ -630,14 +633,44 @@ impl LifecycleCoordinator {
         report
     }
 
-    pub fn record_effect_outcome(&mut self, request: &EffectRequest, outcome_ref: &str) {
+    fn effect_binding_conflicts(&self, request: &EffectRequest) -> bool {
+        match self.effect_bindings.get(&request.idempotency_key) {
+            Some(bound) => bound != request,
+            // Legacy snapshots carry no proof of the full request identity.
+            None => {
+                self.effect_outcomes.contains_key(&request.idempotency_key)
+                    || self.started_effects.contains(&request.idempotency_key)
+            }
+        }
+    }
+
+    pub fn record_effect_outcome(
+        &mut self,
+        request: &EffectRequest,
+        outcome_ref: &str,
+    ) -> Result<(), LifecycleReason> {
+        if self.effect_binding_conflicts(request) {
+            return Err(LifecycleReason::EffectBindingConflict);
+        }
+        self.effect_bindings
+            .insert(request.idempotency_key.clone(), request.clone());
         self.effect_outcomes
             .insert(request.idempotency_key.clone(), outcome_ref.into());
         self.started_effects.remove(&request.idempotency_key);
+        Ok(())
     }
 
-    pub fn record_effect_started(&mut self, request: &EffectRequest) {
+    pub fn record_effect_started(
+        &mut self,
+        request: &EffectRequest,
+    ) -> Result<(), LifecycleReason> {
+        if self.effect_binding_conflicts(request) {
+            return Err(LifecycleReason::EffectBindingConflict);
+        }
+        self.effect_bindings
+            .insert(request.idempotency_key.clone(), request.clone());
         self.started_effects.insert(request.idempotency_key.clone());
+        Ok(())
     }
 
     pub fn reconcile_output_before_frontier(
@@ -645,6 +678,12 @@ impl LifecycleCoordinator {
         request: &EffectRequest,
         _owner: &dyn EffectOwner,
     ) -> LifecycleDecision {
+        if self.effect_binding_conflicts(request) {
+            return LifecycleDecision::new(
+                LifecycleState::Blocked,
+                LifecycleReason::EffectBindingConflict,
+            );
+        }
         if let Some(outcome) = self.effect_outcomes.get(&request.idempotency_key) {
             let mut decision = LifecycleDecision::completed(outcome.clone());
             decision.state = LifecycleState::Reconciled;
@@ -661,6 +700,12 @@ impl LifecycleCoordinator {
         request: &EffectRequest,
         owner: &dyn EffectOwner,
     ) -> LifecycleDecision {
+        if self.effect_binding_conflicts(request) {
+            return LifecycleDecision::new(
+                LifecycleState::Blocked,
+                LifecycleReason::EffectBindingConflict,
+            );
+        }
         if let Some(outcome) = self.effect_outcomes.get(&request.idempotency_key) {
             let mut decision = LifecycleDecision::completed(outcome.clone());
             decision.state = LifecycleState::Reconciled;
@@ -674,7 +719,9 @@ impl LifecycleCoordinator {
         }
         match owner.reconcile(request) {
             EffectResolution::Completed { outcome_ref } => {
-                self.record_effect_outcome(request, &outcome_ref);
+                if let Err(reason) = self.record_effect_outcome(request, &outcome_ref) {
+                    return LifecycleDecision::new(LifecycleState::Blocked, reason);
+                }
                 LifecycleDecision {
                     state: LifecycleState::Reconciled,
                     reason: LifecycleReason::AmbiguousStartedEffect,
@@ -702,6 +749,12 @@ impl LifecycleCoordinator {
         request: &EffectRequest,
         owner: &(impl AuthorityOwner + EffectOwner),
     ) -> LifecycleDecision {
+        if self.effect_binding_conflicts(request) {
+            return LifecycleDecision::new(
+                LifecycleState::Blocked,
+                LifecycleReason::EffectBindingConflict,
+            );
+        }
         if let Some(outcome) = self.effect_outcomes.get(&request.idempotency_key) {
             return LifecycleDecision::completed(outcome.clone());
         }
@@ -738,12 +791,9 @@ impl LifecycleCoordinator {
         if self.started_effects.contains(&request.idempotency_key) {
             return self.recover_effect(request, owner);
         }
-        match owner.begin_effect(request) {
-            EffectStart::Started => self.record_effect_started(request),
-            EffectStart::AlreadyStarted => {
-                self.record_effect_started(request);
-                return self.recover_effect(request, owner);
-            }
+        let reconcile_only = match owner.begin_effect(request) {
+            EffectStart::Started => false,
+            EffectStart::AlreadyStarted => true,
             EffectStart::Rejected => {
                 return LifecycleDecision::new(
                     LifecycleState::Blocked,
@@ -756,10 +806,18 @@ impl LifecycleCoordinator {
                     LifecycleReason::DurabilityUnproven,
                 )
             }
+        };
+        if let Err(reason) = self.record_effect_started(request) {
+            return LifecycleDecision::new(LifecycleState::Blocked, reason);
+        }
+        if reconcile_only {
+            return self.recover_effect(request, owner);
         }
         match owner.perform(request) {
             EffectResolution::Completed { outcome_ref } => {
-                self.record_effect_outcome(request, &outcome_ref);
+                if let Err(reason) = self.record_effect_outcome(request, &outcome_ref) {
+                    return LifecycleDecision::new(LifecycleState::Blocked, reason);
+                }
                 LifecycleDecision::completed(outcome_ref)
             }
             EffectResolution::Rejected => {
@@ -769,16 +827,13 @@ impl LifecycleCoordinator {
                 LifecycleState::Unavailable,
                 LifecycleReason::AuthorityUnavailable,
             ),
-            EffectResolution::Ambiguous => {
-                self.record_effect_started(request);
-                LifecycleDecision {
-                    state: LifecycleState::Ambiguous,
-                    reason: LifecycleReason::AmbiguousStartedEffect,
-                    replay: ReplayRestriction::ReconcileRequired,
-                    outcome_ref: None,
-                    redacted: false,
-                }
-            }
+            EffectResolution::Ambiguous => LifecycleDecision {
+                state: LifecycleState::Ambiguous,
+                reason: LifecycleReason::AmbiguousStartedEffect,
+                replay: ReplayRestriction::ReconcileRequired,
+                outcome_ref: None,
+                redacted: false,
+            },
         }
     }
 

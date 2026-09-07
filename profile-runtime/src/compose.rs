@@ -964,7 +964,14 @@ fn earliest_expiry_value(group: &[&ObligationContributionV1]) -> Option<String> 
     group
         .iter()
         .filter_map(|entry| entry.expiry_at.clone())
-        .min()
+        .min_by(|left, right| {
+            // Invalid constraints sort first so the policy projection rejects
+            // them; a valid sibling must never hide a malformed deadline.
+            chrono::DateTime::parse_from_rfc3339(left)
+                .ok()
+                .cmp(&chrono::DateTime::parse_from_rfc3339(right).ok())
+                .then_with(|| left.cmp(right))
+        })
 }
 
 fn has_incomparable_strings(group: &[&ObligationContributionV1]) -> bool {

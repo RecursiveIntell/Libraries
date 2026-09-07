@@ -453,6 +453,16 @@ impl ApplicabilityEngine {
             );
         };
 
+        if self.has_revoked_authorization_ancestor(id) {
+            return decision(
+                id,
+                ApplicabilityState::Blocked,
+                [Reason::AuthorizationRevoked],
+                artifact.historical_identity.clone(),
+                artifact.superseded_by.clone(),
+                false,
+            );
+        }
         if let Some(reasons) = self.invalidations.get(id) {
             return decision(
                 id,
@@ -488,16 +498,6 @@ impl ApplicabilityEngine {
                 id,
                 ApplicabilityState::Revalidate,
                 [reason],
-                artifact.historical_identity.clone(),
-                artifact.superseded_by.clone(),
-                false,
-            );
-        }
-        if self.has_revoked_authorization_ancestor(id) {
-            return decision(
-                id,
-                ApplicabilityState::Blocked,
-                [Reason::AuthorizationRevoked],
                 artifact.historical_identity.clone(),
                 artifact.superseded_by.clone(),
                 false,

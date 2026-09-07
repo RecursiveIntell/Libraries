@@ -49,3 +49,28 @@ Rollback: discard this isolated candidate checkout or reverse the final patch ag
 - Policy validation uses the existing workspace chrono dependency; Cargo.lock adds only that dependency edge. The schema remains unchanged. Missing or malformed expiry now returns a typed projection error instead of accepting placeholder timestamp text.
 
 Validation: 857 tests passed, zero failed, five ignored with `cargo test -p agent-graph -p profile-runtime -p semantic-memory --features semantic-memory/testing --locked -j 2`. Strict Clippy for agent-graph/profile-runtime all targets, changed-file rustfmt, public API docs, production-panic checks and patch forward/reverse checks passed. Independent review found no surviving original defect. A passing local suite does not certify production activation, scientific interval calibration, or out-of-repository implementations of owner ports.
+
+
+## PR #12 follow-up review
+
+The initial published repair passed all 12 hosted CI jobs in run 34150684806.
+The final review check identified three additional P1 conditions, each reproduced
+before repair: mixed RFC3339 offsets were still folded lexically in composition;
+missing-source revalidation masked revoked authorization; and local lifecycle
+caches accepted a reused idempotency key with different request fields.
+
+The follow-up compares expiry instants while preserving malformed constraints for
+rejection, gives revoked ancestors Blocked precedence, and binds both started and
+completed cached effects to the full request. Publish, recovery, and frontier
+reconciliation reject mismatches. Public recording methods return a typed
+`EffectBindingConflict` rather than silently refusing conflicting history.
+
+Legacy snapshots without request bindings fail closed. Older binaries must not
+resume snapshots created with this repair: they ignore the new field and retain
+old semantics. Operational rollback requires a compatible snapshot and durable
+owner reconciliation; source rollback alone does not establish runtime safety.
+
+Focused before/after regressions cover the three reported conditions, malformed
+expiry siblings in either order, all four mutable request fields, completed cache
+reuse, and legacy snapshots. Final follow-up validation is recorded separately
+from the initial 857-test result above.

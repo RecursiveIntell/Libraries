@@ -333,6 +333,42 @@ fn dep_13_revoked_authorization_blocks_payload_despite_matching_hashes() {
 }
 
 #[test]
+fn pr12_revocation_dominates_missing_source_revalidation() {
+    let artifacts = vec![
+        artifact("authorization", &["repo/private"], "auth-v1"),
+        artifact("source", &["repo/private"], "source-v1"),
+        artifact("payload", &["repo/private"], "payload-v1"),
+    ];
+    let dependencies = vec![
+        Dependency::exact(
+            "authorization",
+            "payload",
+            DependencyKind::Authorization,
+            Basis::new("auth-v1", "digest-auth-v1"),
+        ),
+        Dependency::exact(
+            "source",
+            "payload",
+            DependencyKind::ReadFootprint,
+            Basis::new("source-v1", "digest-source-v1"),
+        ),
+    ];
+    let mut engine = ApplicabilityEngine::new(artifacts, dependencies).unwrap();
+    engine.set_authorized("authorization", false).unwrap();
+    engine.set_present("source", false).unwrap();
+    let decision = engine.evaluate("payload", &scope(&["repo/private"]));
+    assert_eq!(decision.state, ApplicabilityState::Blocked);
+    assert!(decision.reasons.contains(&Reason::AuthorizationRevoked));
+    assert!(!decision.payload_reveal_allowed);
+    let mut snapshot = serde_json::to_value(&engine).unwrap();
+    snapshot["invalidations"] = serde_json::json!({});
+    let restored: ApplicabilityEngine = serde_json::from_value(snapshot).unwrap();
+    let decision = restored.evaluate("payload", &scope(&["repo/private"]));
+    assert_eq!(decision.state, ApplicabilityState::Blocked);
+    assert!(decision.reasons.contains(&Reason::AuthorizationRevoked));
+}
+
+#[test]
 fn dep_14_unsupported_precision_uses_enclosing_snapshot_and_recomputation_reason() {
     let dependency = Dependency::enclosing(
         "snapshot",

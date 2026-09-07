@@ -279,3 +279,10 @@ also requires passed staging and completed, usable, uncontaminated passing trial
 These source changes do not activate a runtime or provide a production durability
 adapter. See the repository's `docs/reviews/PR11_REMEDIATION.md` for the complete
 finding disposition and downstream obligations.
+
+PR #12 additionally makes `LifecycleCoordinator::record_effect_started` and
+`record_effect_outcome` return `Result<(), LifecycleReason>`; callers must handle
+`EffectBindingConflict`. Started and completed cache entries retain the complete
+request binding. Legacy snapshots with cached effects but no binding are blocked.
+Do not resume these snapshots with an older binary that ignores the binding field;
+operational rollback requires a compatible snapshot and durable-owner reconciliation.
