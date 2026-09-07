@@ -269,3 +269,50 @@ fn eval_05_crossing_quality_interval_is_inconclusive_and_nonauthorizing() {
         ReleaseAuthority::NotGrantedByEvaluation
     );
 }
+
+#[test]
+fn pr11_single_pair_has_no_identified_interval() {
+    let mut plan = plan(AnalysisDesign::ControlledAblation);
+    plan.scheduled_trials.truncate(2);
+    let aggregate = aggregate_trials(
+        &plan,
+        vec![
+            success("task-a-baseline", 0.1, 1),
+            success("task-a-intervention", 0.9, 1),
+        ],
+    )
+    .unwrap();
+    assert!(matches!(
+        estimate_marginal_effect(&plan, &aggregate).unwrap(),
+        AttributionResult::NotIdentified { .. }
+    ));
+}
+
+#[test]
+fn pr11_success_over_either_resource_ceiling_is_rejected() {
+    let mut plan = plan(AnalysisDesign::ControlledAblation);
+    plan.scheduled_trials.truncate(2);
+    for cost in [
+        TrialCost {
+            provider_cost_microunits: 50_001,
+            duration_ms: 1,
+        },
+        TrialCost {
+            provider_cost_microunits: 1,
+            duration_ms: 30_001,
+        },
+    ] {
+        let mut bad = success("task-a-intervention", 0.9, 1);
+        bad.cost = cost;
+        assert!(matches!(
+            aggregate_trials(&plan, vec![success("task-a-baseline", 0.1, 1), bad]),
+            Err(EvaluationError::ResourceCeilingExceeded(_))
+        ));
+    }
+    let mut exact = success("task-a-intervention", 0.9, 1);
+    exact.cost = TrialCost {
+        provider_cost_microunits: 50_000,
+        duration_ms: 30_000,
+    };
+    assert!(aggregate_trials(&plan, vec![success("task-a-baseline", 0.1, 1), exact]).is_ok());
+}

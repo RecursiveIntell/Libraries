@@ -320,3 +320,35 @@ fn agy_03_disallowed_persuasion_withholds_sensitive_personalization_without_rece
     assert!(!encoded.contains("medical-condition"));
     assert!(!encoded.contains("coercive"));
 }
+
+#[test]
+fn pr11_sequence_conflicts_are_preserved_and_order_independent() {
+    let canonical = DurableRunState {
+        run_ref: "run".into(),
+        durable_sequence: 3,
+        terminal: false,
+        state_digest: "digest".into(),
+    };
+    let events = vec![
+        Observation::new(1, "a"),
+        Observation::new(1, "b"),
+        Observation::new(3, "c"),
+        Observation::new(1, "a"),
+    ];
+    let mut reversed = events.clone();
+    reversed.reverse();
+    let result = project_observations(&canonical, &events);
+    assert_eq!(result, project_observations(&canonical, &reversed));
+    assert_eq!(result.state, ProjectionState::Unknown);
+    assert_eq!(result.observed_event_refs, ["a", "b", "c"]);
+    assert_eq!(result.gaps.len(), 1);
+    assert_eq!(result.canonical_run_state, canonical);
+    assert_eq!(
+        project_observations(
+            &canonical,
+            &[Observation::new(1, "a"), Observation::new(1, "a")]
+        )
+        .state,
+        ProjectionState::Observed
+    );
+}

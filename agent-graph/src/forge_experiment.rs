@@ -191,6 +191,8 @@ pub trait ForgeNativeOwner {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum GovernanceReason {
     UnknownCandidate,
+    StagingIncompleteOrFailed,
+    TrialEvidenceIncompleteOrFailed,
     StaleBase,
     RetestRequired,
     ContainmentEvidenceMissing,
@@ -469,6 +471,21 @@ impl ForgeExperiment {
         }
 
         let mut reasons = BTreeSet::new();
+        if candidate.staging_status != StagingStatus::Passed {
+            reasons.insert(GovernanceReason::StagingIncompleteOrFailed);
+        }
+        let trials: Vec<_> = self
+            .trials
+            .iter()
+            .filter(|trial| trial.candidate_id == candidate_id)
+            .collect();
+        if trials.is_empty()
+            || trials.iter().any(|trial| {
+                trial.outcome != Some(TrialOutcome::Passed) || !trial.usable || trial.contaminated
+            })
+        {
+            reasons.insert(GovernanceReason::TrialEvidenceIncompleteOrFailed);
+        }
         if candidate.patch.actual_delta_lines > self.spec.max_patch_delta_lines
             || candidate.patch.actual_delta_lines > candidate.patch.suggested_delta_lines
         {
@@ -647,6 +664,22 @@ impl ForgeExperiment {
             .ok_or_else(|| ForgeError::UnknownCandidate(new_candidate_id.to_owned()))
     }
 
+    /// Record staging evidence for this exact candidate; native verification is still required.
+    pub fn record_staging(
+        &mut self,
+        candidate_id: &str,
+        status: StagingStatus,
+        containment_evidence_ref: Option<String>,
+    ) -> Result<(), ForgeError> {
+        let candidate = self
+            .candidates
+            .get_mut(candidate_id)
+            .ok_or_else(|| ForgeError::UnknownCandidate(candidate_id.to_owned()))?;
+        candidate.staging_status = status;
+        candidate.containment_evidence_ref = containment_evidence_ref;
+        Ok(())
+    }
+
     pub fn record_interaction_checks(
         &mut self,
         candidate_id: &str,
@@ -705,6 +738,7 @@ impl ForgeExperiment {
 
     pub fn publish_selected(
         &mut self,
+        current_base_revision: &str,
         owner: &dyn ForgeNativeOwner,
     ) -> Result<PublicationReceipt, ForgeError> {
         if self.publication.is_some() {
@@ -714,7 +748,7 @@ impl ForgeExperiment {
             .selected_candidate
             .clone()
             .ok_or(ForgeError::NoSelectedCandidate)?;
-        let assessment = self.assess_candidate(&candidate_id, &self.spec.base_revision, owner);
+        let assessment = self.assess_candidate(&candidate_id, current_base_revision, owner);
         if assessment.disposition != CandidateDisposition::Ready {
             return Err(ForgeError::CandidateNotPublishable);
         }
@@ -764,14 +798,15 @@ impl ForgeExperiment {
         &mut self,
         proposal_id: &str,
         intervention_ref: &str,
-        valid: bool,
-        comparable: bool,
+        evidence: AblationEvidence,
     ) -> Result<(), ForgeError> {
         let record = self
             .causal_records
             .get_mut(proposal_id)
             .ok_or_else(|| ForgeError::UnknownCeaProposal(proposal_id.to_owned()))?;
-        if valid && comparable {
+        if !intervention_ref.is_empty()
+            && Self::evaluate_ablation(evidence) == CausalComparison::Supported
+        {
             record.state = CausalState::SupportedByPairedIntervention;
             record.intervention_ref = Some(intervention_ref.to_owned());
         }

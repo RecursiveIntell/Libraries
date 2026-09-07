@@ -220,6 +220,7 @@ impl CandidateArtifact {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TrialDisposition {
+    ExcludedBaselineMismatch,
     QualifiedImprovement,
     QualifiedRegression,
     Inconclusive,
@@ -348,6 +349,18 @@ impl OfflineRecipeOptimizer {
             let work_ref = request.work.work_ref.clone();
             candidates.push(CandidateArtifact::from_recipe(request.candidate.clone()));
 
+            if request.candidate.baseline_ref != self.baseline.recipe_ref {
+                trials.push(TrialRecord {
+                    candidate_ref,
+                    work_ref,
+                    disposition: TrialDisposition::ExcludedBaselineMismatch,
+                    evaluation: EvaluationDecision::Inconclusive,
+                    validation_score: None,
+                    qualification_receipt_ref: None,
+                    trial_receipt_ref: None,
+                });
+                continue;
+            }
             let qualification_receipt_ref =
                 match qualification_owner.qualification_for(&request.work) {
                     QualificationDecision::Qualified { receipt_ref } => receipt_ref,

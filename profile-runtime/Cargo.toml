@@ -8,6 +8,7 @@ description = "Canonical effective constitution and profile composition runtime 
 readme = "README.md"
 
 [dependencies]
+chrono = { workspace = true }
 assurance-runtime = { path = "../assurance-runtime" }
 attestation-exchange = { path = "../attestation-exchange" }
 authority-delegation = { path = "../authority-delegation" }

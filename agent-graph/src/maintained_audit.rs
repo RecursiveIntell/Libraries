@@ -107,6 +107,7 @@ pub enum EvaluationError {
     UnknownScheduledTrial(String),
     MissingScheduledTrials(Vec<String>),
     InvalidInterval,
+    ResourceCeilingExceeded(String),
 }
 
 impl EvaluationPlan {
@@ -266,6 +267,18 @@ pub fn aggregate_trials(
                 .scheduled_trial_id
                 .clone()]));
         };
+        let resources = match scheduled.arm {
+            ArmId::Baseline => &plan.baseline.resources,
+            ArmId::Intervention => &plan.intervention.resources,
+        };
+        if matches!(record.outcome, TrialOutcome::Succeeded { .. })
+            && (record.cost.provider_cost_microunits > resources.max_provider_cost_microunits
+                || record.cost.duration_ms > resources.max_duration_ms)
+        {
+            return Err(EvaluationError::ResourceCeilingExceeded(
+                record.scheduled_trial_id,
+            ));
+        }
         total_cost.add_assign(&record.cost);
         match record.outcome {
             TrialOutcome::Succeeded { .. } => succeeded_count += 1,
@@ -315,6 +328,7 @@ pub fn estimate_marginal_effect(
         });
     }
 
+    let aggregate = aggregate_trials(plan, aggregate.trials.clone())?;
     let scheduled: BTreeMap<&str, &ScheduledTrial> = plan
         .scheduled_trials
         .iter()
@@ -341,9 +355,9 @@ pub fn estimate_marginal_effect(
         .values()
         .filter_map(|pair| Some(pair[1]? - pair[0]?))
         .collect();
-    if differences.is_empty() {
+    if differences.len() < 2 {
         return Ok(AttributionResult::NotIdentified {
-            reason: "no complete successful matched trial pairs".into(),
+            reason: "at least two complete successful matched trial pairs are required".into(),
         });
     }
 

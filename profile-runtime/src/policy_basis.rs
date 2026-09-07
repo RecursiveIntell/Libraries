@@ -143,6 +143,7 @@ impl ResolvedPolicyBasisV1 {
         ] {
             validate_reference(name, value)?;
         }
+        validate_time_window(&self.not_before, &self.not_after)?;
         if !is_algorithm_digest(&self.instruction_digest) {
             return Err(PolicyBasisError::InvalidProjection {
                 reason: "instruction_digest is not algorithm-qualified".into(),
@@ -519,7 +520,7 @@ fn expiry_value(
         return "blocked:missing-expiry".into();
     };
     match entry.expiry_at.as_ref() {
-        Some(value) if value.ends_with('Z') => value.clone(),
+        Some(value) if chrono::DateTime::parse_from_rfc3339(value).is_ok() => value.clone(),
         _ => {
             blocking.push(format!("invalid:{family}:{key}"));
             "blocked:invalid-expiry".into()
@@ -549,6 +550,22 @@ fn exact_entry<'a>(
             None
         }
     }
+}
+
+fn validate_time_window(not_before: &str, not_after: &str) -> Result<(), PolicyBasisError> {
+    let parse = |value: &str| {
+        chrono::DateTime::parse_from_rfc3339(value).map_err(|_| {
+            PolicyBasisError::InvalidProjection {
+                reason: "policy validity timestamps must be RFC3339".into(),
+            }
+        })
+    };
+    if parse(not_before)? > parse(not_after)? {
+        return Err(PolicyBasisError::InvalidProjection {
+            reason: "policy validity window is expired or inverted".into(),
+        });
+    }
+    Ok(())
 }
 
 fn digest_artifact<T: Serialize>(value: &T) -> Result<ContentDigest, PolicyBasisError> {
