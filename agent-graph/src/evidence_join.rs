@@ -611,6 +611,18 @@ impl EvidenceJoin {
             );
         }
 
+        if !input
+            .branches
+            .iter()
+            .any(|branch| !branch.evidence.is_empty())
+        {
+            unsupported = true;
+            push_reason(
+                &mut reasons,
+                JoinReasonCode::EvidenceUnsupported,
+                &input.claim.claim_ref,
+            );
+        }
         let disposition = if reopen {
             JoinDisposition::Reopen
         } else if unsupported {

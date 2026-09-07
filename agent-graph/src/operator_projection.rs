@@ -90,8 +90,13 @@ pub fn project_observations(
     observations: &[Observation],
 ) -> ObservationProjection {
     let mut ordered = observations.to_vec();
-    ordered.sort_by_key(|observation| observation.sequence);
-    ordered.dedup_by_key(|observation| observation.sequence);
+    ordered.sort_by(|left, right| {
+        (left.sequence, &left.event_ref).cmp(&(right.sequence, &right.event_ref))
+    });
+    ordered.dedup();
+    let conflicting = ordered
+        .windows(2)
+        .any(|pair| pair[0].sequence == pair[1].sequence);
 
     let gaps = ordered
         .windows(2)
@@ -107,7 +112,11 @@ pub fn project_observations(
         .collect();
 
     ObservationProjection {
-        state: ProjectionState::Observed,
+        state: if conflicting {
+            ProjectionState::Unknown
+        } else {
+            ProjectionState::Observed
+        },
         observed_event_refs: ordered
             .into_iter()
             .map(|observation| observation.event_ref)

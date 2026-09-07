@@ -244,6 +244,10 @@ pub struct JoinSnapshot {
 pub enum ApplicabilityError {
     DuplicateArtifact(String),
     UnknownArtifact(String),
+    StaleDependencyBasis {
+        dependency: String,
+        dependent: String,
+    },
     UnknownDependencyEndpoint {
         dependency: String,
         dependent: String,
@@ -255,6 +259,13 @@ impl fmt::Display for ApplicabilityError {
         match self {
             Self::DuplicateArtifact(id) => write!(formatter, "duplicate artifact: {id}"),
             Self::UnknownArtifact(id) => write!(formatter, "unknown artifact: {id}"),
+            Self::StaleDependencyBasis {
+                dependency,
+                dependent,
+            } => write!(
+                formatter,
+                "stale dependency basis: {dependency} -> {dependent}"
+            ),
             Self::UnknownDependencyEndpoint {
                 dependency,
                 dependent,
@@ -298,6 +309,17 @@ impl ApplicabilityEngine {
                 });
             }
         }
+        for edge in &dependencies {
+            if artifact_map
+                .get(&edge.dependency)
+                .is_some_and(|artifact| artifact.basis != edge.basis)
+            {
+                return Err(ApplicabilityError::StaleDependencyBasis {
+                    dependency: edge.dependency.clone(),
+                    dependent: edge.dependent.clone(),
+                });
+            }
+        }
         dependencies.sort_by(|left, right| {
             (&left.dependency, &left.dependent, left.kind, left.precision).cmp(&(
                 &right.dependency,
@@ -336,6 +358,18 @@ impl ApplicabilityEngine {
             .get_mut(id)
             .ok_or_else(|| ApplicabilityError::UnknownArtifact(id.to_owned()))?;
         artifact.present = present;
+        if !present {
+            for dependent in self
+                .descendant_closure(id)
+                .into_iter()
+                .filter(|dependent| dependent != id)
+            {
+                self.invalidations
+                    .entry(dependent)
+                    .or_default()
+                    .insert(Reason::SourceMissing);
+            }
+        }
         Ok(())
     }
 
@@ -446,6 +480,16 @@ impl ApplicabilityEngine {
                 [Reason::Superseded],
                 artifact.historical_identity.clone(),
                 Some(replacement.clone()),
+                false,
+            );
+        }
+        if let Some(reason) = self.invalid_ancestor_reason(id) {
+            return decision(
+                id,
+                ApplicabilityState::Revalidate,
+                [reason],
+                artifact.historical_identity.clone(),
+                artifact.superseded_by.clone(),
                 false,
             );
         }
@@ -591,6 +635,38 @@ impl ApplicabilityEngine {
             queue.extend(children);
         }
         ordered
+    }
+
+    fn invalid_ancestor_reason(&self, id: &str) -> Option<Reason> {
+        let mut seen = BTreeSet::new();
+        let mut queue = VecDeque::from([id]);
+        while let Some(current) = queue.pop_front() {
+            if !seen.insert(current) {
+                continue;
+            }
+            for edge in self
+                .dependencies
+                .iter()
+                .filter(|edge| edge.dependent == current)
+            {
+                if self
+                    .artifacts
+                    .get(&edge.dependency)
+                    .is_none_or(|artifact| !artifact.present)
+                {
+                    return Some(Reason::SourceMissing);
+                }
+                if self
+                    .artifacts
+                    .get(&edge.dependency)
+                    .is_some_and(|artifact| artifact.basis != edge.basis)
+                {
+                    return Some(Reason::BasisChanged);
+                }
+                queue.push_back(edge.dependency.as_str());
+            }
+        }
+        None
     }
 
     fn has_revoked_authorization_ancestor(&self, id: &str) -> bool {

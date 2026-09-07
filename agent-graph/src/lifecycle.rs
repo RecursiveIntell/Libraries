@@ -53,8 +53,26 @@ pub trait AuthorityOwner {
 
 /// Impure mutation and reconciliation remain external to the coordinator.
 pub trait EffectOwner {
+    /// Atomically persist an attempt bound to the complete request before any effect.
+    /// Return Started only after durable acknowledgement. An existing key (including
+    /// a completed attempt) must return AlreadyStarted; a conflicting binding must
+    /// return Rejected. This state must survive coordinator and owner restarts.
+    fn begin_effect(&self, request: &EffectRequest) -> EffectStart;
     fn perform(&self, request: &EffectRequest) -> EffectResolution;
     fn reconcile(&self, request: &EffectRequest) -> EffectResolution;
+}
+
+/// Owner acknowledgement of a durable, exclusive effect attempt.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EffectStart {
+    /// New attempt is durably recorded; the caller may cross the effect boundary once.
+    Started,
+    /// Prior attempt exists; only reconciliation is allowed.
+    AlreadyStarted,
+    /// Request binding was rejected.
+    Rejected,
+    /// Durable acknowledgement could not be obtained.
+    Unavailable,
 }
 
 /// Artifact bytes, pins, and access decisions remain external.
@@ -589,6 +607,14 @@ impl LifecycleCoordinator {
             state: LifecycleState::Terminal,
         };
         for surface in surfaces {
+            report.replay = match (report.replay, surface.replay) {
+                (ReplayRestriction::Forbidden, _) | (_, ReplayRestriction::Forbidden) => {
+                    ReplayRestriction::Forbidden
+                }
+                (ReplayRestriction::ReconcileRequired, _)
+                | (_, ReplayRestriction::ReconcileRequired) => ReplayRestriction::ReconcileRequired,
+                _ => ReplayRestriction::RecordedOnly,
+            };
             match surface.disposition {
                 ForgetDisposition::Retained => report.retained.push(surface.surface_ref),
                 ForgetDisposition::Removed => report.removed.push(surface.surface_ref),
@@ -707,6 +733,28 @@ impl LifecycleCoordinator {
                     LifecycleState::Blocked,
                     LifecycleReason::AuthorityUnavailable,
                 );
+            }
+        }
+        if self.started_effects.contains(&request.idempotency_key) {
+            return self.recover_effect(request, owner);
+        }
+        match owner.begin_effect(request) {
+            EffectStart::Started => self.record_effect_started(request),
+            EffectStart::AlreadyStarted => {
+                self.record_effect_started(request);
+                return self.recover_effect(request, owner);
+            }
+            EffectStart::Rejected => {
+                return LifecycleDecision::new(
+                    LifecycleState::Blocked,
+                    LifecycleReason::AuthorityRevoked,
+                )
+            }
+            EffectStart::Unavailable => {
+                return LifecycleDecision::new(
+                    LifecycleState::Unavailable,
+                    LifecycleReason::DurabilityUnproven,
+                )
             }
         }
         match owner.perform(request) {

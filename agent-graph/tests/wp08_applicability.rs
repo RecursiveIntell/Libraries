@@ -387,3 +387,99 @@ fn join_10_publication_barrier_detects_post_join_dependency_change() {
         .reasons
         .contains(&Reason::DependencyChangedAfterJoin));
 }
+
+#[test]
+fn pr11_missing_source_invalidates_only_descendants_and_preserves_history() {
+    let artifacts = vec![
+        artifact("source", &["repo"], "v1"),
+        artifact("analysis", &["repo"], "v1"),
+        artifact("closure", &["repo"], "v1"),
+        artifact("unrelated", &["repo"], "v1"),
+    ];
+    let edges = vec![
+        Dependency::exact(
+            "source",
+            "analysis",
+            DependencyKind::Analysis,
+            Basis::new("v1", "digest-v1"),
+        ),
+        Dependency::exact(
+            "analysis",
+            "closure",
+            DependencyKind::Analysis,
+            Basis::new("v1", "digest-v1"),
+        ),
+    ];
+    let mut engine = ApplicabilityEngine::new(artifacts.clone(), edges.clone()).unwrap();
+    engine.set_present("source", false).unwrap();
+    assert_eq!(
+        engine.evaluate("source", &scope(&["repo"])).state,
+        ApplicabilityState::HistoricalOnly
+    );
+    for id in ["analysis", "closure"] {
+        assert!(engine
+            .evaluate(id, &scope(&["repo"]))
+            .reasons
+            .contains(&Reason::SourceMissing));
+    }
+    assert_eq!(
+        engine.evaluate("unrelated", &scope(&["repo"])).state,
+        ApplicabilityState::Reusable
+    );
+    engine.set_present("source", true).unwrap();
+    assert_eq!(
+        engine.evaluate("closure", &scope(&["repo"])).state,
+        ApplicabilityState::Revalidate
+    );
+    let mut absent = artifacts;
+    absent[0].present = false;
+    let rebuilt = ApplicabilityEngine::new(absent, edges).unwrap();
+    assert_eq!(
+        rebuilt.evaluate("closure", &scope(&["repo"])).state,
+        ApplicabilityState::Revalidate
+    );
+}
+
+#[test]
+fn pr11_stale_dependency_basis_rejected_on_construction() {
+    let error = ApplicabilityEngine::new(
+        vec![
+            artifact("s", &["repo"], "v2"),
+            artifact("d", &["repo"], "v1"),
+        ],
+        vec![Dependency::exact(
+            "s",
+            "d",
+            DependencyKind::Analysis,
+            Basis::new("v1", "digest-v1"),
+        )],
+    )
+    .unwrap_err();
+    assert!(matches!(
+        error,
+        agent_graph::applicability::ApplicabilityError::StaleDependencyBasis { .. }
+    ));
+}
+
+#[test]
+fn pr11_deserialized_stale_basis_cannot_bypass_invalidation() {
+    let engine = ApplicabilityEngine::new(
+        vec![
+            artifact("s", &["repo"], "v1"),
+            artifact("d", &["repo"], "v1"),
+        ],
+        vec![Dependency::exact(
+            "s",
+            "d",
+            DependencyKind::Analysis,
+            Basis::new("v1", "digest-v1"),
+        )],
+    )
+    .unwrap();
+    let mut snapshot = serde_json::to_value(engine).unwrap();
+    snapshot["artifacts"]["s"]["basis"]["version"] = "v2".into();
+    let restored: ApplicabilityEngine = serde_json::from_value(snapshot).unwrap();
+    let decision = restored.evaluate("d", &scope(&["repo"]));
+    assert_eq!(decision.state, ApplicabilityState::Revalidate);
+    assert!(decision.reasons.contains(&Reason::BasisChanged));
+}

@@ -352,3 +352,28 @@ fn opt_03_no_qualified_improvement_preserves_baseline_and_criteria() {
         ]
     );
 }
+
+#[test]
+fn pr11_foreign_baseline_is_excluded_before_execution() {
+    let optimizer = OfflineRecipeOptimizer::new(baseline(), criteria());
+    let mut candidate = candidate("foreign");
+    candidate.baseline_ref = "other-baseline".into();
+    let mut worker = RecordingReadOnlyOwner::default();
+    let evaluator = TestEvaluator::default();
+    let report = optimizer.optimize(
+        vec![TrialRequest {
+            candidate,
+            work: public_work("work"),
+            proposed_control_mutations: vec![],
+        }],
+        &qualified_owner(&["work"]),
+        &evaluator,
+        &mut worker,
+    );
+    assert_eq!(
+        report.trials[0].disposition,
+        TrialDisposition::ExcludedBaselineMismatch
+    );
+    assert!(worker.executed.is_empty());
+    assert!(evaluator.evaluated_receipts.borrow().is_empty());
+}

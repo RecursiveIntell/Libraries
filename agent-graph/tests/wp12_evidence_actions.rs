@@ -251,3 +251,31 @@ fn evt_05_safe_mode_records_and_defers_request_with_zero_provider_or_effect_disp
     assert!(reconciler.records().iter().all(|record| record.deferred));
     assert!(reconciler.pending_len() > 0);
 }
+
+#[test]
+fn pr11_safe_mode_exit_requires_reconciliation_then_releases_queue() {
+    let mut reconciler =
+        WakeupReconciler::new(vec![WakeDependency::new("condition", "obligation")], 4);
+    reconciler.set_safe_mode(true);
+    reconciler.ingest(
+        WakeEvent::new("condition", "source-v1", "basis-v1", 1),
+        WakeRequestKind::Provider,
+    );
+    assert_eq!(reconciler.dispatch_next(), WakeDispatch::DeferredSafeMode);
+    reconciler.set_safe_mode(false);
+    assert_eq!(
+        reconciler.dispatch_next(),
+        WakeDispatch::BlockedUnknownFreshness
+    );
+    reconciler.reconcile_source(
+        "condition",
+        Some(SourceCheckpoint {
+            source_version: "source-v1".into(),
+            basis_version: "basis-v1".into(),
+            watermark: 1,
+        }),
+    );
+    assert_eq!(reconciler.dispatch_next(), WakeDispatch::Dispatched);
+    assert_eq!(reconciler.dispatch_next(), WakeDispatch::Empty);
+    assert_eq!(reconciler.provider_dispatch_count(), 1);
+}

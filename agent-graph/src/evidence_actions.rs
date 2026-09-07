@@ -414,6 +414,14 @@ impl WakeupReconciler {
     }
 
     pub fn set_safe_mode(&mut self, safe_mode: bool) {
+        if self.safe_mode && !safe_mode {
+            for intent in &mut self.pending {
+                intent.deferred = false;
+                for source in intent.watermarks.keys() {
+                    self.freshness.insert(source.clone(), Freshness::Unknown);
+                }
+            }
+        }
         self.safe_mode = safe_mode;
     }
 

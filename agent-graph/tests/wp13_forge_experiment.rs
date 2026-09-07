@@ -131,6 +131,7 @@ fn spec_02_staging_status_cannot_substitute_for_native_containment_evidence() {
     let mut staged = candidate("a", "workspace-a");
     staged.containment_evidence_ref = None;
     experiment.register_candidate(staged).unwrap();
+    passed_trial(&mut experiment, "a");
 
     let assessment = experiment.assess_candidate("a", "base-a", &TestOwner::allowing(&["a"]));
     assert_eq!(assessment.disposition, CandidateDisposition::Blocked);
@@ -199,10 +200,11 @@ fn spec_05_exactly_one_selected_candidate_publishes_and_others_remain_historical
             .record_interaction_checks(id, "interaction-ok")
             .unwrap();
     }
+    passed_trial(&mut experiment, "a");
     experiment.select_candidate("a").unwrap();
     let owner = TestOwner::allowing(&["a", "b"]);
 
-    let receipt = experiment.publish_selected(&owner).unwrap();
+    let receipt = experiment.publish_selected("base-a", &owner).unwrap();
     assert_eq!(receipt.publication_ref, "publication-a");
     assert_eq!(owner.publications.borrow().as_slice(), &["a"]);
     assert_eq!(
@@ -214,7 +216,7 @@ fn spec_05_exactly_one_selected_candidate_publishes_and_others_remain_historical
         CandidateLifecycle::Historical
     );
     assert_eq!(
-        experiment.publish_selected(&owner),
+        experiment.publish_selected("base-a", &owner),
         Err(ForgeError::PublicationAlreadyCompleted)
     );
     assert_eq!(owner.publications.borrow().as_slice(), &["a"]);
@@ -250,7 +252,7 @@ fn exp_01_cea_proposal_is_suspect_and_hypothesis_until_paired_intervention() {
     assert_eq!(experiment.diagnosis("cea-1"), None);
 
     experiment
-        .record_paired_intervention("cea-1", "intervention-1", true, true)
+        .record_paired_intervention("cea-1", "intervention-1", supporting_ablation())
         .unwrap();
     assert_eq!(
         experiment.causal_state("cea-1"),
@@ -298,6 +300,7 @@ fn exp_04_managed_experiment_blocks_without_native_identity_permit_and_effect_ow
     experiment
         .register_candidate(candidate("a", "workspace-a"))
         .unwrap();
+    passed_trial(&mut experiment, "a");
     let owner = TestOwner {
         containment: set(&["containment-a"]),
         unavailable: true,
@@ -441,4 +444,158 @@ fn exp_08_withheld_access_denies_and_contaminates_trial_but_public_tests_stay_va
     assert!(!trial.usable);
     assert!(trial.public_tests_remain_valid);
     assert_eq!(experiment.test_sets().public_digest, "public-v1");
+}
+
+fn supporting_ablation() -> AblationEvidence {
+    AblationEvidence {
+        valid: true,
+        comparable: true,
+        control_environment: "env".into(),
+        treatment_environment: "env".into(),
+        effect_observed: true,
+    }
+}
+fn passed_trial(experiment: &mut ForgeExperiment, candidate: &str) {
+    let id = format!("trial-{candidate}");
+    experiment
+        .schedule_trial(TrialPlan::public(&id, candidate))
+        .unwrap();
+    experiment
+        .complete_trial(
+            &id,
+            TrialCompletion {
+                outcome: TrialOutcome::Passed,
+                cost: TrialCost {
+                    wall_millis: 1,
+                    compute_units: 1,
+                },
+                environment_ref: "env".into(),
+            },
+        )
+        .unwrap();
+}
+#[test]
+fn pr11_failed_pending_or_untested_candidate_cannot_publish() {
+    for status in [
+        StagingStatus::Failed,
+        StagingStatus::Pending,
+        StagingStatus::Passed,
+    ] {
+        let mut experiment = ForgeExperiment::new(spec());
+        let mut c = candidate("a", "wa");
+        c.staging_status = status;
+        experiment.register_candidate(c).unwrap();
+        experiment.select_candidate("a").unwrap();
+        let owner = TestOwner::allowing(&["a"]);
+        assert_eq!(
+            experiment.publish_selected("base-a", &owner),
+            Err(ForgeError::CandidateNotPublishable)
+        );
+        assert!(owner.publications.borrow().is_empty());
+        if status != StagingStatus::Passed {
+            passed_trial(&mut experiment, "a");
+            assert_eq!(
+                experiment.publish_selected("base-a", &owner),
+                Err(ForgeError::CandidateNotPublishable)
+            );
+        }
+    }
+}
+#[test]
+fn pr11_rebased_candidate_publishes_only_with_current_base_and_fresh_checks() {
+    let mut experiment = ForgeExperiment::new(spec());
+    experiment.register_candidate(candidate("a", "wa")).unwrap();
+    experiment
+        .rebase_candidate("a", "b", "wb", "base-b", "prov-b")
+        .unwrap();
+    experiment
+        .record_staging("b", StagingStatus::Passed, Some("containment-b".into()))
+        .unwrap();
+    passed_trial(&mut experiment, "b");
+    experiment.select_candidate("b").unwrap();
+    let owner = TestOwner::allowing(&["b"]);
+    assert_eq!(
+        experiment.publish_selected("base-b", &owner),
+        Err(ForgeError::CandidateNotPublishable)
+    );
+    experiment
+        .record_interaction_checks("b", "fresh-checks")
+        .unwrap();
+    assert_eq!(
+        experiment.publish_selected("base-a", &owner),
+        Err(ForgeError::CandidateNotPublishable)
+    );
+    assert!(experiment.publish_selected("base-b", &owner).is_ok());
+    assert_eq!(experiment.candidate("a").unwrap().base_revision, "base-a");
+}
+#[test]
+fn pr11_refuted_or_confounded_intervention_never_supports_diagnosis() {
+    for evidence in [
+        AblationEvidence {
+            effect_observed: false,
+            ..supporting_ablation()
+        },
+        AblationEvidence {
+            treatment_environment: "other".into(),
+            ..supporting_ablation()
+        },
+    ] {
+        let mut experiment = ForgeExperiment::new(spec());
+        experiment.record_cea_proposal(CeaProposal {
+            proposal_id: "p".into(),
+            suspect: "s".into(),
+            hypothesis: "h".into(),
+        });
+        experiment
+            .record_paired_intervention("p", "i", evidence)
+            .unwrap();
+        assert_eq!(experiment.diagnosis("p"), None);
+    }
+}
+
+#[test]
+fn pr11_failed_pending_or_contaminated_trials_block_even_with_a_pass() {
+    for case in ["failed", "pending", "contaminated"] {
+        let mut experiment = ForgeExperiment::new(spec());
+        experiment.register_candidate(candidate("a", "wa")).unwrap();
+        passed_trial(&mut experiment, "a");
+        experiment
+            .schedule_trial(TrialPlan {
+                trial_id: "bad".into(),
+                candidate_id: "a".into(),
+                requested_test_access: if case == "contaminated" {
+                    TestAccess::WithheldDiscriminator
+                } else {
+                    TestAccess::Public
+                },
+            })
+            .unwrap();
+        if case != "pending" {
+            experiment
+                .complete_trial(
+                    "bad",
+                    TrialCompletion {
+                        outcome: if case == "failed" {
+                            TrialOutcome::Failed("failure".into())
+                        } else {
+                            TrialOutcome::Passed
+                        },
+                        cost: TrialCost {
+                            wall_millis: 3,
+                            compute_units: 2,
+                        },
+                        environment_ref: "env".into(),
+                    },
+                )
+                .unwrap();
+        }
+        experiment.select_candidate("a").unwrap();
+        let owner = TestOwner::allowing(&["a"]);
+        assert_eq!(
+            experiment.publish_selected("base-a", &owner),
+            Err(ForgeError::CandidateNotPublishable)
+        );
+        assert!(owner.publications.borrow().is_empty());
+        assert_eq!(experiment.trials().len(), 2);
+    }
 }

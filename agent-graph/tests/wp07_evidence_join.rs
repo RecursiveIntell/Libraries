@@ -494,3 +494,18 @@ fn str_05_native_completion_visible_when_semantic_support_fails() {
 fn _payload_is_explicitly_non_authoritative(value: Value) -> Value {
     value
 }
+
+#[test]
+fn pr11_empty_evidence_never_passes() {
+    let join = EvidenceJoin::default();
+    let mut empty = branch(0);
+    empty.evidence.clear();
+    for branches in [vec![], vec![empty]] {
+        let oracle = oracle_for(&branches);
+        let input = projected(&join, seed(branches));
+        assert_eq!(
+            resolved(&join, &input, &oracle).disposition,
+            JoinDisposition::Unsupported
+        );
+    }
+}

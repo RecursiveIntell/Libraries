@@ -440,3 +440,49 @@ async fn governed_witnessed_search_binds_allowed_rows_decisions_and_one_authorit
     assert!(denied.retrieval_witness.ordered_result_ids.is_empty());
     assert!(denied.retrieval_witness.ordered_result_digests.is_empty());
 }
+
+#[tokio::test]
+async fn pr11_unlabelled_message_is_denied_before_witness_matching() {
+    let (store, _tmp) = store();
+    let session = store.create_session("pr11-test").await.unwrap();
+    let id = store
+        .add_message_fts(
+            &session,
+            semantic_memory::Role::User,
+            "pr11 message sentinel",
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+    let witnessed = store
+        .authority()
+        .search_governed_witnessed(
+            "pr11-message".into(),
+            "pr11 message sentinel",
+            Some(10),
+            access("principal:alice", GovernedAccessPurposeV1::Recall),
+        )
+        .await
+        .unwrap();
+    assert!(witnessed.response.results.is_empty());
+    // Governed search currently uses default source types, which exclude messages.
+    assert!(witnessed.response.decisions.is_empty());
+    let raw = store
+        .search_conversations("pr11 message sentinel", Some(10), Some(&[&session]))
+        .await
+        .unwrap();
+    assert!(raw
+        .iter()
+        .any(|result| result.source.result_id() == format!("msg:{id}")));
+    // Even if a message reached filtering, absent origin is rejected by the owner.
+    let decision = semantic_memory::evaluate_governed_access_v1(
+        &format!("message:{id}"),
+        None,
+        None,
+        None,
+        &access("principal:alice", GovernedAccessPurposeV1::Recall),
+    );
+    assert!(!decision.allowed);
+    assert!(witnessed.retrieval_witness.ordered_result_ids.is_empty());
+}

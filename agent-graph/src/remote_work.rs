@@ -28,6 +28,7 @@ pub enum RemoteDispositionV1 {
     Stale,
     Revoked,
     BlockedReplication,
+    InvalidAttempts,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -45,6 +46,8 @@ pub trait RemoteOwnerPort: Send + Sync {
     fn current_view_revision(&self, logical_work_id: &str) -> Option<String>;
     fn current_authority(&self, logical_work_id: &str) -> bool;
     fn replication_gate_passes(&self, gate_ref: &str) -> bool;
+    /// Stable owner-issued key for this logical work, shared across all settlement calls.
+    fn canonical_publication_key(&self, logical_work_id: &str) -> Option<String>;
     fn publish_once(&self, publication_key: &str, result_ref: &str) -> bool;
     fn publication_count(&self, publication_key: &str) -> u64;
 }
@@ -54,6 +57,21 @@ pub fn settle_remote_work(
     replication: &ReplicationStatusV1,
     owner: &dyn RemoteOwnerPort,
 ) -> RemoteSettlementV1 {
+    let mut attempts = attempts.iter().collect::<Vec<_>>();
+    attempts.sort_by(|left, right| {
+        (
+            &left.logical_work_id,
+            &left.attempt_id,
+            &left.publication_key,
+            &left.result_ref,
+        )
+            .cmp(&(
+                &right.logical_work_id,
+                &right.attempt_id,
+                &right.publication_key,
+                &right.result_ref,
+            ))
+    });
     let logical_work_id = attempts
         .first()
         .map(|attempt| attempt.logical_work_id.clone())
@@ -77,6 +95,21 @@ pub fn settle_remote_work(
     };
     if attempts.is_empty() {
         result.limitations.push("no remote attempts".into());
+        return result;
+    }
+    let canonical_key = owner.canonical_publication_key(&logical_work_id);
+    if logical_work_id.is_empty()
+        || canonical_key.as_ref().is_none_or(|key| key.is_empty())
+        || attempts.iter().any(|attempt| {
+            attempt.logical_work_id != logical_work_id
+                || Some(&attempt.publication_key) != canonical_key.as_ref()
+        })
+        || attempts
+            .windows(2)
+            .any(|pair| pair[0].attempt_id == pair[1].attempt_id)
+    {
+        result.disposition = RemoteDispositionV1::InvalidAttempts;
+        result.limitations.push("attempts must bind one logical work, distinct attempts, and its owner-issued publication key".into());
         return result;
     }
     if !owner.current_authority(&logical_work_id) {
@@ -117,7 +150,7 @@ pub fn settle_remote_work(
     }
     let selected = &attempts[0];
     let inserted = owner.publish_once(&selected.publication_key, &selected.result_ref);
-    result.selected_result_ref = Some(selected.result_ref.clone());
+    result.selected_result_ref = inserted.then(|| selected.result_ref.clone());
     result.publication_count = owner.publication_count(&selected.publication_key);
     result.disposition = if inserted {
         RemoteDispositionV1::Published

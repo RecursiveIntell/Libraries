@@ -122,3 +122,40 @@ fn app_01_two_apps_share_execution_fact_without_domain_truth_or_memory_leakage()
     assert_eq!(ui_conflict, Err(ConsumerBridgeError::ConflictingUiFact));
     assert_eq!(owners.facts.len(), 1);
 }
+
+#[test]
+fn pr11_owner_fact_must_match_permitted_identity() {
+    let owner = InMemoryConsumerOwners {
+        facts: BTreeMap::from([(
+            "allowed".into(),
+            ExecutionFactV1 {
+                fact_id: "different".into(),
+                run_id: "secret".into(),
+                receipt_digest: "secret".into(),
+                artifact_refs: vec![],
+            },
+        )]),
+        grants: BTreeMap::from([(
+            "app".into(),
+            ApplicationGrantV1 {
+                app_id: "app".into(),
+                memory_namespace: "ns".into(),
+                permitted_fact_ids: BTreeSet::from(["allowed".into()]),
+                output_policy_id: "policy".into(),
+                purpose: "test".into(),
+            },
+        )]),
+        accepted_outputs: BTreeMap::new(),
+    };
+    let result = project_execution_fact_for_application(
+        &ConsumerRequestV1 {
+            app_id: "app".into(),
+            fact_id: "allowed".into(),
+            memory_namespace: "ns".into(),
+            domain_output: "".into(),
+            ui_cached_fact: None,
+        },
+        &owner,
+    );
+    assert_eq!(result, Err(ConsumerBridgeError::FactIdentityMismatch));
+}

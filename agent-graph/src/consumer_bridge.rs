@@ -53,6 +53,8 @@ pub enum ConsumerBridgeError {
     FactNotPermitted,
     #[error("canonical execution fact is unavailable")]
     FactUnavailable,
+    #[error("canonical execution fact identity does not match permitted request")]
+    FactIdentityMismatch,
     #[error("domain output check failed")]
     DomainOutputRejected,
     #[error("UI/cache supplied a conflicting canonical fact")]
@@ -84,6 +86,9 @@ pub fn project_execution_fact_for_application(
     let fact = owner
         .execution_fact(&request.fact_id)
         .ok_or(ConsumerBridgeError::FactUnavailable)?;
+    if fact.fact_id != request.fact_id {
+        return Err(ConsumerBridgeError::FactIdentityMismatch);
+    }
     if let Some(cached) = &request.ui_cached_fact {
         if cached != &fact {
             return Err(ConsumerBridgeError::ConflictingUiFact);

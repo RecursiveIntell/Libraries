@@ -233,3 +233,47 @@ fn projection_preserves_blocks_and_rejects_cross_owner_reference_drift() {
         .expect_err("different profile-set identity must fail");
     assert_eq!(error.kind(), "owner_reference_mismatch");
 }
+
+#[test]
+fn pr11_policy_rejects_expired_malformed_and_inverted_windows() {
+    for expiry in ["2026-09-05T19:59:59Z", "garbageZ", "2026-02-30T20:00:00Z"] {
+        let context = context();
+        let profiles = profile_set(&context);
+        let rules = CompositionRuleSetV1::reference_v1();
+        let mut entries = contributions();
+        entries.last_mut().unwrap().expiry_at = Some(expiry.into());
+        let outcome = compose_profile_runtime(
+            &context,
+            &profiles,
+            &rules,
+            &entries,
+            &[],
+            "2026-09-05T20:00:02Z",
+        )
+        .unwrap();
+        assert!(
+            resolve_policy_basis(&context, &profiles, &rules, &outcome, task_context()).is_err()
+        );
+    }
+    for expiry in ["2026-09-05T20:00:00Z", "2026-09-05T16:00:00-04:00"] {
+        let context = context();
+        let profiles = profile_set(&context);
+        let rules = CompositionRuleSetV1::reference_v1();
+        let mut entries = contributions();
+        entries.last_mut().unwrap().expiry_at = Some(expiry.into());
+        let outcome = compose_profile_runtime(
+            &context,
+            &profiles,
+            &rules,
+            &entries,
+            &[],
+            "2026-09-05T20:00:02Z",
+        )
+        .unwrap();
+        let mut basis =
+            resolve_policy_basis(&context, &profiles, &rules, &outcome, task_context()).unwrap();
+        assert_eq!(basis.status, PolicyBasisStatusV1::Admitted);
+        basis.not_after = "2026-09-05T19:00:00Z".into();
+        assert!(basis.validate().is_err());
+    }
+}

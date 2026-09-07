@@ -26,6 +26,10 @@ impl RemoteOwnerPort for Owners {
         self.gates.contains(gate_ref)
     }
 
+    fn canonical_publication_key(&self, logical_work_id: &str) -> Option<String> {
+        (logical_work_id == "work:1").then(|| "publication:1".into())
+    }
+
     fn publish_once(&self, publication_key: &str, result_ref: &str) -> bool {
         let mut publications = self.publications.lock().unwrap();
         if publications.contains_key(publication_key) {
@@ -144,4 +148,39 @@ fn adv_05_partial_memory_replication_remains_blocked_until_operation_gates_pass(
         assert_eq!(result.disposition, RemoteDispositionV1::BlockedReplication);
         assert_eq!(result.publication_count, 0);
     }
+}
+
+#[test]
+fn pr11_publication_is_canonical_across_order_and_separate_calls() {
+    let original = attempts();
+    let mut reversed = original.clone();
+    reversed.reverse();
+    assert_eq!(
+        settle_remote_work(&original, &complete_replication(), &owners()),
+        settle_remote_work(&reversed, &complete_replication(), &owners())
+    );
+    let owner = owners();
+    assert_eq!(
+        settle_remote_work(&original[..1], &complete_replication(), &owner).disposition,
+        RemoteDispositionV1::Published
+    );
+    assert_eq!(
+        settle_remote_work(&original[1..], &complete_replication(), &owner).disposition,
+        RemoteDispositionV1::Deduplicated
+    );
+    let mut bad = original.clone();
+    bad[1].publication_key = "other".into();
+    for attempts in [&bad[..], &bad[1..]] {
+        assert_eq!(
+            settle_remote_work(attempts, &complete_replication(), &owner).disposition,
+            RemoteDispositionV1::InvalidAttempts
+        );
+    }
+    bad = original;
+    bad[1].logical_work_id = "other-work".into();
+    assert_eq!(
+        settle_remote_work(&bad, &complete_replication(), &owner).disposition,
+        RemoteDispositionV1::InvalidAttempts
+    );
+    assert_eq!(owner.publications.lock().unwrap().len(), 1);
 }
