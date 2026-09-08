@@ -89,5 +89,13 @@ fn fail_closed_errors_when_exact_preserve_exceeds_budget() {
     })
     .unwrap_err();
 
-    assert!(matches!(err, ContextGovernorError::BudgetExceeded { .. }));
+    assert!(matches!(
+        err,
+        ContextGovernorError::CannotMeetTarget {
+            target: 12,
+            minimum_safe,
+            actual,
+            ..
+        } if minimum_safe == actual && actual > 12
+    ));
 }

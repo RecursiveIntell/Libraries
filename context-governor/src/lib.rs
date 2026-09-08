@@ -28,7 +28,6 @@ pub use reducers::*;
 pub mod llm_summary;
 pub use llm_summary::*;
 
-pub(crate) mod lineage_index;
 pub mod receipt_index;
 
 pub mod key_authority;
@@ -87,6 +86,15 @@ pub enum ContextGovernorError {
     ReceiptNotFound(String),
     #[error("context budget exceeded: target {target} tokens, actual {actual} tokens")]
     BudgetExceeded { target: usize, actual: usize },
+    #[error(
+        "cannot meet admitted context target: target {target} tokens, minimum safe {minimum_safe} tokens, actual {actual} tokens"
+    )]
+    CannotMeetTarget {
+        target: usize,
+        minimum_safe: usize,
+        actual: usize,
+        reasons: Vec<String>,
+    },
     #[error("sqlite store failed: {0}")]
     Sqlite(String),
     #[error("LLM summary safety scan failed: {0}")]
@@ -1199,6 +1207,18 @@ pub fn finalize_compacted_response(
         ..CompactionPolicy::default()
     };
     let compacted_tokens = count_tokens_messages(&compacted_messages, &policy);
+    let admitted_target = response.allocation_plan.target_output_tokens;
+    if admitted_target > 0 && compacted_tokens > admitted_target {
+        return Err(ContextGovernorError::CannotMeetTarget {
+            target: admitted_target,
+            minimum_safe: compacted_tokens,
+            actual: compacted_tokens,
+            reasons: vec![
+                "final emitted transcript exceeded the admitted target".to_string(),
+                "finalization cannot return an over-target success".to_string(),
+            ],
+        });
+    }
     response.receipt.compacted_message_count = compacted_messages.len();
     response.receipt.compacted_approx_tokens = compacted_tokens;
     response.receipt.token_savings_estimate =
@@ -2272,15 +2292,14 @@ fn enforce_budget(
     without_summary.remove(summary_idx);
     let required = count_tokens_messages(&without_summary, policy);
     if required > target {
-        if matches!(policy.budget_mode, BudgetMode::HardCascade) {
-            warnings.push(format!(
-                "hard budget not met: hard cascade removed summary but exact protected minimum still exceeds target budget: {required} > {target} tokens"
-            ));
-            return Ok(without_summary);
-        }
-        return Err(ContextGovernorError::BudgetExceeded {
+        return Err(ContextGovernorError::CannotMeetTarget {
             target,
+            minimum_safe: required,
             actual: required,
+            reasons: vec![
+                "exact protected structural floor exceeds the admitted target".to_string(),
+                "optional summary removal cannot make this target safe".to_string(),
+            ],
         });
     }
 
@@ -3359,7 +3378,8 @@ impl FileContextStore {
     ) -> Result<FileContextStorePruneResultV1, ContextGovernorError> {
         std::fs::create_dir_all(&self.root)?;
         if self.integrity_key_ring.is_some() {
-            self.lineage_catalog_rows("receipt retention")?;
+            let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
+            receipt_index::ensure_lineage_index(&self.root, &fingerprints)?;
         }
         let _lock = self.lock_store()?;
         let (receipts, _, _) = self.scan_receipts()?;
@@ -3386,9 +3406,6 @@ impl FileContextStore {
         }
         if !removed_receipt_ids.is_empty() {
             Self::sync_directory(&self.root)?;
-            if let Some(ring) = self.integrity_key_ring.as_ref() {
-                lineage_index::remove(&self.root, &removed_receipt_ids, ring)?;
-            }
         }
         let index_built = match receipt_index::remove_if_present(&self.root, &removed_receipt_ids) {
             Ok(index_built) => index_built,

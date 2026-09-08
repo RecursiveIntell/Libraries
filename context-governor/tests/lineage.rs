@@ -6,6 +6,7 @@ use context_governor::{
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fs;
+use std::thread;
 use tempfile::TempDir;
 
 const OMITTED_MARKER: &str = "ARES_RECURSIVE_EXACT_MARKER_8f7d0b2a";
@@ -1140,49 +1141,118 @@ fn derived_index_rebuild_does_not_change_lineage_authority() {
 }
 
 #[test]
-fn missing_lineage_catalog_requires_explicit_rebuild() {
+fn missing_lineage_index_rebuilds_before_tip_lookup() {
     let tmp = TempDir::new().unwrap();
     let store = certified_store(tmp.path());
-    let first = save_root(&store, "missing-lineage-catalog");
-    fs::remove_file(tmp.path().join(".lineage-index.sqlite3")).unwrap();
+    let first = save_root(&store, "missing-lineage-index");
+    fs::remove_file(tmp.path().join(".receipt-index.sqlite3")).unwrap();
 
     let restarted = certified_store(tmp.path());
-    assert!(matches!(
-        restarted.compact_next_v2(next_request(&first, 2), None),
-        Err(ContextGovernorError::LineageIndexRebuildRequired { .. })
-    ));
-
-    let rebuilt = restarted.rebuild_lineage_index().unwrap();
-    assert_eq!(rebuilt.receipt_count, 1);
-    assert!(rebuilt.verified);
     let child = restarted
         .compact_next_v2(next_request(&first, 2), None)
         .unwrap();
     assert_eq!(child.receipt.generation, 2);
+    assert!(tmp.path().join(".receipt-index.sqlite3").exists());
 }
 
 #[test]
-fn lineage_catalog_hmac_tampering_fails_closed_until_rebuild() {
+fn corrupt_lineage_index_rebuilds_before_tip_lookup() {
     let tmp = TempDir::new().unwrap();
     let store = certified_store(tmp.path());
-    let first = save_root(&store, "tampered-lineage-catalog");
-    let catalog = tmp.path().join(".lineage-index.sqlite3");
-    let connection = rusqlite::Connection::open(&catalog).unwrap();
-    connection
-        .execute(
-            "UPDATE metadata SET value = 'forged' WHERE key = 'catalog_hmac'",
-            [],
-        )
-        .unwrap();
-    drop(connection);
+    let first = save_root(&store, "corrupt-lineage-index");
+    fs::write(tmp.path().join(".receipt-index.sqlite3"), b"not sqlite").unwrap();
 
-    assert!(matches!(
-        store.compact_next_v2(next_request(&first, 2), None),
-        Err(ContextGovernorError::LineageIndexRebuildRequired { .. })
-    ));
-    store.rebuild_lineage_index().unwrap();
     let child = store
         .compact_next_v2(next_request(&first, 2), None)
         .unwrap();
     assert_eq!(child.receipt.generation, 2);
+    assert!(tmp.path().join(".receipt-index.sqlite3").exists());
+}
+
+#[test]
+fn same_tip_activation_race_has_exactly_one_winner() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let root = save_root(&store, "same-tip-race");
+    let mut pending = Vec::new();
+    for generation in 2..12 {
+        let child = store
+            .compact_next_v2(
+                next_request(&root, generation),
+                Some(&root.receipt.receipt_id),
+            )
+            .unwrap();
+        pending.push(store.prepare_v2(&child).unwrap());
+    }
+
+    let handles = pending
+        .into_iter()
+        .map(|info| {
+            let contender = store.clone();
+            thread::spawn(move || {
+                contender.activate_v2(ReceiptActivationRequestV2 {
+                    receipt_id: info.receipt_id,
+                    committed_messages: info.expected_compacted_messages,
+                })
+            })
+        })
+        .collect::<Vec<_>>();
+    let outcomes = handles
+        .into_iter()
+        .map(|handle| handle.join().unwrap())
+        .collect::<Vec<_>>();
+    let winners = outcomes.iter().filter(|outcome| outcome.is_ok()).count();
+    let stale_losers = outcomes
+        .iter()
+        .filter(|outcome| {
+            matches!(
+                outcome,
+                Err(ContextGovernorError::LineageIntegrityMismatch { .. })
+            )
+        })
+        .count();
+
+    assert_eq!(winners, 1);
+    assert_eq!(stale_losers, 9);
+    assert!(store
+        .resolve_lineage_tip(&root.receipt.session_id)
+        .unwrap()
+        .is_some());
+}
+
+#[test]
+fn unrelated_lineages_activate_concurrently() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let mut pending = Vec::new();
+    let mut sessions = Vec::new();
+    for index in 0..8 {
+        let session = format!("cross-lineage-{index}");
+        let root = save_root(&store, &session);
+        let child = store.compact_next_v2(next_request(&root, 2), None).unwrap();
+        sessions.push(session);
+        pending.push(store.prepare_v2(&child).unwrap());
+    }
+
+    let handles = pending
+        .into_iter()
+        .map(|info| {
+            let contender = store.clone();
+            thread::spawn(move || {
+                contender.activate_v2(ReceiptActivationRequestV2 {
+                    receipt_id: info.receipt_id,
+                    committed_messages: info.expected_compacted_messages,
+                })
+            })
+        })
+        .collect::<Vec<_>>();
+    let outcomes = handles
+        .into_iter()
+        .map(|handle| handle.join().unwrap())
+        .collect::<Vec<_>>();
+
+    assert!(outcomes.iter().all(Result::is_ok));
+    for session in sessions {
+        assert!(store.resolve_lineage_tip(&session).unwrap().is_some());
+    }
 }
