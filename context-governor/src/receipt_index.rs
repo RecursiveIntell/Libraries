@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 pub(crate) const INDEX_FILE_NAME: &str = ".receipt-index.sqlite3";
 pub(crate) const LEGACY_INDEX_FILE_NAME: &str = ".receipt-index.json";
-const INDEX_SCHEMA: &str = "ReceiptTrigramSignatureIndexV3";
+const INDEX_SCHEMA: &str = "ReceiptLineageSignatureIndexV4";
 const TRIGRAM_ALGORITHM: &str = "fnv1a64-unicode-lowercase-scalar-trigram-v1";
 const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
 const FNV_PRIME: u64 = 0x100000001b3;
@@ -20,9 +20,28 @@ pub(crate) struct ReceiptFingerprint {
     pub changed_ns: i64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct IndexedLineageRow {
+    pub(crate) receipt_id: String,
+    pub(crate) receipt_schema: String,
+    pub(crate) session_id: String,
+    pub(crate) generation: Option<u32>,
+    pub(crate) parent_receipt_id: Option<String>,
+    pub(crate) receipt_identity_sha256: Option<String>,
+    pub(crate) lineage_sha256: Option<String>,
+    pub(crate) compacted_transcript_sha256: Option<String>,
+}
+
 #[derive(Debug)]
 struct IndexedReceipt {
     receipt_id: String,
+    receipt_schema: String,
+    session_id: String,
+    generation: Option<u32>,
+    parent_receipt_id: Option<String>,
+    receipt_identity_sha256: Option<String>,
+    lineage_sha256: Option<String>,
+    compacted_transcript_sha256: Option<String>,
     created_utc: String,
     file_bytes: u64,
     modified_ns: i64,
@@ -118,7 +137,51 @@ pub(crate) fn ensure_index(
     rebuild_index(root, fingerprints)
 }
 
-/// Update one receipt only when a query-ready index already exists. The JSON
+pub(crate) fn ensure_lineage_index(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+) -> Result<(), ContextGovernorError> {
+    ensure_index(root, fingerprints)
+}
+
+pub(crate) fn lineage_rows_for_session(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+    session_id: &str,
+) -> Result<Vec<IndexedLineageRow>, ContextGovernorError> {
+    ensure_lineage_index(root, fingerprints)?;
+    let connection = open_read_only(&index_path(root))?;
+    if !validate_connection(&connection, fingerprints)? {
+        return Err(ContextGovernorError::LineageIndexRebuildRequired {
+            reason: "receipt index changed during lineage lookup".to_string(),
+        });
+    }
+    let mut statement = connection.prepare(
+        "SELECT receipt_id, receipt_schema, session_id, generation,
+                parent_receipt_id, receipt_identity_sha256, lineage_sha256,
+                compacted_transcript_sha256
+         FROM receipts WHERE session_id = ?1
+         ORDER BY generation, receipt_id",
+    )?;
+    let rows = statement.query_map(params![session_id], |row| {
+        let generation = row
+            .get::<_, Option<i64>>(3)?
+            .map(|value| u32::try_from(value).map_err(|_| rusqlite::Error::InvalidQuery))
+            .transpose()?;
+        Ok(IndexedLineageRow {
+            receipt_id: row.get(0)?,
+            receipt_schema: row.get(1)?,
+            session_id: row.get(2)?,
+            generation,
+            parent_receipt_id: row.get(4)?,
+            receipt_identity_sha256: row.get(5)?,
+            lineage_sha256: row.get(6)?,
+            compacted_transcript_sha256: row.get(7)?,
+        })
+    })?;
+    Ok(rows.collect::<Result<Vec<_>, _>>()?)
+}
+
 /// receipt is authoritative and must be published first; a crash between that
 /// rename and this transaction is repaired by ensure_index on the next search.
 pub(crate) fn upsert_if_present(
@@ -134,7 +197,28 @@ pub(crate) fn upsert_if_present(
     if !schema_is_current(&connection)? {
         return Ok(false);
     }
-    let row = indexed_receipt(fingerprint, response)?;
+    let row = indexed_receipt(fingerprint, response, None)?;
+    let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    upsert_row(&transaction, &row)?;
+    transaction.commit()?;
+    Ok(true)
+}
+
+pub(crate) fn upsert_versioned_if_present(
+    root: &Path,
+    fingerprint: &ReceiptFingerprint,
+    response: &crate::lineage::VersionedCompactResponse,
+) -> Result<bool, ContextGovernorError> {
+    let path = index_path(root);
+    if !path.exists() {
+        return Ok(false);
+    }
+    let mut connection = open_writable(&path)?;
+    if !schema_is_current(&connection)? {
+        return Ok(false);
+    }
+    let projection = response.as_v1_projection();
+    let row = indexed_receipt(fingerprint, &projection, Some(response))?;
     let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
     upsert_row(&transaction, &row)?;
     transaction.commit()?;
@@ -306,6 +390,13 @@ fn rebuild_index(
              ) WITHOUT ROWID;
              CREATE TABLE receipts (
                  receipt_id TEXT PRIMARY KEY,
+                 receipt_schema TEXT NOT NULL,
+                 session_id TEXT NOT NULL,
+                 generation INTEGER,
+                 parent_receipt_id TEXT,
+                 receipt_identity_sha256 TEXT,
+                 lineage_sha256 TEXT,
+                 compacted_transcript_sha256 TEXT,
                  created_utc TEXT NOT NULL,
                  file_bytes INTEGER NOT NULL,
                  modified_ns INTEGER NOT NULL,
@@ -313,7 +404,8 @@ fn rebuild_index(
                  trigram_hashes BLOB NOT NULL,
                  trigram_hashes_blake3 TEXT NOT NULL
              ) WITHOUT ROWID;
-             CREATE INDEX receipts_created ON receipts(created_utc, receipt_id);",
+             CREATE INDEX receipts_created ON receipts(created_utc, receipt_id);
+             CREATE INDEX receipts_session_generation ON receipts(session_id, generation, receipt_id);",
         )?;
         let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
         transaction.execute(
@@ -349,10 +441,92 @@ fn rebuild_index(
 fn load_indexed_receipt(
     fingerprint: &ReceiptFingerprint,
 ) -> Result<IndexedReceipt, ContextGovernorError> {
-    let response = crate::lineage::versioned_projection_from_path(&fingerprint.path)?;
-    indexed_receipt(fingerprint, &response)
+    let versioned = crate::lineage::read_versioned_path(&fingerprint.path)?;
+    let response = versioned.as_v1_projection();
+    indexed_receipt(fingerprint, &response, Some(&versioned))
 }
 
+fn indexed_receipt(
+    fingerprint: &ReceiptFingerprint,
+    response: &CompactResponse,
+    versioned: Option<&crate::lineage::VersionedCompactResponse>,
+) -> Result<IndexedReceipt, ContextGovernorError> {
+    if response.receipt.receipt_id != fingerprint.receipt_id {
+        return Err(ContextGovernorError::ReceiptNotFound(format!(
+            "receipt identity mismatch: path={} payload={}",
+            fingerprint.receipt_id, response.receipt.receipt_id
+        )));
+    }
+    let (
+        receipt_schema,
+        session_id,
+        generation,
+        parent_receipt_id,
+        receipt_identity_sha256,
+        lineage_sha256,
+        compacted_transcript_sha256,
+    ) = match versioned {
+        Some(crate::lineage::VersionedCompactResponse::V1(response)) => (
+            "ContextCompactionReceiptV1".to_string(),
+            response.receipt.session_id.clone(),
+            None,
+            None,
+            None,
+            None,
+            Some(response.receipt.compacted_transcript_sha256.clone()),
+        ),
+        Some(crate::lineage::VersionedCompactResponse::V2(response)) => (
+            "ContextCompactionReceiptV2".to_string(),
+            response.receipt.session_id.clone(),
+            Some(response.receipt.generation),
+            response
+                .receipt
+                .parent_receipt
+                .as_ref()
+                .map(|parent| parent.receipt_id.clone()),
+            Some(response.receipt.receipt_identity_sha256.clone()),
+            Some(response.receipt.lineage_sha256.clone()),
+            Some(response.receipt.compacted_transcript_sha256.clone()),
+        ),
+        None => (
+            "ContextCompactionReceiptV1".to_string(),
+            response.receipt.session_id.clone(),
+            None,
+            None,
+            None,
+            None,
+            Some(response.receipt.compacted_transcript_sha256.clone()),
+        ),
+    };
+    let mut hashes = HashSet::new();
+    for item in &response.exact_store {
+        add_trigram_hashes(&item.content, &mut hashes);
+    }
+    for message in &response.compacted_messages {
+        add_trigram_hashes(&message.content, &mut hashes);
+    }
+    add_trigram_hashes(&serde_json::to_string(&response.receipt)?, &mut hashes);
+    let mut hashes = hashes.into_iter().collect::<Vec<_>>();
+    hashes.sort_unstable();
+    let encoded = encode_hashes(&hashes);
+    let digest = blake3::hash(&encoded).to_hex().to_string();
+    Ok(IndexedReceipt {
+        receipt_id: fingerprint.receipt_id.clone(),
+        receipt_schema,
+        session_id,
+        generation,
+        parent_receipt_id,
+        receipt_identity_sha256,
+        lineage_sha256,
+        compacted_transcript_sha256,
+        created_utc: response.receipt.created_utc.to_rfc3339(),
+        file_bytes: fingerprint.file_bytes,
+        modified_ns: fingerprint.modified_ns,
+        changed_ns: fingerprint.changed_ns,
+        trigram_hashes: encoded,
+        trigram_hashes_blake3: digest,
+    })
+}
 fn load_indexed_receipts_parallel(
     fingerprints: &[ReceiptFingerprint],
 ) -> Result<Vec<IndexedReceipt>, ContextGovernorError> {
@@ -390,49 +564,25 @@ fn load_indexed_receipts_parallel(
     })
 }
 
-fn indexed_receipt(
-    fingerprint: &ReceiptFingerprint,
-    response: &CompactResponse,
-) -> Result<IndexedReceipt, ContextGovernorError> {
-    if response.receipt.receipt_id != fingerprint.receipt_id {
-        return Err(ContextGovernorError::ReceiptNotFound(format!(
-            "receipt identity mismatch: path={} payload={}",
-            fingerprint.receipt_id, response.receipt.receipt_id
-        )));
-    }
-    let mut hashes = HashSet::new();
-    for item in &response.exact_store {
-        add_trigram_hashes(&item.content, &mut hashes);
-    }
-    for message in &response.compacted_messages {
-        add_trigram_hashes(&message.content, &mut hashes);
-    }
-    add_trigram_hashes(&serde_json::to_string(&response.receipt)?, &mut hashes);
-    let mut hashes = hashes.into_iter().collect::<Vec<_>>();
-    hashes.sort_unstable();
-    let encoded = encode_hashes(&hashes);
-    let digest = blake3::hash(&encoded).to_hex().to_string();
-    Ok(IndexedReceipt {
-        receipt_id: fingerprint.receipt_id.clone(),
-        created_utc: response.receipt.created_utc.to_rfc3339(),
-        file_bytes: fingerprint.file_bytes,
-        modified_ns: fingerprint.modified_ns,
-        changed_ns: fingerprint.changed_ns,
-        trigram_hashes: encoded,
-        trigram_hashes_blake3: digest,
-    })
-}
-
 fn upsert_row(
     transaction: &rusqlite::Transaction<'_>,
     row: &IndexedReceipt,
 ) -> Result<(), ContextGovernorError> {
     transaction.execute(
         "INSERT INTO receipts(
-             receipt_id, created_utc, file_bytes, modified_ns, changed_ns,
+             receipt_id, receipt_schema, session_id, generation, parent_receipt_id,
+             receipt_identity_sha256, lineage_sha256, compacted_transcript_sha256,
+             created_utc, file_bytes, modified_ns, changed_ns,
              trigram_hashes, trigram_hashes_blake3
-         ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7)
+         ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
          ON CONFLICT(receipt_id) DO UPDATE SET
+             receipt_schema = excluded.receipt_schema,
+             session_id = excluded.session_id,
+             generation = excluded.generation,
+             parent_receipt_id = excluded.parent_receipt_id,
+             receipt_identity_sha256 = excluded.receipt_identity_sha256,
+             lineage_sha256 = excluded.lineage_sha256,
+             compacted_transcript_sha256 = excluded.compacted_transcript_sha256,
              created_utc = excluded.created_utc,
              file_bytes = excluded.file_bytes,
              modified_ns = excluded.modified_ns,
@@ -441,6 +591,13 @@ fn upsert_row(
              trigram_hashes_blake3 = excluded.trigram_hashes_blake3",
         params![
             &row.receipt_id,
+            &row.receipt_schema,
+            &row.session_id,
+            row.generation.map(i64::from),
+            &row.parent_receipt_id,
+            &row.receipt_identity_sha256,
+            &row.lineage_sha256,
+            &row.compacted_transcript_sha256,
             &row.created_utc,
             row.file_bytes as i64,
             row.modified_ns,

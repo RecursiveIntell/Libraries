@@ -7,7 +7,7 @@
 
 use crate::{
     compact_context, context_expand, finalize_compacted_response, hash_text, hash_text_sha256,
-    lineage_index, receipt_index, verified_exact_fallback_item, verify_exact_fallback_integrity,
+    receipt_index, verified_exact_fallback_item, verify_exact_fallback_integrity,
     verify_response_integrity, CheckpointStrategy, CompactRequest, CompactResponse,
     ContextAllocationPlanV1, ContextCompactionReceiptV1, ContextExpandResult, ContextGovernorError,
     ContextStepV1, ExactRecoveryStateV1, ExactStoredItemV1, FileContextStore,
@@ -1489,63 +1489,21 @@ impl FileContextStore {
         Ok(())
     }
 
-    fn verify_for_lineage_catalog(
+    pub(crate) fn indexed_lineage_rows(
         &self,
-        response: &VersionedCompactResponse,
+        session_id: &str,
         operation: &str,
-    ) -> Result<(), ContextGovernorError> {
-        // Unsigned V1 receipts remain readable legacy evidence. They cannot
-        // select a V2 parent, but their file identity is still covered by the
-        // governed catalog projection. V2 and signed V1 evidence retain the
-        // normal authentication gate.
-        if matches!(
-            response,
-            VersionedCompactResponse::V1(response) if response.hmac.is_none()
-        ) {
-            return Ok(());
-        }
-        self.verify_versioned_for_use(response, true, operation)
-    }
-
-    pub(crate) fn lineage_catalog_rows(
-        &self,
-        operation: &str,
-    ) -> Result<Vec<lineage_index::LineageCatalogRow>, ContextGovernorError> {
-        let ring = self.require_v2_authority(operation)?;
+    ) -> Result<Vec<receipt_index::IndexedLineageRow>, ContextGovernorError> {
+        self.require_v2_authority(operation)?;
         let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
-        if fingerprints.is_empty() && !lineage_index::index_path(&self.root).exists() {
-            lineage_index::initialize_empty(&self.root, ring)?;
-        } else if !lineage_index::index_path(&self.root).exists() {
-            // A legacy V1-only store can be upgraded cheaply enough because it
-            // cannot be selected as a V2 parent. Never do this for a non-empty
-            // V2 store: that remains an explicit maintenance rebuild.
-            for fingerprint in &fingerprints {
-                if matches!(
-                    self.read_versioned_unverified(&fingerprint.receipt_id)?,
-                    VersionedCompactResponse::V2(_)
-                ) {
-                    return Err(ContextGovernorError::LineageIndexRebuildRequired {
-                        reason: "catalog is missing for a non-empty V2 store".to_string(),
-                    });
+        receipt_index::lineage_rows_for_session(&self.root, &fingerprints, session_id).map_err(
+            |error| match error {
+                ContextGovernorError::LineageIndexRebuildRequired { reason } => {
+                    ContextGovernorError::LineageIndexRebuildRequired { reason }
                 }
-            }
-            self.rebuild_lineage_index()?;
-        }
-        match lineage_index::validate(&self.root, ring) {
-            Ok(rows) => Ok(rows),
-            Err(error @ ContextGovernorError::LineageIndexRebuildRequired { .. }) => {
-                // A changed authoritative payload is stronger evidence than a
-                // stale projection. Verify the changed corpus only on this
-                // exceptional path so tampering remains an integrity failure;
-                // otherwise preserve the typed rebuild-required state.
-                for fingerprint in &fingerprints {
-                    let response = self.read_versioned_unverified(&fingerprint.receipt_id)?;
-                    self.verify_for_lineage_catalog(&response, operation)?;
-                }
-                Err(error)
-            }
-            Err(error) => Err(error),
-        }
+                other => other,
+            },
+        )
     }
 
     /// Resolve the single unsuperseded V2 tip using the authenticated metadata
@@ -1554,10 +1512,10 @@ impl FileContextStore {
         &self,
         session_id: &str,
     ) -> Result<Option<String>, ContextGovernorError> {
-        let rows = self.lineage_catalog_rows("lineage tip resolution")?;
+        let rows = self.indexed_lineage_rows(session_id, "lineage tip resolution")?;
         let session_rows = rows
             .into_iter()
-            .filter(|row| row.receipt_schema == V2_SCHEMA && row.session_id == session_id)
+            .filter(|row| row.receipt_schema == V2_SCHEMA)
             .collect::<Vec<_>>();
         let parent_ids = session_rows
             .iter()
@@ -1584,51 +1542,22 @@ impl FileContextStore {
         }
     }
 
-    /// Build and authenticate the rebuildable lineage projection. This command
-    /// is explicit maintenance and never runs implicitly for a non-empty store.
+    /// Rebuild the single receipt/search/lineage projection from authoritative
+    /// receipt files. The projection is disposable; JSON receipts remain the
+    /// sole durable authority.
     pub fn rebuild_lineage_index(
         &self,
     ) -> Result<LineageIndexRebuildResultV1, ContextGovernorError> {
-        let ring = self.require_v2_authority("lineage index rebuild")?;
         let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
-        let mut rows = Vec::with_capacity(fingerprints.len());
-        for fingerprint in &fingerprints {
-            let response = self.read_versioned_unverified(&fingerprint.receipt_id)?;
-            self.verify_for_lineage_catalog(&response, "lineage index rebuild")?;
-            let (receipt_schema, session_id, generation, parent_receipt_id) = match &response {
-                VersionedCompactResponse::V1(response) => (
-                    V1_SCHEMA.to_string(),
-                    response.receipt.session_id.clone(),
-                    None,
-                    None,
-                ),
-                VersionedCompactResponse::V2(response) => (
-                    V2_SCHEMA.to_string(),
-                    response.receipt.session_id.clone(),
-                    Some(response.receipt.generation),
-                    response
-                        .receipt
-                        .parent_receipt
-                        .as_ref()
-                        .map(|parent| parent.receipt_id.clone()),
-                ),
-            };
-            rows.push(lineage_index::LineageCatalogRow {
-                receipt_id: fingerprint.receipt_id.clone(),
-                receipt_schema,
-                session_id,
-                generation,
-                parent_receipt_id,
-                file_bytes: fingerprint.file_bytes,
-                modified_ns: fingerprint.modified_ns,
-                changed_ns: fingerprint.changed_ns,
-            });
-        }
-        lineage_index::rebuild(&self.root, &rows, ring)?;
+        receipt_index::ensure_lineage_index(&self.root, &fingerprints).map_err(|error| {
+            ContextGovernorError::LineageIndexRebuildRequired {
+                reason: error.to_string(),
+            }
+        })?;
         Ok(LineageIndexRebuildResultV1 {
             schema: "LineageIndexRebuildResultV1".to_string(),
-            path: lineage_index::index_path(&self.root),
-            receipt_count: rows.len(),
+            path: receipt_index::index_path(&self.root),
+            receipt_count: fingerprints.len(),
             verified: true,
         })
     }
@@ -1814,28 +1743,6 @@ impl FileContextStore {
         Ok(())
     }
 
-    fn lineage_catalog_row(
-        &self,
-        response: &CompactResponseV2,
-        path: &Path,
-    ) -> Result<lineage_index::LineageCatalogRow, ContextGovernorError> {
-        let fingerprint = receipt_index::fingerprint_for_path(&response.receipt.receipt_id, path)?;
-        Ok(lineage_index::LineageCatalogRow {
-            receipt_id: response.receipt.receipt_id.clone(),
-            receipt_schema: V2_SCHEMA.to_string(),
-            session_id: response.receipt.session_id.clone(),
-            generation: Some(response.receipt.generation),
-            parent_receipt_id: response
-                .receipt
-                .parent_receipt
-                .as_ref()
-                .map(|parent| parent.receipt_id.clone()),
-            file_bytes: fingerprint.file_bytes,
-            modified_ns: fingerprint.modified_ns,
-            changed_ns: fingerprint.changed_ns,
-        })
-    }
-
     fn pending_root(&self) -> PathBuf {
         self.root.join(".pending")
     }
@@ -1894,10 +1801,10 @@ impl FileContextStore {
         fs::create_dir_all(&self.root)?;
         fs::create_dir_all(self.pending_root())?;
         let _lineage_lock = self.lock_lineage(&persisted.receipt.session_id)?;
-        // This is metadata-only and fails closed when a non-empty store needs
-        // the explicit maintenance rebuild. No full receipt payload scan is
-        // performed while the lineage lock is held.
-        self.lineage_catalog_rows("V2 receipt preparation")?;
+        // Ensure the existing receipt/search/lineage projection is healthy.
+        // The index rebuild is the explicit degraded recovery path; ordinary
+        // indexed lookups do not parse unrelated payloads after this boundary.
+        self.indexed_lineage_rows(&persisted.receipt.session_id, "V2 receipt preparation")?;
         let path = self.path_for_receipt(&response.receipt.receipt_id)?;
         let pending_path = self.pending_path_for_receipt(&response.receipt.receipt_id)?;
         if path.exists() || pending_path.exists() {
@@ -2062,17 +1969,13 @@ impl FileContextStore {
         let pending_path = self.pending_path_for_receipt(&request.receipt_id)?;
         fs::rename(&pending_path, &path)?;
         Self::sync_directory(&self.root)?;
-        let ring = self.require_v2_authority("V2 receipt activation")?;
-        let catalog_row = self.lineage_catalog_row(&response, &path)?;
-        // The authoritative receipt is already durable. If this rebuildable
-        // projection update fails, return a typed maintenance error and leave
-        // the receipt in place; never delete issued evidence to repair a cache.
-        lineage_index::append(&self.root, &catalog_row, ring)?;
-        let projection = response.as_v1_projection();
         if let Ok(fingerprint) =
             receipt_index::fingerprint_for_path(&response.receipt.receipt_id, &path)
         {
-            if receipt_index::upsert_if_present(&self.root, &fingerprint, &projection).is_err() {
+            let versioned = VersionedCompactResponse::V2(Box::new(response.clone()));
+            if receipt_index::upsert_versioned_if_present(&self.root, &fingerprint, &versioned)
+                .is_err()
+            {
                 let _ = self.invalidate_index();
             }
         } else {
@@ -2287,13 +2190,6 @@ pub(crate) fn read_versioned_path(
     path: &Path,
 ) -> Result<VersionedCompactResponse, ContextGovernorError> {
     Ok(serde_json::from_slice(&fs::read(path)?)?)
-}
-
-/// Build a V1-compatible projection for a mixed-schema derived index.
-pub(crate) fn versioned_projection_from_path(
-    path: &Path,
-) -> Result<CompactResponse, ContextGovernorError> {
-    Ok(read_versioned_path(path)?.as_v1_projection())
 }
 
 #[cfg(test)]

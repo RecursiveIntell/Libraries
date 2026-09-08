@@ -28,7 +28,6 @@ pub use reducers::*;
 pub mod llm_summary;
 pub use llm_summary::*;
 
-pub(crate) mod lineage_index;
 pub mod receipt_index;
 
 pub mod key_authority;
@@ -3359,7 +3358,8 @@ impl FileContextStore {
     ) -> Result<FileContextStorePruneResultV1, ContextGovernorError> {
         std::fs::create_dir_all(&self.root)?;
         if self.integrity_key_ring.is_some() {
-            self.lineage_catalog_rows("receipt retention")?;
+            let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
+            receipt_index::ensure_lineage_index(&self.root, &fingerprints)?;
         }
         let _lock = self.lock_store()?;
         let (receipts, _, _) = self.scan_receipts()?;
@@ -3386,9 +3386,6 @@ impl FileContextStore {
         }
         if !removed_receipt_ids.is_empty() {
             Self::sync_directory(&self.root)?;
-            if let Some(ring) = self.integrity_key_ring.as_ref() {
-                lineage_index::remove(&self.root, &removed_receipt_ids, ring)?;
-            }
         }
         let index_built = match receipt_index::remove_if_present(&self.root, &removed_receipt_ids) {
             Ok(index_built) => index_built,
