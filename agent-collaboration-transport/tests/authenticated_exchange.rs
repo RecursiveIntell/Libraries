@@ -1,5 +1,6 @@
 use agent_collaboration_transport::{
-    receive_authenticated_frame, send_authenticated_frame, ReplayCache, StaticIdentity,
+    accept_one, connect_and_send, receive_authenticated_frame, send_authenticated_frame,
+    ReplayCache, StaticIdentity,
 };
 use chrono::{Duration, Utc};
 use stack_ids::{AgentId, ContentDigest};
@@ -40,6 +41,47 @@ async fn authenticated_loopback_exchange_and_replay_rejection() {
         .expect("duplicate send");
     let duplicate =
         receive_authenticated_frame(&mut reader, &bob, &alice, &manifest, &replay).await;
+    assert!(matches!(
+        duplicate,
+        Err(agent_collaboration_transport::transport::TransportError::Replay)
+    ));
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("loopback listener");
+    let address = listener.local_addr().expect("listener address");
+    let server_replay = ReplayCache::new();
+    let server_bob = bob.clone();
+    let server_alice = alice.clone();
+    let server_manifest = manifest.clone();
+    let server = tokio::spawn(async move {
+        let first = accept_one(
+            &listener,
+            &server_bob,
+            &server_alice,
+            &server_manifest,
+            &server_replay,
+        )
+        .await;
+        let second = accept_one(
+            &listener,
+            &server_bob,
+            &server_alice,
+            &server_manifest,
+            &server_replay,
+        )
+        .await;
+        (first, second)
+    });
+    connect_and_send(&address.to_string(), &frame)
+        .await
+        .expect("TCP send");
+    connect_and_send(&address.to_string(), &frame)
+        .await
+        .expect("duplicate TCP send");
+    let (tcp_received, duplicate) = server.await.expect("server task");
+    let tcp_received = tcp_received.expect("TCP receive");
+    assert_eq!(tcp_received.payload, b"typed task envelope");
     assert!(matches!(
         duplicate,
         Err(agent_collaboration_transport::transport::TransportError::Replay)
