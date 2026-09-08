@@ -1,5 +1,7 @@
+pub mod artifact_store;
 pub mod auth;
 pub mod cli;
+pub mod collaboration_store;
 pub mod compiler;
 pub mod daemon;
 pub mod evidence;

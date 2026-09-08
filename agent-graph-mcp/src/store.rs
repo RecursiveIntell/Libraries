@@ -16,6 +16,7 @@ use std::sync::Mutex;
 /// Persistent store wrapping a SQLite connection.
 pub struct PersistentStore {
     conn: std::sync::Arc<Mutex<Connection>>,
+    data_dir: PathBuf,
     integrity_key: Option<std::sync::Arc<[u8]>>,
     #[cfg(test)]
     terminal_projection_fault: std::sync::Arc<std::sync::atomic::AtomicBool>,
@@ -438,6 +439,7 @@ impl Clone for PersistentStore {
     fn clone(&self) -> Self {
         Self {
             conn: self.conn.clone(),
+            data_dir: self.data_dir.clone(),
             integrity_key: self.integrity_key.clone(),
             #[cfg(test)]
             terminal_projection_fault: self.terminal_projection_fault.clone(),
@@ -480,6 +482,7 @@ impl PersistentStore {
 
         let store = Self {
             conn: std::sync::Arc::new(Mutex::new(conn)),
+            data_dir: data_dir.to_owned(),
             integrity_key: Self::load_integrity_key_from(integrity_key_path),
             #[cfg(test)]
             terminal_projection_fault: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(
@@ -519,6 +522,20 @@ impl PersistentStore {
 
     pub fn has_integrity_key(&self) -> bool {
         self.integrity_key.is_some()
+    }
+
+    /// Return a handle to the daemon-owned collaboration fact store.
+    pub fn collaboration(&self) -> crate::collaboration_store::CollaborationStore {
+        crate::collaboration_store::CollaborationStore::from_connection(self.conn.clone())
+    }
+
+    /// Return the CAS rooted under this daemon-owned data directory.
+    pub fn artifacts(
+        &self,
+        max_bytes: u64,
+    ) -> Result<crate::artifact_store::ArtifactStore, String> {
+        crate::artifact_store::ArtifactStore::new(&self.data_dir, max_bytes)
+            .map_err(|error| error.to_string())
     }
 
     fn migrate(&self) -> Result<(), String> {
@@ -725,6 +742,8 @@ impl PersistentStore {
             [],
         )
         .map_err(|e| format!("checkpoint index migration error: {e}"))?;
+        crate::collaboration_store::migrate(&conn)
+            .map_err(|error| format!("collaboration migration error: {error}"))?;
         Ok(())
     }
 
