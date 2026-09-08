@@ -179,6 +179,10 @@ impl AgentGraphBuilder {
 
     /// Build the graph.
     pub fn build(self) -> Result<AgentGraph> {
+        if self.checkpointer.is_some() && self.checkpoint_store.is_some() {
+            return Err(AgentGraphError::CheckpointOwnerConflict);
+        }
+
         for (from, edge_list) in &self.edges {
             for edge in edge_list {
                 if let EdgeType::Normal(to) = edge {

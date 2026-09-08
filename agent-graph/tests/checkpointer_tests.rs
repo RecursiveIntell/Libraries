@@ -175,37 +175,15 @@ async fn test_graph_get_state() {
     assert_eq!(value, 42);
 }
 
-#[cfg(feature = "checkpointing")]
-#[tokio::test]
-async fn test_sqlite_saver_basic() {
-    let db_path = "/tmp/test_sqlite_saver.db";
-    std::fs::remove_file(db_path).ok();
+#[test]
+fn checkpoint_owner_implementations_cannot_coexist() {
+    let result = AgentGraph::builder()
+        .with_checkpointer(MemorySaver::new())
+        .with_checkpoint_store(std::sync::Arc::new(InMemoryCheckpointStore::new()))
+        .build();
 
-    let saver = SqliteSaver::new(db_path).unwrap();
-
-    let state = AgentState::new();
-    state.set("key", "value").await.unwrap();
-
-    let checkpoint = agent_graph::checkpoint::Checkpoint {
-        execution_id: "sqlite-thread-1".to_string(),
-        timestamp: chrono::Utc::now(),
-        current_node: "step1".to_string(),
-        iteration: 0,
-        state: state.snapshot().await,
-        step_number: 0,
-        active_nodes: Vec::new(),
-    };
-
-    saver.save(&checkpoint).await.unwrap();
-
-    let loaded = saver.load("sqlite-thread-1").await.unwrap();
-    assert!(loaded.is_some());
-    let loaded = loaded.unwrap();
-    assert_eq!(loaded.current_node, "step1");
-
-    saver.clear("sqlite-thread-1").await.unwrap();
-    let empty = saver.load("sqlite-thread-1").await.unwrap();
-    assert!(empty.is_none());
-
-    std::fs::remove_file(db_path).ok();
+    assert!(
+        result.is_err(),
+        "checkpoint owners must be selected exclusively"
+    );
 }

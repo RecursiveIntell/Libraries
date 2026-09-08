@@ -29,14 +29,15 @@ pub use crate::event_sink::{
 };
 pub use crate::stream::{StreamEvent, StreamMode};
 
-// Checkpoint store (granular)
+// Checkpoint values and in-memory compatibility saver
+pub use crate::checkpoint::Checkpoint;
+pub use crate::checkpointer::{CheckpointSaver, MemorySaver};
+
+// Durable checkpoint store (the only SQLite-backed owner)
 pub use crate::checkpoint_store::{
     AttemptRecord, AttemptStatus, CheckpointAttemptId, CheckpointMetadata, CheckpointStore,
     InMemoryCheckpointStore, RunId, RunState, RunStatus, RunSummary,
 };
-
-// Legacy checkpoint system
-pub use crate::checkpointer::{CheckpointSaver, MemorySaver};
 
 // Executor
 pub use crate::executor::{Executor, InProcessExecutor};
@@ -56,9 +57,5 @@ pub use crate::interrupt::{ExecutionResult, InterruptCheckpoint, InterruptConfig
 pub use crate::{node, router};
 
 #[cfg(feature = "checkpointing")]
-pub use crate::checkpoint::{Checkpoint, CheckpointManager};
-#[cfg(feature = "checkpointing")]
 pub use crate::checkpoint_store::SqliteCheckpointStore;
-#[cfg(feature = "checkpointing")]
-pub use crate::checkpointer::SqliteSaver;
 pub use crate::execution_cursor::{ExecutionCursor, InterruptPhase};

@@ -229,6 +229,46 @@ define_id!(
 );
 
 define_id!(
+    /// Opaque identifier for one collaborating agent.
+    AgentId
+);
+
+define_id!(
+    /// Opaque identifier for one collaboration task.
+    TaskId
+);
+
+define_id!(
+    /// Opaque identifier for one append-only task event.
+    TaskEventId
+);
+
+define_id!(
+    /// Opaque identifier for one worker lease.
+    LeaseId
+);
+
+define_id!(
+    /// Opaque identifier for one transport delivery observation.
+    DeliveryId
+);
+
+define_id!(
+    /// Opaque identifier for a capability manifest.
+    CapabilityManifestId
+);
+
+define_id!(
+    /// Opaque identifier for an artifact manifest.
+    ArtifactManifestId
+);
+
+define_id!(
+    /// Opaque identifier for a conflict record.
+    ConflictRecordId
+);
+
+define_id!(
     /// Opaque identifier for one `agent-graph` execution run.
     ///
     /// The graph runtime emits this type's stable textual representation at

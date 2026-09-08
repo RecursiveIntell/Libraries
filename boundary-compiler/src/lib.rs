@@ -23,10 +23,10 @@
 //!
 //! let c = Canonicalizer::new();
 //! let val = json!({"b": 2, "a": 1});
-//! let canonical = c.canonicalize(&val).unwrap();
-//! assert_eq!(canonical, r#"{"a":1,"b":2}"#);
+//! let canonical = c.canonicalize_bytes(&val).unwrap();
+//! assert_eq!(canonical, br#"{"a":1,"b":2}"#);
 //!
-//! let digest = ContentDigest::compute(&val).unwrap();
+//! let digest = ContentDigest::compute(&canonical);
 //! println!("Digest: {}", digest);
 //! ```
 //!
@@ -37,7 +37,6 @@
 //! `JcsError::SchemaValidation`.
 
 pub mod canonicalizer;
-pub mod digest;
 pub mod error;
 pub mod profile;
 pub mod schema;
@@ -45,7 +44,7 @@ pub mod schema;
 pub use canonicalizer::{
     canonicalize_flexible, parse_and_validate, parse_with_dup_check, Canonicalizer,
 };
-pub use digest::ContentDigest;
 pub use error::JcsError;
 pub use profile::BoundaryProfile;
 pub use schema::SchemaValidator;
+pub use stack_ids::ContentDigest;

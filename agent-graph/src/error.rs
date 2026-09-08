@@ -47,6 +47,11 @@ pub enum AgentGraphError {
     #[error("Checkpoint error: {0}")]
     CheckpointError(String),
 
+    /// Both the legacy in-memory checkpoint API and the durable checkpoint
+    /// store were configured for one graph. Select exactly one owner.
+    #[error("checkpoint owner conflict: configure either the in-memory saver or the durable checkpoint store, not both")]
+    CheckpointOwnerConflict,
+
     /// A configured granular checkpoint store failed; durable execution cannot continue.
     #[error("Checkpoint store failed to {operation}: {message}")]
     CheckpointStore {
@@ -108,6 +113,7 @@ impl AgentGraphError {
             Self::MaxIterationsExceeded { .. } => "max_iterations",
             Self::CycleDetected { .. } => "cycle_detected",
             Self::CheckpointError(_) => "checkpoint",
+            Self::CheckpointOwnerConflict => "checkpoint_owner_conflict",
             Self::CheckpointStore { .. } => "checkpoint_store",
             Self::CheckpointMismatch { .. } => "checkpoint_mismatch",
             Self::RunNotFound(_) => "run_not_found",

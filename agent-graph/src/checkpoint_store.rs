@@ -4,9 +4,11 @@
 //! complementing the legacy [`CheckpointSaver`](crate::checkpointer::CheckpointSaver)
 //! which operates at the superstep level.
 
+#[cfg(feature = "checkpointing")]
 use crate::error::AgentGraphError;
 use crate::outcome::Interrupt;
 use crate::Result;
+#[cfg(feature = "checkpointing")]
 use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

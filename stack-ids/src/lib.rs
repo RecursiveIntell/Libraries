@@ -11,7 +11,9 @@
 //! `stack-ids` is authoritative for:
 //! - Opaque ID newtypes (EnvelopeId, ClaimId, ClaimVersionId, EntityId,
 //!   EpisodeId, AttemptId, TrialId, ArtifactId, ProjectionId, RelationId,
-//!   RelationVersionId, ImportBatchId, KernelRunId, GraphRunId,
+//!   RelationVersionId, ImportBatchId, AgentId, TaskId, TaskEventId, LeaseId,
+//!   DeliveryId, CapabilityManifestId, ArtifactManifestId, ConflictRecordId,
+//!   KernelRunId, GraphRunId,
 //!   GraphCheckpointAttemptId, QueueJobId, BatchJobId, ConstraintId,
 //!   HyperedgeId, ResidualId, SyndromeId, WitnessId, CertificateId,
 //!   OracleSliceId, RefutationResultId, OperatorId, OperatorVersionId,

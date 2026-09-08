@@ -60,14 +60,13 @@ impl ContentDigest {
         Self::compute(data.as_bytes())
     }
 
-    /// Compute a digest from a JSON-serializable value using canonical serialization.
+    /// Compute a digest from a JSON-serializable value using the legacy
+    /// normalized serializer.
     ///
-    /// Canonical serialization means:
-    /// - JSON object key ordering is normalized recursively.
-    /// - `serde_json::to_string()` (compact, no trailing whitespace).
-    ///
-    /// For structured data with guaranteed field order (structs with named fields),
-    /// serde_json produces deterministic output by default.
+    /// This compatibility helper is deterministic for the existing stack
+    /// callers but is not the RFC 8785 wire path. Security-sensitive and
+    /// cross-boundary code must canonicalize with `boundary-compiler` and pass
+    /// the resulting bytes to [`ContentDigest::compute`].
     pub fn compute_json<T: Serialize>(value: &T) -> Result<Self, DigestError> {
         let canonical = canonicalize_json_value(serde_json::to_value(value).map_err(|e| {
             DigestError::SerializationFailed {

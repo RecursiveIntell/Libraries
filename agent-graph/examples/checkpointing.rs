@@ -4,15 +4,15 @@ use agent_graph::prelude::*;
 #[cfg(feature = "checkpointing")]
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("=== Checkpointing Example ===\n");
+    println!("=== Durable Checkpoint Store Example ===\n");
 
     let db_path = "/tmp/agent_graph_checkpoints.db";
+    let store = std::sync::Arc::new(SqliteCheckpointStore::new(db_path)?);
 
-    // Create checkpoint manager
-    let manager = CheckpointManager::new(db_path)?;
-
-    // Create and execute a graph
+    // The graph's durable execution state is owned by the granular store.
     let graph = AgentGraph::builder()
+        .with_name("checkpointing-example")
+        .with_checkpoint_store(store.clone())
         .add_node(
             "step1",
             node!("step1", |state| async move {
@@ -35,51 +35,23 @@ async fn main() -> Result<()> {
         .add_edge("step1", "step2")
         .build()?;
 
-    let execution_id = uuid::Uuid::new_v4().to_string();
-    println!("Execution ID: {}\n", execution_id);
+    let (result, summary) = graph
+        .execute_with_summary("step1", AgentState::new(), GraphConfig::default())
+        .await;
+    result?;
+    println!("Run ID: {}\n", summary.run_id);
 
-    // Execute the graph
-    let state = AgentState::new();
-    let result = graph.execute("step1", state).await?;
+    let persisted = store
+        .load_run(&summary.run_id)
+        .await?
+        .ok_or_else(|| AgentGraphError::RunNotFound(summary.run_id.clone()))?;
+    println!("Persisted status: {:?}", persisted.status);
+    println!("Persisted attempts: {}", persisted.attempts.len());
 
-    // Save a checkpoint after execution
-    let checkpoint = Checkpoint {
-        execution_id: execution_id.clone(),
-        timestamp: chrono::Utc::now(),
-        current_node: "step2".to_string(),
-        iteration: 1,
-        state: result.snapshot().await,
-        step_number: 0,
-        active_nodes: Vec::new(),
-    };
-
-    manager.save(&checkpoint)?;
-    println!("Checkpoint saved!\n");
-
-    // Load the checkpoint back
-    if let Some(loaded) = manager.load(&execution_id)? {
-        println!("Loaded checkpoint:");
-        println!("  Execution ID: {}", loaded.execution_id);
-        println!("  Current node: {}", loaded.current_node);
-        println!("  Iteration: {}", loaded.iteration);
-        println!("  Timestamp: {}", loaded.timestamp);
-
-        // Restore state from checkpoint
-        let restored_state = AgentState::new();
-        restored_state.restore(&loaded.state).await;
-
-        let progress: u32 = restored_state.get("progress").await?;
-        let data: String = restored_state.get("data").await?;
-        println!("  State - progress: {}, data: '{}'", progress, data);
-    }
-
-    // Clean up
-    manager.clear(&execution_id)?;
-    println!("\nCheckpoints cleared.");
-
-    // Clean up the temp file
+    drop(store);
     std::fs::remove_file(db_path).ok();
-
+    std::fs::remove_file(format!("{db_path}-wal")).ok();
+    std::fs::remove_file(format!("{db_path}-shm")).ok();
     Ok(())
 }
 

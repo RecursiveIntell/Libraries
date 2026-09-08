@@ -269,50 +269,40 @@ async fn test_snapshot_during_execution() {
 
 #[cfg(feature = "checkpointing")]
 #[tokio::test]
-async fn test_checkpoint_save_load() {
-    let db_path = "/tmp/test_agent_graph_checkpoint.db";
-
-    // Clean up first
+async fn test_sqlite_checkpoint_store_save_load() {
+    let db_path = "/tmp/test_agent_graph_checkpoint_store.db";
     std::fs::remove_file(db_path).ok();
+    std::fs::remove_file(format!("{db_path}-wal")).ok();
+    std::fs::remove_file(format!("{db_path}-shm")).ok();
 
-    let manager = CheckpointManager::new(db_path).unwrap();
+    let store = std::sync::Arc::new(SqliteCheckpointStore::new(db_path).unwrap());
+    let run_id = store.create_run("checkpoint-store-test").await.unwrap();
+    let attempt_id = store
+        .record_attempt(&run_id, "node_a", 1, &serde_json::json!({"key": "value"}))
+        .await
+        .unwrap();
+    store
+        .complete_attempt(
+            &attempt_id,
+            &serde_json::json!({"count": 42}),
+            &std::collections::HashMap::new(),
+        )
+        .await
+        .unwrap();
+    store.complete_run(&run_id).await.unwrap();
 
-    // Create a state and checkpoint
-    let state = AgentState::new();
-    state.set("key", "value").await.unwrap();
-    state.set("count", 42i32).await.unwrap();
+    let loaded = store.load_run(&run_id).await.unwrap().unwrap();
+    assert_eq!(loaded.graph_name, "checkpoint-store-test");
+    assert_eq!(loaded.status, RunStatus::Completed);
+    assert_eq!(loaded.attempts.len(), 1);
+    assert_eq!(loaded.attempts[0].status, AttemptStatus::Completed);
+    assert_eq!(
+        loaded.attempts[0].output,
+        Some(serde_json::json!({"count": 42}))
+    );
 
-    let checkpoint = Checkpoint {
-        execution_id: "test-exec-1".to_string(),
-        timestamp: chrono::Utc::now(),
-        current_node: "node_a".to_string(),
-        iteration: 5,
-        state: state.snapshot().await,
-        step_number: 0,
-        active_nodes: Vec::new(),
-    };
-
-    manager.save(&checkpoint).unwrap();
-
-    // Load it back
-    let loaded = manager.load("test-exec-1").unwrap().unwrap();
-    assert_eq!(loaded.execution_id, "test-exec-1");
-    assert_eq!(loaded.current_node, "node_a");
-    assert_eq!(loaded.iteration, 5);
-
-    // Restore state from checkpoint
-    let restored_state = AgentState::new();
-    restored_state.restore(&loaded.state).await;
-
-    let key: String = restored_state.get("key").await.unwrap();
-    let count: i32 = restored_state.get("count").await.unwrap();
-    assert_eq!(key, "value");
-    assert_eq!(count, 42);
-
-    // Clean up
-    manager.clear("test-exec-1").unwrap();
-    let empty = manager.load("test-exec-1").unwrap();
-    assert!(empty.is_none());
-
+    drop(store);
     std::fs::remove_file(db_path).ok();
+    std::fs::remove_file(format!("{db_path}-wal")).ok();
+    std::fs::remove_file(format!("{db_path}-shm")).ok();
 }

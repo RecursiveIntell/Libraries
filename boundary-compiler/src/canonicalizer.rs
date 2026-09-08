@@ -47,7 +47,7 @@ impl Canonicalizer {
                 out.push_str(if *b { "true" } else { "false" });
             }
             Value::Number(n) => {
-                self.write_number(out, n);
+                self.write_number(out, n)?;
             }
             Value::String(s) => {
                 self.write_string(out, s);
@@ -58,10 +58,22 @@ impl Canonicalizer {
         Ok(())
     }
 
-    fn write_number(&self, out: &mut String, n: &Number) {
-        // RFC 8785 §2.3: Numbers are serialized without whitespace,
-        // using the shortest representation that preserves values.
-        out.push_str(&n.to_string());
+    fn write_number(&self, out: &mut String, number: &Number) -> Result<(), JcsError> {
+        let value = number.as_f64().ok_or_else(|| JcsError::InvalidNumber {
+            reason: "number is not representable as an IEEE-754 finite f64".to_string(),
+        })?;
+        if !value.is_finite() {
+            return Err(JcsError::InvalidNumber {
+                reason: "NaN and Infinity are not valid JSON numbers".to_string(),
+            });
+        }
+        if value == 0.0 {
+            out.push('0');
+            return Ok(());
+        }
+
+        out.push_str(&format_ecmascript_number(&value.to_string(), value));
+        Ok(())
     }
 
     fn write_string(&self, out: &mut String, s: &str) {
@@ -75,7 +87,7 @@ impl Canonicalizer {
                 '\n' => out.push_str("\\n"),
                 '\r' => out.push_str("\\r"),
                 '\t' => out.push_str("\\t"),
-                c if c.is_control() => {
+                c if (c as u32) <= 0x1f => {
                     // RFC 8785 §2.2: Control characters → \uXXXX
                     out.push_str(&format!("\\u{:04x}", c as u32));
                 }
@@ -100,34 +112,97 @@ impl Canonicalizer {
     }
 
     fn write_object(&self, out: &mut String, obj: &Map<String, Value>) -> Result<(), JcsError> {
-        // RFC 8785 §2.7: Object names (keys) MUST be sorted lexicographically by
-        // JSON string codepoints (UCS-2). BTreeMap gives us this ordering.
-        //
-        // We use a custom parser to detect duplicate keys (serde_json allows them).
+        // RFC 8785 §3.2.3 orders property names by their UTF-16 code units,
+        // which differs from Rust's Unicode scalar-value ordering for some
+        // supplementary-plane characters.
+        let mut entries: Vec<(&String, &Value)> = obj.iter().collect();
+        entries.sort_by(|(left, _), (right, _)| left.encode_utf16().cmp(right.encode_utf16()));
+
         out.push('{');
-
-        // Track seen keys to detect duplicates (RFC 8785 §2.7)
-        let mut seen_keys = BTreeSet::new();
-        let mut first = true;
-
-        for (key, value) in obj.iter() {
-            if !seen_keys.insert(key.clone()) {
-                return Err(JcsError::DuplicateKey { key: key.clone() });
-            }
-
-            if !first {
+        for (index, (key, value)) in entries.into_iter().enumerate() {
+            if index != 0 {
                 out.push(',');
             }
-            first = false;
-
             self.write_string(out, key);
             out.push(':');
             self.write_value(out, value)?;
         }
-
         out.push('}');
         Ok(())
     }
+}
+
+/// Format a finite JSON number using the ECMAScript threshold rules required by JCS.
+fn format_ecmascript_number(raw: &str, value: f64) -> String {
+    let negative = value.is_sign_negative();
+    let unsigned = raw.strip_prefix('-').unwrap_or(raw);
+    let exponent_marker = unsigned.find(['e', 'E']);
+    let (mantissa, exponent) = match exponent_marker {
+        Some(index) => {
+            let parsed = unsigned[index + 1..].parse::<i32>().unwrap_or(0);
+            (&unsigned[..index], parsed)
+        }
+        None => (unsigned, 0),
+    };
+
+    let decimal_index = mantissa.find('.').unwrap_or(mantissa.len());
+    let mut digits: String = mantissa
+        .chars()
+        .filter(|character| character.is_ascii_digit())
+        .collect();
+    let decimal_position = decimal_index as i32 + exponent;
+    let use_decimal = value.abs() >= 1e-6 && value.abs() < 1e21;
+
+    if use_decimal {
+        while decimal_position > 0
+            && (decimal_position as usize) < digits.len()
+            && digits.ends_with('0')
+        {
+            digits.pop();
+        }
+
+        let mut output = String::new();
+        if negative {
+            output.push('-');
+        }
+        if decimal_position <= 0 {
+            output.push_str("0.");
+            output.push_str(&"0".repeat((-decimal_position) as usize));
+            output.push_str(&digits);
+        } else if decimal_position as usize >= digits.len() {
+            output.push_str(&digits);
+            output.push_str(&"0".repeat(decimal_position as usize - digits.len()));
+        } else {
+            let split = decimal_position as usize;
+            output.push_str(&digits[..split]);
+            output.push('.');
+            output.push_str(&digits[split..]);
+        }
+        return output;
+    }
+
+    let first_nonzero = digits.bytes().position(|byte| byte != b'0').unwrap_or(0);
+    let mut significant = digits[first_nonzero..].to_string();
+    while significant.len() > 1 && significant.ends_with('0') {
+        significant.pop();
+    }
+    let scientific_exponent = decimal_position - first_nonzero as i32 - 1;
+
+    let mut output = String::new();
+    if negative {
+        output.push('-');
+    }
+    output.push_str(&significant[..1]);
+    if significant.len() > 1 {
+        output.push('.');
+        output.push_str(&significant[1..]);
+    }
+    output.push('e');
+    if scientific_exponent >= 0 {
+        output.push('+');
+    }
+    output.push_str(&scientific_exponent.to_string());
+    output
 }
 
 /// Parse JSON with duplicate-key detection.
@@ -172,7 +247,13 @@ fn find_duplicate_key(s: &str) -> Option<String> {
                 // Beginning or end of a string at current position
                 let key_start = i + 1;
                 let key_end = skip_string(bytes, key_start, n);
-                let key = String::from_utf8_lossy(&bytes[key_start..key_end]).to_string();
+                let key = match serde_json::from_str::<String>(&s[i..key_end]) {
+                    Ok(key) => key,
+                    Err(_) => {
+                        i = key_end;
+                        continue;
+                    }
+                };
 
                 // Advance cursor past the closing quote
                 i = key_end;
@@ -257,9 +338,7 @@ fn detect_duplicates(value: &Value) -> Result<(), JcsError> {
 /// This is used for canonicalization inputs: the input need not be ordered,
 /// but duplicates MUST be rejected before canonicalization.
 pub fn parse_and_validate(input: &str) -> Result<Value, JcsError> {
-    let value = serde_json::from_str(input).map_err(JcsError::ParseError)?;
-    detect_duplicates(&value)?;
-    Ok(value)
+    parse_with_dup_check(input)
 }
 
 /// Canonicalize with automatic duplicate detection first.

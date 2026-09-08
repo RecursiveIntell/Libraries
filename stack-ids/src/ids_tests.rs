@@ -989,4 +989,20 @@ mod v25_profile_runtime_identity_tests {
         let decoded: V25Identity = serde_json::from_str(&encoded).unwrap();
         assert_eq!(decoded, identity);
     }
+
+    #[test]
+    fn collaboration_ids_roundtrip_and_reject_invalid_values() {
+        assert_id_roundtrip!(AgentId, "agent-1");
+        assert_id_roundtrip!(TaskId, "task-1");
+        assert_id_roundtrip!(TaskEventId, "task-event-1");
+        assert_id_roundtrip!(LeaseId, "lease-1");
+        assert_id_roundtrip!(DeliveryId, "delivery-1");
+        assert_id_roundtrip!(CapabilityManifestId, "capability-manifest-1");
+        assert_id_roundtrip!(ArtifactManifestId, "artifact-manifest-1");
+        assert_id_roundtrip!(ConflictRecordId, "conflict-record-1");
+
+        assert!(AgentId::try_new("").is_err());
+        assert!(TaskId::try_new("task\n1").is_err());
+        assert!(LeaseId::try_new("x".repeat(513)).is_err());
+    }
 }

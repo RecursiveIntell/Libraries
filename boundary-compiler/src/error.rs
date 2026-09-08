@@ -17,6 +17,10 @@ pub enum JcsError {
     #[error("JSON parse error: {0}")]
     ParseError(#[from] serde_json::Error),
 
+    /// A JSON number cannot be represented by the finite IEEE-754 value required by JCS.
+    #[error("invalid JSON number: {reason}")]
+    InvalidNumber { reason: String },
+
     /// Schema validation failed.
     #[error("schema validation failed: {0}")]
     SchemaValidation(String),

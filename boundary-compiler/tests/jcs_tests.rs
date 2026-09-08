@@ -75,12 +75,13 @@ fn duplicate_key_nested_rejection() {
 #[test]
 fn content_digest_computation() {
     let val = json!({"b": 2, "a": 1});
-    let digest = ContentDigest::compute(&val).unwrap();
+    let canonical = Canonicalizer::new().canonicalize_bytes(&val).unwrap();
+    let digest = ContentDigest::compute(&canonical);
     // Digest hex should be non-empty
     let hex = digest.hex();
-    assert!(!hex.is_empty());
-    // Should be deterministic — same input always gives same digest
-    let digest2 = ContentDigest::compute(&val).unwrap();
+    assert_eq!(hex.len(), 64);
+    // Should be deterministic — same canonical bytes always give same digest
+    let digest2 = ContentDigest::compute(&canonical);
     assert_eq!(digest.hex(), digest2.hex());
 }
 
