@@ -12,6 +12,7 @@ pub trait MigrationStore {
 pub fn apply(conn: &mut Connection, binary_digest: &str) -> rusqlite::Result<()> {
     let tx = conn.transaction()?;
     tx.execute_batch("CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, migration_digest TEXT NOT NULL);")?;
+    tx.execute_batch("CREATE TABLE IF NOT EXISTS server_instances (instance_id TEXT PRIMARY KEY, started_at TEXT NOT NULL, heartbeat_at TEXT NOT NULL, stopped_at TEXT, binary_digest TEXT NOT NULL);")?;
     let exists: Option<i64> = tx
         .query_row(
             "SELECT version FROM schema_migrations WHERE version = ?1",

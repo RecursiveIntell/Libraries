@@ -201,6 +201,8 @@ pub struct AgentGraphServer {
     graphs: Mutex<HashMap<String, RegisteredGraph>>,
     runs: Mutex<RunManager>,
     store: Option<PersistentStore>,
+    #[cfg(feature = "observability")]
+    _monitor_handle: Option<stack_monitor::UnixMonitorClientHandle>,
 }
 
 impl AgentGraphServer {
@@ -257,20 +259,51 @@ impl AgentGraphServer {
             );
         }
 
-        let server =
-            Self {
-                base_url,
-                default_model,
-                api_key,
-                graphs: Mutex::new(HashMap::new()),
-                runs: Mutex::new(RunManager::default().with_checkpoint_store(
-                    checkpoint_store.clone().map(|store| {
-                        store as Arc<dyn agent_graph::checkpoint_store::CheckpointStore>
-                    }),
-                )),
-                store,
-                tool_router: Self::tool_router(),
-            };
+        #[cfg(feature = "observability")]
+        let (monitor, monitor_handle) = {
+            let socket = std::env::var_os("ARES_OBSERVATORY_SOCKET")
+                .map(PathBuf::from)
+                .or_else(|| {
+                    std::env::var_os("XDG_RUNTIME_DIR").map(|runtime| {
+                        PathBuf::from(runtime)
+                            .join("ares-observatory")
+                            .join("collector.sock")
+                    })
+                });
+            match socket {
+                Some(socket) => match stack_monitor::start_unix_client(socket, 1024) {
+                    Ok((client, handle)) => (
+                        Some(Arc::new(client) as Arc<dyn stack_monitor::ObservationEmitter>),
+                        Some(handle),
+                    ),
+                    Err(error) => {
+                        tracing::warn!("stack-monitor observability unavailable: {error}");
+                        (None, None)
+                    }
+                },
+                None => (None, None),
+            }
+        };
+
+        let run_manager = RunManager::default().with_checkpoint_store(
+            checkpoint_store
+                .clone()
+                .map(|store| store as Arc<dyn agent_graph::checkpoint_store::CheckpointStore>),
+        );
+        #[cfg(feature = "observability")]
+        let run_manager = run_manager.with_monitor(monitor);
+
+        let server = Self {
+            base_url,
+            default_model,
+            api_key,
+            graphs: Mutex::new(HashMap::new()),
+            runs: Mutex::new(run_manager),
+            store,
+            #[cfg(feature = "observability")]
+            _monitor_handle: monitor_handle,
+            tool_router: Self::tool_router(),
+        };
 
         // Restore persisted graphs on startup
         if let Some(ref store) = server.store {
@@ -1017,8 +1050,33 @@ impl AgentGraphServer {
                 .get(&run_id)
                 .ok_or_else(|| internal_error(format!("run '{run_id}' not found")))?;
             if matches!(r.status.as_str(), "completed" | "failed" | "cancelled") {
+                if let Some(store) = &self.store {
+                    match store.load_terminal_receipt(&run_id) {
+                        Ok(Some(_)) => {}
+                        Err(error) if error == "INTEGRITY_KEY_REQUIRED" => {}
+                        Ok(None) => {
+                            if Instant::now() < deadline {
+                                std::thread::sleep(Duration::from_millis(10));
+                                continue;
+                            }
+                        }
+                        Err(_) => {}
+                    }
+                }
+                let mut public = r.public();
+                if let Ok(Some(stored)) = self.stored_run(&run_id) {
+                    if let (Some(public_object), Some(stored_object)) =
+                        (public.as_object_mut(), stored.as_object())
+                    {
+                        for key in ["receipt", "budgets", "budget_counters", "budget_exhausted"] {
+                            if let Some(value) = stored_object.get(key) {
+                                public_object.insert(key.into(), value.clone());
+                            }
+                        }
+                    }
+                }
                 break output_with_meta(
-                    r.public(),
+                    public,
                     Some(&graph_id),
                     Some(&graph.version),
                     Some(&run_id),
@@ -1057,7 +1115,8 @@ impl AgentGraphServer {
                 .data
                 .as_ref()
                 .and_then(|data| data.get("final_state").cloned())
-                .map(|v| serde_json::to_string(&v).unwrap_or_default());
+                .filter(|value| !value.is_null())
+                .map(|value| serde_json::to_string(&value).unwrap_or_default());
             let _ = store.save_execution(
                 &run_id,
                 &graph_id,
@@ -2239,12 +2298,23 @@ impl AgentGraphServer {
                         }
                     }
                 }
-                let public = self
+                let mut public = self
                     .runs
                     .lock()
                     .ok()
                     .and_then(|runs| runs.get(&run_id).map(|record| record.public()))
                     .unwrap_or_else(|| r.public());
+                if let Ok(Some(stored)) = self.stored_run(&run_id) {
+                    if let (Some(public_object), Some(stored_object)) =
+                        (public.as_object_mut(), stored.as_object())
+                    {
+                        for key in ["receipt", "budgets", "budget_counters", "budget_exhausted"] {
+                            if let Some(value) = stored_object.get(key) {
+                                public_object.insert(key.into(), value.clone());
+                            }
+                        }
+                    }
+                }
                 return Ok(output_with_meta(public, None, None, Some(&run_id)));
             }
             if Instant::now() >= deadline {

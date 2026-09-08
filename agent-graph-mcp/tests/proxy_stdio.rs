@@ -2,6 +2,7 @@
 
 #[path = "../src/proxy.rs"]
 mod proxy;
+
 #[test]
 fn frames_are_bounded_and_round_trip() {
     let mut b = Vec::new();
@@ -14,6 +15,17 @@ fn frames_are_bounded_and_round_trip() {
         Err(proxy::ProxyError::FrameTooLarge)
     ));
 }
+
+#[test]
+fn encoded_oversized_frame_is_rejected_before_payload_allocation() {
+    let encoded = ((proxy::MAX_FRAME as u32) + 1).to_be_bytes();
+    let mut input = encoded.as_slice();
+    assert!(matches!(
+        proxy::read_frame(&mut input),
+        Err(proxy::ProxyError::FrameTooLarge)
+    ));
+}
+
 #[test]
 fn absent_daemon_is_typed() {
     let e = proxy::connect(std::path::Path::new("/tmp/no-agent-graph.sock")).unwrap_err();

@@ -24,16 +24,26 @@ pub struct CompileContext {
     pub cancelled: Arc<AtomicBool>,
     pub cancellation: Arc<Notify>,
     pub events: Arc<Mutex<Vec<GraphEvent>>>,
+    #[cfg(feature = "observability")]
+    pub monitor: Option<Arc<dyn stack_monitor::ObservationEmitter>>,
     pub checkpoint_store: Option<Arc<dyn CheckpointStore>>,
 }
 
-struct Collector(Arc<Mutex<Vec<GraphEvent>>>);
+struct Collector {
+    events: Arc<Mutex<Vec<GraphEvent>>>,
+    #[cfg(feature = "observability")]
+    monitor: Option<Arc<stack_monitor::agent_graph_observation::AgentGraphObservationSink>>,
+}
 impl EventSink for Collector {
     fn emit(&self, event: GraphEvent) {
-        if let Ok(mut events) = self.0.lock() {
+        if let Ok(mut events) = self.events.lock() {
             if events.len() < 2048 {
-                events.push(event);
+                events.push(event.clone());
             }
+        }
+        #[cfg(feature = "observability")]
+        if let Some(monitor) = &self.monitor {
+            monitor.emit(event);
         }
     }
 }
@@ -47,7 +57,18 @@ pub fn compile(spec: &GraphSpec, cx: CompileContext) -> Result<AgentGraph, Strin
         .with_name(&spec.name)
         .with_max_iterations(spec.max_iterations.unwrap_or(64))
         .with_cycle_detection(false)
-        .with_event_sink(Arc::new(Collector(cx.events)));
+        .with_event_sink(Arc::new(Collector {
+            events: Arc::clone(&cx.events),
+            #[cfg(feature = "observability")]
+            monitor: cx.monitor.map(|emitter| {
+                Arc::new(
+                    stack_monitor::agent_graph_observation::AgentGraphObservationSink::new_with_emitter(
+                        emitter,
+                        "agent-graph-mcp",
+                    ),
+                )
+            }),
+        }));
     if let Some(store) = cx.checkpoint_store {
         builder = builder.with_checkpoint_store(store);
     }
