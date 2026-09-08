@@ -37,6 +37,7 @@
 //! `JcsError::SchemaValidation`.
 
 pub mod canonicalizer;
+pub mod digest;
 pub mod error;
 pub mod profile;
 pub mod schema;

@@ -5,23 +5,23 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-/// Trait for saving and loading checkpoints.
+/// Trait for saving and loading legacy superstep checkpoints.
+///
+/// Governed durable execution uses `CheckpointStore`; this trait remains for
+/// existing graph consumers and explicit compatibility paths.
 #[async_trait]
 pub trait CheckpointSaver: Send + Sync {
-    /// Save a checkpoint
+    /// Save a checkpoint.
     async fn save(&self, checkpoint: &Checkpoint) -> Result<()>;
-    /// Load the most recent checkpoint for a thread
+    /// Load the most recent checkpoint for a thread.
     async fn load(&self, thread_id: &str) -> Result<Option<Checkpoint>>;
-    /// Load all checkpoints for a thread (history)
+    /// Load all checkpoints for a thread (history).
     async fn load_history(&self, thread_id: &str) -> Result<Vec<Checkpoint>>;
-    /// Clear all checkpoints for a thread
+    /// Clear all checkpoints for a thread.
     async fn clear(&self, thread_id: &str) -> Result<()>;
 }
 
-/// In-memory checkpoint storage for tests and lightweight compatibility use.
-///
-/// This saver is not a durable persistence implementation. Durable checkpoint
-/// state must use [`crate::checkpoint_store::CheckpointStore`].
+/// In-memory checkpoint storage for testing and lightweight compatibility use.
 pub struct MemorySaver {
     checkpoints: Arc<RwLock<HashMap<String, Vec<Checkpoint>>>>,
 }
@@ -65,5 +65,59 @@ impl CheckpointSaver for MemorySaver {
         let mut store = self.checkpoints.write().await;
         store.remove(thread_id);
         Ok(())
+    }
+}
+
+/// Legacy SQLite-backed saver retained for compatibility.
+///
+/// The governed daemon does not select this type; it uses
+/// `SqliteCheckpointStore` as its durable owner.
+#[cfg(feature = "checkpointing")]
+pub struct SqliteSaver {
+    manager: std::sync::Mutex<crate::checkpoint::CheckpointManager>,
+}
+
+#[cfg(feature = "checkpointing")]
+impl SqliteSaver {
+    pub fn new(db_path: &str) -> Result<Self> {
+        Ok(Self {
+            manager: std::sync::Mutex::new(crate::checkpoint::CheckpointManager::new(db_path)?),
+        })
+    }
+}
+
+#[cfg(feature = "checkpointing")]
+#[async_trait]
+impl CheckpointSaver for SqliteSaver {
+    async fn save(&self, checkpoint: &Checkpoint) -> Result<()> {
+        let mgr = self
+            .manager
+            .lock()
+            .map_err(|e| crate::error::AgentGraphError::CheckpointError(e.to_string()))?;
+        mgr.save(checkpoint)
+    }
+
+    async fn load(&self, thread_id: &str) -> Result<Option<Checkpoint>> {
+        let mgr = self
+            .manager
+            .lock()
+            .map_err(|e| crate::error::AgentGraphError::CheckpointError(e.to_string()))?;
+        mgr.load(thread_id)
+    }
+
+    async fn load_history(&self, thread_id: &str) -> Result<Vec<Checkpoint>> {
+        let mgr = self
+            .manager
+            .lock()
+            .map_err(|e| crate::error::AgentGraphError::CheckpointError(e.to_string()))?;
+        mgr.load_all(thread_id)
+    }
+
+    async fn clear(&self, thread_id: &str) -> Result<()> {
+        let mgr = self
+            .manager
+            .lock()
+            .map_err(|e| crate::error::AgentGraphError::CheckpointError(e.to_string()))?;
+        mgr.clear(thread_id)
     }
 }
