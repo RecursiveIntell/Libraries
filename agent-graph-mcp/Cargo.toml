@@ -10,7 +10,7 @@ description = "MCP server exposing agent-graph + llm-pipeline for graph-orchestr
 agent-graph = { version = "0.2.0", path = "../agent-graph" }
 agent-collaboration-contract = { version = "0.1.0", path = "../agent-collaboration-contract" }
 boundary-compiler = { version = "0.1.0", path = "../boundary-compiler" }
-llm-pipeline = { version = "0.3.0", path = "../llm-pipeline", features = ["openai"] }
+llm-pipeline = { path = "../llm-pipeline", features = ["openai"] }
 async-trait = "0.1"
 rmcp = { version = "1", features = ["server", "transport-io"] }
 anyhow = "1"
