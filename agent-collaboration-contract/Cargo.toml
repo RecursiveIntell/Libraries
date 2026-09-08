@@ -1,0 +1,19 @@
+[package]
+name = "agent-collaboration-contract"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Transport-neutral agent collaboration data contracts"
+license = "MIT"
+publish = false
+
+[dependencies]
+chrono = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+stack-ids = { path = "../stack-ids" }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

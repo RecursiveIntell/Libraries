@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "issued_at": {
+      "type": "string"
+    },
+    "manifest_digest": {
+      "$ref": "#/definitions/ContentDigest"
+    },
+    "manifest_id": {
+      "type": "string"
+    },
+    "max_artifact_bytes": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "max_execution_secs": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "max_task_bytes": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "capabilities",
+    "expires_at",
+    "issued_at",
+    "manifest_digest",
+    "manifest_id",
+    "max_artifact_bytes",
+    "max_execution_secs",
+    "max_task_bytes",
+    "schema_version"
+  ],
+  "title": "CapabilityManifestV1",
+  "type": "object"
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    },
+    "TaskAcceptanceDispositionV1": {
+      "enum": [
+        "accepted",
+        "rejected",
+        "quarantined"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "accepted_at": {
+      "type": "string"
+    },
+    "authority_agent_id": {
+      "type": "string"
+    },
+    "disposition": {
+      "$ref": "#/definitions/TaskAcceptanceDispositionV1"
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "request_digest": {
+      "$ref": "#/definitions/ContentDigest"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "accepted_at",
+    "authority_agent_id",
+    "disposition",
+    "request_digest",
+    "schema_version",
+    "task_id"
+  ],
+  "title": "TaskAcceptanceV1",
+  "type": "object"
+}

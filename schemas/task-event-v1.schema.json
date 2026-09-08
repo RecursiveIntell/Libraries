@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    },
+    "TaskEventKindV1": {
+      "enum": [
+        "submitted",
+        "accepted",
+        "rejected",
+        "quarantined",
+        "leased",
+        "running",
+        "interrupted",
+        "completion_unknown",
+        "completed",
+        "failed",
+        "cancelled",
+        "lease_expired",
+        "reconciled_completed",
+        "reconciled_failed"
+      ],
+      "type": "string"
+    },
+    "TaskStatusV1": {
+      "enum": [
+        "submitted",
+        "accepted",
+        "rejected",
+        "quarantined",
+        "leased",
+        "running",
+        "interrupted",
+        "completion_unknown",
+        "completed",
+        "failed",
+        "cancelled",
+        "lease_expired",
+        "reconciled_completed",
+        "reconciled_failed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "attempt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/TaskEventKindV1"
+    },
+    "occurred_at": {
+      "type": "string"
+    },
+    "owner_agent_id": {
+      "type": "string"
+    },
+    "previous_event_digest": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ContentDigest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/definitions/TaskStatusV1"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "trial_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "event_id",
+    "kind",
+    "occurred_at",
+    "owner_agent_id",
+    "recorded_at",
+    "schema_version",
+    "status",
+    "task_id"
+  ],
+  "title": "TaskEventV1",
+  "type": "object"
+}

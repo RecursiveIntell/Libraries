@@ -12,6 +12,7 @@ attestation-exchange = { path = "../attestation-exchange" }
 authority-delegation = { path = "../authority-delegation" }
 constitutional-memory = { path = "../constitutional-memory" }
 continuity-runtime = { path = "../continuity-runtime" }
+agent-collaboration-contract = { path = "../agent-collaboration-contract" }
 schemars = { workspace = true }
 discovery-portfolio = { path = "../discovery-portfolio" }
 effect-runtime = { path = "../effect-runtime" }

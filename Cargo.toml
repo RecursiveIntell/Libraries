@@ -1,9 +1,11 @@
 [workspace]
 resolver = "2"
+
 members = [
     "agent-evidence-workbench",
     "agent-graph",
     "agent-graph-mcp",
+    "agent-collaboration-contract",
     "agent-graph-python",
     "agent-guard",
     "ai-batch-queue",
@@ -79,6 +81,7 @@ exclude = [
 default-members = [
     "agent-evidence-workbench",
     "agent-graph",
+    "agent-collaboration-contract",
     "ai-batch-queue",
     "assurance-runtime",
     "attestation-exchange",
@@ -165,3 +168,10 @@ thiserror = "2.0.18"
 tokio = "1.50.0"
 tracing = "0.1.44"
 uuid = "1.22.0"
+
+# Profiles must be declared at the workspace root; package-local profiles are
+# ignored by Cargo for workspace members.
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

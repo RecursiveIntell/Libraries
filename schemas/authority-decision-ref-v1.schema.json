@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "execution_permit_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "policy_decision_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "title": "AuthorityDecisionRefV1",
+  "type": "object"
+}

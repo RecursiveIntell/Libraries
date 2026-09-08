@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "ArtifactManifestV1": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "$ref": "#/definitions/ArtifactRefV1"
+          },
+          "type": "array"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "manifest_digest": {
+          "$ref": "#/definitions/ContentDigest"
+        },
+        "manifest_id": {
+          "type": "string"
+        },
+        "producer_agent_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifacts",
+        "created_at",
+        "manifest_digest",
+        "manifest_id",
+        "producer_agent_id",
+        "schema_version",
+        "task_id"
+      ],
+      "type": "object"
+    },
+    "ArtifactRefV1": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "digest": {
+          "$ref": "#/definitions/ContentDigest"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "digest",
+        "media_type",
+        "size_bytes"
+      ],
+      "type": "object"
+    },
+    "AuthorityDecisionRefV1": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_permit_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "policy_decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    },
+    "TaskStatusV1": {
+      "enum": [
+        "submitted",
+        "accepted",
+        "rejected",
+        "quarantined",
+        "leased",
+        "running",
+        "interrupted",
+        "completion_unknown",
+        "completed",
+        "failed",
+        "cancelled",
+        "lease_expired",
+        "reconciled_completed",
+        "reconciled_failed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "attempt_id": {
+      "type": "string"
+    },
+    "authority": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/AuthorityDecisionRefV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "output_manifest": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ArtifactManifestV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "output_manifest_digest": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ContentDigest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "request_digest": {
+      "$ref": "#/definitions/ContentDigest"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/definitions/TaskStatusV1"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "trial_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "completed_at",
+    "recorded_at",
+    "request_digest",
+    "schema_version",
+    "status",
+    "task_id",
+    "trial_id"
+  ],
+  "title": "TaskReceiptV1",
+  "type": "object"
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "attempt_id": {
+      "type": "string"
+    },
+    "finished_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "graph_run_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "trial_id": {
+      "type": "string"
+    },
+    "worker_agent_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "graph_run_id",
+    "schema_version",
+    "started_at",
+    "task_id",
+    "trial_id",
+    "worker_agent_id"
+  ],
+  "title": "TaskAttemptV1",
+  "type": "object"
+}

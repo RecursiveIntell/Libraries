@@ -867,6 +867,54 @@ const SCHEMA_SPECS: &[SchemaSpec] = &[
         name: "bridge-import-failure-artifact-v1.schema.json",
         writer: write_schema::<forge_memory_bridge::BridgeImportFailureArtifact>,
     },
+    SchemaSpec {
+        name: "capability-manifest-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::CapabilityManifestV1>,
+    },
+    SchemaSpec {
+        name: "task-envelope-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::TaskEnvelopeV1>,
+    },
+    SchemaSpec {
+        name: "task-acceptance-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::TaskAcceptanceV1>,
+    },
+    SchemaSpec {
+        name: "task-attempt-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::TaskAttemptV1>,
+    },
+    SchemaSpec {
+        name: "task-event-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::TaskEventV1>,
+    },
+    SchemaSpec {
+        name: "lease-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::LeaseV1>,
+    },
+    SchemaSpec {
+        name: "artifact-ref-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::ArtifactRefV1>,
+    },
+    SchemaSpec {
+        name: "artifact-manifest-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::ArtifactManifestV1>,
+    },
+    SchemaSpec {
+        name: "delivery-receipt-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::DeliveryReceiptV1>,
+    },
+    SchemaSpec {
+        name: "task-receipt-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::TaskReceiptV1>,
+    },
+    SchemaSpec {
+        name: "conflict-record-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::ConflictRecordV1>,
+    },
+    SchemaSpec {
+        name: "authority-decision-ref-v1.schema.json",
+        writer: write_schema::<agent_collaboration_contract::AuthorityDecisionRefV1>,
+    },
 ];
 
 /// Generates every registered schema into the supplied output directory.

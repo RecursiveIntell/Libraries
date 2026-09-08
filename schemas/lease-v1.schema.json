@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "attempt_id": {
+      "type": "string"
+    },
+    "fencing_token": {
+      "$ref": "#/definitions/ContentDigest"
+    },
+    "issued_at": {
+      "type": "string"
+    },
+    "lease_epoch": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "lease_expires_at": {
+      "type": "string"
+    },
+    "lease_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "worker_agent_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "fencing_token",
+    "issued_at",
+    "lease_epoch",
+    "lease_expires_at",
+    "lease_id",
+    "schema_version",
+    "task_id",
+    "worker_agent_id"
+  ],
+  "title": "LeaseV1",
+  "type": "object"
+}
