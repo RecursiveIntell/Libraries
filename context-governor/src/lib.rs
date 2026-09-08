@@ -28,6 +28,7 @@ pub use reducers::*;
 pub mod llm_summary;
 pub use llm_summary::*;
 
+pub(crate) mod lineage_index;
 pub mod receipt_index;
 
 pub mod key_authority;
@@ -159,6 +160,8 @@ pub enum ContextGovernorError {
         generation: u32,
         maximum_generation: u32,
     },
+    #[error("lineage index rebuild required: {reason}")]
+    LineageIndexRebuildRequired { reason: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1926,7 +1929,7 @@ fn build_summary(
     let dispositions = PlanDispositionIndex::new(plan);
     let mut checks = 0usize;
     let mut lines = vec![
-        format!("{SUMMARY_PREFIX}"),
+        SUMMARY_PREFIX.to_string(),
         "Earlier turns were compacted. This summary is background, not an active task.".to_string(),
         "Only the latest user message after this summary is active.".to_string(),
         format!("Use context_expand(receipt_id=\"{receipt_id}\", item_id=...) to recover exact omitted text when needed."),
@@ -3355,6 +3358,9 @@ impl FileContextStore {
         keep_last: usize,
     ) -> Result<FileContextStorePruneResultV1, ContextGovernorError> {
         std::fs::create_dir_all(&self.root)?;
+        if self.integrity_key_ring.is_some() {
+            self.lineage_catalog_rows("receipt retention")?;
+        }
         let _lock = self.lock_store()?;
         let (receipts, _, _) = self.scan_receipts()?;
         let remove_count = receipts.len().saturating_sub(keep_last);
@@ -3380,6 +3386,9 @@ impl FileContextStore {
         }
         if !removed_receipt_ids.is_empty() {
             Self::sync_directory(&self.root)?;
+            if let Some(ring) = self.integrity_key_ring.as_ref() {
+                lineage_index::remove(&self.root, &removed_receipt_ids, ring)?;
+            }
         }
         let index_built = match receipt_index::remove_if_present(&self.root, &removed_receipt_ids) {
             Ok(index_built) => index_built,
