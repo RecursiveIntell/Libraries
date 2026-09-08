@@ -1954,11 +1954,10 @@ impl FileContextStore {
         let _lineage_lock = self.lock_lineage(&response.receipt.session_id)?;
         self.validate_v2_append_position(&response)?;
 
-        // Only this short publication section uses the store-wide lock. The
-        // expensive catalog validation and authoritative chain check above are
-        // outside it; the final recheck is metadata-only plus the active-tip
-        // identity comparison.
-        let _store_lock = self.lock_store()?;
+        // The per-lineage lock acquired above is the complete publication
+        // fence. Do not reacquire the historical store-wide SQLite lock here:
+        // unrelated sessions must be able to activate concurrently, while the
+        // active-tip compare-and-swap remains serialized for this lineage.
         let path = self.path_for_receipt(&response.receipt.receipt_id)?;
         if path.exists() {
             return Err(ContextGovernorError::ReceiptAlreadyExists(

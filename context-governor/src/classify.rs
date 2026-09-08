@@ -53,6 +53,38 @@ pub enum AuthorityClass {
     Quarantine,
 }
 
+/// Provenance of a message or structured content part. Message text can
+/// describe an instruction, but it cannot upgrade this origin.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum AuthorityOrigin {
+    System,
+    Developer,
+    User,
+    Assistant,
+    Tool,
+    ExternalEvidence,
+    #[default]
+    Unknown,
+}
+
+impl AuthorityOrigin {
+    fn from_role(role: &str) -> Self {
+        match role {
+            "system" => Self::System,
+            "developer" => Self::Developer,
+            "user" => Self::User,
+            "assistant" => Self::Assistant,
+            "tool" | "function" => Self::Tool,
+            _ => Self::Unknown,
+        }
+    }
+
+    fn may_originate_requirement(&self) -> bool {
+        matches!(self, Self::System | Self::Developer | Self::User)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum PreservationPolicy {
@@ -130,6 +162,9 @@ pub struct StructuredContentPartV1 {
     /// Unknown provider-native fields preserved verbatim.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub provider_extras: BTreeMap<String, Value>,
+    /// Role-derived provenance. This is never inferred from `text`.
+    #[serde(default)]
+    pub authority_origin: AuthorityOrigin,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -207,6 +242,48 @@ pub struct PlanStateV1 {
     /// Step indices that contain active instructions.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub active_instruction_steps: Vec<usize>,
+    /// Small source-linked witnesses for active authoritative obligations.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub active_obligations: Vec<ActiveObligationV1>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ActiveRequirementState {
+    #[default]
+    Required,
+    ActiveAnchor,
+    Retrievable,
+    Inactive,
+    Superseded,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum RecoveryRequirement {
+    #[default]
+    Exact,
+    SourceBound,
+    SummaryOk,
+    Discardable,
+}
+
+/// A bounded active obligation witness. The full source remains in the
+/// receipt-backed exact store; this small record keeps the obligation visible
+/// without allowing a large tool payload to become an instruction.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct ActiveObligationV1 {
+    pub obligation_id: String,
+    pub authority_origin: AuthorityOrigin,
+    pub exact_or_canonical_clause: String,
+    pub source_id: String,
+    pub source_span_hash: String,
+    pub lifecycle_state: ActiveRequirementState,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supersedes: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub satisfied_by_evidence_ids: Vec<String>,
+    pub recovery_requirement: RecoveryRequirement,
 }
 
 /// Monotonic authority floor — items that must never be downgraded.
@@ -313,9 +390,10 @@ fn build_step(
 
     for message in messages[start..end].iter() {
         let content_lower = message.content.to_lowercase();
-        if content_lower.contains("acceptance gate")
-            || content_lower.contains("must pass")
-            || content_lower.contains("must remain")
+        if AuthorityOrigin::from_role(&message.role).may_originate_requirement()
+            && (content_lower.contains("acceptance gate")
+                || content_lower.contains("must pass")
+                || content_lower.contains("must remain"))
         {
             has_active_instruction = true;
         }
@@ -341,6 +419,7 @@ fn build_step(
                     .get("exit_code")
                     .and_then(|v| v.as_i64())
                     .map(|i| i as i32),
+                authority_origin: AuthorityOrigin::from_role(&message.role),
                 ..Default::default()
             });
         } else if message.role == "assistant" {
@@ -360,12 +439,14 @@ fn build_step(
                         .and_then(|v| v.as_str())
                         .map(String::from),
                     tool_arguments_json: message.content.clone(),
+                    authority_origin: AuthorityOrigin::from_role(&message.role),
                     ..Default::default()
                 });
             } else {
                 content_parts.push(StructuredContentPartV1 {
                     text: message.content.clone(),
                     part_kind: ContentPartKind::Text,
+                    authority_origin: AuthorityOrigin::from_role(&message.role),
                     ..Default::default()
                 });
             }
@@ -373,6 +454,7 @@ fn build_step(
             content_parts.push(StructuredContentPartV1 {
                 text: message.content.clone(),
                 part_kind: ContentPartKind::Text,
+                authority_origin: AuthorityOrigin::from_role(&message.role),
                 ..Default::default()
             });
         }
@@ -393,7 +475,6 @@ fn build_step(
 
 /// Extract explicit plan state from context steps.
 pub fn extract_plan_state(steps: &[ContextStepV1], messages: &[Message]) -> PlanStateV1 {
-    let _ = messages;
     let mut plan_state = PlanStateV1::default();
 
     for (step_idx, step) in steps.iter().enumerate() {
@@ -401,6 +482,12 @@ pub fn extract_plan_state(steps: &[ContextStepV1], messages: &[Message]) -> Plan
             plan_state.active_instruction_steps.push(step_idx);
         }
         for part in &step.content_parts {
+            // Tool and assistant text may discuss plans, but cannot originate
+            // operator plan state. Only authoritative origins may populate this
+            // projection.
+            if !part.authority_origin.may_originate_requirement() {
+                continue;
+            }
             let lower = part.text.to_lowercase();
             if lower.contains("acceptance gate:")
                 || lower.contains("must pass")
@@ -424,6 +511,36 @@ pub fn extract_plan_state(steps: &[ContextStepV1], messages: &[Message]) -> Plan
                 plan_state.current_plan = compact_preview(&part.text, 500);
             }
         }
+    }
+
+    for (message_index, message) in messages.iter().enumerate() {
+        let origin = AuthorityOrigin::from_role(&message.role);
+        let lower = message.content.to_lowercase();
+        if !origin.may_originate_requirement()
+            || !(detect_plan_content(&message.content)
+                || contains_any(
+                    &lower,
+                    &["acceptance gate", "must pass", "must remain", "required"],
+                ))
+        {
+            continue;
+        }
+        let source_id = message
+            .id
+            .clone()
+            .unwrap_or_else(|| format!("message_{message_index}"));
+        let source_span_hash = hash_text(&message.content);
+        plan_state.active_obligations.push(ActiveObligationV1 {
+            obligation_id: format!("obligation_{source_span_hash}"),
+            authority_origin: origin,
+            exact_or_canonical_clause: compact_preview(&message.content, 480),
+            source_id,
+            source_span_hash,
+            lifecycle_state: ActiveRequirementState::ActiveAnchor,
+            supersedes: None,
+            satisfied_by_evidence_ids: Vec::new(),
+            recovery_requirement: RecoveryRequirement::Exact,
+        });
     }
 
     plan_state
@@ -512,17 +629,19 @@ fn classify_message(
         authority = AuthorityClass::ActiveTask;
         policy = PreservationPolicy::KeepVerbatim;
         reasons.push("latest-user-message".to_string());
-    } else if contains_any(
-        &content_l,
-        &[
-            "acceptance gate",
-            "must pass",
-            "required",
-            "requirement",
-            "do not",
-            "never ",
-        ],
-    ) {
+    } else if authoritative_role(msg.role.as_str())
+        && contains_any(
+            &content_l,
+            &[
+                "acceptance gate",
+                "must pass",
+                "required",
+                "requirement",
+                "do not",
+                "never ",
+            ],
+        )
+    {
         item_type = ItemType::AcceptanceGate;
         authority = AuthorityClass::MustPreserveExact;
         policy = if aggressive && long_message {
@@ -531,7 +650,7 @@ fn classify_message(
             PreservationPolicy::KeepVerbatim
         };
         reasons.push("acceptance-or-instruction".to_string());
-    } else if has_plan {
+    } else if authoritative_role(msg.role.as_str()) && has_plan {
         item_type = ItemType::AcceptanceGate;
         authority = AuthorityClass::MustPreserveExact;
         policy = if aggressive && long_message {
@@ -656,4 +775,8 @@ fn classify_message(
         source_message_ids: msg.id.clone().into_iter().collect(),
         priority_score: 0,
     }
+}
+
+fn authoritative_role(role: &str) -> bool {
+    AuthorityOrigin::from_role(role).may_originate_requirement()
 }

@@ -352,7 +352,7 @@ fn v2_cli_finalize_prepare_recover_and_activate_is_two_phase() {
             msg("user", "continue after durable host commit"),
         ],
         policy: CompactionPolicy {
-            target_tokens: 120,
+            target_tokens: 260,
             protect_first_n: 0,
             protect_last_n: 1,
             ..Default::default()

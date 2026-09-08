@@ -3,6 +3,7 @@ use rusqlite::{params, Connection, OptionalExtension, TransactionBehavior};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 
 pub(crate) const INDEX_FILE_NAME: &str = ".receipt-index.sqlite3";
 pub(crate) const LEGACY_INDEX_FILE_NAME: &str = ".receipt-index.json";
@@ -10,6 +11,14 @@ const INDEX_SCHEMA: &str = "ReceiptLineageSignatureIndexV4";
 const TRIGRAM_ALGORITHM: &str = "fnv1a64-unicode-lowercase-scalar-trigram-v1";
 const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
 const FNV_PRIME: u64 = 0x100000001b3;
+static INDEX_WRITE_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+fn index_write_guard() -> std::sync::MutexGuard<'static, ()> {
+    INDEX_WRITE_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ReceiptFingerprint {
@@ -128,6 +137,7 @@ pub(crate) fn ensure_index(
     root: &Path,
     fingerprints: &[ReceiptFingerprint],
 ) -> Result<(), ContextGovernorError> {
+    let _write_guard = index_write_guard();
     if index_path(root).exists() {
         match reconcile_index(root, fingerprints) {
             Ok(true) => return Ok(()),
@@ -189,6 +199,7 @@ pub(crate) fn upsert_if_present(
     fingerprint: &ReceiptFingerprint,
     response: &CompactResponse,
 ) -> Result<bool, ContextGovernorError> {
+    let _write_guard = index_write_guard();
     let path = index_path(root);
     if !path.exists() {
         return Ok(false);
@@ -209,6 +220,7 @@ pub(crate) fn upsert_versioned_if_present(
     fingerprint: &ReceiptFingerprint,
     response: &crate::lineage::VersionedCompactResponse,
 ) -> Result<bool, ContextGovernorError> {
+    let _write_guard = index_write_guard();
     let path = index_path(root);
     if !path.exists() {
         return Ok(false);
@@ -229,6 +241,7 @@ pub(crate) fn remove_if_present(
     root: &Path,
     receipt_ids: &[String],
 ) -> Result<bool, ContextGovernorError> {
+    let _write_guard = index_write_guard();
     if receipt_ids.is_empty() || !index_path(root).exists() {
         return Ok(index_path(root).exists());
     }

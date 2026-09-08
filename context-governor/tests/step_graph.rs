@@ -62,7 +62,7 @@ fn extract_plan_state_finds_acceptance_gates_and_decisions() {
             "user",
             "Acceptance gate: cargo test --all-targets must pass".into(),
         ),
-        msg("assistant", "Decision: use deterministic parsing".into()),
+        msg("user", "Decision: use deterministic parsing".into()),
         msg("user", "latest task".into()),
     ];
     let steps = build_context_steps(&messages);

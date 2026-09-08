@@ -60,7 +60,7 @@ fn utility_v2_reserves_mandatory_system_gate_error_and_latest_user() {
         session_id: "utility-mandatory".into(),
         messages: vec![
             msg("system", "system instruction must remain".into()),
-            msg("assistant", "acceptance gate: cargo test must pass".into()),
+            msg("user", "acceptance gate: cargo test must pass".into()),
             msg("tool", "error: verified compiler failure".into()),
             msg("assistant", "optional ".repeat(500)),
             msg("user", "latest user instruction".into()),

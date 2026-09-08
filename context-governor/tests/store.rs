@@ -242,7 +242,7 @@ fn overwriting_a_receipt_updates_the_persisted_index_in_place() {
             msg("user", "latest"),
         ],
         policy: CompactionPolicy {
-            target_tokens: 100,
+            target_tokens: 220,
             protect_last_n: 1,
             ..Default::default()
         },
@@ -345,7 +345,7 @@ fn indexed_fixture(session_id: &str, content: &str) -> context_governor::Compact
         session_id: session_id.into(),
         messages: vec![msg("tool", content), msg("user", "latest")],
         policy: CompactionPolicy {
-            target_tokens: 80,
+            target_tokens: 220,
             protect_first_n: 0,
             protect_last_n: 1,
             ..Default::default()
