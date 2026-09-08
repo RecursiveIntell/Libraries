@@ -1138,3 +1138,51 @@ fn derived_index_rebuild_does_not_change_lineage_authority() {
         .content
         .contains(OMITTED_MARKER));
 }
+
+#[test]
+fn missing_lineage_catalog_requires_explicit_rebuild() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let first = save_root(&store, "missing-lineage-catalog");
+    fs::remove_file(tmp.path().join(".lineage-index.sqlite3")).unwrap();
+
+    let restarted = certified_store(tmp.path());
+    assert!(matches!(
+        restarted.compact_next_v2(next_request(&first, 2), None),
+        Err(ContextGovernorError::LineageIndexRebuildRequired { .. })
+    ));
+
+    let rebuilt = restarted.rebuild_lineage_index().unwrap();
+    assert_eq!(rebuilt.receipt_count, 1);
+    assert!(rebuilt.verified);
+    let child = restarted
+        .compact_next_v2(next_request(&first, 2), None)
+        .unwrap();
+    assert_eq!(child.receipt.generation, 2);
+}
+
+#[test]
+fn lineage_catalog_hmac_tampering_fails_closed_until_rebuild() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let first = save_root(&store, "tampered-lineage-catalog");
+    let catalog = tmp.path().join(".lineage-index.sqlite3");
+    let connection = rusqlite::Connection::open(&catalog).unwrap();
+    connection
+        .execute(
+            "UPDATE metadata SET value = 'forged' WHERE key = 'catalog_hmac'",
+            [],
+        )
+        .unwrap();
+    drop(connection);
+
+    assert!(matches!(
+        store.compact_next_v2(next_request(&first, 2), None),
+        Err(ContextGovernorError::LineageIndexRebuildRequired { .. })
+    ));
+    store.rebuild_lineage_index().unwrap();
+    let child = store
+        .compact_next_v2(next_request(&first, 2), None)
+        .unwrap();
+    assert_eq!(child.receipt.generation, 2);
+}
