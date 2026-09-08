@@ -14,7 +14,9 @@ use rmcp::{
 };
 use serde_json::Value;
 
+use agent_collaboration_contract::{TaskEnvelopeV1, TaskEventKindV1, TaskEventV1, TaskStatusV1};
 use agent_graph::checkpoint_store::SqliteCheckpointStore;
+use stack_ids::{AgentId, ArtifactId, ContentDigest, TaskEventId};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -2618,6 +2620,265 @@ impl AgentGraphServer {
                 "spec": spec,
             }))),
             Err(e) => Ok(error_output(e, "GRAPH_INVALID")),
+        }
+    }
+
+    // ── Local collaboration storage ───────────────────────────────────
+
+    #[tool(description = "Return the bounded local collaboration storage capabilities.")]
+    fn collaboration_capabilities_get(&self) -> Result<Json<StructuredOutput>, ErrorData> {
+        Ok(structured_output(serde_json::json!({
+            "storage": "daemon_owned_sqlite",
+            "task_events": "append_only",
+            "task_projection": "rebuildable",
+            "artifact_cas": "daemon_rooted_blake3",
+            "network_transport": "not_implemented",
+            "authority_effects": "not_implemented"
+        })))
+    }
+
+    #[tool(description = "Durably submit one validated local collaboration task envelope.")]
+    fn collaboration_task_submit(
+        &self,
+        Parameters(CollaborationTaskSubmitParams { envelope }): Parameters<
+            CollaborationTaskSubmitParams,
+        >,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        let typed: TaskEnvelopeV1 = serde_json::from_value(envelope)
+            .map_err(|error| invalid_params(format!("invalid task envelope: {error}")))?;
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "durable collaboration storage requires --data-dir",
+                "DAEMON_UNAVAILABLE",
+            ));
+        };
+        match store.collaboration().append_task(&typed) {
+            Ok(projection) => {
+                let projection = if projection.status == TaskStatusV1::Submitted {
+                    let event = TaskEventV1 {
+                        schema_version: agent_collaboration_contract::CONTRACT_SCHEMA_VERSION
+                            .into(),
+                        event_id: TaskEventId::new(format!("accepted-{}", typed.task_id)),
+                        task_id: typed.task_id.clone(),
+                        owner_agent_id: typed.owner_agent_id.clone(),
+                        kind: TaskEventKindV1::Accepted,
+                        status: TaskStatusV1::Accepted,
+                        attempt_id: None,
+                        trial_id: None,
+                        occurred_at: Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
+                        recorded_at: Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
+                        previous_event_digest: None,
+                        reason_code: None,
+                    };
+                    match store.collaboration().append_event(&event) {
+                        Ok(updated) => updated,
+                        Err(error) => {
+                            return Ok(error_output(error.to_string(), "TASK_ACCEPT_FAILED"))
+                        }
+                    }
+                } else {
+                    projection
+                };
+                Ok(structured_output(serde_json::json!({
+                    "task_id": projection.task_id,
+                    "owner_agent_id": projection.owner_agent_id,
+                    "status": projection.status,
+                    "sequence": projection.sequence
+                })))
+            }
+            Err(error) => Ok(error_output(error.to_string(), "TASK_SUBMIT_FAILED")),
+        }
+    }
+
+    #[tool(description = "Read the rebuildable local collaboration task projection.")]
+    fn collaboration_task_get(
+        &self,
+        Parameters(CollaborationTaskGetParams { task_id }): Parameters<CollaborationTaskGetParams>,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "durable collaboration storage requires --data-dir",
+                "DAEMON_UNAVAILABLE",
+            ));
+        };
+        match store.collaboration().projection(&task_id) {
+            Ok(projection) => Ok(structured_output(serde_json::json!({
+                "task_id": projection.task_id,
+                "owner_agent_id": projection.owner_agent_id,
+                "status": projection.status,
+                "sequence": projection.sequence,
+                "last_event_digest": projection.last_event_digest
+            }))),
+            Err(error) => Ok(error_output(error.to_string(), "TASK_NOT_FOUND")),
+        }
+    }
+
+    #[tool(description = "Read append-only collaboration task events in sequence order.")]
+    fn collaboration_task_events(
+        &self,
+        Parameters(CollaborationTaskEventsParams { task_id }): Parameters<
+            CollaborationTaskEventsParams,
+        >,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "durable collaboration storage requires --data-dir",
+                "DAEMON_UNAVAILABLE",
+            ));
+        };
+        match store.collaboration().events(&task_id) {
+            Ok(events) => Ok(structured_output(serde_json::json!({
+                "task_id": task_id,
+                "events": events
+            }))),
+            Err(error) => Ok(error_output(error.to_string(), "TASK_EVENTS_FAILED")),
+        }
+    }
+
+    #[tool(description = "Append one explicit cancellation event to a local collaboration task.")]
+    fn collaboration_task_cancel(
+        &self,
+        Parameters(CollaborationTaskCancelParams { task_id, reason }): Parameters<
+            CollaborationTaskCancelParams,
+        >,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "durable collaboration storage requires --data-dir",
+                "DAEMON_UNAVAILABLE",
+            ));
+        };
+        let collaboration = store.collaboration();
+        let projection = match collaboration.projection(&task_id) {
+            Ok(value) => value,
+            Err(error) => return Ok(error_output(error.to_string(), "TASK_NOT_FOUND")),
+        };
+        let previous = projection
+            .last_event_digest
+            .as_deref()
+            .map(ContentDigest::from_hex)
+            .transpose()
+            .map_err(|error| internal_error(format!("stored event digest invalid: {error}")))?;
+        let event = TaskEventV1 {
+            schema_version: agent_collaboration_contract::CONTRACT_SCHEMA_VERSION.into(),
+            event_id: TaskEventId::new(format!(
+                "cancel-{}",
+                Utc::now().timestamp_nanos_opt().unwrap_or_default()
+            )),
+            task_id: stack_ids::TaskId::new(task_id.clone()),
+            owner_agent_id: AgentId::new(projection.owner_agent_id),
+            kind: TaskEventKindV1::Cancelled,
+            status: TaskStatusV1::Cancelled,
+            attempt_id: None,
+            trial_id: None,
+            occurred_at: Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
+            recorded_at: Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
+            previous_event_digest: previous,
+            reason_code: reason,
+        };
+        match collaboration.append_event(&event) {
+            Ok(updated) => Ok(structured_output(serde_json::json!({
+                "task_id": updated.task_id,
+                "status": updated.status,
+                "sequence": updated.sequence
+            }))),
+            Err(error) => Ok(error_output(error.to_string(), "TASK_CANCEL_FAILED")),
+        }
+    }
+
+    #[tool(description = "Put bounded UTF-8 artifact bytes into the daemon-rooted local CAS.")]
+    fn collaboration_artifact_put_bounded(
+        &self,
+        Parameters(CollaborationArtifactPutParams {
+            task_id,
+            artifact_id,
+            content,
+            media_type,
+        }): Parameters<CollaborationArtifactPutParams>,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        const MAX_ARTIFACT_BYTES: u64 = 1_048_576;
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "durable collaboration storage requires --data-dir",
+                "DAEMON_UNAVAILABLE",
+            ));
+        };
+        let bytes = content.into_bytes();
+        let digest = ContentDigest::compute(&bytes);
+        let artifacts = store
+            .artifacts(MAX_ARTIFACT_BYTES)
+            .map_err(internal_error)?;
+        let reference =
+            match artifacts.put(ArtifactId::new(artifact_id), &bytes, &media_type, &digest) {
+                Ok(reference) => reference,
+                Err(error) => return Ok(error_output(error.to_string(), "ARTIFACT_PUT_FAILED")),
+            };
+        store
+            .collaboration()
+            .record_artifact(&task_id, "local-daemon", &reference)
+            .map_err(|error| internal_error(error.to_string()))?;
+        Ok(structured_output(
+            serde_json::to_value(reference).map_err(|error| internal_error(error.to_string()))?,
+        ))
+    }
+
+    #[tool(
+        description = "Read and re-verify one bounded artifact from the daemon-rooted local CAS."
+    )]
+    fn collaboration_artifact_get_bounded(
+        &self,
+        Parameters(CollaborationArtifactGetParams { digest }): Parameters<
+            CollaborationArtifactGetParams,
+        >,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        const MAX_ARTIFACT_BYTES: u64 = 1_048_576;
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "durable collaboration storage requires --data-dir",
+                "DAEMON_UNAVAILABLE",
+            ));
+        };
+        let digest = ContentDigest::from_hex(digest)
+            .map_err(|error| invalid_params(format!("invalid digest: {error}")))?;
+        let bytes = match store
+            .artifacts(MAX_ARTIFACT_BYTES)
+            .map_err(internal_error)?
+            .get(&digest)
+        {
+            Ok(bytes) => bytes,
+            Err(error) => return Ok(error_output(error.to_string(), "ARTIFACT_GET_FAILED")),
+        };
+        Ok(structured_output(serde_json::json!({
+            "digest": digest.hex(),
+            "size_bytes": bytes.len(),
+            "content_bytes": bytes
+        })))
+    }
+
+    #[tool(description = "Rebuild one collaboration task projection from append-only events.")]
+    fn collaboration_reconcile(
+        &self,
+        Parameters(CollaborationReconcileParams { task_id }): Parameters<
+            CollaborationReconcileParams,
+        >,
+    ) -> Result<Json<StructuredOutput>, ErrorData> {
+        let Some(store) = self.store.as_ref() else {
+            return Ok(error_output(
+                "durable collaboration storage requires --data-dir",
+                "DAEMON_UNAVAILABLE",
+            ));
+        };
+        match store.collaboration().rebuild_projection(&task_id) {
+            Ok(projection) => Ok(structured_output(serde_json::json!({
+                "task_id": projection.task_id,
+                "status": projection.status,
+                "sequence": projection.sequence,
+                "last_event_digest": projection.last_event_digest
+            }))),
+            Err(error) => Ok(error_output(
+                error.to_string(),
+                "COLLABORATION_RECONCILE_FAILED",
+            )),
         }
     }
 }

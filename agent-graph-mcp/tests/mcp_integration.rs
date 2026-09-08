@@ -261,7 +261,15 @@ fn legacy_contract_and_exact_tool_names() {
     assert!(names.contains(&"graph_create"));
     assert!(names.contains(&"graph_execute"));
     assert!(names.contains(&"graph_status"));
-    assert_eq!(names.len(), 25);
+    assert!(names.contains(&"collaboration_task_submit"));
+    assert!(names.contains(&"collaboration_task_get"));
+    assert!(names.contains(&"collaboration_task_events"));
+    assert!(names.contains(&"collaboration_task_cancel"));
+    assert!(names.contains(&"collaboration_artifact_put_bounded"));
+    assert!(names.contains(&"collaboration_artifact_get_bounded"));
+    assert!(names.contains(&"collaboration_reconcile"));
+    assert!(names.contains(&"collaboration_capabilities_get"));
+    assert_eq!(names.len(), 33);
     let created = mcp.call("graph_create", json!({"spec":{"name":"legacy","entry":"a","nodes":[{"id":"a","type":"passthrough"}],"edges":[{"from":"a","to":"END"}]}}));
     assert_eq!(created["graph_id"], "legacy");
     let run = mcp.call(
@@ -300,6 +308,64 @@ fn approval_tools_require_durable_sqlite_state() {
         assert_eq!(response["ok"], false, "{tool} must fail closed");
         assert_eq!(response["error_code"], "APPROVAL_STORE_REQUIRED");
     }
+}
+
+#[test]
+fn collaboration_tools_submit_replay_cancel_reconcile_and_cas() {
+    let temp = tempfile::tempdir().expect("temporary collaboration data root");
+    let mut mcp = Mcp::new_with_data_dir(temp.path());
+    let envelope = json!({
+        "schema_version": "agent_collaboration_contract_v1",
+        "task_id": "task-mcp-1",
+        "owner_agent_id": "owner-1",
+        "producer_agent_id": "producer-1",
+        "capability_manifest_id": "capability-1",
+        "capability_manifest_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "graph_id": "graph-1",
+        "graph_version": "v1",
+        "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "idempotency_key": "mcp-task-key",
+        "request_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "input_artifacts": [],
+        "resource_limits": {"max_input_bytes": 1024, "max_output_bytes": 1024, "max_runtime_secs": 30, "max_artifacts": 1},
+        "submitted_at": "2026-09-08T00:00:00Z"
+    });
+    let first = mcp.call(
+        "collaboration_task_submit",
+        json!({"envelope": envelope.clone()}),
+    );
+    assert_eq!(first["ok"], true);
+    assert_eq!(first["data"]["status"], "accepted");
+    assert_eq!(first["data"]["sequence"], 1);
+    let replay = mcp.call("collaboration_task_submit", json!({"envelope": envelope}));
+    assert_eq!(replay["data"], first["data"]);
+    let events = mcp.call("collaboration_task_events", json!({"task_id":"task-mcp-1"}));
+    assert_eq!(events["data"]["events"].as_array().unwrap().len(), 1);
+    let cancelled = mcp.call(
+        "collaboration_task_cancel",
+        json!({"task_id":"task-mcp-1","reason":"operator"}),
+    );
+    assert_eq!(cancelled["ok"], true);
+    assert_eq!(cancelled["data"]["status"], "cancelled");
+    let artifact = mcp.call(
+        "collaboration_artifact_put_bounded",
+        json!({
+            "task_id":"task-mcp-1", "artifact_id":"artifact-mcp-1",
+            "content":"hello collaboration", "media_type":"text/plain"
+        }),
+    );
+    assert_eq!(artifact["ok"], true);
+    let digest = artifact["data"]["digest"].as_str().unwrap();
+    let fetched = mcp.call(
+        "collaboration_artifact_get_bounded",
+        json!({"digest":digest}),
+    );
+    assert_eq!(fetched["ok"], true);
+    assert_eq!(fetched["data"]["size_bytes"], 19);
+    let reconciled = mcp.call("collaboration_reconcile", json!({"task_id":"task-mcp-1"}));
+    assert_eq!(reconciled["ok"], true);
+    assert_eq!(reconciled["data"]["status"], "cancelled");
+    assert_eq!(reconciled["data"]["sequence"], 2);
 }
 
 #[test]

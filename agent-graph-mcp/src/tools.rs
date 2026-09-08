@@ -322,3 +322,46 @@ pub struct TemplateInstantiateParams {
     pub template_id: String,
     pub name: String,
 }
+
+// ─── Local collaboration storage tools ────────────────────────────────
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CollaborationTaskSubmitParams {
+    pub envelope: Value,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CollaborationTaskGetParams {
+    pub task_id: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CollaborationTaskEventsParams {
+    pub task_id: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CollaborationTaskCancelParams {
+    pub task_id: String,
+    #[serde(default)]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CollaborationArtifactPutParams {
+    pub task_id: String,
+    pub artifact_id: String,
+    pub content: String,
+    pub media_type: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CollaborationArtifactGetParams {
+    pub digest: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CollaborationReconcileParams {
+    pub task_id: String,
+}

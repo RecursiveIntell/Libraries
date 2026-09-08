@@ -185,13 +185,7 @@ impl CollaborationStore {
                     key: envelope.idempotency_key.clone(),
                 });
             }
-            return Ok(TaskProjection {
-                task_id: existing_task,
-                owner_agent_id: owner,
-                status: TaskStatusV1::Submitted,
-                sequence: 0,
-                last_event_digest: None,
-            });
+            return projection_from_row(&tx, &existing_task);
         }
         tx.execute(
             "INSERT INTO collaboration_tasks
@@ -387,6 +381,31 @@ impl CollaborationStore {
             .lock()
             .map_err(|error| CollaborationStoreError::Database(error.to_string()))?;
         projection_from_row(&conn, task_id)
+    }
+
+    pub fn events(&self, task_id: &str) -> Result<Vec<serde_json::Value>, CollaborationStoreError> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|error| CollaborationStoreError::Database(error.to_string()))?;
+        let mut statement = conn
+            .prepare(
+                "SELECT event_json FROM collaboration_task_events
+                 WHERE task_id = ?1 ORDER BY sequence",
+            )
+            .map_err(|error| CollaborationStoreError::Database(error.to_string()))?;
+        let rows = statement
+            .query_map(params![task_id], |row| row.get::<_, String>(0))
+            .map_err(|error| CollaborationStoreError::Database(error.to_string()))?;
+        let mut events = Vec::new();
+        for row in rows {
+            let json = row.map_err(|error| CollaborationStoreError::Database(error.to_string()))?;
+            events.push(
+                serde_json::from_str(&json)
+                    .map_err(|error| CollaborationStoreError::Serialization(error.to_string()))?,
+            );
+        }
+        Ok(events)
     }
 
     pub fn rebuild_projection(
