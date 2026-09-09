@@ -2,6 +2,7 @@
 
 pub mod client;
 pub mod config;
+pub mod discovery;
 pub mod frame;
 pub mod identity;
 pub mod replay;
@@ -10,6 +11,10 @@ pub mod transport;
 
 pub use client::{connect_and_exchange, connect_and_send};
 pub use config::{ConfigError, PeerConfigV1, PeerEndpointV1};
+pub use discovery::{
+    DiscoveryCacheV1, DiscoveryError, DiscoveryObservationV1, DiscoveryRecordV1, DiscoveryTrustV1,
+    VerifiedEndpointBookV1, DISCOVERY_SERVICE_TYPE,
+};
 pub use frame::{read_frame, write_frame, FrameError, FrameV1, MAX_FRAME_BYTES, PROTOCOL_VERSION};
 pub use identity::{IdentityError, StaticIdentity};
 pub use replay::ReplayCache;
