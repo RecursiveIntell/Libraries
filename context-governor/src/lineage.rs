@@ -1409,7 +1409,7 @@ impl FileContextStore {
         Ok(self.read_versioned_unverified_with_raw(receipt_id)?.0)
     }
 
-    fn collect_lineage(
+    pub(crate) fn collect_lineage(
         &self,
         receipt_id: &str,
         full_projection: bool,

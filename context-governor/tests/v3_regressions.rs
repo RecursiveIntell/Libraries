@@ -55,7 +55,8 @@ fn shared_encrypted_evidence_remains_readable_for_every_receipt() {
     for id in &ids {
         let manifest = read_v3_manifest(&output, id).unwrap();
         for reference in &manifest.evidence {
-            let result = read_v3_evidence(&output, &manifest, &reference.source_id, Some(&key));
+            let result =
+                read_v3_evidence(&store, &output, &manifest, &reference.source_id, Some(&key));
             assert!(
                 result.is_ok(),
                 "shared encrypted blob cannot be read for {id}/{}: {result:?}",
@@ -72,13 +73,20 @@ fn corrupt_existing_blob_cannot_be_reported_as_completed_resume() {
     let id = populate(&store, "resume-session");
     let output = temp.path().join("projection");
     let options = V3MigrationOptions::default();
-    assert!(migrate_v2_store(&store, &output, &options).unwrap().complete);
+    assert!(
+        migrate_v2_store(&store, &output, &options)
+            .unwrap()
+            .complete
+    );
     let manifest = read_v3_manifest(&output, &id).unwrap();
     let path = output.join(".v3").join(&manifest.evidence[0].blob_relpath);
     std::fs::write(path, b"corrupt existing blob").unwrap();
     let result = migrate_v2_store(&store, &output, &options);
     assert!(
-        result.as_ref().map(|report| !report.complete).unwrap_or(true),
+        result
+            .as_ref()
+            .map(|report| !report.complete)
+            .unwrap_or(true),
         "corrupt existing output was silently accepted: {result:?}"
     );
 }
@@ -89,7 +97,10 @@ fn missing_source_directory_is_not_successful_empty_migration() {
     let store = FileContextStore::with_hmac_key(temp.path().join("missing"), &[3; 32]);
     let result = migrate_v2_store(&store, temp.path().join("projection"), &Default::default());
     assert!(
-        result.as_ref().map(|report| !report.complete).unwrap_or(true),
+        result
+            .as_ref()
+            .map(|report| !report.complete)
+            .unwrap_or(true),
         "missing source was silently treated as a complete empty corpus: {result:?}"
     );
 }
