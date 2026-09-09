@@ -77,14 +77,14 @@ jobs:
               raise SystemExit('main error-boundary anchor is not unique')
           text = text.replace(old_main, new_main, 1)
           cap_old = '''            "supports_pending_activation": true,
-          })),'''
+          })),'''.replace('          }))', '        }))')
           cap_new = '''            "supports_pending_activation": true,
               "failure_envelope": {
                   "schema": "ContextGovernorFailureV1",
                   "flag": "--failure-envelope-v1",
                   "stream": "stderr",
               },
-          })),'''
+          })),'''.replace('          }))', '        }))')
           if text.count(cap_old) != 1:
               raise SystemExit('capability anchor is not unique')
           main.write_text(text.replace(cap_old, cap_new, 1))
