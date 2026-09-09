@@ -730,6 +730,7 @@ fn explicit_v1_bridge_preserves_only_proven_legacy_exact_sources() {
         .covered_original_sources
         .iter()
         .any(|source| { source.origin_item_id.as_deref() == Some(v1_exact.item_id.as_str()) }));
+    store.rebuild_lineage_index().unwrap();
     store.save_v2(&child).unwrap();
     assert_eq!(
         fs::read(receipt_path(&tmp, &v1.receipt.receipt_id)).unwrap(),
@@ -743,15 +744,31 @@ fn explicit_v1_bridge_preserves_only_proven_legacy_exact_sources() {
 }
 
 #[test]
+fn governed_rebuild_rejects_unsigned_v1_receipts() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let legacy = compact_context(root_request("unsigned-v1-rebuild")).unwrap();
+    store.save(&legacy).unwrap();
+    assert!(matches!(
+        store.rebuild_lineage_index(),
+        Err(context_governor::ContextGovernorError::ReceiptIntegrityMissing { .. })
+    ));
+}
+
+#[test]
 fn legacy_receipts_are_never_auto_selected_as_v2_parent() {
     let tmp = TempDir::new().unwrap();
     let store = certified_store(tmp.path());
     for suffix in ["one", "two"] {
         let mut request = root_request("legacy-auto-parent");
         request.messages.push(message("assistant", suffix));
-        store.save(&compact_context(request).unwrap()).unwrap();
+        let legacy = compact_context(request).unwrap();
+        store
+            .save_with_status_with_hmac_key(&legacy, &CERTIFIED_KEY)
+            .unwrap();
     }
 
+    store.rebuild_lineage_index().unwrap();
     let root = store
         .compact_next_v2(root_request("legacy-auto-parent"), None)
         .unwrap();
@@ -1039,7 +1056,12 @@ fn certified_store_rejects_tampered_ancestry_before_expand_or_parent_selection()
     ));
     assert!(matches!(
         store.compact_next_v2(next_request(&second, 3), None),
-        Err(context_governor::ContextGovernorError::ReceiptIntegrityFailed { .. })
+        Err(context_governor::ContextGovernorError::LineageIndexRebuildRequired { .. })
+    ));
+    let rebuild_error = store.rebuild_lineage_index().unwrap_err();
+    assert!(matches!(
+        rebuild_error,
+        context_governor::ContextGovernorError::ReceiptIntegrityFailed { .. }
     ));
 }
 
@@ -1141,13 +1163,21 @@ fn derived_index_rebuild_does_not_change_lineage_authority() {
 }
 
 #[test]
-fn missing_lineage_index_rebuilds_before_tip_lookup() {
+fn missing_lineage_index_fails_closed_until_explicit_rebuild() {
     let tmp = TempDir::new().unwrap();
     let store = certified_store(tmp.path());
     let first = save_root(&store, "missing-lineage-index");
     fs::remove_file(tmp.path().join(".receipt-index.sqlite3")).unwrap();
 
     let restarted = certified_store(tmp.path());
+    let error = restarted
+        .compact_next_v2(next_request(&first, 2), None)
+        .unwrap_err();
+    assert!(matches!(
+        error,
+        ContextGovernorError::LineageIndexRebuildRequired { .. }
+    ));
+    restarted.rebuild_lineage_index().unwrap();
     let child = restarted
         .compact_next_v2(next_request(&first, 2), None)
         .unwrap();
@@ -1156,17 +1186,57 @@ fn missing_lineage_index_rebuilds_before_tip_lookup() {
 }
 
 #[test]
-fn corrupt_lineage_index_rebuilds_before_tip_lookup() {
+fn corrupt_lineage_index_fails_closed_until_explicit_rebuild() {
     let tmp = TempDir::new().unwrap();
     let store = certified_store(tmp.path());
     let first = save_root(&store, "corrupt-lineage-index");
     fs::write(tmp.path().join(".receipt-index.sqlite3"), b"not sqlite").unwrap();
 
+    let error = store
+        .compact_next_v2(next_request(&first, 2), None)
+        .unwrap_err();
+    assert!(matches!(
+        error,
+        ContextGovernorError::LineageIndexRebuildRequired { .. }
+    ));
+    store.rebuild_lineage_index().unwrap();
     let child = store
         .compact_next_v2(next_request(&first, 2), None)
         .unwrap();
     assert_eq!(child.receipt.generation, 2);
     assert!(tmp.path().join(".receipt-index.sqlite3").exists());
+}
+
+#[test]
+fn catalog_hmac_tampering_fails_closed_until_explicit_rebuild() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let first = save_root(&store, "catalog-hmac-tamper");
+    let connection = rusqlite::Connection::open(tmp.path().join(".receipt-index.sqlite3")).unwrap();
+    connection
+        .execute(
+            "UPDATE metadata SET value = 'tampered' WHERE key = 'lineage_catalog_hmac'",
+            [],
+        )
+        .unwrap();
+    drop(connection);
+
+    let error = store
+        .compact_next_v2(next_request(&first, 2), None)
+        .unwrap_err();
+    assert!(matches!(
+        error,
+        ContextGovernorError::LineageIndexRebuildRequired { .. }
+    ));
+    store.rebuild_lineage_index().unwrap();
+    assert_eq!(
+        store
+            .compact_next_v2(next_request(&first, 2), None)
+            .unwrap()
+            .receipt
+            .generation,
+        2
+    );
 }
 
 #[test]

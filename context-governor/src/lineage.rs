@@ -1494,16 +1494,15 @@ impl FileContextStore {
         session_id: &str,
         operation: &str,
     ) -> Result<Vec<receipt_index::IndexedLineageRow>, ContextGovernorError> {
-        self.require_v2_authority(operation)?;
+        let ring = self.require_v2_authority(operation)?;
         let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
-        receipt_index::lineage_rows_for_session(&self.root, &fingerprints, session_id).map_err(
-            |error| match error {
+        receipt_index::lineage_rows_for_session(&self.root, &fingerprints, session_id, ring)
+            .map_err(|error| match error {
                 ContextGovernorError::LineageIndexRebuildRequired { reason } => {
                     ContextGovernorError::LineageIndexRebuildRequired { reason }
                 }
                 other => other,
-            },
-        )
+            })
     }
 
     /// Resolve the single unsuperseded V2 tip using the authenticated metadata
@@ -1548,12 +1547,11 @@ impl FileContextStore {
     pub fn rebuild_lineage_index(
         &self,
     ) -> Result<LineageIndexRebuildResultV1, ContextGovernorError> {
+        let ring = self.require_v2_authority("lineage index rebuild")?;
+        std::fs::create_dir_all(&self.root)?;
+        let _publication_lock = self.lock_store()?;
         let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
-        receipt_index::ensure_lineage_index(&self.root, &fingerprints).map_err(|error| {
-            ContextGovernorError::LineageIndexRebuildRequired {
-                reason: error.to_string(),
-            }
-        })?;
+        receipt_index::rebuild_lineage_index(&self.root, &fingerprints, ring)?;
         Ok(LineageIndexRebuildResultV1 {
             schema: "LineageIndexRebuildResultV1".to_string(),
             path: receipt_index::index_path(&self.root),
@@ -1953,17 +1951,18 @@ impl FileContextStore {
         fs::create_dir_all(&self.root)?;
         let _lineage_lock = self.lock_lineage(&response.receipt.session_id)?;
         self.validate_v2_append_position(&response)?;
-
-        // The per-lineage lock acquired above is the complete publication
-        // fence. Do not reacquire the historical store-wide SQLite lock here:
-        // unrelated sessions must be able to activate concurrently, while the
-        // active-tip compare-and-swap remains serialized for this lineage.
         let path = self.path_for_receipt(&response.receipt.receipt_id)?;
         if path.exists() {
             return Err(ContextGovernorError::ReceiptAlreadyExists(
-                response.receipt.receipt_id,
+                response.receipt.receipt_id.clone(),
             ));
         }
+
+        // The per-lineage lock performs the expensive lineage validation before
+        // this short final publication fence. The store-wide lock only covers
+        // the receipt rename plus derived-catalog update so unrelated sessions
+        // do not observe a receipt/index split.
+        let _publication_lock = self.lock_store()?;
         self.validate_v2_append_position_fast(&response)?;
         let pending_path = self.pending_path_for_receipt(&request.receipt_id)?;
         fs::rename(&pending_path, &path)?;
@@ -1972,10 +1971,18 @@ impl FileContextStore {
             receipt_index::fingerprint_for_path(&response.receipt.receipt_id, &path)
         {
             let versioned = VersionedCompactResponse::V2(Box::new(response.clone()));
-            if receipt_index::upsert_versioned_if_present(&self.root, &fingerprint, &versioned)
-                .is_err()
-            {
-                let _ = self.invalidate_index();
+            match receipt_index::upsert_versioned_if_present(
+                &self.root,
+                &fingerprint,
+                &versioned,
+                self.integrity_key_ring
+                    .as_ref()
+                    .expect("V2 authority is required"),
+            ) {
+                Ok(true) => {}
+                Ok(false) | Err(_) => {
+                    let _ = self.invalidate_index();
+                }
             }
         } else {
             let _ = self.invalidate_index();
