@@ -1,0 +1,174 @@
+{
+  "$id": "urn:recursiveintell:receipt-observation:ReceiptObservationOccurrenceV1:v1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "archive_member": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "archive_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "blob_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "byte_length": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "candidate": {
+      "enum": [
+        0,
+        1
+      ],
+      "type": "integer"
+    },
+    "collector_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "data_offset": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "disposition": {
+      "enum": [
+        "parsed",
+        "quarantined",
+        "unsupported",
+        "classified_non_data",
+        "safely_rejected",
+        "access_failure"
+      ]
+    },
+    "extension": {
+      "type": "string"
+    },
+    "filesystem_mtime_asserted": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "header_offset": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "header_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "manifest_entry_index": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "manifest_occurrence_id": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "member_type": {
+      "enum": [
+        "file",
+        "directory",
+        "symlink",
+        "hardlink",
+        "character_device",
+        "block_device",
+        "fifo",
+        "unsupported"
+      ]
+    },
+    "mode": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "occurrence_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "ordinal": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "path_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "path_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "schema": {
+      "const": "ReceiptObservationOccurrenceV1"
+    },
+    "source_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "storage_root": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tar_mtime_raw": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "occurrence_id",
+    "archive_sha256",
+    "ordinal",
+    "header_offset",
+    "data_offset",
+    "archive_member",
+    "path_key",
+    "path_sha256",
+    "member_type",
+    "byte_length",
+    "header_sha256",
+    "blob_sha256",
+    "disposition",
+    "extension",
+    "mode",
+    "tar_mtime_raw",
+    "candidate",
+    "source_path",
+    "collector_class",
+    "storage_root",
+    "filesystem_mtime_asserted",
+    "manifest_entry_index",
+    "manifest_occurrence_id"
+  ],
+  "title": "ReceiptObservationOccurrenceV1",
+  "type": "object"
+}
