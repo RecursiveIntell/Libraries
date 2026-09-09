@@ -178,7 +178,7 @@ impl ToolLoopRunner {
             .execute(
                 &tool_ctx,
                 &call,
-                request.execution_permit.clone(),
+                request.execution_permit.as_deref(),
                 ctx.cancel_flag(),
             )
             .await;
@@ -571,7 +571,7 @@ fn build_tool_ctx(ctx: &ExecCtx, request: &ToolLoopRequest, attempt_id: &Attempt
         scope: request.scope.clone(),
         dry_run: request.dry_run,
         approval_grant: request.approval_grant.clone(),
-        execution_permit: request.execution_permit.clone(),
+        execution_permit: request.execution_permit.as_deref().cloned(),
         idempotency_key: None,
         caller: format!("llm-pipeline:{}", request.model),
         planner_stage: request.planner_stage.clone(),
@@ -898,6 +898,36 @@ mod tests {
         ToolSideEffectClass,
     };
     use std::collections::VecDeque;
+
+    #[test]
+    fn tool_context_preserves_absent_execution_permit() {
+        let ctx = ExecCtx::builder("http://provider.invalid").build();
+        let request = ToolLoopRequest::new("fixture", "no inference");
+        let tool_ctx = build_tool_ctx(&ctx, &request, &AttemptId::generate());
+        assert!(tool_ctx.execution_permit.is_none());
+    }
+
+    #[test]
+    fn tool_context_preserves_exact_permit_snapshot_without_consuming_request() {
+        let ctx = ExecCtx::builder("http://provider.invalid").build();
+        let permit = Arc::new(ToolExecutionPermit::new(
+            stack_ids::ExecutionPermitId::generate(),
+            stack_ids::PolicyDecisionId::generate(),
+            Some(stack_ids::ApprovalRecordId::generate()),
+            "fixture-namespace",
+            "fixture-target",
+        ));
+        let mut request = ToolLoopRequest::new("fixture", "no inference");
+        request.execution_permit = Some(Arc::clone(&permit));
+        let attempt = AttemptId::generate();
+        let tool_ctx = build_tool_ctx(&ctx, &request, &attempt);
+        assert_eq!(tool_ctx.execution_permit.as_ref(), Some(permit.as_ref()));
+        assert_eq!(tool_ctx.attempt_id, attempt);
+        assert!(Arc::ptr_eq(
+            request.execution_permit.as_ref().unwrap(),
+            &permit
+        ));
+    }
 
     #[derive(Clone)]
     struct AddTool {
