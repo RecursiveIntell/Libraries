@@ -1,0 +1,41 @@
+name: Export Context Governor offline build tools (temporary)
+on:
+  pull_request:
+    types: [synchronize]
+    paths: ['.github/workflows/context-governor-toolchain-once.yml']
+permissions:
+  contents: read
+jobs:
+  export:
+    if: github.head_ref == 'repair/context-governor-closure-20260909' && github.event.pull_request.head.repo.full_name == github.repository && github.event.before == '45045879f10429397e691f90aa8076edd80bcdaa'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 45045879f10429397e691f90aa8076edd80bcdaa
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: context-governor
+      - name: Export only public toolchain and Cargo registry cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir export
+          cargo fetch --locked --manifest-path context-governor/Cargo.toml
+          rustc -vV > export/toolchain.txt
+          cargo -vV >> export/toolchain.txt
+          sha256sum context-governor/Cargo.lock > export/lockfile.sha256
+          tar --exclude='./share/doc' --exclude='./share/man' -czf export/rust-toolchain.tar.gz -C "$(rustc --print sysroot)" .
+          tar -czf export/cargo-registry.tar.gz -C "$HOME/.cargo" registry
+          (cd export && sha256sum *.tar.gz > archives.sha256)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: context-governor-offline-build-tools
+          path: export/
+          retention-days: 2
+          if-no-files-found: error
