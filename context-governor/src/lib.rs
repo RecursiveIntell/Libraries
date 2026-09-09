@@ -36,6 +36,9 @@ pub use key_authority::*;
 pub mod lineage;
 pub use lineage::*;
 
+pub mod v3;
+pub use v3::*;
+
 #[cfg(feature = "sqlite-store")]
 pub mod sqlite_store;
 #[cfg(feature = "sqlite-store")]
@@ -3184,6 +3187,11 @@ impl FileContextStore {
             root: root.as_ref().to_path_buf(),
             integrity_key_ring: None,
         }
+    }
+
+    /// Return the store root for side-by-side, read-only migration projections.
+    pub fn root_path(&self) -> &std::path::Path {
+        &self.root
     }
 
     /// Construct the authoritative V2 store used by a certified runtime.
