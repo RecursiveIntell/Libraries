@@ -203,6 +203,28 @@ fn existing_v1_receipt_remains_readable_exact_and_parentless() {
 }
 
 #[test]
+fn persisted_loader_authenticates_original_json_before_normalization() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let response = store
+        .compact_next_v2(root_request("raw-json-auth"), None)
+        .unwrap();
+    let receipt_id = response.receipt.receipt_id.clone();
+    store.save_v2(&response).unwrap();
+
+    let path = receipt_path(&tmp, &receipt_id);
+    let mut raw: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    raw["evidence_hmac"] = Value::Null;
+    raw["hmac"] = Value::Null;
+    let ring = receipt_index::KeyRing::new(CERTIFIED_KEY.to_vec());
+    raw["hmac"] = Value::String(ring.sign_json(&raw, "hmac").unwrap());
+    fs::write(&path, serde_json::to_vec_pretty(&raw).unwrap()).unwrap();
+
+    let loaded = store.load_v2(&receipt_id).unwrap();
+    assert_eq!(loaded.receipt.receipt_id, receipt_id);
+}
+
+#[test]
 fn mandatory_two_generation_restart_recovers_exact_omitted_marker() {
     let tmp = TempDir::new().unwrap();
     let first_store = certified_store(tmp.path());

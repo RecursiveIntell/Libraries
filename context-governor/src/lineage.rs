@@ -19,7 +19,7 @@ use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 use std::fs;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use uuid::Uuid;
 
 const V1_SCHEMA: &str = "ContextCompactionReceiptV1";
@@ -1051,6 +1051,47 @@ fn verify_v2_authentication(
     Ok(())
 }
 
+fn verify_v2_authentication_raw(
+    response: &CompactResponseV2,
+    value: &serde_json::Value,
+    ring: &receipt_index::KeyRing,
+    full_projection: bool,
+    operation: &str,
+) -> Result<(), ContextGovernorError> {
+    let receipt_id = response.receipt.receipt_id.clone();
+    if full_projection || response.evidence_hmac.is_none() {
+        let signature = value
+            .get("hmac")
+            .and_then(serde_json::Value::as_str)
+            .ok_or_else(|| ContextGovernorError::ReceiptIntegrityMissing {
+                receipt_id: receipt_id.clone(),
+                operation: operation.to_string(),
+            })?;
+        strict_v2_signature_key_id(response, signature, operation)?;
+        if !ring.verify_json(value, "hmac") {
+            return Err(ContextGovernorError::ReceiptIntegrityFailed {
+                receipt_id,
+                operation: operation.to_string(),
+            });
+        }
+    }
+    if let Some(signature) = value
+        .get("evidence_hmac")
+        .and_then(serde_json::Value::as_str)
+    {
+        strict_v2_signature_key_id(response, signature, operation)?;
+        let material = v2_evidence_authentication_value(response)?;
+        let payload = serde_json::to_string(&material)?;
+        if !ring.sign_and_verify(&payload, signature) {
+            return Err(ContextGovernorError::ReceiptIntegrityFailed {
+                receipt_id: response.receipt.receipt_id.clone(),
+                operation: operation.to_string(),
+            });
+        }
+    }
+    Ok(())
+}
+
 fn sign_v2_response(
     response: &mut CompactResponseV2,
     ring: &receipt_index::KeyRing,
@@ -1295,17 +1336,60 @@ impl FileContextStore {
         Ok(())
     }
 
-    fn read_versioned_unverified(
+    pub(crate) fn verify_versioned_for_use_raw(
+        &self,
+        response: &VersionedCompactResponse,
+        value: &serde_json::Value,
+        full_projection: bool,
+        operation: &str,
+    ) -> Result<(), ContextGovernorError> {
+        match (response, &self.integrity_key_ring) {
+            (VersionedCompactResponse::V2(_), None) => {
+                return Err(ContextGovernorError::ReceiptIntegrityUnavailable {
+                    operation: operation.to_string(),
+                    reason: "V2 authority requires governed key descriptors".to_string(),
+                });
+            }
+            (VersionedCompactResponse::V2(response), Some(ring)) => {
+                verify_v2_authentication_raw(response, value, ring, full_projection, operation)?;
+            }
+            (VersionedCompactResponse::V1(response), Some(ring)) => {
+                let receipt_id = response.receipt.receipt_id.clone();
+                if value
+                    .get("hmac")
+                    .and_then(serde_json::Value::as_str)
+                    .is_none()
+                {
+                    return Err(ContextGovernorError::ReceiptIntegrityMissing {
+                        receipt_id,
+                        operation: operation.to_string(),
+                    });
+                }
+                if !ring.verify_json(value, "hmac") {
+                    return Err(ContextGovernorError::ReceiptIntegrityFailed {
+                        receipt_id,
+                        operation: operation.to_string(),
+                    });
+                }
+            }
+            (VersionedCompactResponse::V1(_), None) => {}
+        }
+        verify_versioned(response, full_projection)?;
+        Ok(())
+    }
+
+    fn read_versioned_unverified_with_raw(
         &self,
         receipt_id: &str,
-    ) -> Result<VersionedCompactResponse, ContextGovernorError> {
+    ) -> Result<(VersionedCompactResponse, serde_json::Value), ContextGovernorError> {
         let path = self.path_for_receipt(receipt_id)?;
         if !path.exists() {
             return Err(ContextGovernorError::ReceiptNotFound(
                 receipt_id.to_string(),
             ));
         }
-        let response: VersionedCompactResponse = serde_json::from_slice(&fs::read(path)?)?;
+        let value: serde_json::Value = serde_json::from_slice(&fs::read(path)?)?;
+        let response: VersionedCompactResponse = serde_json::from_value(value.clone())?;
         if response.receipt_id() != receipt_id {
             return Err(lineage_error(
                 receipt_id,
@@ -1315,7 +1399,14 @@ impl FileContextStore {
                 ),
             ));
         }
-        Ok(response)
+        Ok((response, value))
+    }
+
+    fn read_versioned_unverified(
+        &self,
+        receipt_id: &str,
+    ) -> Result<VersionedCompactResponse, ContextGovernorError> {
+        Ok(self.read_versioned_unverified_with_raw(receipt_id)?.0)
     }
 
     fn collect_lineage(
@@ -1330,7 +1421,7 @@ impl FileContextStore {
             if !seen.insert(current_id.clone()) {
                 return Err(lineage_error(receipt_id, "cycle in parent receipt graph"));
             }
-            let current = match self.read_versioned_unverified(&current_id) {
+            let (current, raw_value) = match self.read_versioned_unverified_with_raw(&current_id) {
                 Ok(response) => response,
                 Err(ContextGovernorError::ReceiptNotFound(_)) if !chain.is_empty() => {
                     return Err(ContextGovernorError::LineageMissingAncestor {
@@ -1340,7 +1431,12 @@ impl FileContextStore {
                 }
                 Err(error) => return Err(error),
             };
-            self.verify_versioned_for_use(&current, full_projection, "lineage traversal")?;
+            self.verify_versioned_for_use_raw(
+                &current,
+                &raw_value,
+                full_projection,
+                "lineage traversal",
+            )?;
             let parent_ref = match &current {
                 VersionedCompactResponse::V1(_) => None,
                 VersionedCompactResponse::V2(response) => response.receipt.parent_receipt.clone(),
@@ -1422,11 +1518,11 @@ impl FileContextStore {
         &self,
         receipt_id: &str,
     ) -> Result<VersionedCompactResponse, ContextGovernorError> {
-        let response = self.read_versioned_unverified(receipt_id)?;
+        let (response, raw_value) = self.read_versioned_unverified_with_raw(receipt_id)?;
         match response {
             VersionedCompactResponse::V1(response) => {
                 let response = VersionedCompactResponse::V1(response);
-                self.verify_versioned_for_use(&response, true, "receipt load")?;
+                self.verify_versioned_for_use_raw(&response, &raw_value, true, "receipt load")?;
                 Ok(response)
             }
             VersionedCompactResponse::V2(_) => self
@@ -2188,14 +2284,6 @@ pub fn receipt_schema_from_json(value: &serde_json::Value) -> Option<&str> {
         .get("receipt")
         .and_then(|receipt| receipt.get("schema"))
         .and_then(serde_json::Value::as_str)
-}
-
-/// Parse a versioned receipt file for non-authoritative tooling such as index
-/// rebuild. The authoritative loader still performs integrity verification.
-pub(crate) fn read_versioned_path(
-    path: &Path,
-) -> Result<VersionedCompactResponse, ContextGovernorError> {
-    Ok(serde_json::from_slice(&fs::read(path)?)?)
 }
 
 #[cfg(test)]

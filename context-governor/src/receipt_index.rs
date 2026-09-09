@@ -534,7 +534,10 @@ fn load_indexed_receipt(
     fingerprint: &ReceiptFingerprint,
     ring: Option<&KeyRing>,
 ) -> Result<IndexedReceipt, ContextGovernorError> {
-    let versioned = crate::lineage::read_versioned_path(&fingerprint.path)?;
+    let raw_bytes = fs::read(&fingerprint.path)?;
+    let raw_value: serde_json::Value = serde_json::from_slice(&raw_bytes)?;
+    let versioned: crate::lineage::VersionedCompactResponse =
+        serde_json::from_value(raw_value.clone())?;
     if let Some(ring) = ring {
         let root = fingerprint.path.parent().ok_or_else(|| {
             ContextGovernorError::LineageIndexRebuildRequired {
@@ -542,7 +545,12 @@ fn load_indexed_receipt(
             }
         })?;
         let store = FileContextStore::with_key_ring(root, ring.clone());
-        store.verify_versioned_for_use(&versioned, true, "lineage catalog rebuild")?;
+        store.verify_versioned_for_use_raw(
+            &versioned,
+            &raw_value,
+            true,
+            "lineage catalog rebuild",
+        )?;
     }
     let response = versioned.as_v1_projection();
     indexed_receipt(fingerprint, &response, Some(&versioned))
