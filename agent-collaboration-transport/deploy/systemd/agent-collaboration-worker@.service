@@ -1,0 +1,18 @@
+[Unit]
+Description=RecursiveIntell governed collaboration worker (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/agent-collaboration-worker --config %h/.config/recursiveintell/agent-network/%i.toml
+Restart=on-failure
+RestartSec=2s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+UMask=0077
+
+[Install]
+WantedBy=default.target

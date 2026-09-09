@@ -1,0 +1,18 @@
+[Unit]
+Description=RecursiveIntell governed graph MCP daemon (%i)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/agent-graph-mcpd --data-dir %h/.local/share/recursiveintell/agent-network/%i --socket %t/agent-graph-mcp/%i.sock
+Restart=on-failure
+RestartSec=2s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/share/recursiveintell/agent-network %t/agent-graph-mcp
+UMask=0077
+
+[Install]
+WantedBy=default.target
