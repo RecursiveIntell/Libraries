@@ -39,6 +39,9 @@ pub use lineage::*;
 pub mod v3;
 pub use v3::*;
 
+pub mod failure;
+pub use failure::*;
+
 #[cfg(feature = "sqlite-store")]
 pub mod sqlite_store;
 #[cfg(feature = "sqlite-store")]

@@ -75,6 +75,9 @@ fn v3_error(error: V3ProjectionError) -> ContextGovernorError {
 const MANIFEST_ROOT: &str = "manifests";
 const EVIDENCE_ROOT: &str = "evidence/sha256";
 
+mod verify;
+pub use verify::*;
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct V3EvidenceRefV1 {
@@ -158,6 +161,7 @@ impl Default for V3MigrationOptions {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(deny_unknown_fields)]
 pub struct V3MigrationReportV2 {
     pub schema: String,
     pub input_receipts: usize,
