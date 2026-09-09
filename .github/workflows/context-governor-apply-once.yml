@@ -1,0 +1,86 @@
+name: Apply exact Context Governor repair (temporary)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/context-governor-apply-once.yml'
+      - '.cg-closure/v3-repair.patch.b64'
+permissions:
+  contents: write
+concurrency:
+  group: context-governor-repair-publisher
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.head_ref == 'repair/context-governor-closure-20260909' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: context-governor
+      - name: Baseline, exact application, and candidate evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .cg-closure/v3-repair.patch.b64 || exit 0
+          mkdir -p cg-repair-evidence
+          git rev-parse HEAD > cg-repair-evidence/baseline-head.txt
+          set +e
+          (cd context-governor && cargo test --locked --test v3_regressions) > cg-repair-evidence/baseline-regressions.log 2>&1
+          baseline_rc=$?
+          set -e
+          echo "$baseline_rc" > cg-repair-evidence/baseline-exit.txt
+          python3 - <<'PY'
+          import base64, gzip, hashlib, pathlib, subprocess
+          packed = base64.b64decode(pathlib.Path('.cg-closure/v3-repair.patch.b64').read_text().strip(), validate=True)
+          patch = gzip.decompress(packed)
+          assert len(patch) == 26280
+          assert hashlib.sha256(patch).hexdigest() == '00cab267c8bf700eaa738243546d64c976003b3d16876333fae2efb3bf2a3b76'
+          allowed = {'context-governor/src/v3.rs','context-governor/src/lib.rs','context-governor/src/lineage.rs'}
+          paths = {line[6:] for line in patch.decode().splitlines() if line.startswith('+++ b/')}
+          assert paths == allowed
+          subprocess.run(['git', 'apply', '--check', '-'], input=patch, check=True)
+          subprocess.run(['git', 'apply', '-'], input=patch, check=True)
+          p = pathlib.Path('context-governor/tests/v3_regressions.rs')
+          source = p.read_text()
+          assert source.count('read_v3_evidence(&output,') == 1
+          p.write_text(source.replace('read_v3_evidence(&output,', 'read_v3_evidence(&store, &output,'))
+          pathlib.Path('.cg-closure/v3-repair.patch.b64').unlink()
+          PY
+          (cd context-governor && cargo fmt)
+          git diff --check
+          git config user.name 'Context Governor Repair'
+          git config user.email 'context-governor-repair@users.noreply.github.com'
+          git add context-governor/src/v3.rs context-governor/src/lib.rs context-governor/src/lineage.rs context-governor/tests/v3_regressions.rs .cg-closure/v3-repair.patch.b64
+          git commit -m 'fix(context-governor): bind shared V3 ciphertext and reject unverifiable projection reuse'
+          git push origin HEAD:repair/context-governor-closure-20260909
+          git rev-parse HEAD > cg-repair-evidence/candidate-head.txt
+          failed=0
+          gate() {
+            local name="$1"; shift
+            local rc=0
+            if (cd context-governor && "$@") > "cg-repair-evidence/$name.log" 2>&1; then rc=0; else rc=$?; fi
+            printf '%s\t%s\n' "$name" "$rc" >> cg-repair-evidence/results.tsv
+            cat "cg-repair-evidence/$name.log"
+            if [ "$rc" -ne 0 ]; then failed=1; fi
+          }
+          gate regression cargo test --locked --test v3_regressions
+          gate check cargo check --locked
+          gate clippy cargo clippy --locked --all-targets --all-features -- -D warnings
+          gate tests cargo test --locked --all-targets --all-features
+          tar -czf cg-repair-evidence/candidate-source.tar.gz context-governor/src context-governor/tests context-governor/Cargo.toml context-governor/Cargo.lock
+          exit "$failed"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: context-governor-repair-witness-${{ github.run_id }}
+          path: cg-repair-evidence/
+          retention-days: 7
+          if-no-files-found: error
