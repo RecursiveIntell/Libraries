@@ -1,5 +1,6 @@
-use crate::{CompactResponse, ContextGovernorError};
+use crate::{CompactResponse, ContextGovernorError, FileContextStore};
 use rusqlite::{params, Connection, OptionalExtension, TransactionBehavior};
+use serde::Serialize;
 use std::collections::{BTreeMap, HashSet};
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
@@ -57,6 +58,24 @@ struct IndexedReceipt {
     changed_ns: i64,
     trigram_hashes: Vec<u8>,
     trigram_hashes_blake3: String,
+}
+
+#[derive(Debug, Serialize)]
+struct LineageCatalogRowV1 {
+    receipt_id: String,
+    receipt_schema: String,
+    session_id: String,
+    generation: Option<u32>,
+    parent_receipt_id: Option<String>,
+    file_bytes: u64,
+    modified_ns: i64,
+    changed_ns: i64,
+}
+
+#[derive(Debug, Serialize)]
+struct LineageCatalogPayloadV1 {
+    schema: &'static str,
+    rows: Vec<LineageCatalogRowV1>,
 }
 
 pub(crate) fn index_path(root: &Path) -> PathBuf {
@@ -144,24 +163,72 @@ pub(crate) fn ensure_index(
             Ok(false) | Err(_) => remove_index_files(root)?,
         }
     }
-    rebuild_index(root, fingerprints)
+    rebuild_index(root, fingerprints, None)
 }
 
 pub(crate) fn ensure_lineage_index(
     root: &Path,
     fingerprints: &[ReceiptFingerprint],
+    ring: &KeyRing,
 ) -> Result<(), ContextGovernorError> {
-    ensure_index(root, fingerprints)
+    if fingerprints.is_empty() {
+        let valid = index_path(root).exists()
+            && open_read_only(&index_path(root))
+                .ok()
+                .map(|connection| lineage_connection_is_valid(&connection, fingerprints, ring))
+                .transpose()?
+                .unwrap_or(false);
+        if !valid {
+            return rebuild_lineage_index(root, fingerprints, ring);
+        }
+        return Ok(());
+    }
+
+    let connection = open_read_only(&index_path(root)).map_err(|_| {
+        ContextGovernorError::LineageIndexRebuildRequired {
+            reason: "lineage catalog is missing or unreadable".to_string(),
+        }
+    })?;
+    if !lineage_connection_is_valid(&connection, fingerprints, ring)? {
+        return Err(ContextGovernorError::LineageIndexRebuildRequired {
+            reason: "lineage catalog fingerprints or authenticated row set do not match authoritative receipts".to_string(),
+        });
+    }
+    Ok(())
+}
+
+pub(crate) fn rebuild_lineage_index(
+    root: &Path,
+    fingerprints: &[ReceiptFingerprint],
+    ring: &KeyRing,
+) -> Result<(), ContextGovernorError> {
+    let _write_guard = index_write_guard();
+    rebuild_index(root, fingerprints, Some(ring))?;
+    let mut connection = open_writable(&index_path(root))?;
+    let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    write_lineage_catalog_auth(&transaction, ring)?;
+    transaction.commit()?;
+    drop(connection);
+    let verified = open_read_only(&index_path(root))?;
+    if !lineage_connection_is_valid(&verified, fingerprints, ring)? {
+        return Err(ContextGovernorError::LineageIndexRebuildRequired {
+            reason:
+                "lineage catalog failed post-rebuild authentication or fingerprint verification"
+                    .to_string(),
+        });
+    }
+    Ok(())
 }
 
 pub(crate) fn lineage_rows_for_session(
     root: &Path,
     fingerprints: &[ReceiptFingerprint],
     session_id: &str,
+    ring: &KeyRing,
 ) -> Result<Vec<IndexedLineageRow>, ContextGovernorError> {
-    ensure_lineage_index(root, fingerprints)?;
+    ensure_lineage_index(root, fingerprints, ring)?;
     let connection = open_read_only(&index_path(root))?;
-    if !validate_connection(&connection, fingerprints)? {
+    if !lineage_connection_is_valid(&connection, fingerprints, ring)? {
         return Err(ContextGovernorError::LineageIndexRebuildRequired {
             reason: "receipt index changed during lineage lookup".to_string(),
         });
@@ -219,6 +286,7 @@ pub(crate) fn upsert_versioned_if_present(
     root: &Path,
     fingerprint: &ReceiptFingerprint,
     response: &crate::lineage::VersionedCompactResponse,
+    ring: &KeyRing,
 ) -> Result<bool, ContextGovernorError> {
     let _write_guard = index_write_guard();
     let path = index_path(root);
@@ -233,6 +301,7 @@ pub(crate) fn upsert_versioned_if_present(
     let row = indexed_receipt(fingerprint, &projection, Some(response))?;
     let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
     upsert_row(&transaction, &row)?;
+    write_lineage_catalog_auth(&transaction, ring)?;
     transaction.commit()?;
     Ok(true)
 }
@@ -240,6 +309,7 @@ pub(crate) fn upsert_versioned_if_present(
 pub(crate) fn remove_if_present(
     root: &Path,
     receipt_ids: &[String],
+    ring: Option<&KeyRing>,
 ) -> Result<bool, ContextGovernorError> {
     let _write_guard = index_write_guard();
     if receipt_ids.is_empty() || !index_path(root).exists() {
@@ -255,6 +325,14 @@ pub(crate) fn remove_if_present(
         for receipt_id in receipt_ids {
             statement.execute(params![receipt_id])?;
         }
+    }
+    if let Some(ring) = ring {
+        write_lineage_catalog_auth(&transaction, ring)?;
+    } else {
+        transaction.execute(
+            "DELETE FROM metadata WHERE key IN ('lineage_catalog_hmac', 'lineage_catalog_key_id')",
+            [],
+        )?;
     }
     transaction.commit()?;
     Ok(true)
@@ -359,7 +437,7 @@ fn reconcile_index(
                     )
             })
         })
-        .map(load_indexed_receipt)
+        .map(|fingerprint| load_indexed_receipt(fingerprint, None))
         .collect::<Result<Vec<_>, _>>()?;
 
     if removed.is_empty() && changed.is_empty() {
@@ -383,13 +461,14 @@ fn reconcile_index(
 fn rebuild_index(
     root: &Path,
     fingerprints: &[ReceiptFingerprint],
+    ring: Option<&KeyRing>,
 ) -> Result<(), ContextGovernorError> {
     fs::create_dir_all(root)?;
     let temporary_path = root.join(format!(
         ".receipt-index.{}.sqlite3.tmp",
         uuid::Uuid::new_v4()
     ));
-    let rows = load_indexed_receipts_parallel(fingerprints)?;
+    let rows = load_indexed_receipts_parallel(fingerprints, ring)?;
 
     let build_result = (|| -> Result<(), ContextGovernorError> {
         let mut connection = Connection::open(&temporary_path)?;
@@ -453,8 +532,26 @@ fn rebuild_index(
 
 fn load_indexed_receipt(
     fingerprint: &ReceiptFingerprint,
+    ring: Option<&KeyRing>,
 ) -> Result<IndexedReceipt, ContextGovernorError> {
-    let versioned = crate::lineage::read_versioned_path(&fingerprint.path)?;
+    let raw_bytes = fs::read(&fingerprint.path)?;
+    let raw_value: serde_json::Value = serde_json::from_slice(&raw_bytes)?;
+    let versioned: crate::lineage::VersionedCompactResponse =
+        serde_json::from_value(raw_value.clone())?;
+    if let Some(ring) = ring {
+        let root = fingerprint.path.parent().ok_or_else(|| {
+            ContextGovernorError::LineageIndexRebuildRequired {
+                reason: "receipt path has no store root".to_string(),
+            }
+        })?;
+        let store = FileContextStore::with_key_ring(root, ring.clone());
+        store.verify_versioned_for_use_raw(
+            &versioned,
+            &raw_value,
+            true,
+            "lineage catalog rebuild",
+        )?;
+    }
     let response = versioned.as_v1_projection();
     indexed_receipt(fingerprint, &response, Some(&versioned))
 }
@@ -542,9 +639,13 @@ fn indexed_receipt(
 }
 fn load_indexed_receipts_parallel(
     fingerprints: &[ReceiptFingerprint],
+    ring: Option<&KeyRing>,
 ) -> Result<Vec<IndexedReceipt>, ContextGovernorError> {
     if fingerprints.len() <= 1 {
-        return fingerprints.iter().map(load_indexed_receipt).collect();
+        return fingerprints
+            .iter()
+            .map(|fingerprint| load_indexed_receipt(fingerprint, ring))
+            .collect();
     }
     let workers = std::thread::available_parallelism()
         .map(usize::from)
@@ -559,7 +660,7 @@ fn load_indexed_receipts_parallel(
                 scope.spawn(move || {
                     chunk
                         .iter()
-                        .map(load_indexed_receipt)
+                        .map(|fingerprint| load_indexed_receipt(fingerprint, ring))
                         .collect::<Result<Vec<_>, _>>()
                 })
             })
@@ -690,6 +791,98 @@ fn validate_connection(
                 fingerprint.changed_ns,
             ))
     }))
+}
+
+fn lineage_connection_is_valid(
+    connection: &Connection,
+    fingerprints: &[ReceiptFingerprint],
+    ring: &KeyRing,
+) -> Result<bool, ContextGovernorError> {
+    Ok(validate_connection(connection, fingerprints)?
+        && lineage_catalog_auth_valid(connection, ring)?)
+}
+
+fn lineage_catalog_payload(
+    connection: &Connection,
+) -> Result<serde_json::Value, ContextGovernorError> {
+    let mut statement = connection.prepare(
+        "SELECT receipt_id, receipt_schema, session_id, generation,
+                parent_receipt_id, file_bytes, modified_ns, changed_ns
+         FROM receipts ORDER BY receipt_id",
+    )?;
+    let rows = statement.query_map([], |row| {
+        let generation = row
+            .get::<_, Option<i64>>(3)?
+            .map(|value| u32::try_from(value).map_err(|_| rusqlite::Error::InvalidQuery))
+            .transpose()?;
+        Ok(LineageCatalogRowV1 {
+            receipt_id: row.get(0)?,
+            receipt_schema: row.get(1)?,
+            session_id: row.get(2)?,
+            generation,
+            parent_receipt_id: row.get(4)?,
+            file_bytes: row.get(5)?,
+            modified_ns: row.get(6)?,
+            changed_ns: row.get(7)?,
+        })
+    })?;
+    let payload = LineageCatalogPayloadV1 {
+        schema: "ContextGovernorLineageCatalogV1",
+        rows: rows.collect::<Result<Vec<_>, _>>()?,
+    };
+    Ok(serde_json::to_value(payload)?)
+}
+
+fn lineage_catalog_auth_valid(
+    connection: &Connection,
+    ring: &KeyRing,
+) -> Result<bool, ContextGovernorError> {
+    let key_id = connection
+        .query_row(
+            "SELECT value FROM metadata WHERE key = 'lineage_catalog_key_id'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?;
+    let signature = connection
+        .query_row(
+            "SELECT value FROM metadata WHERE key = 'lineage_catalog_hmac'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?;
+    let (Some(key_id), Some(signature)) = (key_id, signature) else {
+        return Ok(false);
+    };
+    if key_id != ring.active_key_id()? {
+        return Ok(false);
+    }
+    let mut payload = lineage_catalog_payload(connection)?;
+    let Some(object) = payload.as_object_mut() else {
+        return Ok(false);
+    };
+    object.insert("hmac".to_string(), serde_json::Value::String(signature));
+    Ok(ring.verify_json(&payload, "hmac"))
+}
+
+fn write_lineage_catalog_auth(
+    connection: &Connection,
+    ring: &KeyRing,
+) -> Result<(), ContextGovernorError> {
+    let payload = lineage_catalog_payload(connection)?;
+    let signature = ring.sign_json(&payload, "hmac")?;
+    let key_id = ring.active_key_id()?;
+    connection.execute(
+        "INSERT INTO metadata(key, value) VALUES('lineage_catalog_key_id', ?1)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        params![key_id],
+    )?;
+    connection.execute(
+        "INSERT INTO metadata(key, value) VALUES('lineage_catalog_hmac', ?1)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        params![signature],
+    )?;
+    Ok(())
 }
 
 fn stored_fingerprints(
