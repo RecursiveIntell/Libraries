@@ -1,4 +1,4 @@
-name: Wire Context Governor failure contract (temporary)
+name: Wire Context Governor closure stages (temporary)
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -7,13 +7,13 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: context-governor-failure-contract-wire
+  group: context-governor-closure-wire
   cancel-in-progress: false
 jobs:
   wire:
     if: github.head_ref == 'repair/context-governor-closure-20260909' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,40 +32,40 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           root = Path('context-governor')
+
           lib = root / 'src/lib.rs'
           text = lib.read_text()
           old = 'pub mod v3;\npub use v3::*;\n'
           new = 'pub mod v3;\npub use v3::*;\n\npub mod failure;\npub use failure::*;\n'
-          if text.count(old) != 1 or 'pub mod failure;' in text:
-              raise SystemExit('lib failure-module anchor is not unique/fresh')
-          lib.write_text(text.replace(old, new, 1))
+          if 'pub mod failure;' not in text:
+              if text.count(old) != 1:
+                  raise SystemExit('lib failure-module anchor is not unique')
+              text = text.replace(old, new, 1)
+          lib.write_text(text)
 
           main = root / 'src/main.rs'
           text = main.read_text()
-          old_import = 'CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError, EvidenceClaim,'
-          new_import = 'CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError, ContextGovernorFailureV1, EvidenceClaim,'
-          if text.count(old_import) != 1:
-              raise SystemExit('main import anchor is not unique')
-          text = text.replace(old_import, new_import, 1)
-          old_main = '''fn main() {
+          if 'ContextGovernorFailureV1' not in text.split('};', 1)[0]:
+              old_import = 'CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError, EvidenceClaim,'
+              new_import = 'CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError, ContextGovernorFailureV1, EvidenceClaim,'
+              if text.count(old_import) != 1:
+                  raise SystemExit('main import anchor is not unique')
+              text = text.replace(old_import, new_import, 1)
+          if '--failure-envelope-v1' not in text.split('fn run()', 1)[0]:
+              old_main = '''fn main() {
               if let Err(err) = run() {
                   eprintln!("{err}");
                   std::process::exit(1);
               }
           }
           '''
-          new_main = '''fn main() {
+              new_main = '''fn main() {
               if let Err(err) = run() {
                   let args = std::env::args().skip(1).collect::<Vec<_>>();
                   let operation = args.first().map(String::as_str).unwrap_or("compact");
                   if args.iter().any(|arg| arg == "--failure-envelope-v1") {
                       let failure = ContextGovernorFailureV1::from_error(operation, &err);
-                      eprintln!(
-                          "{}",
-                          serde_json::to_string(&failure).unwrap_or_else(|_| {
-                              r#"{"schema":"ContextGovernorFailureV1","operation":"internal","code":"serialization_failed"}"#.to_string()
-                          })
-                      );
+                      eprintln!("{}", serde_json::to_string(&failure).expect("failure envelope is serializable"));
                   } else {
                       eprintln!("{err}");
                   }
@@ -73,24 +73,42 @@ jobs:
               }
           }
           '''
-          if text.count(old_main) != 1:
-              raise SystemExit('main error-boundary anchor is not unique')
-          text = text.replace(old_main, new_main, 1)
-          cap_old = '            "supports_pending_activation": true,\n        })), '
-          if cap_old not in text:
+              if text.count(old_main) != 1:
+                  raise SystemExit('main error-boundary anchor is not unique')
+              text = text.replace(old_main, new_main, 1)
+          if '"failure_envelope"' not in text:
               cap_old = '            "supports_pending_activation": true,\n        })),\n'
-          cap_new = '            "supports_pending_activation": true,\n            "failure_envelope": {\n                "schema": "ContextGovernorFailureV1",\n                "flag": "--failure-envelope-v1",\n                "stream": "stderr",\n            },\n        })),\n'
-          if text.count(cap_old) != 1:
-              raise SystemExit(f'capability anchor count={text.count(cap_old)}')
-          main.write_text(text.replace(cap_old, cap_new, 1))
+              cap_new = '            "supports_pending_activation": true,\n            "failure_envelope": {\n                "schema": "ContextGovernorFailureV1",\n                "flag": "--failure-envelope-v1",\n                "stream": "stderr",\n            },\n        })),\n'
+              if text.count(cap_old) != 1:
+                  raise SystemExit(f'capability anchor count={text.count(cap_old)}')
+              text = text.replace(cap_old, cap_new, 1)
+          main.write_text(text)
+
+          v3 = root / 'src/v3.rs'
+          text = v3.read_text()
+          if 'mod verify;' not in text:
+              anchor = 'const EVIDENCE_ROOT: &str = "evidence/sha256";\n'
+              if text.count(anchor) != 1:
+                  raise SystemExit('V3 module anchor is not unique')
+              text = text.replace(anchor, anchor + '\nmod verify;\npub use verify::*;\n', 1)
+          report_anchor = '#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]\npub struct V3MigrationReportV2 {'
+          if '#[serde(deny_unknown_fields)]\npub struct V3MigrationReportV2 {' not in text:
+              if text.count(report_anchor) != 1:
+                  raise SystemExit('V3 report anchor is not unique')
+              text = text.replace(report_anchor, '#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]\n#[serde(deny_unknown_fields)]\npub struct V3MigrationReportV2 {', 1)
+          v3.write_text(text)
           PY
           (cd context-governor && cargo fmt)
           git diff --check
           (cd context-governor && cargo test --locked --test failure_envelope)
           (cd context-governor && cargo test --locked --test cli)
+          (cd context-governor && cargo test --locked --test v3_regressions)
+          (cd context-governor && cargo test --locked --test v3_verifier)
           (cd context-governor && cargo clippy --locked --all-targets --all-features -- -D warnings)
           git config user.name 'Context Governor Closure'
           git config user.email 'context-governor-closure@users.noreply.github.com'
-          git add context-governor/src/lib.rs context-governor/src/main.rs context-governor/src/failure.rs context-governor/tests/failure_envelope.rs
-          git commit -m 'feat(context-governor): wire negotiated typed CLI failure envelope'
-          git push origin HEAD:repair/context-governor-closure-20260909
+          git add context-governor/src/lib.rs context-governor/src/main.rs context-governor/src/v3.rs
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(context-governor): wire typed failures and V3 projection verification'
+            git push origin HEAD:repair/context-governor-closure-20260909
+          fi
