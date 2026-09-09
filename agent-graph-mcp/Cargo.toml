@@ -2,7 +2,7 @@
 name = "agent-graph-mcp"
 version = "0.2.0"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.88"
 license = "MIT"
 description = "MCP server exposing agent-graph + llm-pipeline for graph-orchestrated LLM workflows — typed rmcp tools, parallel fan-out, interrupt/resume, durable persistence"
 

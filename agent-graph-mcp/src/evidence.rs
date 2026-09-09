@@ -595,10 +595,10 @@ mod tests {
     use crate::store::PersistentStore;
     use serde_json::json;
 
-    fn configure_test_integrity_key() {
-        let path = std::env::temp_dir().join("agent-graph-mcp-unit-integrity.key");
-        std::fs::write(&path, [0x5au8; 32]).expect("test integrity key");
-        std::env::set_var("AGENT_GRAPH_INTEGRITY_KEY_PATH", path);
+    fn test_integrity_key() -> tempfile::NamedTempFile {
+        let mut key = tempfile::NamedTempFile::new().expect("private test key file");
+        std::io::Write::write_all(&mut key, &[0x5au8; 32]).expect("test integrity key");
+        key
     }
 
     #[test]
@@ -644,9 +644,10 @@ mod tests {
 
     #[test]
     fn witness_dependencies_verify_sqlite_content_and_span() {
-        configure_test_integrity_key();
+        let key = test_integrity_key();
         let temp = tempfile::tempdir().expect("witness database");
-        let store = PersistentStore::open(temp.path()).expect("store");
+        let store =
+            PersistentStore::open_with_integrity_key(temp.path(), Some(key.path())).expect("store");
         let record = store
             .capture_witness(WitnessCapture {
                 locator: "local://source".into(),

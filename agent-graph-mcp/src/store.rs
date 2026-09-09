@@ -1965,10 +1965,10 @@ impl PersistentStore {
 mod tests {
     use super::*;
 
-    fn configure_test_integrity_key() {
-        let path = std::env::temp_dir().join("agent-graph-mcp-unit-integrity.key");
-        std::fs::write(&path, [0x5au8; 32]).expect("test integrity key");
-        std::env::set_var("AGENT_GRAPH_INTEGRITY_KEY_PATH", path);
+    fn test_integrity_key() -> tempfile::NamedTempFile {
+        let mut key = tempfile::NamedTempFile::new().expect("private test key file");
+        std::io::Write::write_all(&mut key, &[0x5au8; 32]).expect("test integrity key");
+        key
     }
 
     #[test]
@@ -1989,9 +1989,10 @@ mod tests {
 
     #[test]
     fn checkpoint_persistence_fault_leaves_no_resumable_row() {
-        configure_test_integrity_key();
+        let key = test_integrity_key();
         let temp = tempfile::tempdir().expect("checkpoint database");
-        let store = PersistentStore::open(temp.path()).expect("store");
+        let store =
+            PersistentStore::open_with_integrity_key(temp.path(), Some(key.path())).expect("store");
         store
             .save_graph("checkpoint-fault", "{}", "version", false)
             .expect("graph");

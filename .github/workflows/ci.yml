@@ -9,6 +9,29 @@ on:
   pull_request:
 
 jobs:
+  agent-network-rust188:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.88.0
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: agent-network-rust188
+      - name: Verify exact network minimum toolchain
+        run: |
+          python3 -c 'import subprocess; actual = subprocess.check_output(["rustc", "--version"], text=True); print(actual); assert actual.split()[1] == "1.88.0"'
+          python3 -c 'from pathlib import Path; import tomllib; names = ["stack-ids", "boundary-compiler", "agent-graph", "agent-graph-mcp", "agent-collaboration-contract", "agent-collaboration-transport"]; actual = {n: tomllib.loads((Path(n) / "Cargo.toml").read_text())["package"].get("rust-version") for n in names}; print(actual); assert all(v == "1.88" for v in actual.values())'
+      - name: Locked network minimum-toolchain validation
+        run: |
+          cargo metadata --locked --format-version 1 > /dev/null
+          cargo check -p stack-ids -p boundary-compiler -p agent-graph -p agent-graph-mcp -p agent-collaboration-contract -p agent-collaboration-transport --all-targets --locked
+          cargo test -p stack-ids -p boundary-compiler -p agent-graph -p agent-graph-mcp -p agent-collaboration-contract -p agent-collaboration-transport --all-targets --locked
+          cargo clippy -p agent-collaboration-transport --all-targets --locked -- -D warnings
+          cargo fmt -p agent-collaboration-transport -- --check
+          git diff --exit-code -- Cargo.lock
+
   hardening-gate:
     runs-on: ubuntu-latest
     steps:

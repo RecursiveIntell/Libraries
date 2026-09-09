@@ -2,7 +2,7 @@
 name = "agent-collaboration-contract"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.75.0"
+rust-version = "1.88"
 description = "Transport-neutral agent collaboration data contracts"
 license = "MIT"
 publish = false
