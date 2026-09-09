@@ -63,7 +63,7 @@ jobs:
                       eprintln!(
                           "{}",
                           serde_json::to_string(&failure).unwrap_or_else(|_| {
-                              r#"{\"schema\":\"ContextGovernorFailureV1\",\"operation\":\"internal\",\"code\":\"serialization_failed\"}"#.to_string()
+                              r#"{"schema":"ContextGovernorFailureV1","operation":"internal","code":"serialization_failed"}"#.to_string()
                           })
                       );
                   } else {
@@ -76,17 +76,12 @@ jobs:
           if text.count(old_main) != 1:
               raise SystemExit('main error-boundary anchor is not unique')
           text = text.replace(old_main, new_main, 1)
-          cap_old = '''            "supports_pending_activation": true,
-          })),'''.replace('          }))', '        }))')
-          cap_new = '''            "supports_pending_activation": true,
-              "failure_envelope": {
-                  "schema": "ContextGovernorFailureV1",
-                  "flag": "--failure-envelope-v1",
-                  "stream": "stderr",
-              },
-          })),'''.replace('          }))', '        }))')
+          cap_old = '            "supports_pending_activation": true,\n        })), '
+          if cap_old not in text:
+              cap_old = '            "supports_pending_activation": true,\n        })),\n'
+          cap_new = '            "supports_pending_activation": true,\n            "failure_envelope": {\n                "schema": "ContextGovernorFailureV1",\n                "flag": "--failure-envelope-v1",\n                "stream": "stderr",\n            },\n        })),\n'
           if text.count(cap_old) != 1:
-              raise SystemExit('capability anchor is not unique')
+              raise SystemExit(f'capability anchor count={text.count(cap_old)}')
           main.write_text(text.replace(cap_old, cap_new, 1))
           PY
           (cd context-governor && cargo fmt)
