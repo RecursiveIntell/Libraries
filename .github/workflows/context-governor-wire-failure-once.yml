@@ -1,0 +1,101 @@
+name: Wire Context Governor failure contract (temporary)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/context-governor-wire-failure-once.yml'
+permissions:
+  contents: write
+concurrency:
+  group: context-governor-failure-contract-wire
+  cancel-in-progress: false
+jobs:
+  wire:
+    if: github.head_ref == 'repair/context-governor-closure-20260909' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: context-governor
+      - name: Wire, validate, commit, and push source only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('context-governor')
+          lib = root / 'src/lib.rs'
+          text = lib.read_text()
+          old = 'pub mod v3;\npub use v3::*;\n'
+          new = 'pub mod v3;\npub use v3::*;\n\npub mod failure;\npub use failure::*;\n'
+          if text.count(old) != 1 or 'pub mod failure;' in text:
+              raise SystemExit('lib failure-module anchor is not unique/fresh')
+          lib.write_text(text.replace(old, new, 1))
+
+          main = root / 'src/main.rs'
+          text = main.read_text()
+          old_import = 'CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError, EvidenceClaim,'
+          new_import = 'CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError, ContextGovernorFailureV1, EvidenceClaim,'
+          if text.count(old_import) != 1:
+              raise SystemExit('main import anchor is not unique')
+          text = text.replace(old_import, new_import, 1)
+          old_main = '''fn main() {
+              if let Err(err) = run() {
+                  eprintln!("{err}");
+                  std::process::exit(1);
+              }
+          }
+          '''
+          new_main = '''fn main() {
+              if let Err(err) = run() {
+                  let args = std::env::args().skip(1).collect::<Vec<_>>();
+                  let operation = args.first().map(String::as_str).unwrap_or("compact");
+                  if args.iter().any(|arg| arg == "--failure-envelope-v1") {
+                      let failure = ContextGovernorFailureV1::from_error(operation, &err);
+                      eprintln!(
+                          "{}",
+                          serde_json::to_string(&failure).unwrap_or_else(|_| {
+                              r#"{\"schema\":\"ContextGovernorFailureV1\",\"operation\":\"internal\",\"code\":\"serialization_failed\"}"#.to_string()
+                          })
+                      );
+                  } else {
+                      eprintln!("{err}");
+                  }
+                  std::process::exit(1);
+              }
+          }
+          '''
+          if text.count(old_main) != 1:
+              raise SystemExit('main error-boundary anchor is not unique')
+          text = text.replace(old_main, new_main, 1)
+          cap_old = '''            "supports_pending_activation": true,
+          })),'''
+          cap_new = '''            "supports_pending_activation": true,
+              "failure_envelope": {
+                  "schema": "ContextGovernorFailureV1",
+                  "flag": "--failure-envelope-v1",
+                  "stream": "stderr",
+              },
+          })),'''
+          if text.count(cap_old) != 1:
+              raise SystemExit('capability anchor is not unique')
+          main.write_text(text.replace(cap_old, cap_new, 1))
+          PY
+          (cd context-governor && cargo fmt)
+          git diff --check
+          (cd context-governor && cargo test --locked --test failure_envelope)
+          (cd context-governor && cargo test --locked --test cli)
+          (cd context-governor && cargo clippy --locked --all-targets --all-features -- -D warnings)
+          git config user.name 'Context Governor Closure'
+          git config user.email 'context-governor-closure@users.noreply.github.com'
+          git add context-governor/src/lib.rs context-governor/src/main.rs context-governor/src/failure.rs context-governor/tests/failure_envelope.rs
+          git commit -m 'feat(context-governor): wire negotiated typed CLI failure envelope'
+          git push origin HEAD:repair/context-governor-closure-20260909
