@@ -41,8 +41,8 @@ jobs:
           failed=0
           gate() {
             local name="$1"; shift
-            "$@" > "../cg-evidence/$name.log" 2>&1
-            local rc=$?
+            local rc=0
+            if "$@" > "../cg-evidence/$name.log" 2>&1; then rc=0; else rc=$?; fi
             printf '%s\t%s\n' "$name" "$rc" >> ../cg-evidence/results.tsv
             cat "../cg-evidence/$name.log"
             if [ "$rc" -ne 0 ]; then failed=1; fi
@@ -55,7 +55,7 @@ jobs:
           gate release-lineage cargo test --locked --release --test lineage -- --ignored
           gate build cargo build --locked --release
           gate roi python3 scripts/codex_roi_eval.py
-          git diff --exit-code -- Cargo.lock >> ../cg-evidence/lockfile.log 2>&1 || failed=1
+          gate lockfile git diff --exit-code -- Cargo.lock
           exit "$failed"
       - uses: actions/upload-artifact@v4
         if: always()
