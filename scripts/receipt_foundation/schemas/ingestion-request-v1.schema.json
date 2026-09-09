@@ -1,0 +1,54 @@
+{
+  "$id": "urn:recursiveintell:receipt-observation:ReceiptObservationRequestV1:v1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "archive_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "authority_effect": {
+      "const": "none"
+    },
+    "collection_contract": {
+      "enum": [
+        "AresReceiptCollectionManifestV1",
+        "generic-archive-v1"
+      ]
+    },
+    "compression": {
+      "enum": [
+        "zstd",
+        "tar"
+      ]
+    },
+    "network_fetch": {
+      "const": false
+    },
+    "parser_mode": {
+      "enum": [
+        "strict-v1",
+        "explicit-json-streams-v1"
+      ]
+    },
+    "schema": {
+      "const": "ReceiptObservationRequestV1"
+    },
+    "source_handle": {
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "archive_sha256",
+    "compression",
+    "parser_mode",
+    "collection_contract",
+    "source_handle",
+    "authority_effect",
+    "network_fetch"
+  ],
+  "title": "ReceiptObservationRequestV1",
+  "type": "object"
+}
