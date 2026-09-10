@@ -145,6 +145,9 @@ default-members = [
     "verification-policy",
 ]
 
+[workspace.package]
+rust-version = "1.89"
+
 # LIB-005: Workspace-level lint enforcement — compile-time law, not just scripts.
 [workspace.lints.rust]
 unsafe_code = "deny"
