@@ -1,0 +1,66 @@
+name: Context Governor conformance
+on:
+  pull_request:
+    paths:
+      - 'context-governor/**'
+      - '.github/workflows/context-governor.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'context-governor/**'
+      - '.github/workflows/context-governor.yml'
+permissions:
+  contents: read
+concurrency:
+  group: context-governor-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: context-governor
+      - name: Exact-head locked checks
+        working-directory: context-governor
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p ../cg-evidence
+          git rev-parse HEAD > ../cg-evidence/source-commit.txt
+          cargo --version > ../cg-evidence/toolchain.txt
+          rustc --version >> ../cg-evidence/toolchain.txt
+          failed=0
+          gate() {
+            local name="$1"; shift
+            local rc=0
+            if "$@" > "../cg-evidence/$name.log" 2>&1; then rc=0; else rc=$?; fi
+            printf '%s\t%s\n' "$name" "$rc" >> ../cg-evidence/results.tsv
+            cat "../cg-evidence/$name.log"
+            if [ "$rc" -ne 0 ]; then failed=1; fi
+          }
+          gate fmt cargo fmt -- --check
+          gate regression cargo test --locked --test v3_regressions
+          gate default-tests cargo test --locked --all-targets
+          gate all-feature-tests cargo test --locked --all-targets --all-features
+          gate clippy cargo clippy --locked --all-targets --all-features -- -D warnings
+          gate release-lineage cargo test --locked --release --test lineage -- --ignored
+          gate build cargo build --locked --release
+          gate roi python3 scripts/codex_roi_eval.py
+          gate lockfile git diff --exit-code -- Cargo.lock
+          exit "$failed"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: context-governor-conformance-${{ github.event.pull_request.head.sha || github.sha }}
+          path: cg-evidence/
+          retention-days: 14
+          if-no-files-found: error

@@ -982,8 +982,34 @@ fn pending_receipt_is_inert_until_matching_committed_projection_activates() {
     assert!(activated.path.exists());
     assert_eq!(
         store.resolve_lineage_tip("pending-two-phase").unwrap(),
-        Some(response.receipt.receipt_id)
+        Some(response.receipt.receipt_id.clone())
     );
+
+    // A lost success response is safe to reconcile by replaying the exact
+    // activation request. The issued receipt is not rewritten and mismatched
+    // replay content still fails closed.
+    let replayed = certified_store(tmp.path())
+        .activate_v2(ReceiptActivationRequestV2 {
+            receipt_id: response.receipt.receipt_id.clone(),
+            committed_messages: activated_projection(&store, &response.receipt.receipt_id),
+        })
+        .unwrap();
+    assert!(replayed.activated && replayed.verified && replayed.already_activated);
+    assert_eq!(replayed.path, activated.path);
+
+    let mut wrong_replay = activated_projection(&store, &response.receipt.receipt_id);
+    wrong_replay[0].content.push_str(" replay mismatch");
+    assert!(matches!(
+        certified_store(tmp.path()).activate_v2(ReceiptActivationRequestV2 {
+            receipt_id: response.receipt.receipt_id,
+            committed_messages: wrong_replay,
+        }),
+        Err(ContextGovernorError::CommittedTranscriptMismatch(_))
+    ));
+}
+
+fn activated_projection(store: &FileContextStore, receipt_id: &str) -> Vec<Message> {
+    store.load_v2(receipt_id).unwrap().compacted_messages
 }
 
 #[test]

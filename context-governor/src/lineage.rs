@@ -187,6 +187,9 @@ pub struct ReceiptActivationResultV2 {
     pub path: PathBuf,
     pub activated: bool,
     pub verified: bool,
+    /// True when an exact activation replay observed an already-committed
+    /// receipt and proved the supplied host projection still matches it.
+    pub already_activated: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -1409,7 +1412,7 @@ impl FileContextStore {
         Ok(self.read_versioned_unverified_with_raw(receipt_id)?.0)
     }
 
-    fn collect_lineage(
+    pub(crate) fn collect_lineage(
         &self,
         receipt_id: &str,
         full_projection: bool,
@@ -2017,13 +2020,10 @@ impl FileContextStore {
             .collect()
     }
 
-    /// Activate a staged receipt only when the host's committed canonical
-    /// projection is exactly the one bound by the pending receipt.
-    pub fn activate_v2(
-        &self,
-        request: ReceiptActivationRequestV2,
-    ) -> Result<ReceiptActivationResultV2, ContextGovernorError> {
-        let response = self.read_pending_v2(&request.receipt_id, "V2 receipt activation")?;
+    fn verify_activation_projection(
+        response: &CompactResponseV2,
+        request: &ReceiptActivationRequestV2,
+    ) -> Result<(), ContextGovernorError> {
         let actual_count = request.committed_messages.len();
         let actual_blake3 = crate::hash_messages(&request.committed_messages)?;
         let actual_sha256 = crate::hash_messages_sha256(&request.committed_messages)?;
@@ -2033,25 +2033,66 @@ impl FileContextStore {
         {
             return Err(ContextGovernorError::CommittedTranscriptMismatch(Box::new(
                 crate::CommittedTranscriptMismatchV2 {
-                    receipt_id: request.receipt_id,
+                    receipt_id: request.receipt_id.clone(),
                     expected_count: response.compacted_messages.len(),
                     actual_count,
-                    expected_blake3: response.receipt.compacted_transcript_blake3,
+                    expected_blake3: response.receipt.compacted_transcript_blake3.clone(),
                     actual_blake3,
-                    expected_sha256: response.receipt.compacted_transcript_sha256,
+                    expected_sha256: response.receipt.compacted_transcript_sha256.clone(),
                     actual_sha256,
                 },
             )));
         }
+        Ok(())
+    }
+
+    fn existing_activation_result(
+        &self,
+        request: &ReceiptActivationRequestV2,
+    ) -> Result<Option<ReceiptActivationResultV2>, ContextGovernorError> {
+        let path = self.path_for_receipt(&request.receipt_id)?;
+        if !path.exists() {
+            return Ok(None);
+        }
+        let committed = self.load_v2(&request.receipt_id)?;
+        Self::verify_activation_projection(&committed, request)?;
+        Ok(Some(ReceiptActivationResultV2 {
+            schema: "ReceiptActivationResultV2".to_string(),
+            receipt_id: request.receipt_id.clone(),
+            path,
+            activated: true,
+            verified: true,
+            already_activated: true,
+        }))
+    }
+
+    /// Activate a staged receipt only when the host's committed canonical
+    /// projection is exactly the one bound by the pending receipt. Exact
+    /// replays are idempotent so a host can reconcile a lost success response
+    /// without guessing whether publication occurred.
+    pub fn activate_v2(
+        &self,
+        request: ReceiptActivationRequestV2,
+    ) -> Result<ReceiptActivationResultV2, ContextGovernorError> {
+        let response = match self.read_pending_v2(&request.receipt_id, "V2 receipt activation") {
+            Ok(response) => response,
+            Err(ContextGovernorError::PendingReceiptNotFound(_)) => {
+                return self.existing_activation_result(&request)?.ok_or_else(|| {
+                    ContextGovernorError::PendingReceiptNotFound(request.receipt_id.clone())
+                });
+            }
+            Err(error) => return Err(error),
+        };
+        Self::verify_activation_projection(&response, &request)?;
 
         fs::create_dir_all(&self.root)?;
         let _lineage_lock = self.lock_lineage(&response.receipt.session_id)?;
         self.validate_v2_append_position(&response)?;
         let path = self.path_for_receipt(&response.receipt.receipt_id)?;
         if path.exists() {
-            return Err(ContextGovernorError::ReceiptAlreadyExists(
-                response.receipt.receipt_id.clone(),
-            ));
+            return self.existing_activation_result(&request)?.ok_or_else(|| {
+                ContextGovernorError::ReceiptAlreadyExists(response.receipt.receipt_id.clone())
+            });
         }
 
         // The per-lineage lock performs the expensive lineage validation before
@@ -2089,6 +2130,7 @@ impl FileContextStore {
             path,
             activated: true,
             verified: true,
+            already_activated: false,
         })
     }
 

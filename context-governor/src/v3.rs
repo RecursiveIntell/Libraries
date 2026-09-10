@@ -14,15 +14,72 @@ use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
-use std::fs;
+use std::fs::{self, File, OpenOptions};
 use std::io::{Error, ErrorKind};
-use std::path::{Path, PathBuf};
+use std::io::{Read, Write};
+use std::path::{Component, Path, PathBuf};
 
 const V3_ROOT: &str = ".v3";
+const MAX_MESSAGE_BYTES: u64 = 64 * 1024 * 1024;
+const MAX_RECEIPT_BYTES: u64 = 512 * 1024 * 1024;
+const MAX_MANIFEST_BYTES: u64 = 64 * 1024 * 1024;
+const MAX_RECEIPTS: usize = 100_000;
+const MANIFEST_SCHEMA: &str = "ContextCompactionReceiptV3ManifestV1";
+
+/// A migration is fresh-only. An interrupted or existing projection is never
+/// silently resumed. Verify it read-only or explicitly quarantine it and use a
+/// fresh output root. This is separate from CAS reuse within a single migration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct V3ProjectionDescriptorV1 {
+    pub schema: String,
+    pub source_receipts_sha256: String,
+    pub input_receipts: usize,
+    pub compression_level: i32,
+    pub encryption_key_id: Option<String>,
+    pub exactness_scope: String,
+}
+
+#[derive(Debug, Clone, thiserror::Error, PartialEq, Eq)]
+pub enum V3ProjectionError {
+    #[error("V3 source directory is missing or invalid")]
+    InvalidSource,
+    #[error(
+        "V3 requires a fresh projection root; verify or quarantine existing output explicitly"
+    )]
+    ExistingProjection,
+    #[error("V3 source and output scopes must be disjoint")]
+    OverlappingScope,
+    #[error("V3 path contains a symlink, traversal, or unexpected artifact")]
+    UnsafePath,
+    #[error("V3 artifact exceeds the declared resource limit")]
+    ResourceLimit,
+    #[error("V3 source snapshot changed during the operation")]
+    SourceChanged,
+    #[error("V3 projection does not match its authenticated V2 source")]
+    SourceMismatch,
+    #[error("V3 schema, codec, or encryption contract is unsupported")]
+    UnsupportedContract,
+    #[error("V3 projection options are invalid")]
+    InvalidOptions,
+    #[error("V3 artifact publication collided with an existing path")]
+    PublicationCollision,
+    #[error("V3 legacy V1 ancestor exact-text sources require an explicit migration contract")]
+    LegacyAncestorUnsupported,
+}
+
+fn v3_error(error: V3ProjectionError) -> ContextGovernorError {
+    ContextGovernorError::V3Projection(error)
+}
+
 const MANIFEST_ROOT: &str = "manifests";
 const EVIDENCE_ROOT: &str = "evidence/sha256";
 
+mod verify;
+pub use verify::*;
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct V3EvidenceRefV1 {
     pub source_id: String,
     pub message_sha256: String,
@@ -34,6 +91,7 @@ pub struct V3EvidenceRefV1 {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct V3ReceiptManifestV1 {
     pub schema: String,
     pub receipt_id: String,
@@ -51,14 +109,41 @@ pub struct V3ReceiptManifestV1 {
     pub encryption_key_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct V3MigrationOptions {
-    #[serde(default, skip_serializing)]
+    #[serde(default, skip_serializing, skip_deserializing)]
     pub encryption_key: Option<Vec<u8>>,
     #[serde(default)]
     pub require_encryption: bool,
     #[serde(default = "default_compression_level")]
     pub compression_level: i32,
+}
+
+impl std::fmt::Debug for V3MigrationOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("V3MigrationOptions")
+            .field(
+                "encryption_key",
+                &self.encryption_key.as_ref().map(|_| "[REDACTED]"),
+            )
+            .field("require_encryption", &self.require_encryption)
+            .field("compression_level", &self.compression_level)
+            .finish()
+    }
+}
+
+fn validate_options(options: &V3MigrationOptions) -> Result<(), ContextGovernorError> {
+    if options
+        .encryption_key
+        .as_ref()
+        .is_some_and(|key| key.len() != 32)
+        || (options.require_encryption && options.encryption_key.is_none())
+        || !(-7..=22).contains(&options.compression_level)
+    {
+        return Err(v3_error(V3ProjectionError::InvalidOptions));
+    }
+    Ok(())
 }
 
 fn default_compression_level() -> i32 {
@@ -76,7 +161,8 @@ impl Default for V3MigrationOptions {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
-pub struct V3MigrationReportV1 {
+#[serde(deny_unknown_fields)]
+pub struct V3MigrationReportV2 {
     pub schema: String,
     pub input_receipts: usize,
     pub migrated_receipts: usize,
@@ -86,7 +172,13 @@ pub struct V3MigrationReportV1 {
     pub plaintext_bytes: u64,
     pub blob_bytes: u64,
     pub encrypted: bool,
+    /// True only for a nonempty, fully verified corpus with no V1 skips.
     pub complete: bool,
+    pub source_scan_complete: bool,
+    pub v2_projection_complete: bool,
+    pub full_corpus_migrated: bool,
+    pub unique_evidence_blobs: usize,
+    pub source_receipts_sha256: String,
 }
 
 fn io_error(message: impl Into<String>) -> ContextGovernorError {
@@ -131,17 +223,79 @@ fn blob_relpath(digest: &str, encrypted: bool) -> String {
     )
 }
 
-fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), ContextGovernorError> {
-    if path.exists() {
-        return Ok(());
+fn check_path(path: &Path) -> Result<(), ContextGovernorError> {
+    let mut current = PathBuf::new();
+    for part in path.components() {
+        if matches!(part, Component::ParentDir) {
+            return Err(v3_error(V3ProjectionError::UnsafePath));
+        }
+        current.push(part.as_os_str());
+        match fs::symlink_metadata(&current) {
+            Ok(metadata) if metadata.file_type().is_symlink() => {
+                return Err(v3_error(V3ProjectionError::UnsafePath));
+            }
+            Ok(_) => {}
+            Err(error) if error.kind() == ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
     }
+    Ok(())
+}
+
+fn read_bounded(path: &Path, maximum: u64) -> Result<Vec<u8>, ContextGovernorError> {
+    check_path(path)?;
+    let metadata = fs::symlink_metadata(path)?;
+    if !metadata.is_file() {
+        return Err(v3_error(V3ProjectionError::UnsafePath));
+    }
+    if metadata.len() > maximum {
+        return Err(v3_error(V3ProjectionError::ResourceLimit));
+    }
+    let file = File::open(path)?;
+    let mut bytes = Vec::new();
+    file.take(maximum + 1).read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > maximum {
+        return Err(v3_error(V3ProjectionError::ResourceLimit));
+    }
+    Ok(bytes)
+}
+
+// Exclusive fresh-root ownership prevents legitimate concurrent writers. The
+// no-clobber hard link additionally prevents check-then-rename replacement.
+fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), ContextGovernorError> {
+    check_path(path)?;
     let parent = path
         .parent()
-        .ok_or_else(|| io_error("V3 path has no parent"))?;
+        .ok_or_else(|| v3_error(V3ProjectionError::UnsafePath))?;
     fs::create_dir_all(parent)?;
+    check_path(parent)?;
     let tmp = parent.join(format!(".{}.tmp", uuid::Uuid::new_v4().simple()));
-    fs::write(&tmp, bytes)?;
-    fs::rename(&tmp, path)?;
+    let mut options = OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let result = (|| -> Result<(), ContextGovernorError> {
+        let mut file = options.open(&tmp)?;
+        file.write_all(bytes)?;
+        file.sync_all()?;
+        drop(file);
+        fs::hard_link(&tmp, path).map_err(|error| {
+            if error.kind() == ErrorKind::AlreadyExists {
+                v3_error(V3ProjectionError::PublicationCollision)
+            } else {
+                ContextGovernorError::Io(error)
+            }
+        })?;
+        Ok(())
+    })();
+    let cleanup = fs::remove_file(&tmp);
+    result?;
+    cleanup?;
+    #[cfg(unix)]
+    File::open(parent)?.sync_all()?;
     Ok(())
 }
 
@@ -197,14 +351,23 @@ fn decode_blob(
     } else {
         bytes.to_vec()
     };
-    zstd::stream::decode_all(compressed.as_slice())
-        .map_err(|error| io_error(format!("V3 decompression failed: {error}")))
+    let decoder = zstd::stream::read::Decoder::new(compressed.as_slice())
+        .map_err(|_| io_error("V3 decompression failed"))?;
+    let mut plaintext = Vec::new();
+    decoder
+        .take(MAX_MESSAGE_BYTES + 1)
+        .read_to_end(&mut plaintext)?;
+    if plaintext.len() as u64 > MAX_MESSAGE_BYTES {
+        return Err(v3_error(V3ProjectionError::ResourceLimit));
+    }
+    Ok(plaintext)
 }
 
 fn read_v2_ids(root: &Path) -> Result<Vec<String>, ContextGovernorError> {
     let mut ids = Vec::new();
-    if !root.exists() {
-        return Ok(ids);
+    check_path(root)?;
+    if !root.is_dir() {
+        return Err(v3_error(V3ProjectionError::InvalidSource));
     }
     for entry in fs::read_dir(root)? {
         let path = entry?.path();
@@ -215,30 +378,181 @@ fn read_v2_ids(root: &Path) -> Result<Vec<String>, ContextGovernorError> {
             continue;
         };
         if name.starts_with("ctxr_") && name.ends_with(".json") {
-            ids.push(name.trim_end_matches(".json").to_string());
+            let id = name.trim_end_matches(".json");
+            validate_receipt_id(id)?;
+            read_bounded(&path, MAX_RECEIPT_BYTES)?;
+            ids.push(id.to_string());
+            if ids.len() > MAX_RECEIPTS {
+                return Err(v3_error(V3ProjectionError::ResourceLimit));
+            }
         }
     }
     ids.sort();
     Ok(ids)
 }
 
+fn validate_receipt_id(id: &str) -> Result<(), ContextGovernorError> {
+    if !id.starts_with("ctxr_")
+        || id.len() > 256
+        || !id
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
+    {
+        return Err(v3_error(V3ProjectionError::UnsafePath));
+    }
+    Ok(())
+}
+
+fn valid_digest(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+fn source_snapshot(
+    store: &FileContextStore,
+) -> Result<(Vec<String>, String), ContextGovernorError> {
+    let ids = read_v2_ids(store.root_path())?;
+    let mut entries = Vec::new();
+    for id in &ids {
+        let bytes = read_bounded(&store.path_for_receipt(id)?, MAX_RECEIPT_BYTES)?;
+        entries.push((id, bytes.len(), sha256_bytes(&bytes)));
+    }
+    Ok((ids.clone(), sha256_bytes(&serde_json::to_vec(&entries)?)))
+}
+
 fn v2_chain_sources(
     store: &FileContextStore,
     receipt_id: &str,
 ) -> Result<(crate::lineage::CompactResponseV2, BTreeMap<String, Message>), ContextGovernorError> {
-    let head = store.load_v2(receipt_id)?;
-    let mut current = head.clone();
+    // Use the canonical owner once, not a fresh full-chain load for every parent.
+    let chain = store.collect_lineage(receipt_id, true)?;
+    let Some(VersionedCompactResponse::V2(head)) = chain.first() else {
+        return Err(v3_error(V3ProjectionError::UnsupportedContract));
+    };
     let mut sources = BTreeMap::new();
-    loop {
-        for source in &current.source_evidence {
-            sources.insert(source.source_id.clone(), source.message.clone());
-        }
-        let Some(parent) = current.receipt.parent_receipt.as_ref() else {
-            break;
+    for response in &chain {
+        let VersionedCompactResponse::V2(response) = response else {
+            // Legacy exact text is not a Message. Never invent role/metadata.
+            return Err(v3_error(V3ProjectionError::LegacyAncestorUnsupported));
         };
-        current = store.load_v2(&parent.receipt_id)?;
+        for source in &response.source_evidence {
+            if sources
+                .insert(source.source_id.clone(), source.message.clone())
+                .is_some()
+            {
+                return Err(v3_error(V3ProjectionError::SourceMismatch));
+            }
+        }
     }
-    Ok((head, sources))
+    Ok(((**head).clone(), sources))
+}
+
+fn validate_manifest(manifest: &V3ReceiptManifestV1) -> Result<(), ContextGovernorError> {
+    validate_receipt_id(&manifest.receipt_id)?;
+    if let Some(parent) = &manifest.parent_receipt_id {
+        validate_receipt_id(parent)?;
+    }
+    if manifest.schema != MANIFEST_SCHEMA
+        || manifest.compression != "zstd-v1"
+        || !matches!(manifest.encryption.as_str(), "none" | "aes-256-gcm-v1")
+        || !valid_digest(&manifest.covered_source_ids_sha256)
+        || !valid_digest(&manifest.compacted_transcript_sha256)
+    {
+        return Err(v3_error(V3ProjectionError::UnsupportedContract));
+    }
+    let encrypted = manifest.encryption == "aes-256-gcm-v1";
+    if encrypted != manifest.encryption_key_id.is_some()
+        || manifest
+            .encryption_key_id
+            .as_deref()
+            .is_some_and(|id| !valid_digest(id))
+        || manifest
+            .evidence
+            .windows(2)
+            .any(|pair| pair[0].source_id >= pair[1].source_id)
+    {
+        return Err(v3_error(V3ProjectionError::SourceMismatch));
+    }
+    for reference in &manifest.evidence {
+        if !valid_digest(&reference.message_sha256)
+            || !valid_digest(&reference.content_sha256)
+            || reference.encrypted != encrypted
+            || reference.blob_relpath != blob_relpath(&reference.message_sha256, encrypted)
+            || (encrypted
+                && reference
+                    .nonce_hex
+                    .as_deref()
+                    .map_or(true, |n| n.len() != 24 || hex::decode(n).is_err()))
+            || (!encrypted && reference.nonce_hex.is_some())
+        {
+            return Err(v3_error(V3ProjectionError::UnsafePath));
+        }
+    }
+    Ok(())
+}
+
+fn descriptor(output_root: &Path) -> Result<V3ProjectionDescriptorV1, ContextGovernorError> {
+    let value: V3ProjectionDescriptorV1 = serde_json::from_slice(&read_bounded(
+        &v3_root(output_root).join("projection.json"),
+        16_384,
+    )?)?;
+    if value.schema != "ContextGovernorV3ProjectionV1"
+        || value.exactness_scope != "serde_message_json_v1"
+        || !valid_digest(&value.source_receipts_sha256)
+    {
+        return Err(v3_error(V3ProjectionError::UnsupportedContract));
+    }
+    Ok(value)
+}
+
+/// Verify receipt/source membership against authoritative V2, not manifest claims.
+/// This is a snapshot check, not permission to promote V3 into authority.
+pub fn verify_v3_manifest_against_v2(
+    store: &FileContextStore,
+    output_root: impl AsRef<Path>,
+    manifest: &V3ReceiptManifestV1,
+) -> Result<(), ContextGovernorError> {
+    validate_manifest(manifest)?;
+    let binding = descriptor(output_root.as_ref())?;
+    let (ids, digest) = source_snapshot(store)?;
+    if digest != binding.source_receipts_sha256 || ids.len() != binding.input_receipts {
+        return Err(v3_error(V3ProjectionError::SourceChanged));
+    }
+    if manifest.encryption_key_id != binding.encryption_key_id {
+        return Err(v3_error(V3ProjectionError::SourceMismatch));
+    }
+    let (head, sources) = v2_chain_sources(store, &manifest.receipt_id)?;
+    let mut local = head.receipt.local_source_ids.clone();
+    local.sort();
+    if manifest.session_id != head.receipt.session_id
+        || manifest.generation != head.receipt.generation
+        || manifest.parent_receipt_id
+            != head
+                .receipt
+                .parent_receipt
+                .as_ref()
+                .map(|p| p.receipt_id.clone())
+        || manifest.local_source_ids != local
+        || manifest.covered_source_ids_sha256
+            != sha256_bytes(&serde_json::to_vec(&head.receipt.covered_original_sources)?)
+        || manifest.compacted_transcript_sha256 != head.receipt.compacted_transcript_sha256
+        || manifest.evidence.len() != sources.len()
+    {
+        return Err(v3_error(V3ProjectionError::SourceMismatch));
+    }
+    for reference in &manifest.evidence {
+        let message = sources
+            .get(&reference.source_id)
+            .ok_or_else(|| v3_error(V3ProjectionError::SourceMismatch))?;
+        if reference.message_sha256 != sha256_bytes(&serde_json::to_vec(message)?)
+            || reference.content_sha256 != hash_text_sha256(&message.content)
+        {
+            return Err(v3_error(V3ProjectionError::SourceMismatch));
+        }
+    }
+    Ok(())
 }
 
 /// Migrate all verified V2 receipts into a disposable V3 projection.
@@ -250,14 +564,56 @@ pub fn migrate_v2_store(
     store: &FileContextStore,
     output_root: impl AsRef<Path>,
     options: &V3MigrationOptions,
-) -> Result<V3MigrationReportV1, ContextGovernorError> {
+) -> Result<V3MigrationReportV2, ContextGovernorError> {
     let output_root = output_root.as_ref();
-    let root = store.root_path();
-    let ids = read_v2_ids(root)?;
-    let mut report = V3MigrationReportV1 {
-        schema: "V3MigrationReportV1".to_string(),
+    validate_options(options)?;
+    let (ids, source_digest) = source_snapshot(store)?;
+    check_path(output_root)?;
+    // Existing ancestors must be real directories; an output within the source
+    // would mutate the source scope even though it does not rewrite receipts.
+    let absolute_output = if output_root.is_absolute() {
+        output_root.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(output_root)
+    };
+    let absolute_source = fs::canonicalize(store.root_path())?;
+    if absolute_output.starts_with(&absolute_source)
+        || absolute_source.starts_with(&absolute_output)
+    {
+        return Err(v3_error(V3ProjectionError::OverlappingScope));
+    }
+    fs::create_dir_all(output_root)?;
+    let projection_root = v3_root(output_root);
+    fs::create_dir(&projection_root).map_err(|error| {
+        if error.kind() == ErrorKind::AlreadyExists {
+            v3_error(V3ProjectionError::ExistingProjection)
+        } else {
+            ContextGovernorError::Io(error)
+        }
+    })?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&projection_root, fs::Permissions::from_mode(0o700))?;
+    }
+    let binding = V3ProjectionDescriptorV1 {
+        schema: "ContextGovernorV3ProjectionV1".into(),
+        source_receipts_sha256: source_digest.clone(),
+        input_receipts: ids.len(),
+        compression_level: options.compression_level,
+        encryption_key_id: options.encryption_key.as_deref().map(key_id),
+        exactness_scope: "serde_message_json_v1".into(),
+    };
+    write_atomic(
+        &projection_root.join("projection.json"),
+        &serde_json::to_vec_pretty(&binding)?,
+    )?;
+    let mut blobs: BTreeMap<String, (bool, Option<String>)> = BTreeMap::new();
+    let mut report = V3MigrationReportV2 {
+        schema: "V3MigrationReportV2".to_string(),
         input_receipts: ids.len(),
         encrypted: options.encryption_key.is_some(),
+        source_receipts_sha256: source_digest.clone(),
         ..Default::default()
     };
     for receipt_id in ids {
@@ -278,12 +634,31 @@ pub fn migrate_v2_store(
             for (source_id, message) in sources {
                 let message_bytes = serde_json::to_vec(&message)?;
                 let message_digest = sha256_bytes(&message_bytes);
-                let (blob, encrypted, nonce) = encode_blob(&message_bytes, options)?;
-                let blob_path = blob_path(output_root, &message_digest, encrypted);
-                write_atomic(&blob_path, &blob)?;
+                if message_bytes.len() as u64 > MAX_MESSAGE_BYTES {
+                    return Err(v3_error(V3ProjectionError::ResourceLimit));
+                }
+                let (encrypted, nonce) = if let Some(published) = blobs.get(&message_digest) {
+                    // Reuse the actual winning ciphertext AND its original nonce.
+                    published.clone()
+                } else {
+                    let (blob, encrypted, nonce) = encode_blob(&message_bytes, options)?;
+                    write_atomic(&blob_path(output_root, &message_digest, encrypted), &blob)?;
+                    let decoded = decode_blob(
+                        &blob,
+                        encrypted,
+                        nonce.as_deref(),
+                        options.encryption_key.as_deref(),
+                    )?;
+                    if decoded != message_bytes {
+                        return Err(v3_error(V3ProjectionError::SourceMismatch));
+                    }
+                    report.plaintext_bytes += message_bytes.len() as u64;
+                    report.blob_bytes += blob.len() as u64;
+                    report.unique_evidence_blobs += 1;
+                    blobs.insert(message_digest.clone(), (encrypted, nonce.clone()));
+                    (encrypted, nonce)
+                };
                 report.exact_evidence_items += 1;
-                report.plaintext_bytes += message_bytes.len() as u64;
-                report.blob_bytes += blob.len() as u64;
                 evidence.push(V3EvidenceRefV1 {
                     source_id,
                     message_sha256: message_digest.clone(),
@@ -295,7 +670,7 @@ pub fn migrate_v2_store(
             }
             evidence.sort_by(|left, right| left.source_id.cmp(&right.source_id));
             let manifest = V3ReceiptManifestV1 {
-                schema: "ContextCompactionReceiptV3ManifestV1".to_string(),
+                schema: MANIFEST_SCHEMA.to_string(),
                 receipt_id: head.receipt.receipt_id.clone(),
                 session_id: head.receipt.session_id.clone(),
                 generation: head.receipt.generation,
@@ -316,8 +691,22 @@ pub fn migrate_v2_store(
                 },
                 encryption_key_id: options.encryption_key.as_deref().map(key_id),
             };
+            validate_manifest(&manifest)?;
             let manifest_bytes = serde_json::to_vec_pretty(&manifest)?;
+            if manifest_bytes.len() as u64 > MAX_MANIFEST_BYTES {
+                return Err(v3_error(V3ProjectionError::ResourceLimit));
+            }
             write_atomic(&manifest_path(output_root, &receipt_id), &manifest_bytes)?;
+            // The source membership was derived above from the canonical chain.
+            // Independently read the published bytes, not the generated buffer.
+            for reference in &manifest.evidence {
+                read_blob_evidence(
+                    output_root,
+                    &manifest,
+                    &reference.source_id,
+                    options.encryption_key.as_deref(),
+                )?;
+            }
             report.migrated_receipts += 1;
             Ok(())
         })();
@@ -327,8 +716,21 @@ pub fn migrate_v2_store(
                 .push(format!("{receipt_id}: {error}"));
         }
     }
-    report.complete = report.mismatched_receipts.is_empty()
+    let (_, after_digest) = source_snapshot(store)?;
+    if after_digest != source_digest {
+        return Err(v3_error(V3ProjectionError::SourceChanged));
+    }
+    report.source_scan_complete = true;
+    report.v2_projection_complete = report.mismatched_receipts.is_empty()
         && report.migrated_receipts + report.skipped_v1_receipts == report.input_receipts;
+    report.full_corpus_migrated = report.v2_projection_complete
+        && report.skipped_v1_receipts == 0
+        && report.input_receipts > 0;
+    report.complete = report.full_corpus_migrated;
+    write_atomic(
+        &projection_root.join("migration-report.json"),
+        &serde_json::to_vec_pretty(&report)?,
+    )?;
     Ok(report)
 }
 
@@ -336,16 +738,40 @@ pub fn read_v3_manifest(
     output_root: impl AsRef<Path>,
     receipt_id: &str,
 ) -> Result<V3ReceiptManifestV1, ContextGovernorError> {
-    let bytes = fs::read(manifest_path(output_root.as_ref(), receipt_id))?;
-    Ok(serde_json::from_slice(&bytes)?)
+    validate_receipt_id(receipt_id)?;
+    let bytes = read_bounded(
+        &manifest_path(output_root.as_ref(), receipt_id),
+        MAX_MANIFEST_BYTES,
+    )?;
+    let manifest: V3ReceiptManifestV1 = serde_json::from_slice(&bytes)?;
+    validate_manifest(&manifest)?;
+    if manifest.receipt_id != receipt_id {
+        return Err(v3_error(V3ProjectionError::SourceMismatch));
+    }
+    Ok(manifest)
 }
 
+/// Read evidence only after verifying its receipt/source binding against V2.
+/// The added store parameter is an intentional source API change for the
+/// unactivated V3 prototype; old unverified reads are not a compatibility mode.
 pub fn read_v3_evidence(
+    store: &FileContextStore,
     output_root: impl AsRef<Path>,
     manifest: &V3ReceiptManifestV1,
     source_id: &str,
     encryption_key: Option<&[u8]>,
 ) -> Result<Message, ContextGovernorError> {
+    verify_v3_manifest_against_v2(store, &output_root, manifest)?;
+    read_blob_evidence(output_root.as_ref(), manifest, source_id, encryption_key)
+}
+
+fn read_blob_evidence(
+    output_root: &Path,
+    manifest: &V3ReceiptManifestV1,
+    source_id: &str,
+    encryption_key: Option<&[u8]>,
+) -> Result<Message, ContextGovernorError> {
+    validate_manifest(manifest)?;
     if manifest.encryption == "aes-256-gcm-v1" {
         let key = encryption_key.ok_or_else(|| io_error("encrypted V3 evidence requires a key"))?;
         if manifest.encryption_key_id.as_deref() != Some(key_id(key).as_str()) {
@@ -357,7 +783,10 @@ pub fn read_v3_evidence(
         .iter()
         .find(|reference| reference.source_id == source_id)
         .ok_or_else(|| ContextGovernorError::ReceiptNotFound(source_id.to_string()))?;
-    let bytes = fs::read(v3_root(output_root.as_ref()).join(&reference.blob_relpath))?;
+    let bytes = read_bounded(
+        &blob_path(output_root, &reference.message_sha256, reference.encrypted),
+        MAX_MESSAGE_BYTES + 1024 * 1024,
+    )?;
     let plaintext = decode_blob(
         &bytes,
         reference.encrypted,
@@ -430,8 +859,9 @@ mod tests {
         assert!(report.complete);
         let manifest = read_v3_manifest(&output, &receipt_id).unwrap();
         let source_id = manifest.evidence[0].source_id.clone();
-        let recovered = read_v3_evidence(&output, &manifest, &source_id, Some(&key)).unwrap();
+        let recovered =
+            read_v3_evidence(&store, &output, &manifest, &source_id, Some(&key)).unwrap();
         assert!(recovered.content.contains("exact marker"));
-        assert!(read_v3_evidence(&output, &manifest, &source_id, None).is_err());
+        assert!(read_v3_evidence(&store, &output, &manifest, &source_id, None).is_err());
     }
 }

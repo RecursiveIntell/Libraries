@@ -3,9 +3,10 @@ use context_governor::{
     evaluate_governed_memory, evaluate_leakage_free_rag, finalize_compacted_response,
     finalize_compacted_response_v2, parse_summary_output, receipt_index, render_summary_prompt,
     screen_knowledge_conflicts, select_retrieval_route, v2_projection, CertifiedCompactRequest,
-    CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError, EvidenceClaim,
-    FileContextStore, GovernanceCase, GovernanceFailureMode, PromptConfigV1, RagEvalInput,
-    ReceiptActivationRequestV2, SearchScope, ToolManifestEntry,
+    CompactRequest, CompactResponse, CompactResponseV2, ContextGovernorError,
+    ContextGovernorFailureV1, EvidenceClaim, FileContextStore, GovernanceCase,
+    GovernanceFailureMode, PromptConfigV1, RagEvalInput, ReceiptActivationRequestV2, SearchScope,
+    ToolManifestEntry,
 };
 
 use serde::Serialize;
@@ -14,7 +15,17 @@ use std::path::Path;
 
 fn main() {
     if let Err(err) = run() {
-        eprintln!("{err}");
+        let args = std::env::args().skip(1).collect::<Vec<_>>();
+        let operation = args.first().map(String::as_str).unwrap_or("compact");
+        if args.iter().any(|arg| arg == "--failure-envelope-v1") {
+            let failure = ContextGovernorFailureV1::from_error(operation, &err);
+            eprintln!(
+                "{}",
+                serde_json::to_string(&failure).expect("failure envelope is serializable")
+            );
+        } else {
+            eprintln!("{err}");
+        }
         std::process::exit(1);
     }
 }
@@ -38,6 +49,11 @@ fn run() -> Result<(), ContextGovernorError> {
             "supports_certified_receipt_store": true,
             "supports_evidence_hmac": true,
             "supports_pending_activation": true,
+            "failure_envelope": {
+                "schema": "ContextGovernorFailureV1",
+                "flag": "--failure-envelope-v1",
+                "stream": "stderr",
+            },
         })),
         "compact-v2" => {
             let dir = required_arg(&args, "--dir")?;

@@ -39,6 +39,9 @@ pub use lineage::*;
 pub mod v3;
 pub use v3::*;
 
+pub mod failure;
+pub use failure::*;
+
 #[cfg(feature = "sqlite-store")]
 pub mod sqlite_store;
 #[cfg(feature = "sqlite-store")]
@@ -49,6 +52,8 @@ const SUMMARY_PREFIX: &str = "[CONTEXT COMPACTION — RECEIPT-BACKED REFERENCE O
 
 #[derive(Debug, Error)]
 pub enum ContextGovernorError {
+    #[error(transparent)]
+    V3Projection(#[from] V3ProjectionError),
     #[error("canonical active key is missing: {path}")]
     CanonicalActiveKeyMissing { path: String },
     #[error("key is unreadable: {path}")]
