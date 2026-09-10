@@ -200,6 +200,13 @@ class ProjectionTests(unittest.TestCase):
         output=self.root/'exact.json'
         with self.assertRaisesRegex(FoundationError,'PRIVATE_CONTENT_ACK_REQUIRED'):source_bytes(self.db,self.archive,record,output,compression='tar')
         source_bytes(self.db,self.archive,record,output,compression='tar',acknowledge_private=True);self.assertEqual(output.read_bytes(),raw)
+    def test_readonly_context_closes_connection(self):
+        self.create([regular('x.json')])
+        with connect_readonly(self.db) as db:
+            connection=db
+            self.assertEqual(connection.execute('SELECT 1').fetchone()[0],1)
+        with self.assertRaises(sqlite3.ProgrammingError):
+            connection.execute('SELECT 1')
     def test_private_body_not_copied(self):
         canary='unique synthetic prompt body not searchable in projection '+('Z'*60)
         key='ghp_'+'A'*36
