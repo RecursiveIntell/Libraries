@@ -63,6 +63,25 @@ jobs:
           fi
       - run: make gate
 
+  receipt-foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install receipt-foundation test prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y zstd
+          python -m pip install --upgrade pip
+          python -m pip install -r scripts/receipt_foundation/requirements-validation.txt
+      - name: Receipt observation conformance suite
+        working-directory: scripts/receipt_foundation
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error::ResourceWarning \
+            python -m unittest discover -s tests -v
+
   # CI-001: Certify every required workspace independently.
   workspace-matrix:
     strategy:
