@@ -13,7 +13,8 @@ readme = "README.md"
 [dependencies]
 blake3 = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
+serde_json = { workspace = true, features = ["raw_value"] }
+ryu-js = "=1.0.2"
 sha2 = { workspace = true }
 thiserror = { workspace = true }
 

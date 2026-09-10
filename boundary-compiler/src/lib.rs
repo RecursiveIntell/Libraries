@@ -36,7 +36,11 @@
 //! Duplicate keys return `JcsError::DuplicateKey`, and schema validation failures return
 //! `JcsError::SchemaValidation`.
 
+pub mod canonical_v2;
 pub mod canonicalizer;
+pub use canonical_v2::{
+    canonicalize_json_v2, canonicalize_v2, CanonicalV2Error, VersionedDigestV2,
+};
 pub mod digest;
 pub mod error;
 pub mod profile;
