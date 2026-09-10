@@ -24,8 +24,10 @@ fn cleanup(root: &Path) {
 #[test]
 fn daemon_namespace_isolated() {
     let root = temp_root("namespace-isolated");
-    let ns_a = DaemonControllerV1::namespace(&root, "same-app-name", "owner-a");
-    let ns_b = DaemonControllerV1::namespace(&root, "same-app-name", "owner-b");
+    let ns_a = DaemonControllerV1::namespace(&root, "same-app-name", "owner-a")
+        .expect("valid daemon namespace");
+    let ns_b = DaemonControllerV1::namespace(&root, "same-app-name", "owner-b")
+        .expect("valid daemon namespace");
 
     assert_ne!(ns_a.namespace_id, ns_b.namespace_id);
     assert_eq!(ns_a.queue_root, ns_b.queue_root);
@@ -75,7 +77,8 @@ fn daemon_namespace_isolated() {
 #[test]
 fn schedule_no_duplicate_storm() {
     let root = temp_root("duplicate-storm");
-    let ns = DaemonControllerV1::namespace(&root, "schedule-storm", "daemon-a");
+    let ns = DaemonControllerV1::namespace(&root, "schedule-storm", "daemon-a")
+        .expect("valid daemon namespace");
     let daemon = DaemonControllerV1::open(&root, ns, "daemon-a").unwrap();
 
     let first_schedule = daemon
@@ -140,7 +143,8 @@ fn schedule_no_duplicate_storm() {
 #[test]
 fn restart_does_not_reenqueue_completed_jobs() {
     let root = temp_root("restart-completed");
-    let ns = DaemonControllerV1::namespace(&root, "restart-completed", "daemon-a");
+    let ns = DaemonControllerV1::namespace(&root, "restart-completed", "daemon-a")
+        .expect("valid daemon namespace");
     let daemon = DaemonControllerV1::open(&root, ns.clone(), "daemon-a").unwrap();
 
     let enqueued = daemon
