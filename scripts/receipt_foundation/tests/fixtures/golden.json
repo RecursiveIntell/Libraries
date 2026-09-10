@@ -1,0 +1,8 @@
+{
+  "sha256": "e743a21c66f6ccb81e507bca9038817c265ba162496122e084fed73670071b01",
+  "bytes": 126,
+  "declared_format": "json",
+  "expected_category": "other_receipt",
+  "expected_native_schema": "SyntheticReceiptV1",
+  "synthetic_only": true
+}

@@ -1,0 +1,94 @@
+{
+  "$id": "urn:recursiveintell:receipt-observation:ReceiptObservationAnomalyV1:v1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "anomaly_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "byte_end": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "byte_start": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "code": {
+      "type": "string"
+    },
+    "details_json": {
+      "type": "string"
+    },
+    "occurrence_id": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "record_id": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "recoverable": {
+      "enum": [
+        0,
+        1
+      ],
+      "type": "integer"
+    },
+    "schema": {
+      "const": "ReceiptObservationAnomalyV1"
+    },
+    "severity": {
+      "enum": [
+        "error",
+        "warning"
+      ]
+    },
+    "source_pointer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stage": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "anomaly_id",
+    "occurrence_id",
+    "record_id",
+    "stage",
+    "code",
+    "severity",
+    "byte_start",
+    "byte_end",
+    "source_pointer",
+    "details_json",
+    "recoverable"
+  ],
+  "title": "ReceiptObservationAnomalyV1",
+  "type": "object"
+}
