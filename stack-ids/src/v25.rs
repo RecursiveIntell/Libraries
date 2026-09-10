@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ApplicabilityContextId, CompiledObligationSetId, CompositionConflictSetId,
-    CompositionReceiptId, EffectiveConstitutionId, ProfileExceptionBundleId, ProfileSetId,
+    CompositionReceiptId, EffectiveConstitutionId, IdError, ProfileExceptionBundleId, ProfileSetId,
 };
 
 /// Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.
@@ -43,19 +43,20 @@ impl V25ConstitutionCitation {
     }
 }
 
-impl Default for V25ConstitutionCitation {
-    fn default() -> Self {
+impl V25ConstitutionCitation {
+    /// Builds the deterministic sentinel citation used for an explicitly unbound context.
+    pub fn try_unbound() -> Result<Self, IdError> {
         // Defaults must remain structurally valid after ID-001. These are
         // explicit deterministic sentinel IDs for an unbound citation, not
         // empty IDs that bypass the validated-ID contract.
-        Self {
-            applicability_context_id: ApplicabilityContextId::new("default-unbound"),
-            profile_set_id: ProfileSetId::new("default-unbound"),
-            composition_receipt_id: CompositionReceiptId::new("default-unbound"),
-            effective_constitution_id: EffectiveConstitutionId::new("default-unbound"),
-            compiled_obligation_set_id: CompiledObligationSetId::new("default-unbound"),
+        Ok(Self {
+            applicability_context_id: ApplicabilityContextId::try_new("default-unbound")?,
+            profile_set_id: ProfileSetId::try_new("default-unbound")?,
+            composition_receipt_id: CompositionReceiptId::try_new("default-unbound")?,
+            effective_constitution_id: EffectiveConstitutionId::try_new("default-unbound")?,
+            compiled_obligation_set_id: CompiledObligationSetId::try_new("default-unbound")?,
             composition_conflict_set_id: None,
             profile_exception_bundle_ids: Vec::new(),
-        }
+        })
     }
 }

@@ -205,7 +205,7 @@ macro_rules! assert_id_roundtrip {
 
 #[test]
 fn id_creation_and_display() {
-    let id = EnvelopeId::new("env-001");
+    let id = EnvelopeId::try_new("env-001").expect("valid test ID");
     assert_eq!(id.as_str(), "env-001");
     assert_eq!(id.to_string(), "env-001");
     assert!(!id.is_empty());
@@ -231,13 +231,13 @@ fn id_empty_check() {
     let result = EntityId::try_new("");
     assert!(result.is_err(), "empty ID should fail validation");
 
-    let id = EntityId::new("e-1");
+    let id = EntityId::try_new("e-1").expect("valid test ID");
     assert!(!id.is_empty());
 }
 
 #[test]
 fn id_serde_roundtrip() {
-    let id = TrialId::new("trial-42");
+    let id = TrialId::try_new("trial-42").expect("valid test ID");
     let json = serde_json::to_string(&id).unwrap();
     assert_eq!(json, "\"trial-42\"");
     let back: TrialId = serde_json::from_str(&json).unwrap();
@@ -246,8 +246,8 @@ fn id_serde_roundtrip() {
 
 #[test]
 fn id_ordering() {
-    let a = EnvelopeId::new("aaa");
-    let b = EnvelopeId::new("bbb");
+    let a = EnvelopeId::try_new("aaa").expect("valid test ID");
+    let b = EnvelopeId::try_new("bbb").expect("valid test ID");
     assert!(a < b);
 }
 
@@ -513,42 +513,42 @@ fn profile_completion_ids_support_parse_display_and_serde_roundtrip() {
     }
 
     let identity = ProfileCompletionIdentity {
-        privacy_retention_profile_id: PrivacyRetentionProfileId::new("privacy-retention-profile-1"),
-        redaction_rule_set_id: RedactionRuleSetId::new("redaction-rule-set-1"),
-        access_purpose_matrix_id: AccessPurposeMatrixId::new("access-purpose-matrix-1"),
-        audit_extraction_policy_id: AuditExtractionPolicyId::new("audit-extraction-policy-1"),
-        residency_policy_profile_id: ResidencyPolicyProfileId::new("residency-policy-profile-1"),
-        tenant_boundary_profile_id: TenantBoundaryProfileId::new("tenant-boundary-profile-1"),
-        cross_boundary_transfer_class_id: CrossBoundaryTransferClassId::new(
+        privacy_retention_profile_id: PrivacyRetentionProfileId::try_new("privacy-retention-profile-1").expect("valid test ID"),
+        redaction_rule_set_id: RedactionRuleSetId::try_new("redaction-rule-set-1").expect("valid test ID"),
+        access_purpose_matrix_id: AccessPurposeMatrixId::try_new("access-purpose-matrix-1").expect("valid test ID"),
+        audit_extraction_policy_id: AuditExtractionPolicyId::try_new("audit-extraction-policy-1").expect("valid test ID"),
+        residency_policy_profile_id: ResidencyPolicyProfileId::try_new("residency-policy-profile-1").expect("valid test ID"),
+        tenant_boundary_profile_id: TenantBoundaryProfileId::try_new("tenant-boundary-profile-1").expect("valid test ID"),
+        cross_boundary_transfer_class_id: CrossBoundaryTransferClassId::try_new(
             "cross-boundary-transfer-class-1",
-        ),
-        locality_exception_id: LocalityExceptionId::new("locality-exception-1"),
-        role_catalog_id: RoleCatalogId::new("role-catalog-1"),
-        delegation_matrix_id: DelegationMatrixId::new("delegation-matrix-1"),
-        approval_matrix_id: ApprovalMatrixId::new("approval-matrix-1"),
-        conflict_class_catalog_id: ConflictClassCatalogId::new("conflict-class-catalog-1"),
-        regulatory_regime_profile_id: RegulatoryRegimeProfileId::new("regulatory-regime-profile-1"),
-        requirement_control_map_id: RequirementControlMapId::new("requirement-control-map-1"),
-        evidence_collection_plan_id: EvidenceCollectionPlanId::new("evidence-collection-plan-1"),
-        recertification_schedule_id: RecertificationScheduleId::new("recertification-schedule-1"),
-        hazard_library_id: HazardLibraryId::new("hazard-library-1"),
-        hazard_scenario_id: HazardScenarioId::new("hazard-scenario-1"),
-        monitor_catalog_id: MonitorCatalogId::new("monitor-catalog-1"),
-        mitigation_playbook_id: MitigationPlaybookId::new("mitigation-playbook-1"),
-        vendor_certification_adapter_id: VendorCertificationAdapterId::new(
+        ).expect("valid test ID"),
+        locality_exception_id: LocalityExceptionId::try_new("locality-exception-1").expect("valid test ID"),
+        role_catalog_id: RoleCatalogId::try_new("role-catalog-1").expect("valid test ID"),
+        delegation_matrix_id: DelegationMatrixId::try_new("delegation-matrix-1").expect("valid test ID"),
+        approval_matrix_id: ApprovalMatrixId::try_new("approval-matrix-1").expect("valid test ID"),
+        conflict_class_catalog_id: ConflictClassCatalogId::try_new("conflict-class-catalog-1").expect("valid test ID"),
+        regulatory_regime_profile_id: RegulatoryRegimeProfileId::try_new("regulatory-regime-profile-1").expect("valid test ID"),
+        requirement_control_map_id: RequirementControlMapId::try_new("requirement-control-map-1").expect("valid test ID"),
+        evidence_collection_plan_id: EvidenceCollectionPlanId::try_new("evidence-collection-plan-1").expect("valid test ID"),
+        recertification_schedule_id: RecertificationScheduleId::try_new("recertification-schedule-1").expect("valid test ID"),
+        hazard_library_id: HazardLibraryId::try_new("hazard-library-1").expect("valid test ID"),
+        hazard_scenario_id: HazardScenarioId::try_new("hazard-scenario-1").expect("valid test ID"),
+        monitor_catalog_id: MonitorCatalogId::try_new("monitor-catalog-1").expect("valid test ID"),
+        mitigation_playbook_id: MitigationPlaybookId::try_new("mitigation-playbook-1").expect("valid test ID"),
+        vendor_certification_adapter_id: VendorCertificationAdapterId::try_new(
             "vendor-certification-adapter-1",
-        ),
-        vendor_evidence_translation_id: VendorEvidenceTranslationId::new(
+        ).expect("valid test ID"),
+        vendor_evidence_translation_id: VendorEvidenceTranslationId::try_new(
             "vendor-evidence-translation-1",
-        ),
-        vendor_trust_root_binding_id: VendorTrustRootBindingId::new("vendor-trust-root-binding-1"),
-        vendor_revocation_handling_id: VendorRevocationHandlingId::new(
+        ).expect("valid test ID"),
+        vendor_trust_root_binding_id: VendorTrustRootBindingId::try_new("vendor-trust-root-binding-1").expect("valid test ID"),
+        vendor_revocation_handling_id: VendorRevocationHandlingId::try_new(
             "vendor-revocation-handling-1",
-        ),
-        incident_taxonomy_id: IncidentTaxonomyId::new("incident-taxonomy-1"),
-        severity_matrix_id: SeverityMatrixId::new("severity-matrix-1"),
-        pager_route_profile_id: PagerRouteProfileId::new("pager-route-profile-1"),
-        escalation_clock_policy_id: EscalationClockPolicyId::new("escalation-clock-policy-1"),
+        ).expect("valid test ID"),
+        incident_taxonomy_id: IncidentTaxonomyId::try_new("incident-taxonomy-1").expect("valid test ID"),
+        severity_matrix_id: SeverityMatrixId::try_new("severity-matrix-1").expect("valid test ID"),
+        pager_route_profile_id: PagerRouteProfileId::try_new("pager-route-profile-1").expect("valid test ID"),
+        escalation_clock_policy_id: EscalationClockPolicyId::try_new("escalation-clock-policy-1").expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -646,8 +646,8 @@ fn kernel_identity_types_remain_distinct() {
 #[test]
 fn versioned_operator_identity_json_format_is_stable() {
     let identity = VersionedOperatorIdentity {
-        operator_id: OperatorId::new("operator-1"),
-        operator_version_id: OperatorVersionId::new("operator-version-1"),
+        operator_id: OperatorId::try_new("operator-1").expect("valid test ID"),
+        operator_version_id: OperatorVersionId::try_new("operator-version-1").expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -663,23 +663,23 @@ fn versioned_operator_identity_json_format_is_stable() {
 #[test]
 fn kernel_artifact_identity_json_format_is_stable() {
     let identity = KernelArtifactIdentity {
-        kernel_run_id: KernelRunId::new("run-1"),
-        constraint_id: ConstraintId::new("constraint-1"),
-        hyperedge_id: HyperedgeId::new("hyperedge-1"),
-        residual_id: ResidualId::new("residual-1"),
-        syndrome_id: SyndromeId::new("syndrome-1"),
-        witness_id: WitnessId::new("witness-1"),
-        certificate_id: CertificateId::new("certificate-1"),
-        oracle_slice_id: OracleSliceId::new("oracle-slice-1"),
-        region_id: RegionId::new("region-1"),
-        region_digest_id: RegionDigestId::new("region-digest-1"),
-        artifact_transport_id: ArtifactTransportId::new("artifact-transport-1"),
-        repair_route_id: RepairRouteId::new("repair-route-1"),
-        repair_candidate_id: RepairCandidateId::new("repair-candidate-1"),
-        nuisance_state_id: NuisanceStateId::new("nuisance-state-1"),
-        convergence_report_id: ConvergenceReportId::new("convergence-report-1"),
-        refutation_result_id: RefutationResultId::new("refutation-1"),
-        calibration_report_id: CalibrationReportId::new("calibration-1"),
+        kernel_run_id: KernelRunId::try_new("run-1").expect("valid test ID"),
+        constraint_id: ConstraintId::try_new("constraint-1").expect("valid test ID"),
+        hyperedge_id: HyperedgeId::try_new("hyperedge-1").expect("valid test ID"),
+        residual_id: ResidualId::try_new("residual-1").expect("valid test ID"),
+        syndrome_id: SyndromeId::try_new("syndrome-1").expect("valid test ID"),
+        witness_id: WitnessId::try_new("witness-1").expect("valid test ID"),
+        certificate_id: CertificateId::try_new("certificate-1").expect("valid test ID"),
+        oracle_slice_id: OracleSliceId::try_new("oracle-slice-1").expect("valid test ID"),
+        region_id: RegionId::try_new("region-1").expect("valid test ID"),
+        region_digest_id: RegionDigestId::try_new("region-digest-1").expect("valid test ID"),
+        artifact_transport_id: ArtifactTransportId::try_new("artifact-transport-1").expect("valid test ID"),
+        repair_route_id: RepairRouteId::try_new("repair-route-1").expect("valid test ID"),
+        repair_candidate_id: RepairCandidateId::try_new("repair-candidate-1").expect("valid test ID"),
+        nuisance_state_id: NuisanceStateId::try_new("nuisance-state-1").expect("valid test ID"),
+        convergence_report_id: ConvergenceReportId::try_new("convergence-report-1").expect("valid test ID"),
+        refutation_result_id: RefutationResultId::try_new("refutation-1").expect("valid test ID"),
+        calibration_report_id: CalibrationReportId::try_new("calibration-1").expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -695,18 +695,18 @@ fn kernel_artifact_identity_json_format_is_stable() {
 #[test]
 fn control_plane_identity_json_format_is_stable() {
     let identity = ControlPlaneIdentity {
-        verification_case_id: VerificationCaseId::new("case-1"),
-        check_plan_id: CheckPlanId::new("plan-1"),
-        control_receipt_id: ControlReceiptId::new("control-receipt-1"),
-        ledger_entry_id: LedgerEntryId::new("ledger-entry-1"),
-        policy_decision_id: PolicyDecisionId::new("policy-1"),
-        approval_record_id: ApprovalRecordId::new("approval-1"),
-        promotion_decision_id: PromotionDecisionId::new("promotion-1"),
-        refutation_decision_id: RefutationDecisionId::new("refutation-decision-1"),
-        rollback_plan_id: RollbackPlanId::new("rollback-1"),
-        calibration_snapshot_id: CalibrationSnapshotId::new("calibration-snapshot-1"),
-        learning_update_id: LearningUpdateId::new("learning-update-1"),
-        boundary_repair_record_id: BoundaryRepairRecordId::new("boundary-repair-1"),
+        verification_case_id: VerificationCaseId::try_new("case-1").expect("valid test ID"),
+        check_plan_id: CheckPlanId::try_new("plan-1").expect("valid test ID"),
+        control_receipt_id: ControlReceiptId::try_new("control-receipt-1").expect("valid test ID"),
+        ledger_entry_id: LedgerEntryId::try_new("ledger-entry-1").expect("valid test ID"),
+        policy_decision_id: PolicyDecisionId::try_new("policy-1").expect("valid test ID"),
+        approval_record_id: ApprovalRecordId::try_new("approval-1").expect("valid test ID"),
+        promotion_decision_id: PromotionDecisionId::try_new("promotion-1").expect("valid test ID"),
+        refutation_decision_id: RefutationDecisionId::try_new("refutation-decision-1").expect("valid test ID"),
+        rollback_plan_id: RollbackPlanId::try_new("rollback-1").expect("valid test ID"),
+        calibration_snapshot_id: CalibrationSnapshotId::try_new("calibration-snapshot-1").expect("valid test ID"),
+        learning_update_id: LearningUpdateId::try_new("learning-update-1").expect("valid test ID"),
+        boundary_repair_record_id: BoundaryRepairRecordId::try_new("boundary-repair-1").expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -722,15 +722,15 @@ fn control_plane_identity_json_format_is_stable() {
 #[test]
 fn semantic_contract_identity_json_format_is_stable() {
     let identity = SemanticContractIdentity {
-        semantics_profile_id: SemanticsProfileId::new("semantics-profile-1"),
-        claim_state_id: ClaimStateId::new("claim-state-1"),
-        semantic_diff_id: SemanticDiffId::new("semantic-diff-1"),
-        causal_attribution_bundle_id: CausalAttributionBundleId::new("causal-attribution-1"),
-        degradation_record_id: DegradationRecordId::new("degradation-record-1"),
-        exactness_budget_id: ExactnessBudgetId::new("exactness-budget-1"),
-        support_set_id: SupportSetId::new("support-set-1"),
-        contradiction_witness_id: ContradictionWitnessId::new("contradiction-witness-1"),
-        retraction_record_id: RetractionRecordId::new("retraction-record-1"),
+        semantics_profile_id: SemanticsProfileId::try_new("semantics-profile-1").expect("valid test ID"),
+        claim_state_id: ClaimStateId::try_new("claim-state-1").expect("valid test ID"),
+        semantic_diff_id: SemanticDiffId::try_new("semantic-diff-1").expect("valid test ID"),
+        causal_attribution_bundle_id: CausalAttributionBundleId::try_new("causal-attribution-1").expect("valid test ID"),
+        degradation_record_id: DegradationRecordId::try_new("degradation-record-1").expect("valid test ID"),
+        exactness_budget_id: ExactnessBudgetId::try_new("exactness-budget-1").expect("valid test ID"),
+        support_set_id: SupportSetId::try_new("support-set-1").expect("valid test ID"),
+        contradiction_witness_id: ContradictionWitnessId::try_new("contradiction-witness-1").expect("valid test ID"),
+        retraction_record_id: RetractionRecordId::try_new("retraction-record-1").expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -746,33 +746,33 @@ fn semantic_contract_identity_json_format_is_stable() {
 #[test]
 fn endgame_identity_json_format_is_stable() {
     let identity = EndgameIdentity {
-        intervention_id: InterventionId::new("intervention-1"),
-        outcome_schema_id: OutcomeSchemaId::new("outcome-schema-1"),
-        experiment_case_id: ExperimentCaseId::new("experiment-case-1"),
-        cohort_contract_id: CohortContractId::new("cohort-contract-1"),
-        comparability_matrix_id: ComparabilityMatrixId::new("comparability-matrix-1"),
-        counterfactual_slice_id: CounterfactualSliceId::new("counterfactual-slice-1"),
-        decision_trace_id: DecisionTraceId::new("decision-trace-1"),
-        refuter_suite_id: RefuterSuiteId::new("refuter-suite-1"),
-        refuter_result_id: RefuterResultId::new("refuter-result-1"),
-        rollout_decision_id: RolloutDecisionId::new("rollout-decision-1"),
-        rollback_decision_id: RollbackDecisionId::new("rollback-decision-1"),
-        experiment_budget_id: ExperimentBudgetId::new("experiment-budget-1"),
-        attestation_envelope_id: AttestationEnvelopeId::new("attestation-envelope-1"),
-        trust_root_set_id: TrustRootSetId::new("trust-root-set-1"),
-        artifact_admission_policy_id: ArtifactAdmissionPolicyId::new("artifact-admission-policy-1"),
-        transparency_receipt_id: TransparencyReceiptId::new("transparency-receipt-1"),
-        attestation_revocation_id: AttestationRevocationId::new("attestation-revocation-1"),
-        attestation_supersession_id: AttestationSupersessionId::new("attestation-supersession-1"),
-        remote_oracle_lease_id: RemoteOracleLeaseId::new("remote-oracle-lease-1"),
-        remote_slice_request_id: RemoteSliceRequestId::new("remote-slice-request-1"),
-        remote_slice_result_id: RemoteSliceResultId::new("remote-slice-result-1"),
-        cross_runtime_replay_ticket_id: CrossRuntimeReplayTicketId::new(
+        intervention_id: InterventionId::try_new("intervention-1").expect("valid test ID"),
+        outcome_schema_id: OutcomeSchemaId::try_new("outcome-schema-1").expect("valid test ID"),
+        experiment_case_id: ExperimentCaseId::try_new("experiment-case-1").expect("valid test ID"),
+        cohort_contract_id: CohortContractId::try_new("cohort-contract-1").expect("valid test ID"),
+        comparability_matrix_id: ComparabilityMatrixId::try_new("comparability-matrix-1").expect("valid test ID"),
+        counterfactual_slice_id: CounterfactualSliceId::try_new("counterfactual-slice-1").expect("valid test ID"),
+        decision_trace_id: DecisionTraceId::try_new("decision-trace-1").expect("valid test ID"),
+        refuter_suite_id: RefuterSuiteId::try_new("refuter-suite-1").expect("valid test ID"),
+        refuter_result_id: RefuterResultId::try_new("refuter-result-1").expect("valid test ID"),
+        rollout_decision_id: RolloutDecisionId::try_new("rollout-decision-1").expect("valid test ID"),
+        rollback_decision_id: RollbackDecisionId::try_new("rollback-decision-1").expect("valid test ID"),
+        experiment_budget_id: ExperimentBudgetId::try_new("experiment-budget-1").expect("valid test ID"),
+        attestation_envelope_id: AttestationEnvelopeId::try_new("attestation-envelope-1").expect("valid test ID"),
+        trust_root_set_id: TrustRootSetId::try_new("trust-root-set-1").expect("valid test ID"),
+        artifact_admission_policy_id: ArtifactAdmissionPolicyId::try_new("artifact-admission-policy-1").expect("valid test ID"),
+        transparency_receipt_id: TransparencyReceiptId::try_new("transparency-receipt-1").expect("valid test ID"),
+        attestation_revocation_id: AttestationRevocationId::try_new("attestation-revocation-1").expect("valid test ID"),
+        attestation_supersession_id: AttestationSupersessionId::try_new("attestation-supersession-1").expect("valid test ID"),
+        remote_oracle_lease_id: RemoteOracleLeaseId::try_new("remote-oracle-lease-1").expect("valid test ID"),
+        remote_slice_request_id: RemoteSliceRequestId::try_new("remote-slice-request-1").expect("valid test ID"),
+        remote_slice_result_id: RemoteSliceResultId::try_new("remote-slice-result-1").expect("valid test ID"),
+        cross_runtime_replay_ticket_id: CrossRuntimeReplayTicketId::try_new(
             "cross-runtime-replay-ticket-1",
-        ),
-        dispute_bundle_id: DisputeBundleId::new("dispute-bundle-1"),
-        disclosure_policy_id: DisclosurePolicyId::new("disclosure-policy-1"),
-        disclosure_budget_id: DisclosureBudgetId::new("disclosure-budget-1"),
+        ).expect("valid test ID"),
+        dispute_bundle_id: DisputeBundleId::try_new("dispute-bundle-1").expect("valid test ID"),
+        disclosure_policy_id: DisclosurePolicyId::try_new("disclosure-policy-1").expect("valid test ID"),
+        disclosure_budget_id: DisclosureBudgetId::try_new("disclosure-budget-1").expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -788,69 +788,69 @@ fn endgame_identity_json_format_is_stable() {
 #[test]
 fn final_closeout_identity_json_format_is_stable() {
     let identity = FinalCloseoutIdentity {
-        effect_intent_id: EffectIntentId::new("effect-intent-1"),
-        effect_preflight_report_id: EffectPreflightReportId::new("effect-preflight-report-1"),
-        effect_window_id: EffectWindowId::new("effect-window-1"),
-        effect_commit_decision_id: EffectCommitDecisionId::new("effect-commit-decision-1"),
-        effect_execution_receipt_id: EffectExecutionReceiptId::new("effect-execution-receipt-1"),
-        effect_observation_bundle_id: EffectObservationBundleId::new("effect-observation-bundle-1"),
-        compensation_plan_id: CompensationPlanId::new("compensation-plan-1"),
-        compensation_execution_receipt_id: CompensationExecutionReceiptId::new(
+        effect_intent_id: EffectIntentId::try_new("effect-intent-1").expect("valid test ID"),
+        effect_preflight_report_id: EffectPreflightReportId::try_new("effect-preflight-report-1").expect("valid test ID"),
+        effect_window_id: EffectWindowId::try_new("effect-window-1").expect("valid test ID"),
+        effect_commit_decision_id: EffectCommitDecisionId::try_new("effect-commit-decision-1").expect("valid test ID"),
+        effect_execution_receipt_id: EffectExecutionReceiptId::try_new("effect-execution-receipt-1").expect("valid test ID"),
+        effect_observation_bundle_id: EffectObservationBundleId::try_new("effect-observation-bundle-1").expect("valid test ID"),
+        compensation_plan_id: CompensationPlanId::try_new("compensation-plan-1").expect("valid test ID"),
+        compensation_execution_receipt_id: CompensationExecutionReceiptId::try_new(
             "compensation-execution-receipt-1",
-        ),
-        external_effect_ledger_entry_id: ExternalEffectLedgerEntryId::new(
+        ).expect("valid test ID"),
+        external_effect_ledger_entry_id: ExternalEffectLedgerEntryId::try_new(
             "external-effect-ledger-entry-1",
-        ),
-        capability_class_id: CapabilityClassId::new("capability-class-1"),
-        authority_lease_id: AuthorityLeaseId::new("authority-lease-1"),
-        delegation_bundle_id: DelegationBundleId::new("delegation-bundle-1"),
-        authority_chain_id: AuthorityChainId::new("authority-chain-1"),
-        separation_of_duties_policy_id: SeparationOfDutiesPolicyId::new(
+        ).expect("valid test ID"),
+        capability_class_id: CapabilityClassId::try_new("capability-class-1").expect("valid test ID"),
+        authority_lease_id: AuthorityLeaseId::try_new("authority-lease-1").expect("valid test ID"),
+        delegation_bundle_id: DelegationBundleId::try_new("delegation-bundle-1").expect("valid test ID"),
+        authority_chain_id: AuthorityChainId::try_new("authority-chain-1").expect("valid test ID"),
+        separation_of_duties_policy_id: SeparationOfDutiesPolicyId::try_new(
             "separation-of-duties-policy-1",
-        ),
-        dual_control_approval_id: DualControlApprovalId::new("dual-control-approval-1"),
-        break_glass_grant_id: BreakGlassGrantId::new("break-glass-grant-1"),
-        delegation_revocation_id: DelegationRevocationId::new("delegation-revocation-1"),
-        acting_on_behalf_receipt_id: ActingOnBehalfReceiptId::new("acting-on-behalf-receipt-1"),
-        conflict_disclosure_id: ConflictDisclosureId::new("conflict-disclosure-1"),
-        deployment_profile_id: DeploymentProfileId::new("deployment-profile-1"),
-        operating_envelope_id: OperatingEnvelopeId::new("operating-envelope-1"),
-        assurance_case_id: AssuranceCaseId::new("assurance-case-1"),
-        hazard_register_id: HazardRegisterId::new("hazard-register-1"),
-        control_mapping_id: ControlMappingId::new("control-mapping-1"),
-        residual_risk_acceptance_id: ResidualRiskAcceptanceId::new("residual-risk-acceptance-1"),
-        release_readiness_decision_id: ReleaseReadinessDecisionId::new(
+        ).expect("valid test ID"),
+        dual_control_approval_id: DualControlApprovalId::try_new("dual-control-approval-1").expect("valid test ID"),
+        break_glass_grant_id: BreakGlassGrantId::try_new("break-glass-grant-1").expect("valid test ID"),
+        delegation_revocation_id: DelegationRevocationId::try_new("delegation-revocation-1").expect("valid test ID"),
+        acting_on_behalf_receipt_id: ActingOnBehalfReceiptId::try_new("acting-on-behalf-receipt-1").expect("valid test ID"),
+        conflict_disclosure_id: ConflictDisclosureId::try_new("conflict-disclosure-1").expect("valid test ID"),
+        deployment_profile_id: DeploymentProfileId::try_new("deployment-profile-1").expect("valid test ID"),
+        operating_envelope_id: OperatingEnvelopeId::try_new("operating-envelope-1").expect("valid test ID"),
+        assurance_case_id: AssuranceCaseId::try_new("assurance-case-1").expect("valid test ID"),
+        hazard_register_id: HazardRegisterId::try_new("hazard-register-1").expect("valid test ID"),
+        control_mapping_id: ControlMappingId::try_new("control-mapping-1").expect("valid test ID"),
+        residual_risk_acceptance_id: ResidualRiskAcceptanceId::try_new("residual-risk-acceptance-1").expect("valid test ID"),
+        release_readiness_decision_id: ReleaseReadinessDecisionId::try_new(
             "release-readiness-decision-1",
-        ),
-        field_monitoring_plan_id: FieldMonitoringPlanId::new("field-monitoring-plan-1"),
-        certification_bundle_id: CertificationBundleId::new("certification-bundle-1"),
-        recertification_trigger_id: RecertificationTriggerId::new("recertification-trigger-1"),
-        service_level_profile_id: ServiceLevelProfileId::new("service-level-profile-1"),
-        error_budget_ledger_id: ErrorBudgetLedgerId::new("error-budget-ledger-1"),
-        incident_case_id: IncidentCaseId::new("incident-case-1"),
-        containment_decision_id: ContainmentDecisionId::new("containment-decision-1"),
-        forensic_freeze_id: ForensicFreezeId::new("forensic-freeze-1"),
-        recovery_plan_id: RecoveryPlanId::new("recovery-plan-1"),
-        recovery_replay_slice_id: RecoveryReplaySliceId::new("recovery-replay-slice-1"),
-        continuity_exception_id: ContinuityExceptionId::new("continuity-exception-1"),
-        postmortem_bundle_id: PostmortemBundleId::new("postmortem-bundle-1"),
-        resilience_exercise_id: ResilienceExerciseId::new("resilience-exercise-1"),
-        effect_review_case_id: EffectReviewCaseId::new("effect-review-case-1"),
-        effect_block_receipt_id: EffectBlockReceiptId::new("effect-block-receipt-1"),
-        delegation_review_case_id: DelegationReviewCaseId::new("delegation-review-case-1"),
-        release_gate_case_id: ReleaseGateCaseId::new("release-gate-case-1"),
-        continuity_review_case_id: ContinuityReviewCaseId::new("continuity-review-case-1"),
-        effect_policy_profile_id: EffectPolicyProfileId::new("effect-policy-profile-1"),
-        delegation_policy_profile_id: DelegationPolicyProfileId::new("delegation-policy-profile-1"),
-        release_policy_profile_id: ReleasePolicyProfileId::new("release-policy-profile-1"),
-        continuity_policy_profile_id: ContinuityPolicyProfileId::new("continuity-policy-profile-1"),
-        effect_adjudication_receipt_id: EffectAdjudicationReceiptId::new(
+        ).expect("valid test ID"),
+        field_monitoring_plan_id: FieldMonitoringPlanId::try_new("field-monitoring-plan-1").expect("valid test ID"),
+        certification_bundle_id: CertificationBundleId::try_new("certification-bundle-1").expect("valid test ID"),
+        recertification_trigger_id: RecertificationTriggerId::try_new("recertification-trigger-1").expect("valid test ID"),
+        service_level_profile_id: ServiceLevelProfileId::try_new("service-level-profile-1").expect("valid test ID"),
+        error_budget_ledger_id: ErrorBudgetLedgerId::try_new("error-budget-ledger-1").expect("valid test ID"),
+        incident_case_id: IncidentCaseId::try_new("incident-case-1").expect("valid test ID"),
+        containment_decision_id: ContainmentDecisionId::try_new("containment-decision-1").expect("valid test ID"),
+        forensic_freeze_id: ForensicFreezeId::try_new("forensic-freeze-1").expect("valid test ID"),
+        recovery_plan_id: RecoveryPlanId::try_new("recovery-plan-1").expect("valid test ID"),
+        recovery_replay_slice_id: RecoveryReplaySliceId::try_new("recovery-replay-slice-1").expect("valid test ID"),
+        continuity_exception_id: ContinuityExceptionId::try_new("continuity-exception-1").expect("valid test ID"),
+        postmortem_bundle_id: PostmortemBundleId::try_new("postmortem-bundle-1").expect("valid test ID"),
+        resilience_exercise_id: ResilienceExerciseId::try_new("resilience-exercise-1").expect("valid test ID"),
+        effect_review_case_id: EffectReviewCaseId::try_new("effect-review-case-1").expect("valid test ID"),
+        effect_block_receipt_id: EffectBlockReceiptId::try_new("effect-block-receipt-1").expect("valid test ID"),
+        delegation_review_case_id: DelegationReviewCaseId::try_new("delegation-review-case-1").expect("valid test ID"),
+        release_gate_case_id: ReleaseGateCaseId::try_new("release-gate-case-1").expect("valid test ID"),
+        continuity_review_case_id: ContinuityReviewCaseId::try_new("continuity-review-case-1").expect("valid test ID"),
+        effect_policy_profile_id: EffectPolicyProfileId::try_new("effect-policy-profile-1").expect("valid test ID"),
+        delegation_policy_profile_id: DelegationPolicyProfileId::try_new("delegation-policy-profile-1").expect("valid test ID"),
+        release_policy_profile_id: ReleasePolicyProfileId::try_new("release-policy-profile-1").expect("valid test ID"),
+        continuity_policy_profile_id: ContinuityPolicyProfileId::try_new("continuity-policy-profile-1").expect("valid test ID"),
+        effect_adjudication_receipt_id: EffectAdjudicationReceiptId::try_new(
             "effect-adjudication-receipt-1",
-        ),
-        release_rollback_decision_id: ReleaseRollbackDecisionId::new("release-rollback-decision-1"),
-        tool_effect_dispatch_receipt_id: ToolEffectDispatchReceiptId::new(
+        ).expect("valid test ID"),
+        release_rollback_decision_id: ReleaseRollbackDecisionId::try_new("release-rollback-decision-1").expect("valid test ID"),
+        tool_effect_dispatch_receipt_id: ToolEffectDispatchReceiptId::try_new(
             "tool-effect-dispatch-receipt-1",
-        ),
+        ).expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -861,63 +861,63 @@ fn final_closeout_identity_json_format_is_stable() {
 #[test]
 fn horizon_identity_json_format_is_stable() {
     let identity = HorizonIdentity {
-        treaty_bundle_id: TreatyBundleId::new("treaty-bundle-1"),
-        runtime_identity_set_id: RuntimeIdentitySetId::new("runtime-identity-set-1"),
-        cross_runtime_equivalence_bundle_id: CrossRuntimeEquivalenceBundleId::new(
+        treaty_bundle_id: TreatyBundleId::try_new("treaty-bundle-1").expect("valid test ID"),
+        runtime_identity_set_id: RuntimeIdentitySetId::try_new("runtime-identity-set-1").expect("valid test ID"),
+        cross_runtime_equivalence_bundle_id: CrossRuntimeEquivalenceBundleId::try_new(
             "cross-runtime-equivalence-bundle-1",
-        ),
-        settlement_case_id: SettlementCaseId::new("settlement-case-1"),
-        shared_disposition_id: SharedDispositionId::new("shared-disposition-1"),
-        local_dissent_id: LocalDissentId::new("local-dissent-1"),
-        shared_view_downgrade_id: SharedViewDowngradeId::new("shared-view-downgrade-1"),
-        settlement_receipt_id: SettlementReceiptId::new("settlement-receipt-1"),
-        shared_replay_slice_id: SharedReplaySliceId::new("shared-replay-slice-1"),
-        shared_divergence_report_id: SharedDivergenceReportId::new("shared-divergence-report-1"),
-        treaty_suspension_id: TreatySuspensionId::new("treaty-suspension-1"),
-        mechanism_bundle_id: MechanismBundleId::new("mechanism-bundle-1"),
-        theory_version_id: TheoryVersionId::new("theory-version-1"),
-        theory_library_id: TheoryLibraryId::new("theory-library-1"),
-        hypothesis_library_id: HypothesisLibraryId::new("hypothesis-library-1"),
-        simulation_contract_id: SimulationContractId::new("simulation-contract-1"),
-        fit_run_id: FitRunId::new("fit-run-1"),
-        theory_refuter_suite_id: TheoryRefuterSuiteId::new("theory-refuter-suite-1"),
-        rollout_stability_report_id: RolloutStabilityReportId::new("rollout-stability-report-1"),
-        discovery_program_id: DiscoveryProgramId::new("discovery-program-1"),
-        portfolio_plan_id: PortfolioPlanId::new("portfolio-plan-1"),
-        experiment_campaign_id: ExperimentCampaignId::new("experiment-campaign-1"),
-        campaign_decision_trace_id: CampaignDecisionTraceId::new("campaign-decision-trace-1"),
-        information_value_estimate_id: InformationValueEstimateId::new(
+        ).expect("valid test ID"),
+        settlement_case_id: SettlementCaseId::try_new("settlement-case-1").expect("valid test ID"),
+        shared_disposition_id: SharedDispositionId::try_new("shared-disposition-1").expect("valid test ID"),
+        local_dissent_id: LocalDissentId::try_new("local-dissent-1").expect("valid test ID"),
+        shared_view_downgrade_id: SharedViewDowngradeId::try_new("shared-view-downgrade-1").expect("valid test ID"),
+        settlement_receipt_id: SettlementReceiptId::try_new("settlement-receipt-1").expect("valid test ID"),
+        shared_replay_slice_id: SharedReplaySliceId::try_new("shared-replay-slice-1").expect("valid test ID"),
+        shared_divergence_report_id: SharedDivergenceReportId::try_new("shared-divergence-report-1").expect("valid test ID"),
+        treaty_suspension_id: TreatySuspensionId::try_new("treaty-suspension-1").expect("valid test ID"),
+        mechanism_bundle_id: MechanismBundleId::try_new("mechanism-bundle-1").expect("valid test ID"),
+        theory_version_id: TheoryVersionId::try_new("theory-version-1").expect("valid test ID"),
+        theory_library_id: TheoryLibraryId::try_new("theory-library-1").expect("valid test ID"),
+        hypothesis_library_id: HypothesisLibraryId::try_new("hypothesis-library-1").expect("valid test ID"),
+        simulation_contract_id: SimulationContractId::try_new("simulation-contract-1").expect("valid test ID"),
+        fit_run_id: FitRunId::try_new("fit-run-1").expect("valid test ID"),
+        theory_refuter_suite_id: TheoryRefuterSuiteId::try_new("theory-refuter-suite-1").expect("valid test ID"),
+        rollout_stability_report_id: RolloutStabilityReportId::try_new("rollout-stability-report-1").expect("valid test ID"),
+        discovery_program_id: DiscoveryProgramId::try_new("discovery-program-1").expect("valid test ID"),
+        portfolio_plan_id: PortfolioPlanId::try_new("portfolio-plan-1").expect("valid test ID"),
+        experiment_campaign_id: ExperimentCampaignId::try_new("experiment-campaign-1").expect("valid test ID"),
+        campaign_decision_trace_id: CampaignDecisionTraceId::try_new("campaign-decision-trace-1").expect("valid test ID"),
+        information_value_estimate_id: InformationValueEstimateId::try_new(
             "information-value-estimate-1",
-        ),
-        verification_load_budget_id: VerificationLoadBudgetId::new("verification-load-budget-1"),
-        charter_bundle_id: CharterBundleId::new("charter-bundle-1"),
-        doctrine_snapshot_id: DoctrineSnapshotId::new("doctrine-snapshot-1"),
-        amendment_proposal_id: AmendmentProposalId::new("amendment-proposal-1"),
-        amendment_decision_id: AmendmentDecisionId::new("amendment-decision-1"),
-        archive_manifest_id: ArchiveManifestId::new("archive-manifest-1"),
-        compaction_receipt_id: CompactionReceiptId::new("compaction-receipt-1"),
-        historical_query_guarantee_id: HistoricalQueryGuaranteeId::new(
+        ).expect("valid test ID"),
+        verification_load_budget_id: VerificationLoadBudgetId::try_new("verification-load-budget-1").expect("valid test ID"),
+        charter_bundle_id: CharterBundleId::try_new("charter-bundle-1").expect("valid test ID"),
+        doctrine_snapshot_id: DoctrineSnapshotId::try_new("doctrine-snapshot-1").expect("valid test ID"),
+        amendment_proposal_id: AmendmentProposalId::try_new("amendment-proposal-1").expect("valid test ID"),
+        amendment_decision_id: AmendmentDecisionId::try_new("amendment-decision-1").expect("valid test ID"),
+        archive_manifest_id: ArchiveManifestId::try_new("archive-manifest-1").expect("valid test ID"),
+        compaction_receipt_id: CompactionReceiptId::try_new("compaction-receipt-1").expect("valid test ID"),
+        historical_query_guarantee_id: HistoricalQueryGuaranteeId::try_new(
             "historical-query-guarantee-1",
-        ),
-        deprecation_bundle_id: DeprecationBundleId::new("deprecation-bundle-1"),
-        retirement_bundle_id: RetirementBundleId::new("retirement-bundle-1"),
-        spec_bundle_id: SpecBundleId::new("spec-bundle-1"),
-        normative_ast_id: NormativeAstId::new("normative-ast-1"),
-        generated_schema_bundle_id: GeneratedSchemaBundleId::new("generated-schema-bundle-1"),
-        generated_interpreter_bundle_id: GeneratedInterpreterBundleId::new(
+        ).expect("valid test ID"),
+        deprecation_bundle_id: DeprecationBundleId::try_new("deprecation-bundle-1").expect("valid test ID"),
+        retirement_bundle_id: RetirementBundleId::try_new("retirement-bundle-1").expect("valid test ID"),
+        spec_bundle_id: SpecBundleId::try_new("spec-bundle-1").expect("valid test ID"),
+        normative_ast_id: NormativeAstId::try_new("normative-ast-1").expect("valid test ID"),
+        generated_schema_bundle_id: GeneratedSchemaBundleId::try_new("generated-schema-bundle-1").expect("valid test ID"),
+        generated_interpreter_bundle_id: GeneratedInterpreterBundleId::try_new(
             "generated-interpreter-bundle-1",
-        ),
-        generated_conformance_corpus_id: GeneratedConformanceCorpusId::new(
+        ).expect("valid test ID"),
+        generated_conformance_corpus_id: GeneratedConformanceCorpusId::try_new(
             "generated-conformance-corpus-1",
-        ),
-        generated_migration_plan_id: GeneratedMigrationPlanId::new("generated-migration-plan-1"),
-        proof_obligation_set_id: ProofObligationSetId::new("proof-obligation-set-1"),
-        proof_evaluation_receipt_id: ProofEvaluationReceiptId::new("proof-evaluation-receipt-1"),
-        human_veto_bundle_id: HumanVetoBundleId::new("human-veto-bundle-1"),
-        meta_challenge_bundle_id: MetaChallengeBundleId::new("meta-challenge-bundle-1"),
-        self_hosting_build_receipt_id: SelfHostingBuildReceiptId::new(
+        ).expect("valid test ID"),
+        generated_migration_plan_id: GeneratedMigrationPlanId::try_new("generated-migration-plan-1").expect("valid test ID"),
+        proof_obligation_set_id: ProofObligationSetId::try_new("proof-obligation-set-1").expect("valid test ID"),
+        proof_evaluation_receipt_id: ProofEvaluationReceiptId::try_new("proof-evaluation-receipt-1").expect("valid test ID"),
+        human_veto_bundle_id: HumanVetoBundleId::try_new("human-veto-bundle-1").expect("valid test ID"),
+        meta_challenge_bundle_id: MetaChallengeBundleId::try_new("meta-challenge-bundle-1").expect("valid test ID"),
+        self_hosting_build_receipt_id: SelfHostingBuildReceiptId::try_new(
             "self-hosting-build-receipt-1",
-        ),
+        ).expect("valid test ID"),
     };
 
     let encoded = serde_json::to_string(&identity).unwrap();
@@ -970,19 +970,19 @@ mod v25_profile_runtime_identity_tests {
     #[test]
     fn v25_identity_json_format_is_stable() {
         let identity = V25Identity {
-            applicability_context_id: ApplicabilityContextId::new("applicability-context-1"),
-            profile_set_id: ProfileSetId::new("profile-set-1"),
-            composition_rule_set_id: CompositionRuleSetId::new("composition-rule-set-1"),
-            composition_receipt_id: CompositionReceiptId::new("composition-receipt-1"),
-            effective_constitution_id: EffectiveConstitutionId::new("effective-constitution-1"),
-            compiled_obligation_set_id: CompiledObligationSetId::new("compiled-obligation-set-1"),
-            composition_conflict_set_id: CompositionConflictSetId::new(
+            applicability_context_id: ApplicabilityContextId::try_new("applicability-context-1").expect("valid test ID"),
+            profile_set_id: ProfileSetId::try_new("profile-set-1").expect("valid test ID"),
+            composition_rule_set_id: CompositionRuleSetId::try_new("composition-rule-set-1").expect("valid test ID"),
+            composition_receipt_id: CompositionReceiptId::try_new("composition-receipt-1").expect("valid test ID"),
+            effective_constitution_id: EffectiveConstitutionId::try_new("effective-constitution-1").expect("valid test ID"),
+            compiled_obligation_set_id: CompiledObligationSetId::try_new("compiled-obligation-set-1").expect("valid test ID"),
+            composition_conflict_set_id: CompositionConflictSetId::try_new(
                 "composition-conflict-set-1",
-            ),
-            profile_exception_bundle_id: ProfileExceptionBundleId::new(
+            ).expect("valid test ID"),
+            profile_exception_bundle_id: ProfileExceptionBundleId::try_new(
                 "profile-exception-bundle-1",
-            ),
-            policy_impact_diff_id: PolicyImpactDiffId::new("policy-impact-diff-1"),
+            ).expect("valid test ID"),
+            policy_impact_diff_id: PolicyImpactDiffId::try_new("policy-impact-diff-1").expect("valid test ID"),
         };
 
         let encoded = serde_json::to_string(&identity).unwrap();
