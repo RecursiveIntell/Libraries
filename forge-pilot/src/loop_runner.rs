@@ -275,11 +275,10 @@ impl LoopRunner {
             // --- Governance gate evaluation ---
             #[cfg(feature = "governance")]
             let governance_gate_result = observation.governance.as_ref().map(|gov_obs| {
-                let gate = crate::governance_gate::gate_execution_with_mode(
-                    gov_obs,
-                    crate::governance_gate::GovernanceMode::FailOpen,
-                )
-                .unwrap_or(crate::governance_gate::GovernanceGateResult::Allow);
+                // The loop is an effectful execution boundary. It must use the
+                // canonical gate result directly; converting a gate error to
+                // Allow would make governance failures fail open.
+                let gate = crate::governance_gate::gate_execution(gov_obs);
                 let receipt = crate::governance_gate::build_governance_receipt(gov_obs, &gate);
                 (gate, receipt)
             });

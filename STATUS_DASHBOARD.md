@@ -37,7 +37,7 @@
 
 - Phase 0: Workspace restored — 6 missing crates extracted (`constraint-compiler`, `profile-runtime`, `discovery-portfolio`, `federated-settlement`, `remote-oracle-admission`, `spec-execution`).
 - Phase 1: Typed validation error enums added to 6 governance crates (`assurance-runtime`, `attestation-exchange`, `authority-delegation`, `constitutional-memory`, `mechanism-runtime`, `continuity-runtime`), following `effect-runtime` reference pattern.
-- Phase 2: `forge-pilot/src/governance_gate.rs` created with `observe_governance()`, `gate_execution()`, `build_governance_receipt()`. Feature-gated behind `#[cfg(feature = "governance")]`. Fail-open on missing governance state. Wired into `observe.rs`, `loop_runner.rs`, `loop_runner_report.rs`.
+- Phase 2: `forge-pilot/src/governance_gate.rs` provides `observe_governance()`, `gate_execution()`, and `build_governance_receipt()`. Feature-gated behind `#[cfg(feature = "governance")]`; strict observation is fail-closed on missing governance state. Wired into `observe.rs`, `loop_runner.rs`, and `loop_runner_report.rs`.
 - Phase 3: All production unwrap/expect calls verified clean — all instances are inside `#[cfg(test)]` modules (test code, allowed per rules).
 - Phase 4: Test coverage expanded — `llm-tool-runtime` +22 tests (40 total), `verification-calibration` +8 tests (10 total), `recursive-kernel-core` +17 tests (20 total).
 - Phase 5: Integration Points and Artifact Families documentation added to all 7 governance crate `lib.rs` files.

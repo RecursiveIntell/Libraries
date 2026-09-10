@@ -10,8 +10,9 @@ license = "MIT"
 doctest = false
 
 [features]
-# GOV-007: Default build includes core orchestration WITHOUT governance crates.
-# Enable `governance` feature for constitutional/assurance/attestation stack.
+# GOV-007: Default build includes core orchestration WITH governance crates.
+# The default execution surface includes constitutional/assurance/attestation
+# checks; disable the feature only for an explicitly non-governed build.
 # The default execution surface is: constraint-compiler, forge-engine, kernel-*,
 # knowledge-runtime, semantic-memory, verification-*, and stack-ids.
 default = ["governance"]
