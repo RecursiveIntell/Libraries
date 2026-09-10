@@ -35,8 +35,10 @@
 //!
 //! - **Read-only observation.** `observe_governance()` reads governance artifact state.
 //!   It never writes, creates, or modifies governance artifacts.
-//! - **Fail-open on missing governance state.** When no governance artifacts are
-//!   present, the gate returns an empty observation and the loop proceeds normally.
+//! - **Fail-closed on missing governance state.** When no governance artifacts are
+//!   present, strict observation returns an error and the effectful loop must not
+//!   proceed. Legacy fail-open behavior is available only through an explicit,
+//!   bounded compatibility-mode call site.
 //! - **No external dependencies.** Reads only from semantic-memory's SQLite store.
 
 use schemars::JsonSchema;
