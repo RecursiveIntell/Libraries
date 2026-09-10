@@ -17,6 +17,8 @@ pub struct CliConfig {
     pub checkpoint_db_path: Option<PathBuf>,
     pub require_integrity_key: bool,
     pub ephemeral: bool,
+    pub runtime_dir: Option<PathBuf>,
+    pub instance: String,
 }
 
 impl Default for CliConfig {
@@ -30,6 +32,8 @@ impl Default for CliConfig {
             checkpoint_db_path: None,
             require_integrity_key: false,
             ephemeral: false,
+            runtime_dir: None,
+            instance: "default".to_string(),
         }
     }
 }
@@ -132,6 +136,24 @@ pub fn parse_args(args: &[String]) -> Result<CliConfig, CliError> {
             "--ephemeral" => {
                 config.ephemeral = true;
             }
+            "--runtime-dir" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| CliError::new("--runtime-dir requires a value"))?;
+                if value.is_empty() {
+                    return Err(CliError::new("--runtime-dir value must not be empty"));
+                }
+                config.runtime_dir = Some(PathBuf::from(value));
+            }
+            "--instance" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| CliError::new("--instance requires a value"))?;
+                if value.is_empty() {
+                    return Err(CliError::new("--instance value must not be empty"));
+                }
+                config.instance = value.clone();
+            }
             "--help" => {
                 eprintln!("agent-graph-mcp [OPTIONS]");
                 eprintln!();
@@ -146,6 +168,10 @@ pub fn parse_args(args: &[String]) -> Result<CliConfig, CliError> {
                 eprintln!("  --checkpoint-db-path <path>  SQLite checkpoint database (or AGENT_GRAPH_CHECKPOINT_DB_PATH)");
                 eprintln!("  --require-integrity-key  Fail startup if integrity key is missing/unreadable");
                 eprintln!("  --ephemeral              Explicit in-memory mode (no persistence)");
+                eprintln!(
+                    "  --runtime-dir <path>     Private runtime directory for the daemon socket"
+                );
+                eprintln!("  --instance <name>        Daemon instance name (default: default)");
                 eprintln!("  --help                   Show this help message");
                 return Err(CliError {
                     message: String::new(),
@@ -173,7 +199,30 @@ pub fn parse_args(args: &[String]) -> Result<CliConfig, CliError> {
         ));
     }
 
+    if config.data_dir.is_none() && !config.ephemeral {
+        return Err(CliError::new(
+            "MODE_REQUIRED: choose --ephemeral or --data-dir for durable proxy mode",
+        ));
+    }
+
     Ok(config)
+}
+
+/// Resolve the private runtime directory used for daemon sockets.
+///
+/// There is deliberately no `/tmp` fallback: durable mode must have an
+/// explicitly scoped runtime boundary.
+pub fn resolve_runtime_dir(config: &CliConfig) -> Result<PathBuf, CliError> {
+    config
+        .runtime_dir
+        .clone()
+        .or_else(|| std::env::var_os("AGENT_GRAPH_RUNTIME_DIR").map(PathBuf::from))
+        .or_else(|| std::env::var_os("XDG_RUNTIME_DIR").map(PathBuf::from))
+        .ok_or_else(|| {
+            CliError::new(
+                "RUNTIME_DIR_REQUIRED: durable mode needs --runtime-dir, AGENT_GRAPH_RUNTIME_DIR, or XDG_RUNTIME_DIR",
+            )
+        })
 }
 
 /// Validate that a URL has http or https scheme and a non-empty host.
@@ -277,21 +326,33 @@ mod tests {
 
     #[test]
     fn test_valid_http_url_accepted() {
-        let result = parse_args(&args(&["--base-url", "http://127.0.0.1:11434"]));
+        let result = parse_args(&args(&[
+            "--ephemeral",
+            "--base-url",
+            "http://127.0.0.1:11434",
+        ]));
         assert!(result.is_ok());
         assert_eq!(result.unwrap().base_url, "http://127.0.0.1:11434");
     }
 
     #[test]
     fn test_valid_https_url_accepted() {
-        let result = parse_args(&args(&["--base-url", "https://api.openai.com"]));
+        let result = parse_args(&args(&[
+            "--ephemeral",
+            "--base-url",
+            "https://api.openai.com",
+        ]));
         assert!(result.is_ok());
         assert_eq!(result.unwrap().base_url, "https://api.openai.com");
     }
 
     #[test]
     fn test_url_with_credentials_stripped_in_validation() {
-        let result = parse_args(&args(&["--base-url", "https://user:pass@host.com"]));
+        let result = parse_args(&args(&[
+            "--ephemeral",
+            "--base-url",
+            "https://user:pass@host.com",
+        ]));
         assert!(result.is_ok()); // validation passes; runtime redaction is separate
     }
 
@@ -330,14 +391,12 @@ mod tests {
     }
 
     #[test]
-    fn test_default_config_when_no_args() {
+    fn test_no_mode_when_no_args() {
         let result = parse_args(&[]);
-        assert!(result.is_ok());
-        let config = result.unwrap();
-        assert_eq!(config.base_url, "http://127.0.0.1:11434");
-        assert_eq!(config.default_model, "glm-5.2:cloud");
-        assert!(config.data_dir.is_none());
-        assert!(!config.ephemeral);
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        assert_eq!(error.exit_code, 2);
+        assert!(error.message.contains("MODE_REQUIRED"));
     }
 
     #[test]

@@ -1,14 +1,19 @@
 #![allow(clippy::expect_used)]
 
 use std::io::{BufRead, BufReader, Write};
+use std::os::unix::net::UnixStream as StdUnixStream;
+use std::path::Path;
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::OnceLock;
+use std::thread;
+use std::time::{Duration, Instant};
 
 use rusqlite::Connection;
 use serde_json::{json, Value};
 
 struct Mcp {
     child: Child,
+    daemon: Option<Child>,
     input: ChildStdin,
     output: BufReader<ChildStdout>,
     id: u64,
@@ -16,15 +21,24 @@ struct Mcp {
 
 impl Mcp {
     fn new() -> Self {
-        Self::new_with_args(&[])
+        Self::new_with_args(&["--ephemeral"])
     }
 
     fn new_with_data_dir(data_dir: &std::path::Path) -> Self {
         let key_path = test_integrity_key();
-        Self::new_with_args_and_key(
-            &["--data-dir", data_dir.to_str().expect("UTF-8 temp path")],
+        let runtime_dir = data_dir.join("runtime");
+        let daemon = launch_daemon(data_dir, Some(key_path));
+        let mut mcp = Self::new_with_args_and_key(
+            &[
+                "--data-dir",
+                data_dir.to_str().expect("UTF-8 temp path"),
+                "--runtime-dir",
+                runtime_dir.to_str().expect("UTF-8 runtime path"),
+            ],
             Some(key_path),
-        )
+        );
+        mcp.daemon = Some(daemon);
+        mcp
     }
 
     fn new_with_args(args: &[&str]) -> Self {
@@ -32,11 +46,20 @@ impl Mcp {
     }
 
     fn new_with_data_dir_without_integrity_key(data_dir: &std::path::Path) -> Self {
+        let runtime_dir = data_dir.join("runtime");
+        let daemon = launch_daemon(data_dir, None);
         let mut command = Command::new(env!("CARGO_BIN_EXE_agent-graph-mcp"));
         command
-            .args(["--data-dir", data_dir.to_str().expect("UTF-8 temp path")])
+            .args([
+                "--data-dir",
+                data_dir.to_str().expect("UTF-8 temp path"),
+                "--runtime-dir",
+                runtime_dir.to_str().expect("UTF-8 runtime path"),
+            ])
             .env_remove("AGENT_GRAPH_INTEGRITY_KEY_PATH");
-        Self::from_command(command)
+        let mut mcp = Self::from_command(command);
+        mcp.daemon = Some(daemon);
+        mcp
     }
 
     fn new_with_args_and_key(args: &[&str], key_path: Option<&std::path::Path>) -> Self {
@@ -59,6 +82,7 @@ impl Mcp {
         let output = BufReader::new(child.stdout.take().unwrap());
         let mut mcp = Self {
             child,
+            daemon: None,
             input,
             output,
             id: 0,
@@ -92,7 +116,11 @@ impl Mcp {
         self.input.flush().unwrap();
         loop {
             let mut line = String::new();
-            self.output.read_line(&mut line).unwrap();
+            let bytes_read = self.output.read_line(&mut line).unwrap();
+            if bytes_read == 0 {
+                let status = self.child.try_wait().ok().flatten();
+                panic!("MCP child exited before response: {status:?}");
+            }
             if line.trim().is_empty() {
                 continue;
             }
@@ -153,6 +181,51 @@ impl Mcp {
     }
 }
 
+fn launch_daemon(data_dir: &Path, key_path: Option<&Path>) -> Child {
+    let runtime_dir = data_dir.join("runtime");
+    let mut command = Command::new(env!("CARGO_BIN_EXE_agent-graph-mcpd"));
+    command
+        .args([
+            "--data-dir",
+            data_dir.to_str().expect("UTF-8 temp path"),
+            "--runtime-dir",
+            runtime_dir.to_str().expect("UTF-8 runtime path"),
+        ])
+        .env("RUST_LOG", "off")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    match key_path {
+        Some(path) => {
+            command.env("AGENT_GRAPH_INTEGRITY_KEY_PATH", path);
+        }
+        None => {
+            command.env_remove("AGENT_GRAPH_INTEGRITY_KEY_PATH");
+        }
+    }
+    let mut daemon = command.spawn().expect("daemon should launch");
+    let socket = runtime_dir
+        .join("agent-graph")
+        .join("default")
+        .join("daemon.sock");
+    let deadline = Instant::now() + Duration::from_secs(60);
+    while Instant::now() < deadline {
+        if StdUnixStream::connect(&socket).is_ok() {
+            return daemon;
+        }
+        if let Ok(Some(status)) = daemon.try_wait() {
+            panic!("daemon exited before socket became connectable: {status}");
+        }
+        thread::sleep(Duration::from_millis(20));
+    }
+    let _ = daemon.kill();
+    let _ = daemon.wait();
+    panic!(
+        "daemon socket did not become connectable: {}",
+        socket.display()
+    );
+}
+
 fn test_integrity_key() -> &'static std::path::Path {
     static PATH: OnceLock<std::path::PathBuf> = OnceLock::new();
     let path = PATH.get_or_init(|| {
@@ -167,6 +240,11 @@ fn test_integrity_key() -> &'static std::path::Path {
 impl Drop for Mcp {
     fn drop(&mut self) {
         let _ = self.child.kill();
+        let _ = self.child.wait();
+        if let Some(mut daemon) = self.daemon.take() {
+            let _ = daemon.kill();
+            let _ = daemon.wait();
+        }
     }
 }
 

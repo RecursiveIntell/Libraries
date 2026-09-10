@@ -39,6 +39,15 @@ fn current_euid() -> u32 {
     unsafe { libc::geteuid() }
 }
 
+pub fn current_effective_uid() -> u32 {
+    current_uid()
+}
+
+/// Verify that an accepted Unix peer belongs to this effective UID.
+pub fn peer_uid_matches_current(stream: &tokio::net::UnixStream) -> io::Result<bool> {
+    Ok(stream.peer_cred()?.uid() == current_uid())
+}
+
 /// Check if a file/directory is owned by the current user.
 fn is_owned_by_current_user(meta: &fs::Metadata) -> bool {
     meta.uid() == current_uid()
