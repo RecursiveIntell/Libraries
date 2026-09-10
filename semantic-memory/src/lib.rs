@@ -684,6 +684,7 @@ pub struct MemoryStore {
 
 struct MemoryStoreInner {
     pool: pool::SqlitePool,
+    read_only: bool,
     embedder: Box<dyn Embedder>,
     embedding_permits: Arc<tokio::sync::Semaphore>,
     config: MemoryConfig,
@@ -761,6 +762,9 @@ fn validate_replication_identity(
 #[cfg(feature = "hnsw")]
 impl Drop for MemoryStoreInner {
     fn drop(&mut self) {
+        if self.read_only {
+            return;
+        }
         if !self.paths.hnsw_dir.exists() {
             tracing::debug!(
                 path = %self.paths.hnsw_dir.display(),
@@ -1030,10 +1034,29 @@ impl MemoryStore {
     }
 
     /// Open with a custom embedder (for testing or non-Ollama providers).
-    #[allow(unused_mut)] // `config` is mutated only when the `hnsw` feature is enabled
     pub fn open_with_embedder(
+        config: MemoryConfig,
+        embedder: Box<dyn Embedder>,
+    ) -> Result<Self, MemoryError> {
+        Self::open_with_embedder_mode(config, embedder, false)
+    }
+
+    /// Open an existing store through a strictly query-only SQLite pool.
+    ///
+    /// This constructor never creates paths, runs migrations, repairs sidecars,
+    /// updates metadata, persists receipts, or flushes data on drop.
+    pub fn open_existing_read_only_with_embedder(
+        config: MemoryConfig,
+        embedder: Box<dyn Embedder>,
+    ) -> Result<Self, MemoryError> {
+        Self::open_with_embedder_mode(config, embedder, true)
+    }
+
+    #[allow(unused_mut)] // `config` is mutated only when the `hnsw` feature is enabled
+    fn open_with_embedder_mode(
         mut config: MemoryConfig,
         embedder: Box<dyn Embedder>,
+        read_only: bool,
     ) -> Result<Self, MemoryError> {
         config = config.normalize_and_validate()?;
         if embedder.dimensions() != config.embedding.dimensions {
@@ -1046,16 +1069,28 @@ impl MemoryStore {
 
         let paths = StoragePaths::new(&config.base_dir);
 
-        // Create directory if needed
-        std::fs::create_dir_all(&paths.base_dir).map_err(|e| {
-            MemoryError::StorageError(format!(
-                "Failed to create directory {}: {}",
-                paths.base_dir.display(),
-                e
-            ))
-        })?;
+        if read_only {
+            if !paths.sqlite_path.is_file() {
+                return Err(MemoryError::StorageError(format!(
+                    "read-only store database does not exist: {}",
+                    paths.sqlite_path.display()
+                )));
+            }
+        } else {
+            std::fs::create_dir_all(&paths.base_dir).map_err(|e| {
+                MemoryError::StorageError(format!(
+                    "Failed to create directory {}: {}",
+                    paths.base_dir.display(),
+                    e
+                ))
+            })?;
+        }
 
-        let pool = pool::SqlitePool::open(&paths.sqlite_path, &config.pool, &config.limits)?;
+        let pool = if read_only {
+            pool::SqlitePool::open_read_only(&paths.sqlite_path, &config.pool, &config.limits)?
+        } else {
+            pool::SqlitePool::open(&paths.sqlite_path, &config.pool, &config.limits)?
+        };
         // Purpose/profile changes invalidate every derived vector even when the provider model
         // and dimensions are unchanged. Binding the profile into durable metadata makes upgrades
         // fail visibly through `embeddings_dirty` instead of silently reusing old vectors.
@@ -1064,7 +1099,9 @@ impl MemoryStore {
             "{}|{}|{}",
             embedding_metadata.model, EMBEDDING_NORMALIZATION_PROFILE, EMBEDDING_PROFILE_VERSION
         );
-        pool.with_write_conn(|conn| db::check_embedding_metadata(conn, &embedding_metadata))?;
+        if !read_only {
+            pool.with_write_conn(|conn| db::check_embedding_metadata(conn, &embedding_metadata))?;
+        }
 
         // Ensure HNSW dimensions match the embedding config
         #[cfg(feature = "hnsw")]
@@ -1078,9 +1115,11 @@ impl MemoryStore {
             .unwrap_or_else(tokenizer::default_token_counter);
 
         #[cfg(feature = "hnsw")]
-        let hnsw_index = {
-            let hnsw_config = config.hnsw.clone();
-
+        let hnsw_config = config.hnsw.clone();
+        #[cfg(feature = "hnsw")]
+        let hnsw_index = if read_only {
+            HnswIndex::new(hnsw_config)?
+        } else {
             let embeddings_dirty = pool.with_read_conn(db::is_embeddings_dirty)?;
             let pending_index_ops = pool.with_read_conn(db::pending_index_op_count)?;
 
@@ -1220,6 +1259,7 @@ impl MemoryStore {
         let store = Self {
             inner: Arc::new(MemoryStoreInner {
                 pool,
+                read_only,
                 embedder,
                 embedding_permits: Arc::new(tokio::sync::Semaphore::new(
                     config.limits.max_embedding_concurrency,
@@ -1239,11 +1279,13 @@ impl MemoryStore {
         };
 
         #[cfg(feature = "hnsw")]
-        if let Err(err) = store.sync_pending_hnsw_ops_blocking() {
-            tracing::warn!(
-                error = %err,
-                "Failed to reconcile pending HNSW sidecar ops during open; sidecar replay remains pending"
-            );
+        if !read_only {
+            if let Err(err) = store.sync_pending_hnsw_ops_blocking() {
+                tracing::warn!(
+                    error = %err,
+                    "Failed to reconcile pending HNSW sidecar ops during open; sidecar replay remains pending"
+                );
+            }
         }
 
         Ok(store)
@@ -2109,6 +2151,11 @@ impl MemoryStore {
         source_types: Option<&[SearchSourceType]>,
         context: SearchContext,
     ) -> Result<SearchResponse, MemoryError> {
+        if self.inner.read_only && context.receipts_enabled() {
+            return Err(MemoryError::Other(
+                "read-only stores cannot persist search receipts".to_string(),
+            ));
+        }
         self.search_with_context_for_view(
             query,
             top_k,

@@ -1157,6 +1157,30 @@ pub fn open_database_connection(
     open_database_internal(path, pool, limits.max_db_size_bytes, false)
 }
 
+/// Open an existing database without creating paths or running migrations.
+pub(crate) fn open_read_only_connection(
+    path: &Path,
+    pool: &PoolConfig,
+    _limits: &MemoryLimits,
+) -> Result<Connection, MemoryError> {
+    if !path.is_file() {
+        return Err(MemoryError::StorageError(format!(
+            "read-only database does not exist: {}",
+            path.display()
+        )));
+    }
+    let conn = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+    conn.execute_batch(&format!(
+        "PRAGMA foreign_keys = ON;
+         PRAGMA busy_timeout = {};
+         PRAGMA temp_store = MEMORY;
+         PRAGMA cache_size = -25600;
+         PRAGMA query_only = ON;",
+        pool.busy_timeout_ms,
+    ))?;
+    Ok(conn)
+}
+
 pub(crate) fn open_database_internal(
     path: &Path,
     pool: &PoolConfig,
