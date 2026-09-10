@@ -75,18 +75,26 @@ def code_digest() -> str:
     return h.hexdigest()
 
 
-def connect_readonly(path: pathlib.Path) -> sqlite3.Connection:
-    # Never create a missing database during a query.
-    with open_source(path): pass
-    uri=path.resolve().as_uri()+'?mode=ro'
-    try:
-        db=sqlite3.connect(uri,uri=True)
-        db.execute('PRAGMA query_only=ON');db.execute('PRAGMA trusted_schema=OFF')
-        if db.execute('PRAGMA application_id').fetchone()[0]!=APPLICATION_ID or db.execute('PRAGMA user_version').fetchone()[0]!=SCHEMA_VERSION:
-            db.close();raise FoundationError('PROJECTION_VERSION_MISMATCH')
-        db.row_factory=sqlite3.Row
-        return db
-    except sqlite3.Error as e:raise FoundationError('PROJECTION_OPEN_FAILURE') from e
+class _ReadonlyConnection:
+    def __init__(self, path: pathlib.Path):
+        # Open and validate immediately so invalid projections fail at construction.
+        with open_source(path): pass
+        try:
+            self.db=sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True)
+            self.db.execute('PRAGMA query_only=ON');self.db.execute('PRAGMA trusted_schema=OFF')
+            if self.db.execute('PRAGMA application_id').fetchone()[0]!=APPLICATION_ID or self.db.execute('PRAGMA user_version').fetchone()[0]!=SCHEMA_VERSION:
+                self.db.close();raise FoundationError('PROJECTION_VERSION_MISMATCH')
+            self.db.row_factory=sqlite3.Row
+        except sqlite3.Error as e:
+            try:self.db.close()
+            except AttributeError:pass
+            raise FoundationError('PROJECTION_OPEN_FAILURE') from e
+    def __enter__(self) -> sqlite3.Connection:return self.db
+    def __exit__(self, exc_type, exc, traceback) -> None:self.db.close()
+
+
+def connect_readonly(path: pathlib.Path) -> _ReadonlyConnection:
+    return _ReadonlyConnection(path)
 
 
 def logical_manifest(db: sqlite3.Connection) -> dict:
