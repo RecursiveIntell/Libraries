@@ -23,15 +23,16 @@ python certify_local.py "$ARCHIVE" \
 ```
 
 `certify_local.py` creates a NEW private directory, runs preflight and tests,
-publishes a complete bundle, retains its operational witnesses, deletes only
-that newly created derived bundle, rebuilds in another process with a different
-hash seed, compares every logical table, validates contracts, and exports the
-private corpus audit. A nonzero exit is failure; read `LOCAL_CERTIFICATION.json`.
+finalizes a complete local observation bundle, retains its operational
+witnesses, deletes only that newly created derived bundle, rebuilds in another
+process with a different hash seed, compares every logical table, validates
+contracts, and writes the private corpus audit. A nonzero exit is failure; read
+`LOCAL_CERTIFICATION.json`.
 A successful local certification is not native adoption or production activation.
 The audit step targets the supplied Ares collection family, not every possible
 foreign archive; absence of its required witnesses fails the step.
 
-## Bundle publication and consumption
+## Local bundle finalization and consumption
 
 ```bash
 python -m receipt_foundation bundle-build "$ARCHIVE" \
@@ -44,8 +45,11 @@ python -m receipt_foundation bundle-query "$PRIVATE_PARENT/new-bundle" \
 ```
 
 A bundle contains exactly `projection.sqlite`, `build.json`, `contracts.json`,
-`query-proof.json`, and `bundle.json`. All files are private. Publication uses
-Linux `renameat2(RENAME_NOREPLACE)` and fsync of staged files/directories and the
+`query-proof.json`, and `bundle.json`. The utility creates these files with
+owner-private modes; this is an integrity and local-isolation property, not a
+confidentiality guarantee, authorization boundary, or protection from the same
+operating-system account. Local finalization uses Linux
+`renameat2(RENAME_NOREPLACE)` and fsync of staged files/directories and the
 parent. There is no overwrite-capable fallback. Unsupported kernels/filesystems
 fail explicitly. The final directory name does not expose a partially populated
 bundle. A post-rename fsync error is **durability unknown**, not success and not
@@ -55,9 +59,11 @@ Every bundle query checks the exact file set, hashes, permissions, implementatio
 binding, expected archive identity, SQLite schema/integrity, logical manifest,
 summary and query witnesses. It uses the same descriptor-pinned database that
 was checked. It does not treat a manifest as a signature or rehash the original
-archive during each query. Rebuild/certification is the proof against original
-source bytes. A user controlling the same operating-system account can forge an
-unsigned manifest; this is not an authorization or anti-root security boundary.
+archive during each query. Rebuild/certification is local consistency evidence
+bound to the original source bytes and archive digest; it is not issuer
+authentication, signature verification, or native semantic validation. A user
+controlling the same operating-system account can forge an unsigned manifest;
+this is not an authorization or anti-root security boundary.
 
 Failures may leave only a uniquely named `.receipt-bundle-staging-*` directory
 with a safe failure record. It is never an admitted bundle. Retain or explicitly
