@@ -1,0 +1,79 @@
+{
+  "$id": "urn:recursiveintell:receipt-observation:ReceiptObservationEdgeV2:v2",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "assertion_state": {
+      "enum": [
+        "derived",
+        "source_asserted"
+      ]
+    },
+    "edge_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "DERIVED_FROM",
+        "PART_OF",
+        "BELONGS_TO_RUN",
+        "BELONGS_TO_TRACE",
+        "BELONGS_TO_SESSION",
+        "BELONGS_TO_EPISODE",
+        "VERIFIES",
+        "PRODUCED",
+        "CONSUMED",
+        "REFERENCES"
+      ]
+    },
+    "resolution": {
+      "type": "string"
+    },
+    "rule": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "ReceiptObservationEdgeV2"
+    },
+    "source_pointer": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "target_record_id": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "target_type": {
+      "type": "string"
+    },
+    "target_value": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "edge_id",
+    "source_record_id",
+    "kind",
+    "target_type",
+    "target_value",
+    "target_record_id",
+    "resolution",
+    "source_pointer",
+    "rule",
+    "assertion_state"
+  ],
+  "title": "ReceiptObservationEdgeV2",
+  "type": "object"
+}

@@ -1,0 +1,9 @@
+make fmt-check
+make[1]: Entering directory '/tmp/receipt-foundation-public-20260910'
+cargo fmt -p contract-schema-gen -p forge-memory-bridge -p forge-pilot -p kernel-conformance -p kernel-execution -p kernel-oracles -p knowledge-runtime -p forge-engine -p llm-tool-runtime -p recursive-kernel-core -p semantic-memory -p semantic-memory-forge -p stack-ids -p verification-adjudication -p verification-calibration -p verification-control -p verification-policy -- --check
+make[1]: Leaving directory '/tmp/receipt-foundation-public-20260910'
+make clippy-check
+make[1]: Entering directory '/tmp/receipt-foundation-public-20260910'
+cargo clippy -p contract-schema-gen -p forge-memory-bridge -p forge-pilot -p kernel-conformance -p kernel-execution -p kernel-oracles -p knowledge-runtime -p forge-engine -p llm-tool-runtime -p recursive-kernel-core -p semantic-memory -p semantic-memory-forge -p stack-ids -p verification-adjudication -p verification-calibration -p verification-control -p verification-policy --all-targets --all-features -- -D warnings
+make[1]: Leaving directory '/tmp/receipt-foundation-public-20260910'
+cargo test -p contract-schema-gen -p forge-memory-bridge -p forge-pilot -p kernel-conformance -p kernel-execution -p kernel-oracles -p knowledge-runtime -p forge-engine -p llm-tool-runtime -p recursive-kernel-core -p semantic-memory -p semantic-memory-forge -p stack-ids -p verification-adjudication -p verification-calibration -p verification-control -p verification-policy
