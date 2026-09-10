@@ -5,10 +5,30 @@ from receipt_foundation.common import digest, write_json
 from receipt_foundation.projection import connect_readonly, summarize, logical_manifest
 from receipt_foundation.query import query, source_bytes
 
+
+def _failure(output:pathlib.Path, summary:dict, missing:list[str]) -> dict:
+    result={'schema':'ReceiptAuditFailureV1','status':'BLOCKED','code':'REQUIRED_WITNESS_MISSING',
+            'missing_witnesses':missing,'member_count':summary.get('total_members',0),
+            'sensitivity':'private_internal_unreviewed','derived_only':True}
+    write_json(output/'AUDIT_FAILURE.json',result)
+    return result
+
+
 def audit(database:pathlib.Path, output:pathlib.Path, archive:pathlib.Path|None=None) -> dict:
     output.mkdir(mode=0o700,parents=False,exist_ok=False)
     with connect_readonly(database) as db:
         summary=summarize(db)
+        exemplar_row=db.execute("SELECT r.record_id,r.occurrence_id,o.blob_sha256 FROM records r JOIN occurrences o USING(occurrence_id) WHERE r.category='profile_panel_receipt' ORDER BY record_id LIMIT 1").fetchone()
+        witnesses={}
+        for kind,name in [('run','run_id'),('revision','revision'),('trace','trace_id'),('session','session_id')]:
+            witnesses[kind]=db.execute("SELECT value_json FROM fields WHERE name=? AND state='source_asserted' ORDER BY record_id LIMIT 1",(name,)).fetchone()
+        child_row=db.execute("SELECT p.source_record_id FROM edges p JOIN edges v ON v.target_record_id=p.target_record_id AND v.kind='VERIFIES' WHERE p.kind='PART_OF' ORDER BY p.source_record_id LIMIT 1").fetchone()
+        missing=[]
+        if exemplar_row is None:missing.append('profile_panel_receipt')
+        missing.extend(name for kind,name in [('run','run_id'),('revision','revision'),('trace','trace_id'),('session','session_id')] if witnesses[kind] is None)
+        if child_row is None:missing.append('verification_structural_parent')
+        if missing:return _failure(output,summary,missing)
+        exemplar=dict(exemplar_row)
         members=[]
         for row in db.execute('SELECT o.*,p.declared_format,p.observed_format,p.status AS parse_status,p.value_count,p.recovery_mode FROM occurrences o LEFT JOIN parses p USING(occurrence_id) ORDER BY o.ordinal'):
             m=dict(row)
@@ -25,15 +45,13 @@ def audit(database:pathlib.Path, output:pathlib.Path, archive:pathlib.Path|None=
         write_json(output/'SCHEMA_GENEALOGY.json',{'schema':'ReceiptSchemaGenealogyV1','observed_family_versions':schemas,'schema_id_conflicts':conflicts,'schema_documents':schema_docs,'semantic_equivalence_not_claimed':True})
         anomalies=[dict(r) for r in db.execute('SELECT * FROM anomalies ORDER BY anomaly_id')]
         write_json(output/'CORPUS_ANOMALIES.json',{'schema':'ReceiptCorpusAnomaliesV1','count':len(anomalies),'rows':anomalies,'not_automatically_repaired':True})
-        exemplar=dict(db.execute("SELECT r.record_id,r.occurrence_id,o.blob_sha256 FROM records r JOIN occurrences o USING(occurrence_id) WHERE r.category='profile_panel_receipt' ORDER BY record_id LIMIT 1").fetchone())
         vals={'digest':exemplar['blob_sha256'],'occurrences':exemplar['blob_sha256'],'occurrence':exemplar['occurrence_id'],'provenance':exemplar['record_id'],'family':'AresProfilePanelReceiptV2','quarantine':'EMPTY_DOCUMENT'}
-        for kind,name in [('run','run_id'),('revision','revision'),('trace','trace_id'),('session','session_id')]:
-            vals[kind]=json.loads(db.execute("SELECT value_json FROM fields WHERE name=? AND state='source_asserted' ORDER BY record_id LIMIT 1",(name,)).fetchone()[0])
+        vals.update({kind:json.loads(witnesses[kind][0]) for kind in witnesses})
         result=[]
         for kind in ('records','digest','occurrence','occurrences','family','revision','run','trace','session','verification','artifacts','quarantine','duplicates','provenance','schemas','times','verification-coverage'):
             got=query(db,kind,vals.get(kind),limit=3)
             result.append({'kind':kind,'value':vals.get(kind),'rows_returned':len(got['rows']),'next_offset':got['next_offset'],'status':'PASS' if got['rows'] else 'FAIL','rows':got['rows']})
-        child=db.execute("SELECT p.source_record_id FROM edges p JOIN edges v ON v.target_record_id=p.target_record_id AND v.kind='VERIFIES' WHERE p.kind='PART_OF' ORDER BY p.source_record_id LIMIT 1").fetchone()[0]
+        child=child_row[0]
         child_result=query(db,'verification',child,limit=3)
         result.append({'kind':'verification-via-structural-parent','value':child,'rows_returned':len(child_result['rows']),'rows':child_result['rows'],'status':'PASS' if child_result['rows'] else 'FAIL','target_scope':'panel verification applies to containing panel; not independent per-execution certification'})
         proof={'schema':'ReceiptQueryProofV1','status':'PASS' if all(r['status']=='PASS' for r in result) else 'FAIL','checks':result}
@@ -43,10 +61,14 @@ def audit(database:pathlib.Path, output:pathlib.Path, archive:pathlib.Path|None=
         raw_path=output/'retrieved-private-source.json'
         retrieval=source_bytes(database,archive,exemplar['record_id'],raw_path,acknowledge_private=True)
         retrieval['written_file_deleted_after_byte_witness']=True
-        raw_path.unlink()  # Only this script's newly created private retrieval copy; never source evidence.
+        raw_path.unlink()
         write_json(output/'SOURCE_RETRIEVAL_PROOF.json',retrieval)
-    return {'schema':'ReceiptAuditArtifactsV1','query_status':proof['status'],'member_count':len(members),'output_files':len(list(output.iterdir()))}
+    return {'schema':'ReceiptAuditArtifactsV1','status':proof['status'],'query_status':proof['status'],'member_count':len(members),'output_files':len(list(output.iterdir()))}
 
-if __name__=='__main__':
+
+def main()->int:
     p=argparse.ArgumentParser();p.add_argument('database',type=pathlib.Path);p.add_argument('--output-dir',type=pathlib.Path,required=True);p.add_argument('--archive',type=pathlib.Path)
-    a=p.parse_args();print(json.dumps(audit(a.database,a.output_dir,a.archive),sort_keys=True))
+    a=p.parse_args();r=audit(a.database,a.output_dir,a.archive);print(json.dumps(r,sort_keys=True));return 0 if r['status']=='PASS' else 3
+
+
+if __name__=='__main__':raise SystemExit(main())

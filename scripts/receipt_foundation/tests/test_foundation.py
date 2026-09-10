@@ -1,6 +1,7 @@
 """Synthetic-only regression fixtures. No production prompts or secrets committed."""
 from __future__ import annotations
 import dataclasses, io, json, os, pathlib, random, shutil, sqlite3, subprocess, tarfile, tempfile, unittest
+import audit_corpus
 from receipt_foundation.archive import Archive, TarReader, path_problem
 from receipt_foundation.common import FoundationError, Limits, digest, identifier
 from receipt_foundation.serialization import Number, parse, strict_loads, structural_digest
@@ -280,6 +281,22 @@ class ResourceTests(unittest.TestCase):
             with self.assertRaisesRegex(FoundationError,'PROJECTION_SIZE_LIMIT'):
                 build(p/'a.tar',p/'p.sqlite',compression='tar',require_collection_manifest=False,limits=dataclasses.replace(Limits(),projection_bytes=4096))
             self.assertFalse((p/'p.sqlite').exists())
+
+class AuditCorpusFailureTests(unittest.TestCase):
+    def test_missing_required_witness_emits_typed_private_failure(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=pathlib.Path(t);source=root/'source.tar';projection=root/'projection.sqlite';audit=root/'audit'
+            source.write_bytes(tar_bytes([regular('foreign.json',b'{"schema":"ForeignReceiptV1","run_id":"r"}')]))
+            build(source,projection,compression='tar',require_collection_manifest=False)
+            result=audit_corpus.audit(projection,audit)
+            self.assertEqual(result['schema'],'ReceiptAuditFailureV1')
+            self.assertEqual(result['status'],'BLOCKED')
+            self.assertEqual(result['code'],'REQUIRED_WITNESS_MISSING')
+            self.assertIn('profile_panel_receipt',result['missing_witnesses'])
+            self.assertEqual(sorted(p.name for p in audit.iterdir()),['AUDIT_FAILURE.json'])
+            saved=json.loads((audit/'AUDIT_FAILURE.json').read_text())
+            self.assertEqual(saved,result)
+
 
 class FinalBoundaryTests(unittest.TestCase):
     def test_negative_zero_observation_preserves_lexeme(self):
