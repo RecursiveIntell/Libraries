@@ -5,7 +5,7 @@
 //! exchange bounded length-prefixed frames; rmcp receives the same payloads as
 //! newline-delimited JSON-RPC over an in-process bridge.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use agent_graph_mcp::{
     cli::{self, CliConfig},
@@ -48,12 +48,15 @@ fn run() -> Result<(), String> {
 }
 
 async fn run_async(config: CliConfig) -> Result<(), String> {
+    let mut config = config;
     let data_dir = config
         .data_dir
         .clone()
         .ok_or_else(|| "MODE_REQUIRED: daemon data directory is required".to_string())?;
     let runtime_dir = cli::resolve_runtime_dir(&config).map_err(|error| error.to_string())?;
-    validate_integrity_key(&config, &data_dir)?;
+    let integrity_key_path = cli::resolve_integrity_key_path(&config);
+    validate_integrity_key(&config, &data_dir, integrity_key_path.as_deref())?;
+    config.integrity_key_path = integrity_key_path;
 
     let binary_digest = daemon::executable_digest();
     let (lock, connection) = daemon::open_owned(&data_dir, &binary_digest)
@@ -86,18 +89,18 @@ async fn run_async(config: CliConfig) -> Result<(), String> {
     stop_result
 }
 
-fn validate_integrity_key(config: &CliConfig, data_dir: &Path) -> Result<(), String> {
+fn validate_integrity_key(
+    config: &CliConfig,
+    data_dir: &Path,
+    integrity_key_path: Option<&Path>,
+) -> Result<(), String> {
     if !config.require_integrity_key {
         return Ok(());
     }
 
-    let key_path = config
-        .integrity_key_path
-        .clone()
-        .or_else(|| std::env::var_os("AGENT_GRAPH_INTEGRITY_KEY_PATH").map(PathBuf::from))
-        .ok_or_else(|| {
-            "INTEGRITY_KEY_REQUIRED: --require-integrity-key needs --integrity-key or AGENT_GRAPH_INTEGRITY_KEY_PATH".to_string()
-        })?;
+    let key_path = integrity_key_path.ok_or_else(|| {
+        "INTEGRITY_KEY_REQUIRED: --require-integrity-key needs --integrity-key or AGENT_GRAPH_INTEGRITY_KEY_PATH".to_string()
+    })?;
     fs_security::check_private_file(&key_path, true)
         .map_err(|error| format!("integrity key is not private/readable: {error}"))?;
     let length = std::fs::metadata(&key_path)

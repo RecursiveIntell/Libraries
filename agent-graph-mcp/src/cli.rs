@@ -149,9 +149,7 @@ pub fn parse_args(args: &[String]) -> Result<CliConfig, CliError> {
                 let value = iter
                     .next()
                     .ok_or_else(|| CliError::new("--instance requires a value"))?;
-                if value.is_empty() {
-                    return Err(CliError::new("--instance value must not be empty"));
-                }
+                validate_instance_name(value)?;
                 config.instance = value.clone();
             }
             "--help" => {
@@ -223,6 +221,38 @@ pub fn resolve_runtime_dir(config: &CliConfig) -> Result<PathBuf, CliError> {
                 "RUNTIME_DIR_REQUIRED: durable mode needs --runtime-dir, AGENT_GRAPH_RUNTIME_DIR, or XDG_RUNTIME_DIR",
             )
         })
+}
+
+/// Resolve the integrity-key path once so daemon startup and each accepted
+/// connection use the same configuration snapshot.
+pub fn resolve_integrity_key_path(config: &CliConfig) -> Option<PathBuf> {
+    config
+        .integrity_key_path
+        .clone()
+        .or_else(|| std::env::var_os("AGENT_GRAPH_INTEGRITY_KEY_PATH").map(PathBuf::from))
+        .filter(|path| !path.as_os_str().is_empty())
+}
+
+/// Validate an instance name before it is used as a runtime path component.
+pub fn validate_instance_name(name: &str) -> Result<(), CliError> {
+    if name.is_empty() {
+        return Err(CliError::new("--instance value must not be empty"));
+    }
+    if name == "." || name == ".." {
+        return Err(CliError::new(
+            "--instance must be a single safe path component",
+        ));
+    }
+    if name.len() > 64
+        || !name
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-' | b'_'))
+    {
+        return Err(CliError::new(
+            "--instance must contain only ASCII letters, digits, '.', '-', or '_'",
+        ));
+    }
+    Ok(())
 }
 
 /// Validate that a URL has http or https scheme and a non-empty host.
@@ -420,5 +450,23 @@ mod tests {
             config.integrity_key_path,
             Some(PathBuf::from("/tmp/my-key"))
         );
+    }
+
+    #[test]
+    fn test_safe_instance_name_accepted() {
+        let result = parse_args(&args(&["--ephemeral", "--instance", "node-a_1"]));
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().instance, "node-a_1");
+    }
+
+    #[test]
+    fn test_instance_path_traversal_rejected() {
+        for value in [".", "..", "../escape", "nested/name", "nested\\name"] {
+            let result = parse_args(&args(&["--ephemeral", "--instance", value]));
+            assert!(
+                result.is_err(),
+                "unsafe instance should be rejected: {value}"
+            );
+        }
     }
 }

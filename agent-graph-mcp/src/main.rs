@@ -41,11 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     runtime.block_on(async {
-        let integrity_key_path = config.integrity_key_path.or_else(|| {
-            std::env::var("AGENT_GRAPH_INTEGRITY_KEY_PATH")
-                .ok()
-                .map(std::path::PathBuf::from)
-        });
+        let integrity_key_path = cli::resolve_integrity_key_path(&config);
         let checkpoint_db_path = config.checkpoint_db_path.or_else(|| {
             std::env::var("AGENT_GRAPH_CHECKPOINT_DB_PATH")
                 .ok()
