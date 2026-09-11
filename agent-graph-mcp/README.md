@@ -64,9 +64,27 @@ The parser is deliberately strict: unknown flags, missing values, unsupported UR
 | `--api-key <key>` | API key passed to the configured provider path. Avoid shell history and process-list exposure when supplying secrets. |
 | `--ephemeral` | Explicit in-memory mode. State and registry data are lost on restart. |
 | `--data-dir <path>` | Enable persistent SQLite-backed storage in a private directory. Mutually exclusive with `--ephemeral`. |
+| `--runtime-dir <path>` | Private runtime directory for the daemon socket. Resolution order is explicit flag, `AGENT_GRAPH_RUNTIME_DIR`, then `XDG_RUNTIME_DIR`. |
+| `--instance <name>` | Daemon socket namespace. Must be 1–64 bytes of ASCII letters, digits, `.`, `-`, or `_`; traversal and separators are rejected. |
 | `--integrity-key <path>` | Integrity key file used for durable integrity-protected records. Keep it outside the repository and restrict its permissions. |
 | `--checkpoint-db-path <path>` | SQLite checkpoint database path; can also be supplied through `AGENT_GRAPH_CHECKPOINT_DB_PATH`. |
 | `--require-integrity-key` | Refuse startup when durable mode has no readable key of at least 32 bytes. Requires `--data-dir` plus a CLI or environment key path. |
+
+For durable operation, start the long-lived daemon first and point the ordinary `agent-graph-mcp` process at its private socket as a stdio proxy:
+
+```bash
+cargo run -p agent-graph-mcp --bin agent-graph-mcpd -- \
+  --data-dir ./var/agent-graph \
+  --runtime-dir ./var/runtime \
+  --instance default
+
+cargo run -p agent-graph-mcp --bin agent-graph-mcp -- \
+  --data-dir ./var/agent-graph \
+  --runtime-dir ./var/runtime \
+  --instance default
+```
+
+The daemon owns durable SQLite state; the proxy does not silently create an embedded fallback when the daemon is unavailable.
 
 Environment variables used by the binary:
 
