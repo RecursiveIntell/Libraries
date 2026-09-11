@@ -219,6 +219,36 @@ impl SqlitePool {
         })
     }
 
+    /// Open an existing store using only SQLite read-only/query-only connections.
+    pub(crate) fn open_read_only(
+        path: &Path,
+        pool: &PoolConfig,
+        limits: &MemoryLimits,
+    ) -> Result<Self, MemoryError> {
+        let writer = db::open_read_only_connection(path, pool, limits)?;
+        let mut readers = Vec::with_capacity(pool.max_read_connections);
+        for _ in 0..pool.max_read_connections {
+            readers.push(Mutex::new(db::open_read_only_connection(
+                path, pool, limits,
+            )?));
+        }
+        let reader_count = pool.max_read_connections;
+        let reader_timeout = if pool.reader_timeout_secs > 0 {
+            Duration::from_secs(pool.reader_timeout_secs)
+        } else {
+            DEFAULT_READER_TIMEOUT
+        };
+        Ok(Self {
+            writer: Mutex::new(writer),
+            readers,
+            available_readers: Mutex::new((0..reader_count).rev().collect()),
+            available_cv: Condvar::new(),
+            reader_count,
+            reader_timeout,
+            health: PoolHealth::default(),
+        })
+    }
+
     #[allow(dead_code)]
     pub(crate) fn health_snapshot(&self) -> PoolHealthSnapshot {
         self.health.snapshot()
