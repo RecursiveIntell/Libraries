@@ -2,6 +2,7 @@ use semantic_memory::{
     MemoryConfig, MemoryStore, MockEmbedder, ReceiptMode, SearchContext, VerifyMode,
 };
 use std::collections::BTreeMap;
+use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
@@ -13,31 +14,27 @@ fn config(base_dir: PathBuf) -> MemoryConfig {
     }
 }
 
-fn snapshot(root: &Path) -> BTreeMap<String, Vec<u8>> {
+fn snapshot(root: &Path) -> Result<BTreeMap<String, Vec<u8>>, Box<dyn Error>> {
     let mut files = BTreeMap::new();
     if !root.exists() {
-        return files;
+        return Ok(files);
     }
     let mut pending = vec![root.to_path_buf()];
     while let Some(path) = pending.pop() {
-        let metadata = fs::symlink_metadata(&path).expect("metadata");
+        let metadata = fs::symlink_metadata(&path)?;
         if metadata.is_dir() {
-            let mut children: Vec<_> = fs::read_dir(&path)
-                .expect("read directory")
-                .map(|entry| entry.expect("directory entry").path())
-                .collect();
+            let mut children: Vec<_> = fs::read_dir(&path)?
+                .map(|entry| entry.map(|entry| entry.path()))
+                .collect::<Result<_, _>>()?;
             children.sort();
             pending.extend(children.into_iter().rev());
         } else {
-            let relative = path
-                .strip_prefix(root)
-                .expect("snapshot path under root")
-                .to_string_lossy()
-                .into_owned();
-            files.insert(relative, fs::read(&path).expect("read snapshot file"));
+            let relative = path.strip_prefix(root)?;
+            let relative = relative.to_string_lossy().into_owned();
+            files.insert(relative, fs::read(&path)?);
         }
     }
-    files
+    Ok(files)
 }
 
 fn durable_files(files: &BTreeMap<String, Vec<u8>>) -> BTreeMap<String, Vec<u8>> {
@@ -48,14 +45,16 @@ fn durable_files(files: &BTreeMap<String, Vec<u8>>) -> BTreeMap<String, Vec<u8>>
         .collect()
 }
 
-fn writable_store(base: &Path) -> MemoryStore {
-    MemoryStore::open_with_embedder(config(base.to_path_buf()), Box::new(MockEmbedder::new(768)))
-        .expect("open writable store")
+fn writable_store(base: &Path) -> Result<MemoryStore, Box<dyn Error>> {
+    Ok(MemoryStore::open_with_embedder(
+        config(base.to_path_buf()),
+        Box::new(MockEmbedder::new(768)),
+    )?)
 }
 
 #[tokio::test]
-async fn missing_database_fails_without_creating_store_paths() {
-    let temp = TempDir::new().expect("temporary directory");
+async fn missing_database_fails_without_creating_store_paths() -> Result<(), Box<dyn Error>> {
+    let temp = TempDir::new()?;
     let base = temp.path().join("missing");
     assert!(!base.exists());
 
@@ -69,20 +68,21 @@ async fn missing_database_fails_without_creating_store_paths() {
         !base.exists(),
         "read-only open must not create the base path"
     );
+    Ok(())
 }
 
 #[tokio::test]
-async fn read_only_query_refuses_persistence_and_preserves_files_on_drop() {
-    let temp = TempDir::new().expect("temporary directory");
+async fn read_only_query_refuses_persistence_and_preserves_files_on_drop(
+) -> Result<(), Box<dyn Error>> {
+    let temp = TempDir::new()?;
     let base = temp.path().join("memory");
-    let writable = writable_store(&base);
+    let writable = writable_store(&base)?;
     writable
         .add_fact("private", "profile-owned evidence", None, None)
-        .await
-        .expect("seed fact");
+        .await?;
     drop(writable);
 
-    let before = snapshot(&base);
+    let before = snapshot(&base)?;
     assert!(
         !before.is_empty(),
         "writable fixture must create a database"
@@ -91,12 +91,10 @@ async fn read_only_query_refuses_persistence_and_preserves_files_on_drop() {
     let read_only = MemoryStore::open_existing_read_only_with_embedder(
         config(base.clone()),
         Box::new(MockEmbedder::new(768)),
-    )
-    .expect("open existing store read-only");
+    )?;
     let results = read_only
         .search("profile-owned evidence", Some(1), None, None)
-        .await
-        .expect("read-only query");
+        .await?;
     assert_eq!(results.len(), 1);
     assert!(
         read_only
@@ -105,38 +103,35 @@ async fn read_only_query_refuses_persistence_and_preserves_files_on_drop() {
             .is_err(),
         "read-only write must be refused"
     );
-    let report = read_only
-        .verify_integrity(VerifyMode::Quick)
-        .await
-        .expect("read-only quick integrity check");
+    let report = read_only.verify_integrity(VerifyMode::Quick).await?;
     assert!(report.ok, "read-only quick integrity check: {report:?}");
     drop(read_only);
 
-    let after = snapshot(&base);
+    let after = snapshot(&base)?;
     assert_eq!(
         durable_files(&before),
         durable_files(&after),
         "read-only query/drop changed durable files; SQLite WAL/SHM sidecars are reported separately",
     );
+    Ok(())
 }
 
 #[tokio::test]
-async fn receipt_enabled_search_is_refused_without_persisting_a_receipt() {
-    let temp = TempDir::new().expect("temporary directory");
+async fn receipt_enabled_search_is_refused_without_persisting_a_receipt(
+) -> Result<(), Box<dyn Error>> {
+    let temp = TempDir::new()?;
     let base = temp.path().join("memory");
-    let writable = writable_store(&base);
+    let writable = writable_store(&base)?;
     writable
         .add_fact("private", "receipt refusal fixture", None, None)
-        .await
-        .expect("seed fact");
+        .await?;
     drop(writable);
-    let before = snapshot(&base);
+    let before = snapshot(&base)?;
 
     let read_only = MemoryStore::open_existing_read_only_with_embedder(
         config(base.clone()),
         Box::new(MockEmbedder::new(768)),
-    )
-    .expect("open existing store read-only");
+    )?;
     let mut context = SearchContext::default_now();
     context.receipt_mode = ReceiptMode::ReturnReceipt;
     let result = read_only
@@ -145,38 +140,36 @@ async fn receipt_enabled_search_is_refused_without_persisting_a_receipt() {
     assert!(result.is_err(), "receipt persistence must be refused");
     drop(read_only);
 
-    let after = snapshot(&base);
+    let after = snapshot(&base)?;
     assert_eq!(
         durable_files(&before),
         durable_files(&after),
         "refused receipt search changed durable files; SQLite WAL/SHM sidecars are reported separately",
     );
+    Ok(())
 }
 
 #[tokio::test]
-async fn read_only_wal_shm_behavior_is_explicitly_observed() {
-    let temp = TempDir::new().expect("temporary directory");
+async fn read_only_wal_shm_behavior_is_explicitly_observed() -> Result<(), Box<dyn Error>> {
+    let temp = TempDir::new()?;
     let base = temp.path().join("memory");
-    let writable = writable_store(&base);
+    let writable = writable_store(&base)?;
     writable
         .add_fact("private", "WAL sidecar fixture", None, None)
-        .await
-        .expect("seed fact");
+        .await?;
     drop(writable);
-    let before = snapshot(&base);
+    let before = snapshot(&base)?;
 
     let read_only = MemoryStore::open_existing_read_only_with_embedder(
         config(base.clone()),
         Box::new(MockEmbedder::new(768)),
-    )
-    .expect("open existing store read-only");
+    )?;
     read_only
         .search("WAL sidecar fixture", Some(1), None, None)
-        .await
-        .expect("read-only query");
+        .await?;
     drop(read_only);
 
-    let after = snapshot(&base);
+    let after = snapshot(&base)?;
     let sidecars: Vec<_> = after
         .keys()
         .filter(|path| path.ends_with("-wal") || path.ends_with("-shm"))
@@ -194,4 +187,5 @@ async fn read_only_wal_shm_behavior_is_explicitly_observed() {
         "read-only WAL/SHM access changed durable files"
     );
     println!("read_only_sqlite_coordination_sidecars={sidecars:?}");
+    Ok(())
 }
