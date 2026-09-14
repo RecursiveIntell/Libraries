@@ -292,6 +292,79 @@ fn recursive_lineage_still_rejects_parent_text_drift() {
 }
 
 #[test]
+fn host_like_eight_generation_chain_does_not_accumulate_compaction_projections() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let policy = CompactionPolicy {
+        target_tokens: 512,
+        protect_first_n: 0,
+        protect_last_n: 1,
+        summary_max_chars: 8_000,
+        budget_mode: context_governor::BudgetMode::HardCascade,
+        max_lineage_generation: Some(8),
+        min_net_savings_tokens: Some(0),
+        ..CompactionPolicy::default()
+    };
+    let mut current = store
+        .compact_next_v2(
+            CompactRequest {
+                session_id: "host-like-eight-generation".to_string(),
+                messages: vec![
+                    message("user", "Preserve the root human intent."),
+                    message("assistant", "initial context ".repeat(300)),
+                    message("user", "background event 0"),
+                ],
+                policy: policy.clone(),
+                focus: None,
+                hmac_key_path: None,
+            },
+            None,
+        )
+        .expect("generation 1 compaction");
+    store.save_v2(&current).expect("persist generation 1");
+
+    for generation in 1..8 {
+        let mut messages = current.compacted_messages.clone();
+        messages.push(message(
+            "assistant",
+            format!("new context {generation} ").repeat(300),
+        ));
+        messages.push(message("user", format!("background event {generation}")));
+        current = store
+            .compact_next_v2(
+                CompactRequest {
+                    session_id: current.receipt.session_id.clone(),
+                    messages,
+                    policy: policy.clone(),
+                    focus: None,
+                    hmac_key_path: None,
+                },
+                None,
+            )
+            .expect("bounded next-generation compaction");
+        store.save_v2(&current).expect("persist next generation");
+    }
+
+    assert_eq!(current.receipt.generation, 8);
+    assert!(current.receipt.compacted_approx_tokens <= 512);
+    let projection_count = current
+        .compacted_messages
+        .iter()
+        .filter(|message| {
+            message
+                .metadata
+                .get("compressed_summary")
+                .and_then(Value::as_bool)
+                == Some(true)
+        })
+        .count();
+    assert!(
+        projection_count <= 2,
+        "prior compaction projections accumulated: {projection_count}"
+    );
+}
+
+#[test]
 fn generation_four_and_eight_survive_restart_between_every_generation() {
     for final_generation in [4_u32, 8_u32] {
         let tmp = TempDir::new().unwrap();

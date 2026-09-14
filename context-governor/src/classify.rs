@@ -619,7 +619,27 @@ fn classify_message(
     // Plan detection: structured plans survive compaction cycles.
     let has_plan = detect_plan_content(&msg.content);
 
-    if msg.role == "system" || msg.role == "developer" {
+    // A prior compaction projection is a derived, rebuildable view. Reclassify
+    // it before content heuristics so words such as "evidence" or "receipt"
+    // cannot promote the projection to an exact structural floor on the next
+    // generation. Its source bytes remain receipt-owned and recoverable.
+    let prior_compaction_projection = msg
+        .metadata
+        .get("compressed_summary")
+        .and_then(Value::as_bool)
+        == Some(true)
+        || (msg.name.as_deref() == Some("context_governor")
+            && msg
+                .id
+                .as_deref()
+                .is_some_and(|id| id.starts_with("summary_")));
+
+    if prior_compaction_projection {
+        item_type = ItemType::LowRiskNarrative;
+        authority = AuthorityClass::SummaryOk;
+        policy = PreservationPolicy::ExtractiveSummary;
+        reasons.push("prior-compaction-projection".to_string());
+    } else if msg.role == "system" || msg.role == "developer" {
         item_type = ItemType::ActiveInstruction;
         authority = AuthorityClass::MustPreserveExact;
         policy = PreservationPolicy::KeepVerbatim;

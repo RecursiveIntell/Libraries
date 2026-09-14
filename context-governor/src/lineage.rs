@@ -1217,9 +1217,9 @@ fn compact_context_v2_with_parent(
     if let Some(minimum_savings) = lineage_policy.min_net_savings_tokens {
         let before = response.receipt.original_approx_tokens;
         let after = response.receipt.compacted_approx_tokens;
-        let host_checkpoint_needed = after > lineage_policy.target_tokens
-            && !matches!(lineage_policy.checkpoint.strategy, CheckpointStrategy::Off)
-            && lineage_policy.checkpoint.max_checkpoints_per_session != Some(0);
+        let host_checkpoint_needed =
+            !matches!(lineage_policy.checkpoint.strategy, CheckpointStrategy::Off)
+                && lineage_policy.checkpoint.max_checkpoints_per_session != Some(0);
         if before.saturating_sub(after) < minimum_savings && !host_checkpoint_needed {
             return Err(ContextGovernorError::CompactionNoNetBenefit {
                 before,
