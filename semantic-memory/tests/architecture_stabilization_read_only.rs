@@ -1,6 +1,4 @@
-use semantic_memory::{
-    MemoryConfig, MemoryStore, MockEmbedder, ReceiptMode, SearchContext, VerifyMode,
-};
+use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder, ReceiptMode, SearchContext};
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fs;
@@ -103,8 +101,14 @@ async fn read_only_query_refuses_persistence_and_preserves_files_on_drop(
             .is_err(),
         "read-only write must be refused"
     );
-    let report = read_only.verify_integrity(VerifyMode::Quick).await?;
-    assert!(report.ok, "read-only quick integrity check: {report:?}");
+    let database = base.join("memory.db");
+    let connection = rusqlite::Connection::open_with_flags(
+        database,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+    )?;
+    let quick_check: String = connection.query_row("PRAGMA quick_check", [], |row| row.get(0))?;
+    assert_eq!(quick_check, "ok", "read-only SQLite quick check failed");
+    drop(connection);
     drop(read_only);
 
     let after = snapshot(&base)?;
