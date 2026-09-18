@@ -149,6 +149,10 @@ impl ContextGovernorFailureV1 {
                 );
                 "lineage_generation_limit"
             }
+            ContextGovernorError::LineageContinuationUnavailable { .. } => {
+                "lineage_continuation_unavailable"
+            }
+            ContextGovernorError::LineageEpochOverflow { .. } => "lineage_epoch_overflow",
             ContextGovernorError::LineageIndexRebuildRequired { .. } => {
                 "lineage_index_rebuild_required"
             }

@@ -16,6 +16,9 @@ fn capabilities_advertise_failure_envelope_v1() {
     );
     assert_eq!(value["failure_envelope"]["flag"], "--failure-envelope-v1");
     assert_eq!(value["failure_envelope"]["stream"], "stderr");
+    assert_eq!(value["supports_lineage_continuation"], true);
+    assert_eq!(value["supports_lineage_tip_projection"], true);
+    assert_eq!(value["supports_host_finalization_reserve"], true);
 }
 
 #[test]

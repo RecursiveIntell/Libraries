@@ -691,6 +691,8 @@ pub fn context_rehydrate(
             created_utc: derived_created_utc,
             context_budget_tokens: receipt.total_approx_tokens,
             target_output_tokens: 0,
+            pre_finalize_target_tokens: 0,
+            post_finalize_reserve_tokens: 0,
             allocator: "rehydrated".to_string(),
             items: vec![],
             kept_item_ids: vec![],

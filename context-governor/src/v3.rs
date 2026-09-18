@@ -26,6 +26,10 @@ const MAX_MANIFEST_BYTES: u64 = 64 * 1024 * 1024;
 const MAX_RECEIPTS: usize = 100_000;
 const MANIFEST_SCHEMA: &str = "ContextCompactionReceiptV3ManifestV1";
 
+fn is_zero_u32(value: &u32) -> bool {
+    *value == 0
+}
+
 /// A migration is fresh-only. An interrupted or existing projection is never
 /// silently resumed. Verify it read-only or explicitly quarantine it and use a
 /// fresh output root. This is separate from CAS reuse within a single migration.
@@ -97,6 +101,8 @@ pub struct V3ReceiptManifestV1 {
     pub receipt_id: String,
     pub session_id: String,
     pub generation: u32,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub lineage_epoch: u32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub parent_receipt_id: Option<String>,
     pub local_source_ids: Vec<String>,
@@ -528,6 +534,7 @@ pub fn verify_v3_manifest_against_v2(
     local.sort();
     if manifest.session_id != head.receipt.session_id
         || manifest.generation != head.receipt.generation
+        || manifest.lineage_epoch != head.receipt.lineage_epoch
         || manifest.parent_receipt_id
             != head
                 .receipt
@@ -674,6 +681,7 @@ pub fn migrate_v2_store(
                 receipt_id: head.receipt.receipt_id.clone(),
                 session_id: head.receipt.session_id.clone(),
                 generation: head.receipt.generation,
+                lineage_epoch: head.receipt.lineage_epoch,
                 parent_receipt_id: head
                     .receipt
                     .parent_receipt

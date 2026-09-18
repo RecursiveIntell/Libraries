@@ -341,6 +341,130 @@ fn v2_cli_restarts_from_store_tip_and_expands_ancestor_source() {
 }
 
 #[test]
+fn v2_cli_continues_with_authenticated_epoch_after_generation_ceiling() {
+    let dir = tempfile::tempdir().unwrap();
+    let authority = GovernedFixture::new();
+    let marker = "CLI_V2_CONTINUATION_MARKER_57b65d51";
+    let request = context_governor::CertifiedCompactRequest {
+        session_id: "cli-v2-continuation".into(),
+        messages: vec![
+            msg("tool", &format!("{} {marker}", "old ".repeat(1_000))),
+            msg("user", "continue"),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 180,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            max_lineage_generation: Some(2),
+            ..Default::default()
+        },
+        focus: None,
+    };
+    let dir_arg = dir.path().to_str().unwrap();
+    let mut compact_args = vec!["compact-v2".into(), "--dir".into(), dir_arg.into()];
+    compact_args.extend(authority.args());
+    let mut store_args = vec!["store-v2".into(), "--dir".into(), dir_arg.into()];
+    store_args.extend(authority.args());
+
+    let first_json = run_governed_cli(
+        &compact_args,
+        &serde_json::to_string(&request).unwrap(),
+        &authority,
+    );
+    let first: CompactResponseV2 = serde_json::from_str(&first_json).unwrap();
+    let source_id = first
+        .source_evidence
+        .iter()
+        .find(|source| source.message.content.contains(marker))
+        .unwrap()
+        .source_id
+        .clone();
+    run_governed_cli(&store_args, &first_json, &authority);
+
+    let mut second_messages = first.compacted_messages;
+    second_messages.push(msg("assistant", "generation two"));
+    second_messages.push(msg("user", "continue generation two"));
+    let second_request = context_governor::CertifiedCompactRequest {
+        messages: second_messages,
+        ..request.clone()
+    };
+    let second_json = run_governed_cli(
+        &compact_args,
+        &serde_json::to_string(&second_request).unwrap(),
+        &authority,
+    );
+    let second: CompactResponseV2 = serde_json::from_str(&second_json).unwrap();
+    assert_eq!(
+        (second.receipt.lineage_epoch, second.receipt.generation),
+        (0, 2)
+    );
+    run_governed_cli(&store_args, &second_json, &authority);
+
+    let mut continuation_messages = second.compacted_messages;
+    continuation_messages.push(msg("assistant", "epoch boundary"));
+    continuation_messages.push(msg("user", "continue into the next epoch"));
+    let continuation_request = context_governor::CertifiedCompactRequest {
+        messages: continuation_messages,
+        ..request
+    };
+    let mut continuation_args = vec!["compact-continue-v2".into(), "--dir".into(), dir_arg.into()];
+    continuation_args.extend(authority.args());
+    let continuation_json = run_governed_cli(
+        &continuation_args,
+        &serde_json::to_string(&continuation_request).unwrap(),
+        &authority,
+    );
+    let continuation: CompactResponseV2 = serde_json::from_str(&continuation_json).unwrap();
+    assert_eq!(
+        (
+            continuation.receipt.lineage_epoch,
+            continuation.receipt.generation,
+        ),
+        (1, 1)
+    );
+    assert_eq!(
+        continuation
+            .receipt
+            .parent_receipt
+            .as_ref()
+            .map(|parent| parent.receipt_id.as_str()),
+        Some(second.receipt.receipt_id.as_str())
+    );
+    run_governed_cli(&store_args, &continuation_json, &authority);
+
+    let mut tip_args = vec![
+        "lineage-tip-v2".into(),
+        "--dir".into(),
+        dir_arg.into(),
+        "--session".into(),
+        "cli-v2-continuation".into(),
+    ];
+    tip_args.extend(authority.args());
+    let tip_json = run_governed_cli(&tip_args, "", &authority);
+    let tip: serde_json::Value = serde_json::from_str(&tip_json).unwrap();
+    assert_eq!(tip["schema"], "LineageTipProjectionV1");
+    assert_eq!(
+        tip["receipt_id"].as_str(),
+        Some(continuation.receipt.receipt_id.as_str())
+    );
+    assert_eq!(tip["lineage_epoch"], 1);
+    assert_eq!(tip["generation"], 1);
+    assert_eq!(tip["verified"], true);
+
+    let mut expand_args = vec![
+        "expand".into(),
+        "--dir".into(),
+        dir_arg.into(),
+        "--receipt".into(),
+        continuation.receipt.receipt_id,
+        "--item".into(),
+        source_id,
+    ];
+    expand_args.extend(authority.args());
+    assert!(run_governed_cli(&expand_args, "", &authority).contains(marker));
+}
+
+#[test]
 fn v2_cli_finalize_prepare_recover_and_activate_is_two_phase() {
     let dir = tempfile::tempdir().unwrap();
     let authority = GovernedFixture::new();
