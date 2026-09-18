@@ -207,6 +207,32 @@ fn host_finalization_reserve_reduces_pre_finalize_budget_only() {
 }
 
 #[test]
+fn host_finalization_reserve_is_enforced_under_soft_warn() {
+    let response = compact_context(CompactRequest {
+        hmac_key_path: None,
+        session_id: "host-finalization-reserve-soft-warn".into(),
+        messages: vec![
+            msg("assistant", &"historical detail ".repeat(500)),
+            msg("user", "synthetic runtime notification"),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 220,
+            post_finalize_reserve_tokens: 40,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            budget_mode: BudgetMode::SoftWarn,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    assert_eq!(response.allocation_plan.pre_finalize_target_tokens, 180);
+    assert_eq!(response.allocation_plan.post_finalize_reserve_tokens, 40);
+    assert!(response.receipt.compacted_approx_tokens <= 180);
+}
+
+#[test]
 fn host_finalization_reserve_cannot_consume_the_entire_target() {
     let error = compact_context(CompactRequest {
         hmac_key_path: None,

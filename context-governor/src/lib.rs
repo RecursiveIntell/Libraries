@@ -812,10 +812,18 @@ pub fn compact_context_with_memory_sink(
         warnings.push("hard cascade budget mode active".to_string());
     }
 
+    if post_finalize_reserve > 0 && matches!(request.policy.budget_mode, BudgetMode::SoftWarn) {
+        warnings.push(
+            "host finalization reserve makes the reduced pre-finalization target mandatory even in soft-warn mode"
+                .to_string(),
+        );
+    }
     if matches!(
         request.policy.budget_mode,
         BudgetMode::HardCascade | BudgetMode::FailClosed
-    ) {
+    ) || (post_finalize_reserve > 0
+        && matches!(request.policy.budget_mode, BudgetMode::SoftWarn))
+    {
         compacted_messages = enforce_budget(compacted_messages, &compaction_policy, &mut warnings)?;
     }
 
