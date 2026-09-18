@@ -1159,6 +1159,154 @@ fn certified_v2_policy_rejects_generation_and_provenance_budget_growth() {
 }
 
 #[test]
+fn epoch_zero_wire_omits_new_optional_fields_and_roundtrips_identically() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let root = store
+        .compact_next_v2(root_request("epoch-zero-wire"), None)
+        .unwrap();
+    let bytes = serde_json::to_vec(&root).unwrap();
+    let text = String::from_utf8(bytes.clone()).unwrap();
+
+    assert!(!text.contains("lineage_epoch"));
+    assert!(!text.contains("origin_lineage_epoch"));
+    assert!(!text.contains("post_finalize_reserve_tokens"));
+    assert!(!text.contains("pre_finalize_target_tokens"));
+
+    let decoded: context_governor::CompactResponseV2 = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(serde_json::to_vec(&decoded).unwrap(), bytes);
+    store.save_v2(&decoded).unwrap();
+    assert_eq!(
+        store
+            .load_v2(&decoded.receipt.receipt_id)
+            .unwrap()
+            .receipt
+            .lineage_epoch,
+        0
+    );
+}
+
+#[test]
+fn explicit_continuation_rolls_epoch_after_generation_ceiling() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+
+    let mut root_request = root_request("epoch-continuation");
+    root_request.policy.max_lineage_generation = Some(2);
+    let root = store.compact_next_v2(root_request, None).unwrap();
+    let source_id = marker_source_id(&root);
+    store.save_v2(&root).unwrap();
+
+    let mut premature_continuation_request = next_request(&root, 2);
+    premature_continuation_request.policy.max_lineage_generation = Some(2);
+    assert!(matches!(
+        store.compact_continuation_v2(premature_continuation_request, None),
+        Err(ContextGovernorError::LineageContinuationUnavailable { .. })
+    ));
+
+    let mut generation_two_request = next_request(&root, 2);
+    generation_two_request.policy.max_lineage_generation = Some(2);
+    let generation_two = store.compact_next_v2(generation_two_request, None).unwrap();
+    store.save_v2(&generation_two).unwrap();
+
+    let mut refused_request = next_request(&generation_two, 3);
+    refused_request.policy.max_lineage_generation = Some(2);
+    assert!(matches!(
+        store.compact_next_v2(refused_request, None),
+        Err(ContextGovernorError::LineageGenerationLimit {
+            generation: 3,
+            maximum_generation: 2,
+        })
+    ));
+
+    let mut continuation_request = next_request(&generation_two, 3);
+    continuation_request.policy.max_lineage_generation = Some(2);
+    let continued = store
+        .compact_continuation_v2(continuation_request, None)
+        .unwrap();
+    assert_eq!(continued.receipt.lineage_epoch, 1);
+    assert_eq!(continued.receipt.generation, 1);
+    assert_eq!(
+        continued
+            .receipt
+            .parent_receipt
+            .as_ref()
+            .map(|parent| (parent.lineage_epoch, parent.generation)),
+        Some((0, 2))
+    );
+    assert_eq!(
+        continued.receipt.supersedes_receipt_id.as_deref(),
+        Some(generation_two.receipt.receipt_id.as_str())
+    );
+    store.save_v2(&continued).unwrap();
+
+    let restarted = certified_store(tmp.path());
+    let mut epoch_generation_two_request = next_request(&continued, 2);
+    epoch_generation_two_request.policy.max_lineage_generation = Some(2);
+    let epoch_generation_two = restarted
+        .compact_next_v2(epoch_generation_two_request, None)
+        .unwrap();
+    assert_eq!(epoch_generation_two.receipt.lineage_epoch, 1);
+    assert_eq!(epoch_generation_two.receipt.generation, 2);
+    restarted.save_v2(&epoch_generation_two).unwrap();
+
+    assert!(certified_store(tmp.path())
+        .expand_lineage(
+            &epoch_generation_two.receipt.receipt_id,
+            &source_id,
+            usize::MAX,
+        )
+        .unwrap()
+        .content
+        .contains(OMITTED_MARKER));
+}
+
+#[test]
+fn duplicate_continuation_candidates_have_one_activation_winner() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let mut root_request = root_request("continuation-race");
+    root_request.policy.max_lineage_generation = Some(2);
+    let root = store.compact_next_v2(root_request, None).unwrap();
+    store.save_v2(&root).unwrap();
+
+    let mut second_request = next_request(&root, 2);
+    second_request.policy.max_lineage_generation = Some(2);
+    let second = store.compact_next_v2(second_request, None).unwrap();
+    store.save_v2(&second).unwrap();
+
+    let mut request_a = next_request(&second, 3);
+    request_a.policy.max_lineage_generation = Some(2);
+    let mut request_b = next_request(&second, 3);
+    request_b.policy.max_lineage_generation = Some(2);
+    let candidate_a = store.compact_continuation_v2(request_a, None).unwrap();
+    let candidate_b = store.compact_continuation_v2(request_b, None).unwrap();
+    let pending_a = store.prepare_v2(&candidate_a).unwrap();
+    let pending_b = store.prepare_v2(&candidate_b).unwrap();
+
+    let winner = store
+        .activate_v2(ReceiptActivationRequestV2 {
+            receipt_id: pending_a.receipt_id,
+            committed_messages: pending_a.expected_compacted_messages,
+        })
+        .unwrap();
+    let loser = store.activate_v2(ReceiptActivationRequestV2 {
+        receipt_id: pending_b.receipt_id,
+        committed_messages: pending_b.expected_compacted_messages,
+    });
+
+    assert!(matches!(
+        loser,
+        Err(ContextGovernorError::LineageIntegrityMismatch { .. })
+    ));
+    let tip = store
+        .lineage_tip_projection(&second.receipt.session_id)
+        .unwrap();
+    assert_eq!(tip.receipt_id.as_deref(), Some(winner.receipt_id.as_str()));
+    assert_eq!((tip.lineage_epoch, tip.generation), (1, Some(1)));
+}
+
+#[test]
 fn checkpoint_candidate_survives_min_net_gate_for_host_llm() {
     let tmp = TempDir::new().unwrap();
     let store = certified_store(tmp.path());

@@ -25,6 +25,10 @@ use uuid::Uuid;
 const V1_SCHEMA: &str = "ContextCompactionReceiptV1";
 const V2_SCHEMA: &str = "ContextCompactionReceiptV2";
 
+fn is_zero_u32(value: &u32) -> bool {
+    *value == 0
+}
+
 /// Immutable reference to the one receipt whose compacted projection formed
 /// the exact prefix of a child compaction input.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -32,6 +36,11 @@ pub struct ParentReceiptRefV2 {
     pub receipt_schema: String,
     pub receipt_id: String,
     pub generation: u32,
+    /// Zero is the legacy V2 lineage. A non-zero epoch is minted only by the
+    /// explicit governed continuation operation after the per-epoch generation
+    /// ceiling has been reached.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub lineage_epoch: u32,
     pub receipt_identity_blake3: String,
     pub receipt_identity_sha256: String,
     #[serde(default)]
@@ -51,6 +60,8 @@ pub struct OriginalSourceRefV2 {
     pub origin_receipt_schema: String,
     pub origin_receipt_id: String,
     pub origin_generation: u32,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub origin_lineage_epoch: u32,
     pub origin_message_index: usize,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub origin_item_id: Option<String>,
@@ -72,6 +83,8 @@ pub struct SourceEvidenceItemV2 {
     pub source_id: String,
     pub origin_receipt_id: String,
     pub origin_generation: u32,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub origin_lineage_epoch: u32,
     pub origin_message_index: usize,
     pub message: Message,
     pub content_blake3: String,
@@ -109,6 +122,10 @@ pub struct ContextCompactionReceiptV2 {
     pub warnings: Vec<String>,
     pub recovery_durability: RecoveryDurabilityV1,
     pub generation: u32,
+    /// Per-session continuation epoch. Omitted for legacy V2 receipts so their
+    /// canonical bytes, HMAC material, and identity hashes remain unchanged.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub lineage_epoch: u32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub parent_receipt: Option<ParentReceiptRefV2>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -162,6 +179,8 @@ pub struct PendingReceiptInfoV2 {
     pub receipt_id: String,
     pub session_id: String,
     pub generation: u32,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub lineage_epoch: u32,
     pub created_utc: DateTime<Utc>,
     pub pending_path: PathBuf,
     pub expected_compacted_message_count: usize,
@@ -204,6 +223,23 @@ pub struct LineageIndexRebuildResultV1 {
     pub schema: String,
     pub path: PathBuf,
     pub receipt_count: usize,
+    pub verified: bool,
+}
+
+/// Authenticated host projection of the canonical unsuperseded lineage tip.
+/// The SQLite catalog may nominate the ID, but this result is emitted only
+/// after the authoritative JSON receipt and its complete ancestry verify.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LineageTipProjectionV1 {
+    pub schema: String,
+    pub session_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub receipt_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generation: Option<u32>,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub lineage_epoch: u32,
+    pub compacted_messages: Vec<Message>,
     pub verified: bool,
 }
 
@@ -328,6 +364,7 @@ impl ContextCompactionReceiptV2 {
             warnings: receipt.warnings.clone(),
             recovery_durability: receipt.recovery_durability.clone(),
             generation: 1,
+            lineage_epoch: 0,
             parent_receipt: None,
             supersedes_receipt_id: None,
             covered_original_sources: Vec::new(),
@@ -401,6 +438,8 @@ struct SourceIdMaterial<'a> {
     schema: &'static str,
     session_id: &'a str,
     generation: u32,
+    #[serde(skip_serializing_if = "is_zero_u32")]
+    lineage_epoch: u32,
     origin_message_index: usize,
     role: &'a str,
     content_blake3: &'a str,
@@ -414,6 +453,8 @@ struct LineageSourceIdentityMaterial<'a> {
     source_id: &'a str,
     origin_receipt_schema: &'a str,
     origin_generation: u32,
+    #[serde(skip_serializing_if = "is_zero_u32")]
+    origin_lineage_epoch: u32,
     origin_message_index: usize,
     origin_item_id: &'a Option<String>,
     role: &'a Option<String>,
@@ -428,8 +469,12 @@ struct LineageIdentityMaterial<'a> {
     schema: &'static str,
     session_id: &'a str,
     generation: u32,
+    #[serde(skip_serializing_if = "is_zero_u32")]
+    lineage_epoch: u32,
     parent_schema: Option<&'a str>,
     parent_generation: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    parent_lineage_epoch: Option<u32>,
     parent_receipt_identity_blake3: Option<&'a str>,
     parent_receipt_identity_sha256: Option<&'a str>,
     parent_lineage_blake3: Option<&'a str>,
@@ -475,6 +520,7 @@ struct ComputedSourceIdentity {
 fn compute_source_identity(
     session_id: &str,
     generation: u32,
+    lineage_epoch: u32,
     origin_message_index: usize,
     message: &Message,
 ) -> Result<ComputedSourceIdentity, ContextGovernorError> {
@@ -485,6 +531,7 @@ fn compute_source_identity(
         schema: "OriginalSourceIdentityV2",
         session_id,
         generation,
+        lineage_epoch,
         origin_message_index,
         role: &message.role,
         content_blake3: &content_blake3,
@@ -506,6 +553,7 @@ fn build_local_sources(
     session_id: &str,
     receipt_id: &str,
     generation: u32,
+    lineage_epoch: u32,
     messages: &[Message],
     start_index: usize,
 ) -> Result<Vec<SourceEvidenceItemV2>, ContextGovernorError> {
@@ -514,12 +562,14 @@ fn build_local_sources(
         if is_compaction_projection(message) {
             continue;
         }
-        let identity = compute_source_identity(session_id, generation, offset, message)?;
+        let identity =
+            compute_source_identity(session_id, generation, lineage_epoch, offset, message)?;
         sources.push(SourceEvidenceItemV2 {
             schema: "SourceEvidenceItemV2".to_string(),
             source_id: identity.source_id,
             origin_receipt_id: receipt_id.to_string(),
             origin_generation: generation,
+            origin_lineage_epoch: lineage_epoch,
             origin_message_index: offset,
             message: message.clone(),
             content_blake3: identity.content_blake3,
@@ -538,6 +588,7 @@ fn source_ref(source: &SourceEvidenceItemV2) -> OriginalSourceRefV2 {
         origin_receipt_schema: V2_SCHEMA.to_string(),
         origin_receipt_id: source.origin_receipt_id.clone(),
         origin_generation: source.origin_generation,
+        origin_lineage_epoch: source.origin_lineage_epoch,
         origin_message_index: source.origin_message_index,
         origin_item_id: None,
         role: Some(source.message.role.clone()),
@@ -577,6 +628,7 @@ fn legacy_source_refs(
             origin_receipt_schema: V1_SCHEMA.to_string(),
             origin_receipt_id: response.receipt.receipt_id.clone(),
             origin_generation: 1,
+            origin_lineage_epoch: 0,
             origin_message_index: fallback.start_index,
             origin_item_id: Some(exact.item_id.clone()),
             role: None,
@@ -608,6 +660,7 @@ fn parent_reference(
                 receipt_schema: V1_SCHEMA.to_string(),
                 receipt_id: response.receipt.receipt_id.clone(),
                 generation: 1,
+                lineage_epoch: 0,
                 receipt_identity_blake3: blake3,
                 receipt_identity_sha256: sha256,
                 lineage_blake3: String::new(),
@@ -620,6 +673,7 @@ fn parent_reference(
             receipt_schema: V2_SCHEMA.to_string(),
             receipt_id: response.receipt.receipt_id.clone(),
             generation: response.receipt.generation,
+            lineage_epoch: response.receipt.lineage_epoch,
             receipt_identity_blake3: response.receipt.receipt_identity_blake3.clone(),
             receipt_identity_sha256: response.receipt.receipt_identity_sha256.clone(),
             lineage_blake3: response.receipt.lineage_blake3.clone(),
@@ -661,6 +715,7 @@ fn refresh_v2_integrity(response: &mut CompactResponseV2) -> Result<(), ContextG
             source_id: &source.source_id,
             origin_receipt_schema: &source.origin_receipt_schema,
             origin_generation: source.origin_generation,
+            origin_lineage_epoch: source.origin_lineage_epoch,
             origin_message_index: source.origin_message_index,
             origin_item_id: &source.origin_item_id,
             role: &source.role,
@@ -674,8 +729,12 @@ fn refresh_v2_integrity(response: &mut CompactResponseV2) -> Result<(), ContextG
         schema: "ContextCompactionLineageIdentityV2",
         session_id: &response.receipt.session_id,
         generation: response.receipt.generation,
+        lineage_epoch: response.receipt.lineage_epoch,
         parent_schema: parent.map(|value| value.receipt_schema.as_str()),
         parent_generation: parent.map(|value| value.generation),
+        parent_lineage_epoch: parent
+            .filter(|value| value.lineage_epoch != 0)
+            .map(|value| value.lineage_epoch),
         parent_receipt_identity_blake3: parent.map(|value| value.receipt_identity_blake3.as_str()),
         parent_receipt_identity_sha256: parent.map(|value| value.receipt_identity_sha256.as_str()),
         parent_lineage_blake3: parent.map(|value| value.lineage_blake3.as_str()),
@@ -716,23 +775,30 @@ fn verify_v2_provenance_integrity(
     if response.receipt.generation == 0 {
         return Err(lineage_error(receipt_id, "generation must be at least one"));
     }
-    match (
-        &response.receipt.parent_receipt,
-        response.receipt.generation,
-    ) {
-        (None, 1) => {
+    match &response.receipt.parent_receipt {
+        None if response.receipt.generation == 1 && response.receipt.lineage_epoch == 0 => {
             if response.receipt.supersedes_receipt_id.is_some() {
                 return Err(lineage_error(receipt_id, "root cannot supersede a receipt"));
             }
         }
-        (Some(parent), generation) if generation > 1 => {
+        Some(parent) => {
             if parent.receipt_id == *receipt_id {
                 return Err(lineage_error(receipt_id, "receipt cannot parent itself"));
             }
-            if generation != parent.generation.saturating_add(1) {
+            let ordinary_child = response.receipt.lineage_epoch == parent.lineage_epoch
+                && response.receipt.generation == parent.generation.checked_add(1).unwrap_or(0);
+            let continuation_child =
+                parent
+                    .lineage_epoch
+                    .checked_add(1)
+                    .is_some_and(|next_epoch| {
+                        response.receipt.lineage_epoch == next_epoch
+                            && response.receipt.generation == 1
+                    });
+            if !ordinary_child && !continuation_child {
                 return Err(lineage_error(
                     receipt_id,
-                    "generation is not parent generation plus one",
+                    "child is neither the next generation nor the next-epoch continuation",
                 ));
             }
             if response.receipt.supersedes_receipt_id.as_deref() != Some(parent.receipt_id.as_str())
@@ -791,6 +857,7 @@ fn verify_v2_provenance_integrity(
         if source.schema != "SourceEvidenceItemV2"
             || source.origin_receipt_id != *receipt_id
             || source.origin_generation != response.receipt.generation
+            || source.origin_lineage_epoch != response.receipt.lineage_epoch
         {
             return Err(lineage_error(
                 receipt_id,
@@ -800,6 +867,7 @@ fn verify_v2_provenance_integrity(
         let expected_identity = compute_source_identity(
             &response.receipt.session_id,
             response.receipt.generation,
+            response.receipt.lineage_epoch,
             source.origin_message_index,
             &source.message,
         )?;
@@ -845,7 +913,10 @@ fn verify_v2_provenance_integrity(
         .receipt
         .covered_original_sources
         .iter()
-        .filter(|source| source.origin_generation == response.receipt.generation)
+        .filter(|source| {
+            source.origin_lineage_epoch == response.receipt.lineage_epoch
+                && source.origin_generation == response.receipt.generation
+        })
         .cloned()
         .collect::<BTreeSet<_>>();
     if current_generation_refs != local_refs {
@@ -859,8 +930,11 @@ fn verify_v2_provenance_integrity(
         .covered_original_sources
         .iter()
         .any(|source| {
-            source.origin_generation > response.receipt.generation
-                || (source.origin_generation == response.receipt.generation
+            source.origin_lineage_epoch > response.receipt.lineage_epoch
+                || (source.origin_lineage_epoch == response.receipt.lineage_epoch
+                    && source.origin_generation > response.receipt.generation)
+                || (source.origin_lineage_epoch == response.receipt.lineage_epoch
+                    && source.origin_generation == response.receipt.generation
                     && (source.origin_receipt_schema != V2_SCHEMA
                         || source.origin_receipt_id != *receipt_id))
         })
@@ -1119,14 +1193,21 @@ fn compact_context_v2_with_parent(
     mut request: CompactRequest,
     parent: Option<&VersionedCompactResponse>,
     governed_authority: Option<&receipt_index::KeyRing>,
+    continue_lineage: bool,
 ) -> Result<CompactResponseV2, ContextGovernorError> {
     if request.messages.is_empty() {
         return Err(ContextGovernorError::EmptyMessages);
     }
     let original_messages = request.messages.clone();
     let lineage_policy = request.policy.clone();
-    let (generation, parent_ref, inherited_sources, new_source_start) = match parent {
-        None => (1, None, Vec::new(), 0),
+    let (generation, lineage_epoch, parent_ref, inherited_sources, new_source_start) = match parent
+    {
+        None if continue_lineage => {
+            return Err(ContextGovernorError::LineageContinuationUnavailable {
+                reason: "a verified V2 parent tip is required".to_string(),
+            });
+        }
+        None => (1, 0, None, Vec::new(), 0),
         Some(parent) => {
             verify_versioned(parent, true)?;
             if parent.session_id() != request.session_id {
@@ -1145,9 +1226,42 @@ fn compact_context_v2_with_parent(
                 ));
             }
             let reference = parent_reference(parent)?;
-            let generation = next_generation(&reference.receipt_id, reference.generation)?;
+            let (generation, lineage_epoch) = if continue_lineage {
+                if reference.receipt_schema != V2_SCHEMA {
+                    return Err(ContextGovernorError::LineageContinuationUnavailable {
+                        reason: "a V1 receipt cannot anchor a continuation epoch".to_string(),
+                    });
+                }
+                let maximum_generation =
+                    lineage_policy.max_lineage_generation.ok_or_else(|| {
+                        ContextGovernorError::LineageContinuationUnavailable {
+                            reason: "continuation requires an explicit generation ceiling"
+                                .to_string(),
+                        }
+                    })?;
+                if reference.generation != maximum_generation {
+                    return Err(ContextGovernorError::LineageContinuationUnavailable {
+                        reason: format!(
+                            "parent generation {} does not equal configured maximum {}",
+                            reference.generation, maximum_generation
+                        ),
+                    });
+                }
+                let lineage_epoch = reference.lineage_epoch.checked_add(1).ok_or_else(|| {
+                    ContextGovernorError::LineageEpochOverflow {
+                        receipt_id: reference.receipt_id.clone(),
+                    }
+                })?;
+                (1, lineage_epoch)
+            } else {
+                (
+                    next_generation(&reference.receipt_id, reference.generation)?,
+                    reference.lineage_epoch,
+                )
+            };
             (
                 generation,
+                lineage_epoch,
                 Some(reference),
                 parent_sources(parent)?,
                 prefix.len(),
@@ -1161,12 +1275,14 @@ fn compact_context_v2_with_parent(
     let v1 = compact_context(request)?;
     let mut receipt = ContextCompactionReceiptV2::from_v1(&v1.receipt);
     receipt.generation = generation;
+    receipt.lineage_epoch = lineage_epoch;
     receipt.parent_receipt = parent_ref.clone();
     receipt.supersedes_receipt_id = parent_ref.as_ref().map(|parent| parent.receipt_id.clone());
     let source_evidence = build_local_sources(
         &receipt.session_id,
         &receipt.receipt_id,
         generation,
+        lineage_epoch,
         &original_messages,
         new_source_start,
     )?;
@@ -1249,7 +1365,7 @@ fn next_generation(receipt_id: &str, parent_generation: u32) -> Result<u32, Cont
 pub fn compact_context_v2(
     request: CompactRequest,
 ) -> Result<CompactResponseV2, ContextGovernorError> {
-    compact_context_v2_with_parent(request, None, None)
+    compact_context_v2_with_parent(request, None, None, false)
 }
 
 /// Rebind a V2 local projection after deterministic sanitation or an audited
@@ -1470,6 +1586,7 @@ impl FileContextStore {
                     actual.receipt_schema == expected_parent.receipt_schema
                         && actual.receipt_id == expected_parent.receipt_id
                         && actual.generation == expected_parent.generation
+                        && actual.lineage_epoch == expected_parent.lineage_epoch
                         && actual.lineage_blake3 == expected_parent.lineage_blake3
                         && actual.lineage_sha256 == expected_parent.lineage_sha256
                 }
@@ -1640,6 +1757,33 @@ impl FileContextStore {
         }
     }
 
+    pub fn lineage_tip_projection(
+        &self,
+        session_id: &str,
+    ) -> Result<LineageTipProjectionV1, ContextGovernorError> {
+        let Some(receipt_id) = self.resolve_lineage_tip(session_id)? else {
+            return Ok(LineageTipProjectionV1 {
+                schema: "LineageTipProjectionV1".to_string(),
+                session_id: session_id.to_string(),
+                receipt_id: None,
+                generation: None,
+                lineage_epoch: 0,
+                compacted_messages: Vec::new(),
+                verified: true,
+            });
+        };
+        let response = self.load_v2(&receipt_id)?;
+        Ok(LineageTipProjectionV1 {
+            schema: "LineageTipProjectionV1".to_string(),
+            session_id: response.receipt.session_id.clone(),
+            receipt_id: Some(response.receipt.receipt_id.clone()),
+            generation: Some(response.receipt.generation),
+            lineage_epoch: response.receipt.lineage_epoch,
+            compacted_messages: response.compacted_messages,
+            verified: true,
+        })
+    }
+
     /// Rebuild the single receipt/search/lineage projection from authoritative
     /// receipt files. The projection is disposable; JSON receipts remain the
     /// sole durable authority.
@@ -1683,7 +1827,33 @@ impl FileContextStore {
             }
             None => None,
         };
-        compact_context_v2_with_parent(request, parent.as_ref(), Some(governed_authority))
+        compact_context_v2_with_parent(request, parent.as_ref(), Some(governed_authority), false)
+    }
+
+    /// Start the next authenticated lineage epoch after the configured
+    /// per-epoch generation ceiling has been reached. The existing verified tip
+    /// remains the immutable parent, so exact expansion, retention, and
+    /// duplicate-child race checks keep using the canonical receipt graph.
+    pub fn compact_continuation_v2(
+        &self,
+        request: CompactRequest,
+        explicit_parent_receipt_id: Option<&str>,
+    ) -> Result<CompactResponseV2, ContextGovernorError> {
+        let governed_authority = self.integrity_key_ring.as_ref().ok_or_else(|| {
+            ContextGovernorError::ReceiptIntegrityUnavailable {
+                operation: "V2 lineage continuation".to_string(),
+                reason: "governed key descriptors are required".to_string(),
+            }
+        })?;
+        let parent_id = match explicit_parent_receipt_id {
+            Some(receipt_id) => Some(receipt_id.to_string()),
+            None => self.resolve_lineage_tip(&request.session_id)?,
+        };
+        let parent = match parent_id {
+            Some(receipt_id) => Some(self.load_versioned(&receipt_id)?),
+            None => None,
+        };
+        compact_context_v2_with_parent(request, parent.as_ref(), Some(governed_authority), true)
     }
 
     pub fn save_v2(
@@ -1937,6 +2107,7 @@ impl FileContextStore {
             receipt_id: persisted.receipt.receipt_id.clone(),
             session_id: persisted.receipt.session_id.clone(),
             generation: persisted.receipt.generation,
+            lineage_epoch: persisted.receipt.lineage_epoch,
             created_utc: persisted.receipt.created_utc,
             pending_path,
             expected_compacted_message_count: persisted.compacted_messages.len(),
@@ -2002,6 +2173,7 @@ impl FileContextStore {
                     receipt_id: id.clone(),
                     session_id: response.receipt.session_id.clone(),
                     generation: response.receipt.generation,
+                    lineage_epoch: response.receipt.lineage_epoch,
                     created_utc: response.receipt.created_utc,
                     pending_path: self.pending_path_for_receipt(&id)?,
                     expected_compacted_message_count: response.compacted_messages.len(),

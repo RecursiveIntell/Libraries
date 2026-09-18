@@ -175,6 +175,63 @@ fn receipt_hash_matches_final_compacted_messages_after_receipt_id_injection() {
 }
 
 #[test]
+fn host_finalization_reserve_reduces_pre_finalize_budget_only() {
+    let response = compact_context(CompactRequest {
+        hmac_key_path: None,
+        session_id: "host-finalization-reserve".into(),
+        messages: vec![
+            msg("assistant", &"historical detail ".repeat(500)),
+            msg("user", "synthetic runtime notification"),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 220,
+            post_finalize_reserve_tokens: 40,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            budget_mode: BudgetMode::HardCascade,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    assert_eq!(response.allocation_plan.target_output_tokens, 220);
+    assert_eq!(response.allocation_plan.pre_finalize_target_tokens, 180);
+    assert_eq!(response.allocation_plan.post_finalize_reserve_tokens, 40);
+    assert!(response.receipt.compacted_approx_tokens <= 180);
+
+    let mut emitted = response.compacted_messages.clone();
+    emitted.push(msg("user", "restored host human anchor"));
+    let finalized = finalize_compacted_response(response, emitted).unwrap();
+    assert!(finalized.receipt.compacted_approx_tokens <= 220);
+}
+
+#[test]
+fn host_finalization_reserve_cannot_consume_the_entire_target() {
+    let error = compact_context(CompactRequest {
+        hmac_key_path: None,
+        session_id: "invalid-host-finalization-reserve".into(),
+        messages: vec![msg("user", "latest")],
+        policy: CompactionPolicy {
+            target_tokens: 40,
+            post_finalize_reserve_tokens: 40,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap_err();
+
+    assert!(matches!(
+        error,
+        context_governor::ContextGovernorError::CannotMeetTarget {
+            target: 40,
+            minimum_safe: 40,
+            ..
+        }
+    ));
+}
+
+#[test]
 fn finalize_compacted_response_rebinds_receipt_to_adapter_output() {
     let response = compact_context(CompactRequest {
         hmac_key_path: None,

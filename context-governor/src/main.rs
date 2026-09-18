@@ -49,6 +49,9 @@ fn run() -> Result<(), ContextGovernorError> {
             "supports_certified_receipt_store": true,
             "supports_evidence_hmac": true,
             "supports_pending_activation": true,
+            "supports_lineage_continuation": true,
+            "supports_lineage_tip_projection": true,
+            "supports_host_finalization_reserve": true,
             "failure_envelope": {
                 "schema": "ContextGovernorFailureV1",
                 "flag": "--failure-envelope-v1",
@@ -63,6 +66,15 @@ fn run() -> Result<(), ContextGovernorError> {
             let authority = governed_authority_from_args(&args)?;
             let store = FileContextStore::with_key_ring(&dir, authority.key_ring().clone());
             print_json(&store.compact_next_v2(request.into(), parent.as_deref())?)
+        }
+        "compact-continue-v2" => {
+            let dir = required_arg(&args, "--dir")?;
+            let parent = arg_value(&args, "--parent-receipt");
+            reject_forbidden_certified_key_args(&args)?;
+            let request: CertifiedCompactRequest = read_json_stdin("CertifiedCompactRequest")?;
+            let authority = governed_authority_from_args(&args)?;
+            let store = FileContextStore::with_key_ring(&dir, authority.key_ring().clone());
+            print_json(&store.compact_continuation_v2(request.into(), parent.as_deref())?)
         }
         "finalize" => {
             let response: CompactResponse = read_json_stdin("CompactResponse")?;
@@ -130,6 +142,12 @@ fn run() -> Result<(), ContextGovernorError> {
             let dir = required_arg(&args, "--dir")?;
             let store = governed_store_from_args(&args, &dir)?;
             print_json(&store.rebuild_lineage_index()?)
+        }
+        "lineage-tip-v2" => {
+            let dir = required_arg(&args, "--dir")?;
+            let session = required_arg(&args, "--session")?;
+            let store = governed_store_from_args(&args, &dir)?;
+            print_json(&store.lineage_tip_projection(&session)?)
         }
         "expand" => {
             let dir = required_arg(&args, "--dir")?;
@@ -378,8 +396,7 @@ fn run() -> Result<(), ContextGovernorError> {
         }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  capabilities\n  compact < request.json > response.json\n  compact-v2 --dir DIR [--parent-receipt ID] GOVERNED_AUTH < request.json\n  finalize < response.json > finalized-response.json\n  finalize-v2 GOVERNED_AUTH < {{candidate,compacted_messages}}.json\n  store --dir DIR [--hmac-key PATH] < V1-response.json\n  prepare-v2 --dir DIR GOVERNED_AUTH < finalized-V2.json\n  pending-v2 --dir DIR [--receipt ID] GOVERNED_AUTH\n  activate-v2 --dir DIR GOVERNED_AUTH < {{receipt_id,committed_messages}}.json\n  discard-v2 --dir DIR --receipt ID GOVERNED_AUTH\n  rebuild-lineage-index --dir DIR GOVERNED_AUTH\n  store-v2 --dir DIR GOVERNED_AUTH < finalized-V2.json  (compatibility immediate prepare+activate)\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N] GOVERNED_AUTH  (omit auth only for V1 inspection)\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N] GOVERNED_AUTH  (omit auth only for V1 inspection)\n  status --dir DIR [GOVERNED_AUTH]\n  prune --dir DIR [--keep-last N] GOVERNED_AUTH  (omit auth only for V1-only stores)\n  GOVERNED_AUTH := --governed-key-fd FD --governed-snapshot-fd FD [--governed-retired-key-fd KEY_ID:FD]...\n  diff < response.json\n  diff-v2 < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  render-prompt-v2 < response.json\n  verify --dir DIR [--hmac-key PATH] [--receipt ID]  (legacy/offline V1 inspection)\n  key-init\n  key-rotate\n  key-status --dir DIR [--hmac-key PATH]
-  parse-summary < summary.txt    (parses LLM output into structured fields)"
+                "context-governor commands:\n  capabilities\n  compact < request.json > response.json\n  compact-v2 --dir DIR [--parent-receipt ID] GOVERNED_AUTH < request.json\n  compact-continue-v2 --dir DIR [--parent-receipt ID] GOVERNED_AUTH < request.json\n  finalize < response.json > finalized-response.json\n  finalize-v2 GOVERNED_AUTH < {{candidate,compacted_messages}}.json\n  store --dir DIR [--hmac-key PATH] < V1-response.json\n  prepare-v2 --dir DIR GOVERNED_AUTH < finalized-V2.json\n  pending-v2 --dir DIR [--receipt ID] GOVERNED_AUTH\n  activate-v2 --dir DIR GOVERNED_AUTH < {{receipt_id,committed_messages}}.json\n  discard-v2 --dir DIR --receipt ID GOVERNED_AUTH\n  rebuild-lineage-index --dir DIR GOVERNED_AUTH\n  store-v2 --dir DIR GOVERNED_AUTH < finalized-V2.json  (compatibility immediate prepare+activate)\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N] GOVERNED_AUTH  (omit auth only for V1 inspection)\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N] GOVERNED_AUTH  (omit auth only for V1 inspection)\n  status --dir DIR [GOVERNED_AUTH]\n  prune --dir DIR [--keep-last N] GOVERNED_AUTH  (omit auth only for V1-only stores)\n  GOVERNED_AUTH := --governed-key-fd FD --governed-snapshot-fd FD [--governed-retired-key-fd KEY_ID:FD]...\n  diff < response.json\n  diff-v2 < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  render-prompt-v2 < response.json\n  verify --dir DIR [--hmac-key PATH] [--receipt ID]  (legacy/offline V1 inspection)\n  key-init\n  key-rotate\n  key-status --dir DIR [--hmac-key PATH]\n  parse-summary < summary.txt    (parses LLM output into structured fields)"
             );
             Ok(())
         }

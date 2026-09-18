@@ -50,6 +50,10 @@ pub use sqlite_store::*;
 const CHARS_PER_TOKEN: usize = 4;
 const SUMMARY_PREFIX: &str = "[CONTEXT COMPACTION — RECEIPT-BACKED REFERENCE ONLY]";
 
+fn is_zero_usize(value: &usize) -> bool {
+    *value == 0
+}
+
 #[derive(Debug, Error)]
 pub enum ContextGovernorError {
     #[error(transparent)]
@@ -176,6 +180,10 @@ pub enum ContextGovernorError {
         generation: u32,
         maximum_generation: u32,
     },
+    #[error("V2 lineage continuation is unavailable: {reason}")]
+    LineageContinuationUnavailable { reason: String },
+    #[error("lineage epoch overflow: parent receipt {receipt_id} is already at the maximum representable epoch")]
+    LineageEpochOverflow { receipt_id: String },
     #[error("lineage index rebuild required: {reason}")]
     LineageIndexRebuildRequired { reason: String },
 }
@@ -333,6 +341,14 @@ pub struct ContextAllocationPlanV1 {
     pub created_utc: DateTime<Utc>,
     pub context_budget_tokens: usize,
     pub target_output_tokens: usize,
+    /// Budget used by deterministic allocation before a host adds required
+    /// final projection material. Omitted for legacy/no-reserve plans.
+    #[serde(default, skip_serializing_if = "is_zero_usize")]
+    pub pre_finalize_target_tokens: usize,
+    /// Host-declared token allowance reserved inside `target_output_tokens`.
+    /// The host may request this allowance but Rust owns enforcement.
+    #[serde(default, skip_serializing_if = "is_zero_usize")]
+    pub post_finalize_reserve_tokens: usize,
     pub allocator: String,
     pub items: Vec<ContextItemV1>,
     pub kept_item_ids: Vec<String>,
@@ -552,6 +568,10 @@ impl From<CertifiedCompactRequest> for CompactRequest {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CompactionPolicy {
     pub target_tokens: usize,
+    /// Tokens reserved for deterministic host projection changes performed
+    /// before `finalize-v2`. Zero preserves the legacy allocation contract.
+    #[serde(default, skip_serializing_if = "is_zero_usize")]
+    pub post_finalize_reserve_tokens: usize,
     pub protect_first_n: usize,
     pub protect_last_n: usize,
     pub summary_max_chars: usize,
@@ -582,6 +602,7 @@ impl Default for CompactionPolicy {
     fn default() -> Self {
         Self {
             target_tokens: 8_000,
+            post_finalize_reserve_tokens: 0,
             protect_first_n: 3,
             protect_last_n: 8,
             summary_max_chars: 8_000,
@@ -655,11 +676,27 @@ pub fn compact_context_with_memory_sink(
         return Err(ContextGovernorError::EmptyMessages);
     }
 
+    let admitted_target = request.policy.target_tokens;
+    let post_finalize_reserve = request.policy.post_finalize_reserve_tokens;
+    if post_finalize_reserve >= admitted_target {
+        return Err(ContextGovernorError::CannotMeetTarget {
+            target: admitted_target,
+            minimum_safe: post_finalize_reserve,
+            actual: post_finalize_reserve,
+            reasons: vec![
+                "host finalization reserve must leave a positive pre-finalization budget"
+                    .to_string(),
+            ],
+        });
+    }
+    let mut compaction_policy = request.policy.clone();
+    compaction_policy.target_tokens = admitted_target - post_finalize_reserve;
+
     let original_tokens = count_tokens_messages(&request.messages, &request.policy);
     let original_hash = hash_messages(&request.messages)?;
     let original_sha256 = hash_messages_sha256(&request.messages)?;
-    let mut items = classify_messages(&request.session_id, &request.messages, &request.policy);
-    let allocator_mode = resolve_allocator(&request.policy);
+    let mut items = classify_messages(&request.session_id, &request.messages, &compaction_policy);
+    let allocator_mode = resolve_allocator(&compaction_policy);
     score_items(
         &mut items,
         request.focus.as_deref(),
@@ -691,12 +728,25 @@ pub fn compact_context_with_memory_sink(
     let mut plan = allocate_items(
         &request.session_id,
         items,
-        &request.policy,
+        &compaction_policy,
         allocator_mode,
         request.focus.as_deref(),
         &request.messages,
     );
+    plan.context_budget_tokens = admitted_target;
+    plan.target_output_tokens = admitted_target;
+    plan.pre_finalize_target_tokens = if post_finalize_reserve > 0 {
+        compaction_policy.target_tokens
+    } else {
+        0
+    };
+    plan.post_finalize_reserve_tokens = post_finalize_reserve;
     let mut warnings = warning_from_allocator;
+    if post_finalize_reserve > 0 {
+        warnings.push(format!(
+            "reserved {post_finalize_reserve} tokens for authenticated host finalization"
+        ));
+    }
     if matches!(
         request.policy.token_counter,
         TokenCounterKind::ApproxChars
@@ -736,7 +786,7 @@ pub fn compact_context_with_memory_sink(
     let (mut summary, summary_membership_checks) = build_summary(
         &request.messages,
         &plan,
-        &request.policy,
+        &compaction_policy,
         &structured_summary,
         &receipt_id,
     );
@@ -755,7 +805,7 @@ pub fn compact_context_with_memory_sink(
         );
     }
     let (mut compacted_messages, emitted_message_membership_checks) =
-        assemble_compacted_messages(&request.messages, &plan, &summary, &request.policy);
+        assemble_compacted_messages(&request.messages, &plan, &summary, &compaction_policy);
     plan.hot_path_operation_counts
         .emitted_message_membership_checks = emitted_message_membership_checks;
     if matches!(request.policy.budget_mode, BudgetMode::HardCascade) {
@@ -766,15 +816,15 @@ pub fn compact_context_with_memory_sink(
         request.policy.budget_mode,
         BudgetMode::HardCascade | BudgetMode::FailClosed
     ) {
-        compacted_messages = enforce_budget(compacted_messages, &request.policy, &mut warnings)?;
+        compacted_messages = enforce_budget(compacted_messages, &compaction_policy, &mut warnings)?;
     }
 
     let compacted_tokens = count_tokens_messages(&compacted_messages, &request.policy);
     if matches!(request.policy.budget_mode, BudgetMode::HardLimit)
-        && compacted_tokens > request.policy.target_tokens
+        && compacted_tokens > compaction_policy.target_tokens
     {
         return Err(ContextGovernorError::BudgetExceeded {
-            target: request.policy.target_tokens,
+            target: compaction_policy.target_tokens,
             actual: compacted_tokens,
         });
     }
@@ -801,10 +851,10 @@ pub fn compact_context_with_memory_sink(
         .collect::<Vec<_>>();
     plan.hot_path_operation_counts.fallback_ref_lookups = exact_store.len();
 
-    if compacted_tokens > request.policy.target_tokens {
+    if compacted_tokens > compaction_policy.target_tokens {
         warnings.push(format!(
-            "compacted output still exceeds target budget: {} > {} tokens",
-            compacted_tokens, request.policy.target_tokens
+            "compacted output still exceeds pre-finalization target budget: {} > {} tokens",
+            compacted_tokens, compaction_policy.target_tokens
         ));
     }
 
@@ -1410,6 +1460,8 @@ fn allocate_items_v1(
         created_utc: Utc::now(),
         context_budget_tokens: policy.target_tokens,
         target_output_tokens: policy.target_tokens,
+        pre_finalize_target_tokens: 0,
+        post_finalize_reserve_tokens: 0,
         allocator: allocator.as_str().to_string(),
         items,
         kept_item_ids: kept,
@@ -1593,6 +1645,8 @@ fn allocate_items_utility_v2(
         created_utc: Utc::now(),
         context_budget_tokens: policy.target_tokens,
         target_output_tokens: policy.target_tokens,
+        pre_finalize_target_tokens: 0,
+        post_finalize_reserve_tokens: 0,
         allocator: AllocatorMode::UtilityV2.as_str().to_string(),
         items,
         kept_item_ids,
