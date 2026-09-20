@@ -5,6 +5,8 @@
 //! Search is deliberately incomplete; only checked witnesses produce decisions.
 #![forbid(unsafe_code)]
 
+pub mod operators;
+
 use std::fmt;
 use std::str::FromStr;
 
@@ -221,6 +223,11 @@ impl SearchResult {
             Outcome::Dual(v) => ("dual", v.as_slice(), "checked_exactly"),
             Outcome::Unresolved(r) => ("unresolved", &[][..], *r),
         };
+        // Public library callers cannot inject an arbitrary reason into JSON.
+        let reason = match reason {
+            "checked_exactly" | "search_budget_exhausted" | "no_certificate_in_bounded_search" => reason,
+            _ => "unrecognized_reason",
+        };
         let values = values.iter().map(|x| format!("\"{x}\""))
             .collect::<Vec<_>>().join(",");
         format!(
@@ -319,6 +326,26 @@ pub fn solve(problem: &Problem, budget: usize) -> Result<SearchResult, Error> {
             }
             if problem.verify_primal(&b)? {
                 return Ok(SearchResult { outcome: Outcome::Primal(b), attempts });
+            }
+        }
+    }
+    // A small exhaustive ternary dual grid catches transport/range combinations
+    // needing three or more rows without displacing the earlier primal search.
+    if matrix.len() <= 6 {
+        for code in 1usize..3usize.pow(matrix.len() as u32) {
+            if attempts >= budget {
+                return Ok(SearchResult { outcome: Outcome::Unresolved("search_budget_exhausted"), attempts });
+            }
+            attempts += 1;
+            let mut digits = code;
+            let mut y = Vec::with_capacity(matrix.len());
+            for _ in 0..matrix.len() {
+                let digit = match digits % 3 { 0 => 0, 1 => 1, _ => -1 };
+                y.push(Rational::new(digit, 1)?);
+                digits /= 3;
+            }
+            if problem.verify_dual(&y)? {
+                return Ok(SearchResult { outcome: Outcome::Dual(y), attempts });
             }
         }
     }
@@ -424,6 +451,7 @@ mod tests {
         assert!(!problem.verify_primal(&[q(1), q(2)]).unwrap());
         assert!(problem.verify_dual(&[q(-1), q(1), q(-1)]).unwrap());
         assert!(problem.verify_dual(&[q(-1), q(1)]).is_err());
+        assert!(matches!(solve(&problem, 500).unwrap().outcome, Outcome::Dual(_)));
     }
 
     #[test]
@@ -459,6 +487,13 @@ mod tests {
             "CW1 1 1 0 50 -1/1", "CW1 0 1 0 50"] {
             assert!(parse_request(wire).is_err(), "{wire}");
         }
+    }
+
+    #[test]
+    fn public_result_reason_cannot_inject_json() {
+        let report = SearchResult { outcome: Outcome::Unresolved("bad\"reason"), attempts: 1 };
+        assert!(report.to_json().contains("unrecognized_reason"));
+        assert!(!report.to_json().contains("bad"));
     }
 
     #[test]

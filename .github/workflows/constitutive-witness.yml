@@ -20,9 +20,7 @@ jobs:
         run: rustc --version && cargo --version
       - name: Test isolated kernel without network dependencies
         run: cargo test --manifest-path constitutive-witness/Cargo.toml --locked --offline
-      - name: Exercise real CLI energy separator
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf 'CW1 1 1 0 100\n-1/1\n1/1\n' | cargo run --quiet --manifest-path constitutive-witness/Cargo.toml --locked --offline > /tmp/cw-result.json
-          python3 -c 'import json; x=json.load(open("/tmp/cw-result.json")); assert x["kind"] == "dual" and x["values"] == ["1/1"]'
+      - name: Build actual CLI
+        run: cargo build --manifest-path constitutive-witness/Cargo.toml --locked --offline
+      - name: Independently check all native corpus certificates
+        run: python3 receipt-bench/fixtures/falsify/check_corpus.py --binary constitutive-witness/target/debug/constitutive-witness
