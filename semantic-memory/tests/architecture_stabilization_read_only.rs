@@ -50,6 +50,21 @@ fn writable_store(base: &Path) -> Result<MemoryStore, Box<dyn Error>> {
     )?)
 }
 
+async fn assert_fact_remains_readable(base: &Path, query: &str) -> Result<(), Box<dyn Error>> {
+    let reopened = MemoryStore::open_existing_read_only_with_embedder(
+        config(base.to_path_buf()),
+        Box::new(MockEmbedder::new(768)),
+    )?;
+    let results = reopened.search(query, Some(1), None, None).await?;
+    assert_eq!(
+        results.len(),
+        1,
+        "WAL-backed fact was not readable after reopen"
+    );
+    drop(reopened);
+    Ok(())
+}
+
 #[tokio::test]
 async fn missing_database_fails_without_creating_store_paths() -> Result<(), Box<dyn Error>> {
     let temp = TempDir::new()?;
@@ -110,12 +125,13 @@ async fn read_only_query_refuses_persistence_and_preserves_files_on_drop(
     assert_eq!(quick_check, "ok", "read-only SQLite quick check failed");
     drop(connection);
     drop(read_only);
+    assert_fact_remains_readable(&base, "profile-owned evidence").await?;
 
     let after = snapshot(&base)?;
     assert_eq!(
         durable_files(&before),
         durable_files(&after),
-        "read-only query/drop changed durable files; SQLite WAL/SHM sidecars are reported separately",
+        "read-only query/drop changed durable database files; WAL-backed state is verified by reopen",
     );
     Ok(())
 }
@@ -143,12 +159,13 @@ async fn receipt_enabled_search_is_refused_without_persisting_a_receipt(
         .await;
     assert!(result.is_err(), "receipt persistence must be refused");
     drop(read_only);
+    assert_fact_remains_readable(&base, "receipt refusal fixture").await?;
 
     let after = snapshot(&base)?;
     assert_eq!(
         durable_files(&before),
         durable_files(&after),
-        "refused receipt search changed durable files; SQLite WAL/SHM sidecars are reported separately",
+        "refused receipt search changed durable database files; WAL-backed state is verified by reopen",
     );
     Ok(())
 }
@@ -172,6 +189,7 @@ async fn read_only_wal_shm_behavior_is_explicitly_observed() -> Result<(), Box<d
         .search("WAL sidecar fixture", Some(1), None, None)
         .await?;
     drop(read_only);
+    assert_fact_remains_readable(&base, "WAL sidecar fixture").await?;
 
     let after = snapshot(&base)?;
     let sidecars: Vec<_> = after
@@ -188,7 +206,7 @@ async fn read_only_wal_shm_behavior_is_explicitly_observed() -> Result<(), Box<d
     assert_eq!(
         durable_files(&before),
         durable_files(&after),
-        "read-only WAL/SHM access changed durable files"
+        "read-only access changed durable database files; WAL-backed state is verified by reopen"
     );
     println!("read_only_sqlite_coordination_sidecars={sidecars:?}");
     Ok(())
