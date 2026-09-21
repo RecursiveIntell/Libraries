@@ -1,6 +1,6 @@
 # Constitutive witness implementation ledger
 
-Status: experimental implementation in progress; no theorem, novelty, or speedup claim.
+Status: experimental implementation complete and awaiting operator review; no theorem, novelty, or speedup claim.
 Base: `5de5a070fbf0e4d96b2949e34feeabc600c1889d`.
 
 ## Ownership and boundaries
