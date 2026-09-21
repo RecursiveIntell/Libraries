@@ -273,8 +273,8 @@ fn columns_solution(
         };
         work.swap(col, pivot);
         let divisor = work[col][col];
-        for j in col..=k {
-            work[col][j] = work[col][j].divided_by(divisor)?;
+        for value in work[col].iter_mut().take(k + 1).skip(col) {
+            *value = (*value).divided_by(divisor)?;
         }
         let pivot_row = work[col].clone();
         for (i, row) in work.iter_mut().enumerate() {
