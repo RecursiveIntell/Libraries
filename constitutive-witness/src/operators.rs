@@ -25,7 +25,10 @@ pub fn periodic_diffusion(u: &[Rational], h: Rational) -> Result<Vec<Vec<Rationa
 /// Equal material labels across supplied time slices: b_(t+1,l) = b_(t,l).
 /// These are explicit finite transport equalities, not an advection discretization
 /// or a numerical proof that the supplied labels follow a physical flow.
-pub fn material_label_equalities(slices: usize, labels: usize) -> Result<Vec<Vec<Rational>>, Error> {
+pub fn material_label_equalities(
+    slices: usize,
+    labels: usize,
+) -> Result<Vec<Vec<Rational>>, Error> {
     let columns = slices.checked_mul(labels).ok_or(Error::Limit)?;
     if slices < 2 || labels == 0 || columns > MAX_COLS {
         return Err(Error::Shape);
@@ -50,7 +53,9 @@ mod tests {
     use super::*;
     use crate::{dot, Problem};
 
-    fn q(n: i128) -> Rational { Rational::new(n, 1).unwrap() }
+    fn q(n: i128) -> Rational {
+        Rational::new(n, 1).unwrap()
+    }
 
     #[test]
     fn discrete_energy_identity_and_mass_conservation() {
@@ -63,11 +68,21 @@ mod tests {
         let mut dissipation = Rational::ZERO;
         for i in 0..u.len() {
             let delta = u[(i + 1) % u.len()].minus(u[i]).unwrap();
-            dissipation = dissipation.plus(b[i].times(delta.times(delta).unwrap()).unwrap().divided_by(h).unwrap()).unwrap();
+            dissipation = dissipation
+                .plus(
+                    b[i].times(delta.times(delta).unwrap())
+                        .unwrap()
+                        .divided_by(h)
+                        .unwrap(),
+                )
+                .unwrap();
         }
         assert_eq!(work, dissipation.negated().unwrap());
         assert_eq!(dot(&rhs, &vec![q(1); rhs.len()]).unwrap(), q(0));
-        assert!(Problem::new(a, rhs, vec![]).unwrap().verify_primal(&b).unwrap());
+        assert!(Problem::new(a, rhs, vec![])
+            .unwrap()
+            .verify_primal(&b)
+            .unwrap());
     }
 
     #[test]

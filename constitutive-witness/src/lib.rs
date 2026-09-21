@@ -57,7 +57,10 @@ impl Rational {
         }
         let abs = num.checked_abs().ok_or(Error::Arithmetic)?;
         let g = gcd(abs, den);
-        Ok(Self { num: num / g, den: den / g })
+        Ok(Self {
+            num: num / g,
+            den: den / g,
+        })
     }
 
     pub fn negative(self) -> bool {
@@ -84,8 +87,12 @@ impl Rational {
     pub fn times(self, rhs: Self) -> Result<Self, Error> {
         let g = gcd(self.num.checked_abs().ok_or(Error::Arithmetic)?, rhs.den);
         let h = gcd(rhs.num.checked_abs().ok_or(Error::Arithmetic)?, self.den);
-        let num = (self.num / g).checked_mul(rhs.num / h).ok_or(Error::Arithmetic)?;
-        let den = (self.den / h).checked_mul(rhs.den / g).ok_or(Error::Arithmetic)?;
+        let num = (self.num / g)
+            .checked_mul(rhs.num / h)
+            .ok_or(Error::Arithmetic)?;
+        let den = (self.den / h)
+            .checked_mul(rhs.den / g)
+            .ok_or(Error::Arithmetic)?;
         Self::new(num, den)
     }
 
@@ -127,9 +134,9 @@ fn dot(a: &[Rational], b: &[Rational]) -> Result<Rational, Error> {
     if a.len() != b.len() {
         return Err(Error::Shape);
     }
-    a.iter().zip(b).try_fold(Rational::ZERO, |acc, (x, y)| {
-        acc.plus(x.times(*y)?)
-    })
+    a.iter()
+        .zip(b)
+        .try_fold(Rational::ZERO, |acc, (x, y)| acc.plus(x.times(*y)?))
 }
 
 /// A supplied discretization, not a certified map from a PDE to a matrix.
@@ -225,11 +232,16 @@ impl SearchResult {
         };
         // Public library callers cannot inject an arbitrary reason into JSON.
         let reason = match reason {
-            "checked_exactly" | "search_budget_exhausted" | "no_certificate_in_bounded_search" => reason,
+            "checked_exactly" | "search_budget_exhausted" | "no_certificate_in_bounded_search" => {
+                reason
+            }
             _ => "unrecognized_reason",
         };
-        let values = values.iter().map(|x| format!("\"{x}\""))
-            .collect::<Vec<_>>().join(",");
+        let values = values
+            .iter()
+            .map(|x| format!("\"{x}\""))
+            .collect::<Vec<_>>()
+            .join(",");
         format!(
             "{{\"schema\":\"cw.candidate.v1\",\"scope\":\"finite_dimensional\",\"kind\":\"{kind}\",\"values\":[{values}],\"attempts\":{},\"reason\":\"{reason}\"}}",
             self.attempts
@@ -246,11 +258,15 @@ fn columns_solution(
     if k > matrix.len() {
         return Ok(None);
     }
-    let mut work: Vec<Vec<_>> = matrix.iter().zip(rhs).map(|(row, value)| {
-        let mut r: Vec<_> = selected.iter().map(|j| row[*j]).collect();
-        r.push(*value);
-        r
-    }).collect();
+    let mut work: Vec<Vec<_>> = matrix
+        .iter()
+        .zip(rhs)
+        .map(|(row, value)| {
+            let mut r: Vec<_> = selected.iter().map(|j| row[*j]).collect();
+            r.push(*value);
+            r
+        })
+        .collect();
     for col in 0..k {
         let Some(pivot) = (col..work.len()).find(|i| work[*i][col] != Rational::ZERO) else {
             return Ok(None);
@@ -287,7 +303,10 @@ pub fn solve(problem: &Problem, budget: usize) -> Result<SearchResult, Error> {
     let mut attempts = 1;
     let zero = vec![Rational::ZERO; n];
     if problem.verify_primal(&zero)? {
-        return Ok(SearchResult { outcome: Outcome::Primal(zero), attempts });
+        return Ok(SearchResult {
+            outcome: Outcome::Primal(zero),
+            attempts,
+        });
     }
     // Inspect one- and two-row separating witnesses before expensive elimination.
     for i in 0..matrix.len() {
@@ -295,7 +314,10 @@ pub fn solve(problem: &Problem, budget: usize) -> Result<SearchResult, Error> {
             for left in [-1, 1] {
                 for right in [-1, 1] {
                     if attempts >= budget {
-                        return Ok(SearchResult { outcome: Outcome::Unresolved("search_budget_exhausted"), attempts });
+                        return Ok(SearchResult {
+                            outcome: Outcome::Unresolved("search_budget_exhausted"),
+                            attempts,
+                        });
                     }
                     let mut y = vec![Rational::ZERO; matrix.len()];
                     y[i] = Rational::new(left, 1)?;
@@ -304,7 +326,10 @@ pub fn solve(problem: &Problem, budget: usize) -> Result<SearchResult, Error> {
                     }
                     attempts += 1;
                     if problem.verify_dual(&y)? {
-                        return Ok(SearchResult { outcome: Outcome::Dual(y), attempts });
+                        return Ok(SearchResult {
+                            outcome: Outcome::Dual(y),
+                            attempts,
+                        });
                     }
                 }
             }
@@ -315,7 +340,10 @@ pub fn solve(problem: &Problem, budget: usize) -> Result<SearchResult, Error> {
             continue;
         }
         if attempts >= budget {
-            return Ok(SearchResult { outcome: Outcome::Unresolved("search_budget_exhausted"), attempts });
+            return Ok(SearchResult {
+                outcome: Outcome::Unresolved("search_budget_exhausted"),
+                attempts,
+            });
         }
         attempts += 1;
         let selected: Vec<_> = (0..n).filter(|j| mask & (1usize << j) != 0).collect();
@@ -325,7 +353,10 @@ pub fn solve(problem: &Problem, budget: usize) -> Result<SearchResult, Error> {
                 b[*j] = value;
             }
             if problem.verify_primal(&b)? {
-                return Ok(SearchResult { outcome: Outcome::Primal(b), attempts });
+                return Ok(SearchResult {
+                    outcome: Outcome::Primal(b),
+                    attempts,
+                });
             }
         }
     }
@@ -334,22 +365,35 @@ pub fn solve(problem: &Problem, budget: usize) -> Result<SearchResult, Error> {
     if matrix.len() <= 6 {
         for code in 1usize..3usize.pow(matrix.len() as u32) {
             if attempts >= budget {
-                return Ok(SearchResult { outcome: Outcome::Unresolved("search_budget_exhausted"), attempts });
+                return Ok(SearchResult {
+                    outcome: Outcome::Unresolved("search_budget_exhausted"),
+                    attempts,
+                });
             }
             attempts += 1;
             let mut digits = code;
             let mut y = Vec::with_capacity(matrix.len());
             for _ in 0..matrix.len() {
-                let digit = match digits % 3 { 0 => 0, 1 => 1, _ => -1 };
+                let digit = match digits % 3 {
+                    0 => 0,
+                    1 => 1,
+                    _ => -1,
+                };
                 y.push(Rational::new(digit, 1)?);
                 digits /= 3;
             }
             if problem.verify_dual(&y)? {
-                return Ok(SearchResult { outcome: Outcome::Dual(y), attempts });
+                return Ok(SearchResult {
+                    outcome: Outcome::Dual(y),
+                    attempts,
+                });
             }
         }
     }
-    Ok(SearchResult { outcome: Outcome::Unresolved("no_certificate_in_bounded_search"), attempts })
+    Ok(SearchResult {
+        outcome: Outcome::Unresolved("no_certificate_in_bounded_search"),
+        attempts,
+    })
 }
 
 /// Strict native wire: CW1 m n k budget, then row-major A, r, row-major T.
@@ -374,20 +418,33 @@ pub fn parse_request(text: &str) -> Result<(Problem, usize), Error> {
     let n = integer()?;
     let k = integer()?;
     let budget = integer()?;
-    if m == 0 || n == 0 || m > MAX_ROWS || k > MAX_ROWS || m + k > MAX_ROWS
-        || n > MAX_COLS || budget == 0 || budget > MAX_ATTEMPTS {
+    if m == 0
+        || n == 0
+        || m > MAX_ROWS
+        || k > MAX_ROWS
+        || m + k > MAX_ROWS
+        || n > MAX_COLS
+        || budget == 0
+        || budget > MAX_ATTEMPTS
+    {
         return Err(Error::Limit);
     }
     let mut row = || -> Result<Vec<Rational>, Error> {
-        (0..n).map(|_| words.next().ok_or(Error::Syntax)?.parse()).collect()
+        (0..n)
+            .map(|_| words.next().ok_or(Error::Syntax)?.parse())
+            .collect()
     };
     let a = (0..m).map(|_| row()).collect::<Result<Vec<_>, _>>()?;
-    let rhs = (0..m).map(|_| words.next().ok_or(Error::Syntax)?.parse())
+    let rhs = (0..m)
+        .map(|_| words.next().ok_or(Error::Syntax)?.parse())
         .collect::<Result<Vec<_>, _>>()?;
     let mut transport = Vec::with_capacity(k);
     for _ in 0..k {
-        transport.push((0..n).map(|_| words.next().ok_or(Error::Syntax)?.parse())
-            .collect::<Result<Vec<_>, _>>()?);
+        transport.push(
+            (0..n)
+                .map(|_| words.next().ok_or(Error::Syntax)?.parse())
+                .collect::<Result<Vec<_>, _>>()?,
+        );
     }
     if words.next().is_some() {
         return Err(Error::Syntax);
@@ -399,16 +456,27 @@ pub fn parse_request(text: &str) -> Result<(Problem, usize), Error> {
 mod tests {
     use super::*;
 
-    fn q(n: i128) -> Rational { Rational::new(n, 1).unwrap() }
+    fn q(n: i128) -> Rational {
+        Rational::new(n, 1).unwrap()
+    }
     fn p(a: &[&[i128]], rhs: &[i128], t: &[&[i128]]) -> Problem {
-        Problem::new(a.iter().map(|r| r.iter().map(|v| q(*v)).collect()).collect(),
+        Problem::new(
+            a.iter()
+                .map(|r| r.iter().map(|v| q(*v)).collect())
+                .collect(),
             rhs.iter().map(|v| q(*v)).collect(),
-            t.iter().map(|r| r.iter().map(|v| q(*v)).collect()).collect()).unwrap()
+            t.iter()
+                .map(|r| r.iter().map(|v| q(*v)).collect())
+                .collect(),
+        )
+        .unwrap()
     }
 
     #[test]
     fn canonical_wire_rejects_ambiguous_numbers() {
-        for s in ["1", "01/1", "1/01", "2/2", "0/2", "-0/1", "+1/1", "1/-1", "1/0", "NaN", "1/1/1"] {
+        for s in [
+            "1", "01/1", "1/01", "2/2", "0/2", "-0/1", "+1/1", "1/-1", "1/0", "NaN", "1/1/1",
+        ] {
             assert!(s.parse::<Rational>().is_err(), "{s}");
         }
         assert_eq!("-1/2".parse::<Rational>().unwrap().to_string(), "-1/2");
@@ -424,7 +492,13 @@ mod tests {
         assert!(q(1).divided_by(q(0)).is_err());
         assert!(Rational::new(i128::MIN, 1).is_err());
         assert!(q(i128::MAX).plus(q(1)).is_err());
-        assert_eq!(Rational::new(i128::MAX, 2).unwrap().times(Rational::new(2, i128::MAX).unwrap()).unwrap(), q(1));
+        assert_eq!(
+            Rational::new(i128::MAX, 2)
+                .unwrap()
+                .times(Rational::new(2, i128::MAX).unwrap())
+                .unwrap(),
+            q(1)
+        );
     }
 
     #[test]
@@ -435,14 +509,20 @@ mod tests {
         let bad = p(&[&[-1]], &[1], &[]);
         assert!(bad.verify_dual(&[q(1)]).unwrap());
         assert!(!bad.verify_dual(&[q(-1)]).unwrap());
-        assert!(matches!(solve(&bad, 100).unwrap().outcome, Outcome::Dual(_)));
+        assert!(matches!(
+            solve(&bad, 100).unwrap().outcome,
+            Outcome::Dual(_)
+        ));
     }
 
     #[test]
     fn range_obstruction_uses_zero_row() {
         let problem = p(&[&[-1], &[0]], &[-1, 1], &[]);
         assert!(problem.verify_dual(&[q(0), q(1)]).unwrap());
-        assert!(matches!(solve(&problem, 100).unwrap().outcome, Outcome::Dual(_)));
+        assert!(matches!(
+            solve(&problem, 100).unwrap().outcome,
+            Outcome::Dual(_)
+        ));
     }
 
     #[test]
@@ -451,15 +531,22 @@ mod tests {
         assert!(!problem.verify_primal(&[q(1), q(2)]).unwrap());
         assert!(problem.verify_dual(&[q(-1), q(1), q(-1)]).unwrap());
         assert!(problem.verify_dual(&[q(-1), q(1)]).is_err());
-        assert!(matches!(solve(&problem, 500).unwrap().outcome, Outcome::Dual(_)));
+        assert!(matches!(
+            solve(&problem, 500).unwrap().outcome,
+            Outcome::Dual(_)
+        ));
     }
 
     #[test]
     fn solver_checks_multi_column_and_dependent_systems() {
-        for problem in [p(&[&[1, 0], &[0, 1]], &[2, 3], &[]),
-            p(&[&[1, 1], &[2, 2]], &[3, 6], &[])] {
+        for problem in [
+            p(&[&[1, 0], &[0, 1]], &[2, 3], &[]),
+            p(&[&[1, 1], &[2, 2]], &[3, 6], &[]),
+        ] {
             let result = solve(&problem, 500).unwrap();
-            let Outcome::Primal(b) = result.outcome else { panic!("missing primal") };
+            let Outcome::Primal(b) = result.outcome else {
+                panic!("missing primal")
+            };
             assert!(problem.verify_primal(&b).unwrap());
         }
     }
@@ -467,14 +554,20 @@ mod tests {
     #[test]
     fn zero_case_and_strict_margin() {
         let problem = p(&[&[0]], &[0], &[]);
-        assert!(matches!(solve(&problem, 1).unwrap().outcome, Outcome::Primal(_)));
+        assert!(matches!(
+            solve(&problem, 1).unwrap().outcome,
+            Outcome::Primal(_)
+        ));
         assert!(!problem.verify_dual(&[q(1)]).unwrap());
     }
 
     #[test]
     fn budget_exhaustion_is_unresolved() {
         let result = solve(&p(&[&[1]], &[2], &[]), 1).unwrap();
-        assert_eq!(result.outcome, Outcome::Unresolved("search_budget_exhausted"));
+        assert_eq!(
+            result.outcome,
+            Outcome::Unresolved("search_budget_exhausted")
+        );
         assert_eq!(result.attempts, 1);
         assert!(solve(&p(&[&[1]], &[2], &[]), 0).is_err());
     }
@@ -482,16 +575,26 @@ mod tests {
     #[test]
     fn wire_dimensions_trailing_and_limits() {
         assert!(parse_request("CW1 1 1 0 50 -1/1 2/1").is_ok());
-        for wire in ["CW2 1 1 0 50 -1/1 2/1", "CW1 1 1 0 50 -1/1 2/1 extra",
-            "CW1 33 1 0 50", "CW1 1 17 0 50", "CW1 1 1 32 50", "CW1 01 1 0 50",
-            "CW1 1 1 0 50 -1/1", "CW1 0 1 0 50"] {
+        for wire in [
+            "CW2 1 1 0 50 -1/1 2/1",
+            "CW1 1 1 0 50 -1/1 2/1 extra",
+            "CW1 33 1 0 50",
+            "CW1 1 17 0 50",
+            "CW1 1 1 32 50",
+            "CW1 01 1 0 50",
+            "CW1 1 1 0 50 -1/1",
+            "CW1 0 1 0 50",
+        ] {
             assert!(parse_request(wire).is_err(), "{wire}");
         }
     }
 
     #[test]
     fn public_result_reason_cannot_inject_json() {
-        let report = SearchResult { outcome: Outcome::Unresolved("bad\"reason"), attempts: 1 };
+        let report = SearchResult {
+            outcome: Outcome::Unresolved("bad\"reason"),
+            attempts: 1,
+        };
         assert!(report.to_json().contains("unrecognized_reason"));
         assert!(!report.to_json().contains("bad"));
     }

@@ -3,7 +3,11 @@ use std::io::{self, Read};
 
 fn main() {
     let mut input = String::new();
-    if io::stdin().take((MAX_BYTES + 1) as u64).read_to_string(&mut input).is_err() {
+    if io::stdin()
+        .take((MAX_BYTES + 1) as u64)
+        .read_to_string(&mut input)
+        .is_err()
+    {
         eprintln!("invalid input encoding or read failure");
         std::process::exit(2);
     }
