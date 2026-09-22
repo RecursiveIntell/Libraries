@@ -81,13 +81,20 @@ async fn seed(store: &MemoryStore) -> TestResult {
         RevocationStatusV1::Active,
         vec!["principal:alice".into()],
     )?;
-    let permit = AuthorityPermit::with_evidence(
+    // Explicit test-only issuer input; never reads operator credentials.
+    let issuer = semantic_memory::AuthorityIssuer::from_operator_token("v2-fixture-only")
+        .ok_or("invalid fixture issuer input")?;
+    let evidence = semantic_memory::authority_contracts::ResolvedEvidenceDigest::from_resolver(
+        format!("blake3:{}", "b".repeat(64)),
+    )
+    .ok_or("invalid fixture evidence digest")?;
+    let permit = issuer.mint_with_resolved_evidence(
         "principal:alice",
         "v2-test",
         AuthorityPermit::APPEND_CAPABILITY,
-        vec![format!("blake3:{}", "b".repeat(64))],
-    )
-    .with_origin(label);
+        vec![evidence],
+        label,
+    );
     store
         .authority()
         .append(
