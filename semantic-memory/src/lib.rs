@@ -92,6 +92,8 @@ pub(crate) mod db;
 /// Bounded evidence-gap retrieval and state-aware reranking over existing authority/search paths.
 pub mod evidence_gap;
 mod forgetting;
+mod integrity_snapshot;
+pub use integrity_snapshot::{IntegritySnapshotError, IntegritySnapshotV1};
 pub mod journal;
 mod procedural_memory;
 /// Public read-only metadata for externally retained LLM receipts.
@@ -180,10 +182,10 @@ pub use origin_authority::{
     CallerPrincipalV1, DelegationElevationLeaseV1, ElevationRequirementV1, GovernedAccessPurposeV1,
     GovernedAccessRequestV1, GovernedFactAccessV1, GovernedFactListResponseV1,
     GovernedGraphResponseV1, GovernedProjectionResponseV1, GovernedReplayResponseV1,
-    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, GovernedWitnessedSearchResponseV1,
-    NamespaceScopeV1, OriginAuthorityDecisionV1, OriginAuthorityLabelV1, OriginAuthorityRecordV1,
-    OriginClassV1, OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1,
-    SubjectPrincipalV1,
+    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, GovernedWitnessedSearchErrorV2,
+    GovernedWitnessedSearchResponseV1, GovernedWitnessedSearchResponseV2, NamespaceScopeV1,
+    OriginAuthorityDecisionV1, OriginAuthorityLabelV1, OriginAuthorityRecordV1, OriginClassV1,
+    OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1, SubjectPrincipalV1,
 };
 pub use procedural_memory::{
     validate_procedure_artifact_v1, verify_procedure_lifecycle_receipt_v1,
@@ -1780,7 +1782,9 @@ impl MemoryStore {
     /// Verify database integrity.
     ///
     /// In `Quick` mode, checks table existence and row counts.
-    /// In `Full` mode, also verifies FTS consistency and runs SQLite integrity_check.
+    /// In `Full` mode, also verifies FTS consistency and runs SQLite integrity_check
+    /// and foreign_key_check. FK violations are reported without repairing rows;
+    /// failure to execute the FK check returns a database error.
     pub async fn verify_integrity(
         &self,
         mode: db::VerifyMode,
