@@ -92,6 +92,8 @@ pub(crate) mod db;
 /// Bounded evidence-gap retrieval and state-aware reranking over existing authority/search paths.
 pub mod evidence_gap;
 mod forgetting;
+mod integrity_snapshot;
+pub use integrity_snapshot::{IntegritySnapshotError, IntegritySnapshotV1};
 pub mod journal;
 mod procedural_memory;
 /// Public read-only metadata for externally retained LLM receipts.
