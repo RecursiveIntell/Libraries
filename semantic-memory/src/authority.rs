@@ -393,6 +393,61 @@ impl MemoryAuthority {
         })
     }
 
+    /// Emit a byte-bound request and coherent response for cross-language consumers.
+    ///
+    /// This additive API is Current/Recall-only (there is no historical-view
+    /// parameter). Request validity is checked before retrieval even on an empty
+    /// store. All resource decisions and epoch checks remain in the existing
+    /// owner path. The digest is integrity evidence, not authentication or authority.
+    pub async fn search_governed_witnessed_v2(
+        &self,
+        request_id: String,
+        query: &str,
+        top_k: usize,
+        request: GovernedAccessRequestV1,
+    ) -> Result<crate::GovernedWitnessedSearchResponseV2, crate::GovernedWitnessedSearchErrorV2>
+    {
+        use crate::origin_authority::{
+            valid_access_request, GovernedWitnessedSearchPayloadV2,
+            GovernedWitnessedSearchRequestBindingV2,
+        };
+        use crate::GovernedWitnessedSearchErrorV2 as Error;
+        use sha2::{Digest, Sha256};
+
+        if request_id.trim().is_empty() {
+            return Err(Error::InvalidRequestId);
+        }
+        let limit = u64::try_from(top_k).map_err(|_| Error::InvalidLimit)?;
+        if limit == 0 {
+            return Err(Error::InvalidLimit);
+        }
+        if request.purpose != crate::GovernedAccessPurposeV1::Recall {
+            return Err(Error::UnsupportedPurpose);
+        }
+        if !valid_access_request(&request) {
+            return Err(Error::InvalidAccessRequest);
+        }
+        let response = self
+            .search_governed_witnessed(request_id.clone(), query, Some(top_k), request.clone())
+            .await?;
+        let payload_json = serde_json::to_string(&GovernedWitnessedSearchPayloadV2 {
+            schema_version: "governed_witnessed_search_payload_v2",
+            request: GovernedWitnessedSearchRequestBindingV2 {
+                request_id,
+                query: query.to_owned(),
+                top_k: limit,
+                access_request: request,
+            },
+            response,
+        })?;
+        let payload_sha256 = format!("sha256:{:x}", Sha256::digest(payload_json.as_bytes()));
+        Ok(crate::GovernedWitnessedSearchResponseV2 {
+            schema_version: "governed_witnessed_search_response_v2".into(),
+            payload_json,
+            payload_sha256,
+        })
+    }
+
     /// Read the current authority snapshot and retrieval epoch for cache validation.
     pub async fn current_state(&self) -> Result<AuthorityStateV1, MemoryError> {
         self.store
