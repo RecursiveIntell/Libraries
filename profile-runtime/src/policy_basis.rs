@@ -195,6 +195,8 @@ pub struct ResolvedPolicyBasisV2 {
 }
 
 impl ResolvedPolicyBasisV2 {
+    /// Seal a structurally valid V1 projection as a task-bound V2 value.
+    /// This does not authenticate its caller or establish CURRENT owner state.
     pub fn from_v1(owner_projection: ResolvedPolicyBasisV1) -> Result<Self, PolicyBasisError> {
         owner_projection.validate()?;
         let basis_ref = Self::reference_for(&owner_projection);
@@ -209,6 +211,8 @@ impl ResolvedPolicyBasisV2 {
         Ok(basis)
     }
 
+    /// Verify internal schema, reference and digest consistency only.
+    /// A separate authenticated owner readback is required before any effect.
     pub fn validate(&self) -> Result<(), PolicyBasisError> {
         if self.schema != RESOLVED_POLICY_BASIS_V2_SCHEMA {
             return Err(PolicyBasisError::InvalidProjection {
