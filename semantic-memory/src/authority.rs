@@ -38,6 +38,17 @@ pub struct MemoryAuthority {
 }
 
 impl MemoryAuthority {
+    /// Prepare an unsigned read-only proposal for missing-parent authority rows.
+    /// The result confers no permission to apply, restore, or delete anything.
+    pub async fn plan_orphaned_authority_quarantine(
+        &self,
+        max_rows: usize,
+        max_bytes: usize,
+    ) -> Result<crate::AuthorityRelationQuarantinePlanV1, crate::AuthorityRelationQuarantinePlanError>
+    {
+        crate::integrity_repair_plan::plan(&self.store, max_rows, max_bytes).await
+    }
+
     pub(crate) fn new(store: MemoryStore) -> Self {
         Self { store }
     }
