@@ -100,6 +100,41 @@ async fn fixture() -> Result<Fixture, Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
+async fn read_only_owner_reports_its_own_sqlite_connection_settings() -> TestResult {
+    let f = fixture().await?;
+    let result = f.reader.sqlite_connection_diagnostic().await?;
+    assert_eq!(result.connection_role, "reader");
+    assert!(result.read_only);
+    assert!(result.foreign_keys_enabled);
+    assert!(result.query_only);
+    assert_eq!(result.journal_mode, "wal");
+    assert!(!result.sqlite_version.is_empty());
+    assert!(!result.sqlite_source_id.is_empty());
+    assert!(!result.compile_options.is_empty());
+    assert_eq!(result.schema_version, 39);
+    let writer = f.writer.sqlite_writer_connection_diagnostic().await?;
+    assert_eq!(writer.connection_role, "writer");
+    assert!(!writer.read_only);
+    assert!(!writer.query_only);
+    assert!(writer.foreign_keys_enabled);
+    assert_eq!(writer.journal_mode, "wal");
+    assert_eq!(writer.sqlite_source_id, result.sqlite_source_id);
+    assert_eq!(writer.compile_options, result.compile_options);
+    let writable_reader = f.writer.sqlite_connection_diagnostic().await?;
+    assert_eq!(writable_reader.connection_role, "reader");
+    assert!(!writable_reader.read_only);
+    assert!(writable_reader.query_only);
+    assert!(writable_reader.foreign_keys_enabled);
+    assert_eq!(writable_reader.sqlite_source_id, writer.sqlite_source_id);
+    assert!(matches!(
+        f.reader.sqlite_writer_connection_diagnostic().await,
+        Err(semantic_memory::SqliteDiagnosticError::RequiresWritableStore)
+    ));
+    assert_eq!(f.embedding_calls.load(Ordering::SeqCst), 0);
+    Ok(())
+}
+
+#[tokio::test]
 async fn captures_wal_and_opens_detached_through_the_canonical_owner() -> TestResult {
     let f = fixture().await?;
     assert!(std::fs::metadata(f.source.join("memory.db-wal"))?.len() > 0);
