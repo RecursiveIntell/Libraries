@@ -1797,6 +1797,126 @@ mod state_view_regression_tests {
         conn
     }
 
+    // Every retained-history family must independently veto an FK-disabled
+    // admin deletion; the earlier label-only fixture did not cover the others.
+    fn fk_off_history_fixture(family: &str) -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        run_migrations(&conn).unwrap();
+        conn.execute_batch(
+            "PRAGMA foreign_keys=OFF;
+             INSERT INTO facts(id, namespace, content) VALUES
+                 ('victim', 'target', 'fixture victim'),
+                 ('other', 'preserved', 'fixture other');
+             INSERT INTO facts_rowid_map(fact_id) VALUES ('victim');
+             INSERT INTO facts_fts(rowid, content) VALUES (last_insert_rowid(), 'fixture victim');",
+        )
+        .unwrap();
+        match family {
+            "lineage" => conn.execute_batch(
+                "INSERT INTO authority_lineages(lineage_id, active_head_id, updated_epoch)
+                 VALUES ('lineage', 'victim', 0);",
+            ),
+            "version" => conn.execute_batch(
+                "INSERT INTO authority_lineages(lineage_id, active_head_id, updated_epoch)
+                 VALUES ('lineage', 'other', 0);
+                 INSERT INTO authority_versions(fact_id, lineage_id, version, operation_kind, content_digest)
+                 VALUES ('victim', 'lineage', 1, 'append', 'fixture-digest');",
+            ),
+            "label" => conn.execute_batch(
+                "INSERT INTO origin_authority_labels(fact_id, label_json, label_digest, recorded_at)
+                 VALUES ('victim', '{}', 'fixture-digest', '2026-01-01');",
+            ),
+            "revocation" => conn.execute_batch(
+                "INSERT INTO origin_authority_revocations(
+                     revocation_id, fact_id, caller_idempotency_key, principal,
+                     revocation_reference, revoked_at)
+                 VALUES ('revocation', 'victim', 'fixture-revoke', 'fixture',
+                         'fixture-reference', '2026-01-01');",
+            ),
+            "forgotten" => conn.execute_batch(
+                "INSERT INTO forgotten_facts(fact_id, receipt_id, namespace,
+                                             content_digest, forgotten_at)
+                 VALUES ('victim', 'fixture-receipt', 'target', 'fixture-digest', '2026-01-01');",
+            ),
+            "combined" => conn.execute_batch(
+                "INSERT INTO authority_lineages(lineage_id, active_head_id, updated_epoch)
+                 VALUES ('lineage', 'victim', 0);
+                 INSERT INTO authority_versions(fact_id, lineage_id, version, operation_kind, content_digest)
+                 VALUES ('victim', 'lineage', 1, 'append', 'fixture-digest');
+                 INSERT INTO origin_authority_labels(fact_id, label_json, label_digest, recorded_at)
+                 VALUES ('victim', '{}', 'fixture-digest', '2026-01-01');
+                 INSERT INTO origin_authority_revocations(
+                     revocation_id, fact_id, caller_idempotency_key, principal,
+                     revocation_reference, revoked_at)
+                 VALUES ('revocation', 'victim', 'fixture-revoke', 'fixture',
+                         'fixture-reference', '2026-01-01');
+                 INSERT INTO forgotten_facts(fact_id, receipt_id, namespace,
+                                             content_digest, forgotten_at)
+                 VALUES ('victim', 'fixture-receipt', 'target', 'fixture-digest', '2026-01-01');",
+            ),
+            _ => unreachable!("test fixture family"),
+        }
+        .unwrap();
+        assert_eq!(
+            row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+            0
+        );
+        conn
+    }
+
+    #[test]
+    fn all_retained_history_families_block_fk_off_single_and_namespace_deletes() {
+        for family in [
+            "lineage",
+            "version",
+            "label",
+            "revocation",
+            "forgotten",
+            "combined",
+        ] {
+            let conn = fk_off_history_fixture(family);
+            assert!(
+                matches!(
+                    delete_fact_with_fts(&conn, "victim"),
+                    Err(MemoryError::AuthorityHistoryRetained)
+                ),
+                "single delete: {family}"
+            );
+            assert_eq!(
+                row_count(&conn, "SELECT count(*) FROM facts WHERE id='victim'"),
+                1
+            );
+            assert_eq!(
+                row_count(
+                    &conn,
+                    "SELECT count(*) FROM facts_rowid_map WHERE fact_id='victim'"
+                ),
+                1
+            );
+            assert_eq!(
+                row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+                0
+            );
+
+            #[cfg(feature = "admin-ops")]
+            {
+                let conn = fk_off_history_fixture(family);
+                assert!(
+                    matches!(
+                        delete_namespace(&conn, "target"),
+                        Err(MemoryError::AuthorityHistoryRetained)
+                    ),
+                    "namespace delete: {family}"
+                );
+                assert_eq!(row_count(&conn, "SELECT count(*) FROM facts"), 2);
+                assert_eq!(
+                    row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+                    0
+                );
+            }
+        }
+    }
+
     #[test]
     fn admin_delete_refuses_authority_linked_fact_even_when_connection_fk_is_off() {
         let conn = Connection::open_in_memory().unwrap();

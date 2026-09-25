@@ -93,7 +93,10 @@ pub(crate) mod db;
 pub mod evidence_gap;
 mod forgetting;
 mod integrity_snapshot;
-pub use integrity_snapshot::{IntegritySnapshotError, IntegritySnapshotV1};
+pub use integrity_snapshot::{
+    IntegritySnapshotError, IntegritySnapshotV1, SqliteConnectionDiagnosticV1,
+    SqliteDiagnosticError,
+};
 mod integrity_repair_plan;
 pub use integrity_repair_plan::{
     AuthorityRelationQuarantinePlanError, AuthorityRelationQuarantinePlanV1, OrphanRowV1,
