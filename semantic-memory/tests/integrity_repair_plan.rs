@@ -210,6 +210,41 @@ async fn rejects_unrecognized_schema_even_when_user_version_is_39() -> ResultT {
 }
 
 #[tokio::test]
+async fn historical_shaped_extra_objects_remain_unsupported_and_unchanged() -> ResultT {
+    // This is a hostile synthetic shape, NOT a supported historical schema or
+    // an attempt to define the absent sync/routing owners from observed DDL.
+    let tmp = tempfile::tempdir()?;
+    let db = seed(tmp.path())?;
+    db.execute_batch("INSERT INTO authority_lineages VALUES ('l1','a1',0),('l2','a2',0),('l3','a3',0);
+        INSERT INTO authority_versions(fact_id,lineage_id,version,operation_kind,is_active,content_digest)
+        VALUES ('a1','l1',1,'append',1,'d1'),('a2','l2',1,'append',1,'d2'),('a3','l3',1,'append',1,'d3');
+        INSERT INTO origin_authority_labels(fact_id,label_json,label_digest,recorded_at)
+        VALUES ('a1','{}','d1','today'),('a2','{}','d2','today'),('a3','{}','d3','today');
+        INSERT INTO origin_authority_revocations(revocation_id,fact_id,caller_idempotency_key,principal,revocation_reference,revoked_at)
+        VALUES ('r1','a1','k1','p','ref','today'),('r2','a2','k2','p','ref','today');
+        INSERT INTO forgotten_facts(fact_id,receipt_id,namespace,content_digest,forgotten_at)
+        VALUES ('a1','receipt1','n','d1','today'),('a2','receipt2','n','d2','today');
+        CREATE TABLE sync_state(key TEXT PRIMARY KEY, value TEXT);
+        CREATE TABLE routing_policy(id TEXT PRIMARY KEY);
+        CREATE INDEX idx_mutation_journal_sync ON mutation_journal(sequence);
+        CREATE INDEX idx_graph_edges_invalidated ON graph_edges(is_invalidated);
+        CREATE INDEX idx_graph_edges_source_target ON graph_edges(source,target);")?;
+    drop(db);
+    let image = tmp.path().join("memory.db");
+    let before = std::fs::read(&image)?;
+    let result = reader(tmp.path())?
+        .authority()
+        .plan_orphaned_authority_quarantine(100, 100_000)
+        .await;
+    assert!(matches!(
+        result,
+        Err(AuthorityRelationQuarantinePlanError::UnsupportedSchema)
+    ));
+    assert_eq!(std::fs::read(&image)?, before);
+    Ok(())
+}
+
+#[tokio::test]
 async fn rejects_wrong_mode_and_schema() -> ResultT {
     let tmp = tempfile::tempdir()?;
     let db = seed(tmp.path())?;
