@@ -1,0 +1,319 @@
+semantic_law: recursiveintell.semantic-law/v1
+status: proposal
+governance_owner: RecursiveIntell/Libraries
+rule: >-
+  Concept ownership and source-code ownership are separate. A concept may have one
+  semantic owner while duplicated source locations remain reconciliation_required.
+  No unresolved duplicate is promoted by this registry.
+
+role_definitions:
+  governance_owner: owns the cross-repository semantic law and owner registry
+  semantic_owner: owns a cross-stack semantic family
+  domain_owner: owns semantics for one bounded product/research domain
+  consumer_product: consumes shared semantics and owns only product-local state
+  integration_distribution: packages/adapts owner semantics without redefining them
+  tooling: build/audit/archive/utility tooling without cross-stack semantic ownership
+  upstream_fork: externally owned/upstream project; RecursiveIntell law applies only to local integration boundaries
+  collection_mirror: duplicate/collection source; must not independently define shared semantics
+  archived_frozen: historical source; no new semantic ownership
+  unclassified_active: active repository with no observed cross-stack semantic ownership; must declare before adding one
+
+concept_owners:
+  cross_crate_identity:
+    owner: stack-ids
+    canonical_source: reconciliation_required
+  canonical_json_boundary:
+    owner: boundary-compiler
+    canonical_source: reconciliation_required
+  bitemporal_records:
+    owner: bitemporal-runtime
+    canonical_source: reconciliation_required
+  claim_evidence_support:
+    owner: claim-ledger
+    canonical_source: reconciliation_required
+  forge_verification_exports:
+    owner: semantic-memory-forge
+    canonical_source: reconciliation_required
+  forge_memory_projection_transform:
+    owner: forge-memory-bridge
+    canonical_source: reconciliation_required
+  memory_storage_retrieval_governed_mutation:
+    owner: semantic-memory
+    canonical_source: reconciliation_required
+  delegated_authority:
+    owner: authority-delegation
+    canonical_source: RecursiveIntell/Libraries/authority-delegation
+  effect_lifecycle:
+    owner: effect-runtime
+    canonical_source: RecursiveIntell/Libraries/effect-runtime
+  verification_control:
+    owner: verification-control
+    canonical_source: RecursiveIntell/Libraries/verification-control
+  verification_policy_and_permits:
+    owner: verification-policy
+    canonical_source: RecursiveIntell/Libraries/verification-policy
+  continuity_incident_recovery:
+    owner: continuity-runtime
+    canonical_source: RecursiveIntell/Libraries/continuity-runtime
+  profile_constitution_composition:
+    owner: profile-runtime
+    canonical_source: RecursiveIntell/Libraries/profile-runtime
+  attestation_and_trust_roots:
+    owner: attestation-exchange
+    canonical_source: RecursiveIntell/Libraries/attestation-exchange
+  assurance_release_readiness:
+    owner: assurance-runtime
+    canonical_source: RecursiveIntell/Libraries/assurance-runtime
+  contract_schema_generation:
+    owner: contract-schema-gen
+    canonical_source: RecursiveIntell/Libraries/contract-schema-gen
+  graph_execution:
+    owner: ri-agent-graph
+    canonical_source: reconciliation_required
+  graph_mcp_surface:
+    owner: agent-graph-mcp
+    canonical_source: reconciliation_required
+  llm_payload_pipeline:
+    owner: llm-pipeline
+    canonical_source: reconciliation_required
+  multi_device_memory_control:
+    owner: mnemes
+    canonical_source: RecursiveIntell/mnemes
+  turbo_quant_codec:
+    owner: turbo-quant
+    canonical_source: reconciliation_required
+  fib_quant_codec:
+    owner: fib-quant
+    canonical_source: reconciliation_required
+  shared_kv_pool:
+    owner: proveKV
+    canonical_source: RecursiveIntell/proveKV
+  recprov_protocol:
+    owner: RecProv
+    canonical_source: RecursiveIntell/RecProv
+  recursive_agent_kernel:
+    owner: recursive-agent
+    canonical_source: RecursiveIntell/recursive-agent
+  ares_runtime:
+    owner: Ares
+    canonical_source: RecursiveIntell/Ares
+
+source_conflicts:
+  - package: stack-ids
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/stack-ids
+      - RecursiveIntell/stack-ids
+    observed: "Libraries manifest 0.1.3; standalone manifest 0.1.1; source differs"
+  - package: boundary-compiler
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/boundary-compiler
+      - RecursiveIntell/boundary-compiler
+    observed: "Libraries manifest 0.1.0; standalone manifest 0.1.1; source differs"
+  - package: bitemporal-runtime
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/bitemporal-runtime
+      - RecursiveIntell/bitemporal-runtime
+    observed: "both manifest 0.1.0; source differs"
+  - package: semantic-memory
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/semantic-memory
+      - RecursiveIntell/semantic-memory
+    observed: "both manifest 0.5.15; source differs"
+  - package: semantic-memory-forge
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/semantic-memory-forge
+      - RecursiveIntell/semantic-memory-forge
+    observed: "both manifest 0.1.1; source differs"
+  - package: forge-memory-bridge
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/forge-memory-bridge
+      - RecursiveIntell/forge-memory-bridge
+    observed: "both manifest 0.1.1; source differs"
+  - package: llm-pipeline
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/llm-pipeline
+      - RecursiveIntell/llm-pipeline
+      - RecursiveIntell/utility/LLM-Pipeline
+    observed: "Libraries manifest 0.3.0; standalone manifest 0.2.1; active collection copy also exists"
+  - package: turbo-quant
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/turbo-quant
+      - RecursiveIntell/turbo-quant
+    observed: "Libraries manifest 0.2.0; standalone manifest 0.2.3; source differs"
+  - package: fib-quant
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/fib-quant
+      - RecursiveIntell/fib-quant
+    observed: "both manifest 0.1.0-alpha.1; source differs"
+  - package: claim-ledger
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/Libraries/claim-ledger
+      - RecursiveIntell/ClaimLedger
+    observed: "parallel Rust/Python implementations expose overlapping claim/evidence semantics"
+  - package: agent-graph-mcp
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/agent-graph-mcp
+      - RecursiveIntell/ri-agent-graph/agent-graph-mcp
+      - RecursiveIntell/Libraries/agent-graph-mcp
+    observed: "ri-agent-graph README already points to the dedicated standalone MCP repository"
+  - package: agent-graph
+    status: reconciliation_required
+    copies:
+      - RecursiveIntell/ri-agent-graph/agent-graph
+      - RecursiveIntell/Libraries/agent-graph
+      - RecursiveIntell/utility/agent-graph
+    observed: "multiple active editable copies"
+
+known_semantic_drifts:
+  - id: DIGEST-001
+    severity: high
+    issue: >-
+      stack-ids compute_json calls sorted-key serde JSON canonical while boundary-compiler
+      owns RFC 8785 JCS canonicalization. Both expose ContentDigest semantics.
+    disposition: V2 contract required; do not silently rewrite V1 digests.
+  - id: TIME-001
+    severity: medium
+    issue: >-
+      bitemporal-runtime documentation describes valid_time as when a value is true;
+      v1 should normalize this to declared/effective domain time unless stronger truth is proven.
+    disposition: documentation normalization; preserve wire fields.
+  - id: RECEIPT-001
+    severity: high
+    issue: >-
+      receipt is overloaded across hashes, HMAC-authenticated execution records,
+      transition records, benchmark records, control records, and observations.
+    disposition: qualify receipt families and their predicates; no universal success implication.
+  - id: OWNER-001
+    severity: high
+    issue: >-
+      owner is overloaded across semantic owner, state writer, execution host,
+      profile/device/resource owner, and operator.
+    disposition: qualified owner vocabulary required at cross-repository boundaries.
+  - id: AUTH-001
+    severity: high
+    issue: >-
+      identity/provenance/authentication/approval/permit concepts are close enough to be
+      accidentally promoted into authority.
+    disposition: preserve explicit grant -> approval/policy -> current permit -> execution separation.
+  - id: UUID-001
+    severity: medium
+    issue: >-
+      recursive-agent doctrine forbids random UUIDs as material IDs while stack-ids
+      intentionally supports UUIDv4 opaque object IDs.
+    disposition: restrict the prohibition to content/material identity; typed object IDs may use UUIDv4.
+  - id: REPLAY-001
+    severity: high
+    issue: >-
+      replay can mean recorded artifact replay, deterministic re-execution, checkpoint resume,
+      or journal replication replay.
+    disposition: qualify replay kind; effect retry is never replay.
+  - id: SOURCE-001
+    severity: critical
+    issue: >-
+      active copies of the same packages differ across Libraries, standalone repos, and
+      collection repos, sometimes at the same package version.
+    disposition: assign one canonical editable source per package and enforce one-way mirrors.
+
+repository_roles:
+  RecursiveIntell/agent-graph-mcp: domain_owner
+  RecursiveIntell/agent-memory-kits: integration_distribution
+  RecursiveIntell/Aphelion: consumer_product
+  RecursiveIntell/Ares: domain_owner
+  RecursiveIntell/ares-observatory: consumer_product
+  RecursiveIntell/awesome-mcp-servers: upstream_fork
+  RecursiveIntell/benchmark: domain_owner
+  RecursiveIntell/bitemporal-runtime: semantic_owner
+  RecursiveIntell/boundary-compiler: semantic_owner
+  RecursiveIntell/ClaimLedger: semantic_owner
+  RecursiveIntell/Claude-Test-Apps: archived_frozen
+  RecursiveIntell/ClawGuard: consumer_product
+  RecursiveIntell/Coder: archived_frozen
+  RecursiveIntell/Codex: archived_frozen
+  RecursiveIntell/codex-openai: upstream_fork
+  RecursiveIntell/cpu-router-cargo-automation: domain_owner
+  RecursiveIntell/Duper: consumer_product
+  RecursiveIntell/esp32-max-lm-training: unclassified_active
+  RecursiveIntell/esp32-reusable: domain_owner
+  RecursiveIntell/esp32-s3-lstm-proof: domain_owner
+  RecursiveIntell/esp32-sensor-hub: domain_owner
+  RecursiveIntell/esp32-sentinel: domain_owner
+  RecursiveIntell/esp32s3-edge-ai: unclassified_active
+  RecursiveIntell/fib-quant: semantic_owner
+  RecursiveIntell/Forge-Audit: tooling
+  RecursiveIntell/forge-memory-bridge: semantic_owner
+  RecursiveIntell/Gloss: consumer_product
+  RecursiveIntell/Hootie: consumer_product
+  RecursiveIntell/kv-lossless-11x: archived_frozen
+  RecursiveIntell/Libraries: governance_owner
+  RecursiveIntell/LivingMemory: archived_frozen
+  RecursiveIntell/llm-pipeline: semantic_owner
+  RecursiveIntell/local-llm-backend: consumer_product
+  RecursiveIntell/mine: unclassified_active
+  RecursiveIntell/mnemes: domain_owner
+  RecursiveIntell/pal: consumer_product
+  RecursiveIntell/parameter-golf: upstream_fork
+  RecursiveIntell/Personal-AI-Router: upstream_fork
+  RecursiveIntell/PortalDoctor: consumer_product
+  RecursiveIntell/proveKV: domain_owner
+  RecursiveIntell/RecProv: semantic_owner
+  RecursiveIntell/recursive-agent: domain_owner
+  RecursiveIntell/Recursive-Linux: consumer_product
+  RecursiveIntell/recursiveintell-web: consumer_product
+  RecursiveIntell/ri-agent-graph: semantic_owner
+  RecursiveIntell/Rip: tooling
+  RecursiveIntell/Rust-Libraries: archived_frozen
+  RecursiveIntell/Salty: archived_frozen
+  RecursiveIntell/semantic-memory: semantic_owner
+  RecursiveIntell/semantic-memory-forge: semantic_owner
+  RecursiveIntell/semantic-memory-mcp: integration_distribution
+  RecursiveIntell/Server-Monitor: consumer_product
+  RecursiveIntell/Sortarr: unclassified_active
+  RecursiveIntell/StableMaster: consumer_product
+  RecursiveIntell/stack-ids: semantic_owner
+  RecursiveIntell/tiered-edge-ai: consumer_product
+  RecursiveIntell/torrent-fetch: unclassified_active
+  RecursiveIntell/turbo-quant: semantic_owner
+  RecursiveIntell/utility: collection_mirror
+  RecursiveIntell/VisionForge: consumer_product
+
+archived_policy:
+  mutation: forbidden_except_explicit_revival
+  semantic_owner_status: none
+  history: preserve
+  note: "Archived repositories may document supersession but do not receive semantic migrations."
+
+upstream_fork_policy:
+  rule: >-
+    Do not rewrite upstream semantics solely to satisfy RecursiveIntell vocabulary.
+    Apply the semantic law to RecursiveIntell-authored boundaries, adapters, claims,
+    receipts, and patches while preserving upstream contracts.
+
+adoption:
+  phase_0:
+    name: agree_and_register
+    runtime_changes: false
+  phase_1:
+    name: source_owner_reconciliation
+    gate: "every active duplicate package has exactly one canonical editable source"
+  phase_2:
+    name: identity_digest_v2
+    gate: "canonical structured digest ownership is unambiguous and V1 remains readable"
+  phase_3:
+    name: receipt_authority_outcome_normalization
+  phase_4:
+    name: time_replay_generation_normalization
+  phase_5:
+    name: consumer_docs_and_api_migrations
+  phase_6:
+    name: cross_repo_ci_enforcement
