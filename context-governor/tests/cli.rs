@@ -567,8 +567,11 @@ fn v2_cli_finalize_prepare_recover_and_activate_is_two_phase() {
 #[test]
 fn v2_cli_rejects_caller_selected_hmac_path() {
     let dir = tempfile::tempdir().unwrap();
-    let request = serde_json::json!({"session_id":"reject", "messages":[{"role":"user","content":"latest"}], "policy":{}, "hmac_key_path":"/tmp/hostile"});
-    let mut child = Command::new(env!("CARGO_BIN_EXE_context-governor"))
+    // Forbidden key arguments are rejected before stdin is read. Writing a
+    // request races that intentional exit and can fail with BrokenPipe before
+    // the refusal assertions run. EOF also proves JSON is not needed to reject
+    // caller-selected authority; do not weaken the expected failure below.
+    let output = Command::new(env!("CARGO_BIN_EXE_context-governor"))
         .args([
             "compact-v2",
             "--dir",
@@ -576,18 +579,9 @@ fn v2_cli_rejects_caller_selected_hmac_path() {
             "--hmac-key",
             "/tmp/hostile",
         ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
+        .stdin(Stdio::null())
+        .output()
         .unwrap();
-    child
-        .stdin
-        .as_mut()
-        .unwrap()
-        .write_all(request.to_string().as_bytes())
-        .unwrap();
-    let output = child.wait_with_output().unwrap();
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stderr).contains("ForbiddenCallerKeyMaterial"));
 }
