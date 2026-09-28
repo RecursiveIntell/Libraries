@@ -103,20 +103,15 @@ A version ID changes when the material semantic version changes.
 
 A content digest is derived from bytes/content and is not a random object ID.
 
-For new cross-repository structured JSON identities, the canonical profile is:
+Every cross-repository digest contract MUST identify its algorithm, canonicalization or exact preimage, semantic domain, and schema/profile version. These fields are part of the contract, not properties inferred from a hex string. No digest algorithm is universal across domains.
 
-1. strict JSON admission, including duplicate-key rejection;
-2. RFC 8785 JCS canonical bytes;
-3. explicit schema identifier + schema version;
-4. explicit domain separator;
-5. BLAKE3-256 digest;
-6. typed metadata sufficient to identify the profile.
+One **opt-in V2 profile** for a domain that explicitly adopts structured JSON content identity may combine strict JSON admission (including duplicate-key rejection), RFC 8785 JCS canonical bytes, an explicit schema identifier/version and domain separator, and BLAKE3-256. This is not a retroactive rule for other digest families or a mandate to adopt that profile. The owning protocol defines its bytes and algorithm; a consuming adapter MUST NOT recanonicalize or rehash them into stronger evidence.
 
-**boundary-compiler** owns canonical structured-JSON computation. **stack-ids** owns shared cross-crate identity/digest value contracts. The current duplicate ContentDigest implementations are **reconciliation required** until a V2 bridge/type ownership change lands.
+**boundary-compiler** owns its structured-JSON canonicalization contract. **stack-ids** supplies shared typed identity/BLAKE3 primitives where appropriate; neither owns every domain's digest meaning. Same-named ContentDigest implementations remain **reconciliation required** only where their actual wire domains overlap.
 
 Existing SHA-256, HMAC-SHA256, BLAKE3, and other receipt families remain valid under their declared V1 contracts. Algorithms MUST NOT be silently rewritten for aesthetic consistency.
 
-A raw 64-character hex string MUST NOT be treated as a cross-stack digest contract without algorithm/domain/schema semantics.
+A raw 64-character hex string MUST NOT be treated as a cross-stack digest contract without algorithm/preimage/domain/version semantics.
 
 ## 5. Boundary and schema law
 
@@ -430,17 +425,20 @@ For new APIs/docs:
 - never use "receipt proves success" without the exact predicate;
 - never use "source of truth" without the domain and canonical owner.
 
-## 21. Existing canonical concept owners
+## 21. Proposed domain-qualified concept owners
 
-These are concept owners observed in the current stack; source-location conflicts are tracked separately in OWNER_REGISTRY_V1.yaml.
+These are proposed domain-qualified owner assignments based on inspected source
+and the operator-selected claim/memory directions. They are not evidence that
+every adapter, release mirror, or pending PR already conforms. Source-location
+conflicts remain separate in OWNER_REGISTRY_V1.yaml.
 
 | Concept family | Canonical semantic owner |
 |---|---|
 | Cross-crate typed IDs and identity vocabulary | stack-ids |
 | Strict JSON boundary admission / RFC 8785 JCS | boundary-compiler |
 | Bitemporal record/query semantics | bitemporal-runtime |
-| Claim/evidence/support/contradiction semantics | claim-ledger |
-| Forge verification/export record contracts | semantic-memory-forge |
+| Claim/support judgment, admission, contradiction, proof-debt ledger events | claim-ledger |
+| Causal/effect verification EvidenceBundle and Forge export records | semantic-memory-forge |
 | Forge -> memory projection transformation | forge-memory-bridge |
 | Canonical memory storage/retrieval/governed mutation | semantic-memory |
 | Delegated authority artifacts | authority-delegation |
@@ -467,15 +465,21 @@ The table does not resolve which duplicate repository path currently owns a dupl
 
 ## 22. Enforcement target
 
-A later enforcement pass SHOULD add gates for:
+After P0/P1 owner and duplicate classification, an early blocking no-new-drift
+gate SHOULD use existing ownership tooling and `contract-schema-gen` for its
+registered wire schemas. Snapshot existing debt with path, owner, failure mode,
+reason and removal condition. Do not make a second schema registry or a
+universal semantics crate. Behavioral owner tests still decide conformance.
+
+The gate should reject NEW:
 
 1. undeclared duplicate package sources;
-2. same package+version with different source trees;
-3. new cross-repo digest implementations outside declared owners;
+2. forbidden shared-semantic drift within a proven directional release mirror;
+3. cross-boundary digest profiles lacking algorithm, preimage, domain or version;
 4. new unqualified authority/owner/replay semantics at public boundaries;
 5. projection/candidate writes that bypass owner admission;
 6. same idempotency key with divergent canonical payload;
 7. unversioned semantic widening;
-8. mirrors diverging from their declared canonical source.
+8. proven mirrors diverging outside their declared packaging differences.
 
 The first adoption step is documentation + owner registration only. Runtime migrations must be separate, reviewable changes with their own validation and rollback.

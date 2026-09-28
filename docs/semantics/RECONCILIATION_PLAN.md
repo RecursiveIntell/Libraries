@@ -2,14 +2,16 @@
 
 **Status:** proposal accompanying Semantic Law V1  
 **Date:** 2026-09-27  
-**Scope:** 60 owned repositories inspected through the connected GitHub account.
+**Scope:** 60 repositories inventoried through GitHub metadata; selected source
+surfaces inspected. This is not a source audit of all 60 repositories.
 
 ## Goal
 
 Reduce semantic drift by making three things explicit and enforceable:
 
 1. one semantic owner per concept family;
-2. one editable source owner per duplicated package;
+2. an explicit source relationship for each duplicated location and one writer
+   per shared semantic family, without turning independent implementations into mirrors;
 3. one shared vocabulary for identity, authority, receipts, time, replay, evidence, and outcomes.
 
 This plan deliberately separates agreement from migration. The proposal branch changes documentation only.
@@ -107,56 +109,30 @@ Do not mutate V1. Add a fail-closed V2 using the agreed canonical content-bindin
 
 ## Recommended source topology
 
-There should not be a global rule that every standalone repository wins or every monorepo copy wins. The rule is **one editable source per package**, recorded in the registry.
+Do not choose a source direction by repository name, version number, or publish
+location alone. Classify each pair as a canonical-source/release-mirror relation,
+intentional fork, vendored snapshot, independent implementation, stale copy, or
+unknown. An unknown pair does not receive a mirror equality gate.
 
-Recommended target:
+**Operator-selected, not yet synchronized:** Libraries is the editable source for
+`semantic-memory`; the standalone repository is a one-way release mirror only
+after both dirty deltas are preserved, the exact source revision is admitted,
+and a directional sync PR is validated. The nested standalone Git root does not
+transfer write authority to its parent or vice versa merely by location.
 
-### Libraries canonical development spine
+**Operator-selected, not yet mapped:** Rust `Libraries/claim-ledger` owns
+claim/support event semantics. Python `ClaimLedger` retains extraction,
+application, testimony, and export workflows; a typed, versioned adapter or
+shared conformance fixture must map its overlapping support events. Forge's
+causal/effect verification bundle is a separate evidence family. Do not delete
+useful Python functionality or reinterpret a Forge bundle by its name.
 
-Prefer Libraries as the editable source for contracts that are deeply composed by the Libraries workspace and current sibling consumers:
-
-- stack-ids
-- boundary-compiler
-- bitemporal-runtime
-- claim-ledger (Rust)
-- semantic-memory
-- semantic-memory-forge
-- forge-memory-bridge
-- authority-delegation
-- effect-runtime
-- verification-control
-- verification-policy
-- continuity-runtime
-- profile-runtime
-- attestation-exchange
-- assurance-runtime
-- contract-schema-gen
-
-Before declaring this final, import and semantically reconcile any newer standalone delta. Do not simply overwrite it.
-
-Standalone repositories for these packages may remain release mirrors/front doors, but after reconciliation they become one-way mirrors, not independent development roots.
-
-### Dedicated standalone canonical owners
-
-Prefer dedicated repositories where the current ecosystem already treats them as independent released domain products:
-
-- ri-agent-graph — core graph engine
-- agent-graph-mcp — MCP graph service
-- turbo-quant — TurboQuant codec/research surface
-- fib-quant — FibQuant codec/research surface
-- proveKV — shared KV pool
-- mnemes — multi-device memory control plane
-- RecProv — RecProv protocol
-- recursive-agent — execution kernel
-- Ares — Ares runtime
-
-For these, copies under Libraries/utility/other collection repos become pinned mirrors or are removed from active build surfaces.
-
-### Requires an explicit product decision
-
-- llm-pipeline: Libraries has 0.3.0 while standalone publishes 0.2.1 and agent-graph-mcp consumes the published line. Reconcile the 0.3 delta first, then choose one source.
-- ClaimLedger Python vs Libraries/claim-ledger Rust: both expose claim/evidence vocabulary. Recommend Rust claim-ledger as canonical stack semantics; Python becomes a conforming adapter/reference implementation or is renamed to make its noncanonical status explicit.
-- agent-graph copies under Libraries and utility: dedicated ri-agent-graph should win unless a newer Libraries-only semantic delta is intentionally promoted first.
+`stack-ids`, `boundary-compiler`, `bitemporal-runtime`, `llm-pipeline`,
+`semantic-memory-forge`, `forge-memory-bridge`, `turbo-quant`, `fib-quant`,
+and Agent Graph copies remain **source-direction review candidates**, not
+declared mirrors or automatic Libraries/standalone winners. Upstream-constrained
+forks stay outside intrusive stack-wide migrations. A repo may be audited with
+no local manifest or code change.
 
 ## Migration phases
 
@@ -164,15 +140,17 @@ For these, copies under Libraries/utility/other collection repos become pinned m
 
 Changes:
 
-- merge/adopt Semantic Law V1 and Owner Registry V1;
+- review this proposal against owner-qualified source and record unresolved
+  decisions before any adoption;
 - no runtime behavior change;
 - add no new semantic owner while source conflicts are unresolved.
 
 Acceptance:
 
-- every active repo has a role;
-- every strong term has a defined cross-repo meaning;
-- unresolved owner decisions are explicitly marked reconciliation_required.
+- all 60 repositories have a provisional role or explicit unknown state with an evidence basis;
+- the active/relevant subset is justified by current source, integrations, PRs and release work rather than archive status alone;
+- material cross-boundary terms are domain-qualified;
+- unresolved owner/source decisions stay marked reconciliation_required or mapping_required.
 
 Rollback:
 
@@ -184,16 +162,19 @@ For every source_conflicts entry:
 
 1. compute exact file/tree deltas;
 2. classify each delta as behavior, contract, tests, docs, release-only, or stale;
-3. merge unique valid semantics into the chosen owner;
+3. choose a source direction only for a shared semantic family or proven mirror;
+   preserve justified independent implementations and their boundaries;
 4. run that package's full owner gate;
 5. record owner commit;
-6. regenerate/publish the mirror from that owner;
-7. make mirror CI reject local semantic divergence.
+6. for proven mirrors only, regenerate/publish in the selected direction;
+7. for proven mirrors only, make CI reject forbidden shared-semantic drift.
 
 Acceptance:
 
-- every active duplicated package has one canonical editable source;
-- same package+version cannot exist with different source digests;
+- every P0/P1 duplicate relationship is classified, with one writer for each
+  named shared semantic family and explicit exceptions for independent domains;
+- same package+version cannot silently identify different shared wire/semantic
+  content within a declared release-mirror relationship;
 - collection repos are nonauthoritative.
 
 Rollback:
@@ -204,21 +185,23 @@ Rollback:
 
 Target contract:
 
-- stack-ids owns shared typed identity/digest references;
-- boundary-compiler owns structured canonicalization and cross-repo JSON digest computation;
-- new structured digest profile = strict JSON + RFC 8785 + schema/version + domain + BLAKE3-256;
+- stack-ids supplies shared typed identity/BLAKE3 primitives where appropriate;
+- boundary-compiler owns its structured canonicalization profile, not every protocol digest;
+- each cross-boundary digest declares algorithm, canonicalization/preimage,
+  domain, and schema/profile version; strict JSON + RFC 8785 + BLAKE3-256 is
+  an opt-in profile, not the universal algorithm;
 - legacy digest families remain versioned and readable.
 
 Concrete work:
 
-- add a tagged V2 digest reference or equivalent shared type;
-- add explicit conversion from boundary-compiler canonical digest result;
-- deprecate stack-ids compute_json for new cross-repo structured identity, without removing V1;
+- add a tagged V2 digest reference only where a named consumer requires it;
+- require explicit domain-bound conversion where a boundary-compiler profile is adopted;
+- retain stack-ids and protocol-specific V1 contracts without silent reinterpretation;
 - prohibit new bare hex digest fields at cross-repo boundaries.
 
 Acceptance:
 
-- same semantic JSON value yields one agreed V2 digest across owner crates;
+- within each declared profile, the same semantic JSON value yields the same V2 digest;
 - duplicate keys fail;
 - schema/domain changes change the digest;
 - V1 golden vectors remain unchanged.
@@ -231,7 +214,8 @@ Ownership chain:
 - verification-policy: policy decisions, approvals, execution permits;
 - effect-runtime: effect intent -> preflight -> commit -> execution -> observation -> compensation;
 - verification-control: verification cases/plans/control receipts;
-- domain runtimes: may define domain-specific receipts but may not redefine the generic concepts above.
+- domain runtimes: retain justified domain permits/receipts with explicit scope,
+  and never implicitly convert approval, permit, observation or outcome across families.
 
 Normalize outcomes:
 
@@ -291,7 +275,12 @@ Acceptance:
 
 ## P6 — consumer and public-surface normalization
 
-Apply documentation/API aliases across Ares, Gloss, Mnemes, semantic-memory-mcp, agent-memory-kits, benchmark, Recursive-Linux, web, ESP32 projects, proveKV, and other consumers.
+Audit source behavior and user-facing claims before changing labels in Ares,
+Gloss, Mnemes, semantic-memory-mcp, agent-memory-kits, benchmark, web,
+proveKV, and other active consumers. Ares PR #85 is a moving draft owned by a
+separate session: compare its head with `main` read-only and defer Ares edits
+until an explicit stable handoff or merge. Do not rename as a substitute for
+owner-controlled behavior.
 
 Rules:
 
@@ -303,23 +292,30 @@ Rules:
 
 Upstream forks are exempt from vocabulary rewrites inside upstream-owned code. RecursiveIntell-authored integration boundaries still follow the law.
 
-## P7 — enforce drift in CI
+## Early gate after owner classification — prevent new drift
 
-Add a repository-independent semantic drift checker.
+Extend existing Libraries/AiDENs ownership inventory and root conformance
+tooling; use `contract-schema-gen` for registered wire compatibility. First
+snapshot existing debt by ID, path/type, owner, failure mode, temporary reason
+and removal condition. CI MUST block **new** P0/P1 shadow semantics without
+blanket suppressions while old debt is resolved separately. A new crate or
+second schema registry needs a separate proof that existing tooling is
+insufficient.
 
 Minimum checks:
 
-1. package name/version/source digest collision detection;
-2. mirror-vs-owner source comparison;
-3. artifact schema-ID uniqueness;
-4. cross-repo digest-profile allowlist;
-5. duplicate semantic type-name inventory;
+1. declared source relationships and same-version *shared-semantic* drift;
+2. directional comparison only for proven mirrors;
+3. registered wire/schema compatibility through `contract-schema-gen`;
+4. algorithm/preimage/domain/version binding for new cross-boundary digests;
+5. domain-qualified type ownership, not global same-name rejection;
 6. owner registry coverage for newly introduced cross-repo contracts;
 7. forbidden new shadow owner patterns;
 8. unknown/unversioned semantic widening;
 9. owner-specific conformance vectors.
 
-The checker should produce evidence, not mutate repositories.
+The checker should produce evidence, not mutate repositories. Behavioral owner
+tests and cross-stack negative fixtures remain separate required gates.
 
 ## Repository rollout groups
 
@@ -360,9 +356,11 @@ Preserve history. Do not backport Semantic Law V1 unless a repo is explicitly re
 Semantic reconciliation is complete when:
 
 - every active cross-stack concept has exactly one semantic owner;
-- every duplicated active package has exactly one editable source owner;
-- all mirrors are one-way and verifiable;
-- cross-repo JSON content identity has one V2 canonical profile;
+- every P0/P1 duplicate relationship is classified and shared semantic family
+  has one admitted writer, with explicit independent-domain exceptions;
+- every *proven* mirror is directional and verifiable;
+- every cross-boundary digest identifies its own algorithm, canonicalization/
+  preimage, domain and version without a universal digest algorithm;
 - receipt predicates and authority boundaries are explicit;
 - generation/epoch/revision/incarnation and replay/recovery terms no longer collide;
 - no consumer can become a shadow truth/authority store without failing CI;

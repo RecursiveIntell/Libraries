@@ -28,9 +28,14 @@ concept_owners:
   bitemporal_records:
     owner: bitemporal-runtime
     canonical_source: reconciliation_required
-  claim_evidence_support:
+  claim_support_ledger_events:
     owner: claim-ledger
+    canonical_source: RecursiveIntell/Libraries/claim-ledger
+    scope: claim, bundle-scoped support judgment, admission, adjudication, proof-debt events
+  causal_verification_evidence_bundle:
+    owner: semantic-memory-forge
     canonical_source: reconciliation_required
+    scope: causal/effect verification, trials, estimates, refutations; not claim-support admission
   forge_verification_exports:
     owner: semantic-memory-forge
     canonical_source: reconciliation_required
@@ -39,7 +44,8 @@ concept_owners:
     canonical_source: reconciliation_required
   memory_storage_retrieval_governed_mutation:
     owner: semantic-memory
-    canonical_source: reconciliation_required
+    canonical_source: RecursiveIntell/Libraries/semantic-memory
+    standalone_role: one-way release mirror after explicit diff, validation, and sync
   delegated_authority:
     owner: authority-delegation
     canonical_source: RecursiveIntell/Libraries/authority-delegation
@@ -118,11 +124,13 @@ source_conflicts:
       - RecursiveIntell/bitemporal-runtime
     observed: "both manifest 0.1.0; source differs"
   - package: semantic-memory
-    status: reconciliation_required
+    status: owner_direction_selected_sync_pending
     copies:
       - RecursiveIntell/Libraries/semantic-memory
       - RecursiveIntell/semantic-memory
     observed: "both manifest 0.5.15; source differs"
+    canonical_edit_location: RecursiveIntell/Libraries/semantic-memory
+    restriction: "preserve both dirty deltas; no automatic copy, cutover, or mirror equality gate before reconciliation"
   - package: semantic-memory-forge
     status: reconciliation_required
     copies:
@@ -154,12 +162,6 @@ source_conflicts:
       - RecursiveIntell/Libraries/fib-quant
       - RecursiveIntell/fib-quant
     observed: "both manifest 0.1.0-alpha.1; source differs"
-  - package: claim-ledger
-    status: reconciliation_required
-    copies:
-      - RecursiveIntell/Libraries/claim-ledger
-      - RecursiveIntell/ClaimLedger
-    observed: "parallel Rust/Python implementations expose overlapping claim/evidence semantics"
   - package: agent-graph-mcp
     status: reconciliation_required
     copies:
@@ -175,13 +177,23 @@ source_conflicts:
       - RecursiveIntell/utility/agent-graph
     observed: "multiple active editable copies"
 
+cross_language_mappings:
+  - family: claim_support_cross_language_mapping
+    status: owner_selected_mapping_required
+    event_owner: RecursiveIntell/Libraries/claim-ledger
+    workflow_adapter: RecursiveIntell/ClaimLedger
+    observed: "Rust owns claim/support events; Python retains extraction/application/export workflow"
+    forbidden: "Python workflow records or Forge causal bundles cannot silently become Rust claim-support admissions"
+    conformance_gate: "versioned golden fixtures and negative mention/retrieval/unsupported-by-bundle tests"
+
 known_semantic_drifts:
   - id: DIGEST-001
     severity: high
     issue: >-
       stack-ids compute_json calls sorted-key serde JSON canonical while boundary-compiler
-      owns RFC 8785 JCS canonicalization. Both expose ContentDigest semantics.
-    disposition: V2 contract required; do not silently rewrite V1 digests.
+      owns RFC 8785 JCS canonicalization. Same-named ContentDigest contracts may
+      differ by preimage/domain and cannot be interchanged by name alone.
+    disposition: "bind algorithm, preimage and domain per boundary; add V2 only for a named overlap; preserve V1"
   - id: TIME-001
     severity: medium
     issue: >-
@@ -223,8 +235,13 @@ known_semantic_drifts:
     issue: >-
       active copies of the same packages differ across Libraries, standalone repos, and
       collection repos, sometimes at the same package version.
-    disposition: assign one canonical editable source per package and enforce one-way mirrors.
+    disposition: >-
+      Classify each duplicate as release mirror, intentional fork, vendored snapshot,
+      independent implementation, stale copy, or unknown. Enforce one-way drift only
+      for a proven mirror; do not force independent domain implementations into byte equality.
 
+repository_roles_status: provisional_discovery_not_all_source_audited
+repository_roles_evidence: GitHub metadata, selected local source and dependency inspection; verify each active role before enforcement
 repository_roles:
   RecursiveIntell/agent-graph-mcp: domain_owner
   RecursiveIntell/agent-memory-kits: integration_distribution
@@ -235,7 +252,7 @@ repository_roles:
   RecursiveIntell/benchmark: domain_owner
   RecursiveIntell/bitemporal-runtime: semantic_owner
   RecursiveIntell/boundary-compiler: semantic_owner
-  RecursiveIntell/ClaimLedger: semantic_owner
+  RecursiveIntell/ClaimLedger: domain_owner
   RecursiveIntell/Claude-Test-Apps: archived_frozen
   RecursiveIntell/ClawGuard: consumer_product
   RecursiveIntell/Coder: archived_frozen
@@ -274,7 +291,7 @@ repository_roles:
   RecursiveIntell/Rip: tooling
   RecursiveIntell/Rust-Libraries: archived_frozen
   RecursiveIntell/Salty: archived_frozen
-  RecursiveIntell/semantic-memory: semantic_owner
+  RecursiveIntell/semantic-memory: integration_distribution
   RecursiveIntell/semantic-memory-forge: semantic_owner
   RecursiveIntell/semantic-memory-mcp: integration_distribution
   RecursiveIntell/Server-Monitor: consumer_product
@@ -305,10 +322,10 @@ adoption:
     runtime_changes: false
   phase_1:
     name: source_owner_reconciliation
-    gate: "every active duplicate package has exactly one canonical editable source"
+    gate: "every P0/P1 duplicate relationship is classified; shared semantic families have one admitted writer and proven mirrors have one edit direction"
   phase_2:
-    name: identity_digest_v2
-    gate: "canonical structured digest ownership is unambiguous and V1 remains readable"
+    name: qualified_digest_profiles
+    gate: "each cross-boundary digest binds algorithm, preimage/canonicalization, domain, and version; V1 remains readable"
   phase_3:
     name: receipt_authority_outcome_normalization
   phase_4:
