@@ -1,7 +1,9 @@
 # RecursiveIntell Semantic Law V1
 
-**Status:** proposed cross-repository contract  
-**Scope:** RecursiveIntell-owned active repositories and RecursiveIntell-authored integration boundaries  
+**Status:** proposed cross-repository contract
+
+**Scope:** RecursiveIntell-owned active repositories and RecursiveIntell-authored integration boundaries
+
 **Normative language:** MUST / MUST NOT / SHOULD / MAY are intentional.
 
 This document normalizes semantic vocabulary already present across the stack. It does not grant authority, activate runtime behavior, migrate durable state, or retroactively change legacy artifact meaning.

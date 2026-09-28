@@ -1,7 +1,9 @@
 # Cross-Repository Semantic Reconciliation Plan
 
-**Status:** proposal accompanying Semantic Law V1  
-**Date:** 2026-09-27  
+**Status:** proposal accompanying Semantic Law V1
+
+**Date:** 2026-09-27
+
 **Scope:** 60 repositories inventoried through GitHub metadata; selected source
 surfaces inspected. This is not a source audit of all 60 repositories.
 
