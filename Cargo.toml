@@ -70,6 +70,7 @@ members = [
     "verification-calibration",
     "verification-control",
     "verification-policy",
+    "tools/claim-ledger-sign",
 ]
 exclude = [
     # Nested workspace consumed only through path dependencies.
