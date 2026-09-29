@@ -83,6 +83,18 @@ pub struct MonitorClient {
 }
 
 impl MonitorClient {
+    #[cfg(test)]
+    pub(crate) fn test_channel(capacity: usize) -> (Self, Receiver<ObservationEnvelope>) {
+        let (tx, rx) = sync_channel(capacity);
+        (
+            Self {
+                tx,
+                counters: Arc::new(Counters::default()),
+            },
+            rx,
+        )
+    }
+
     /// Attempt to enqueue an event without waiting for the collector.
     pub fn try_emit(&self, event: ObservationEnvelope) -> Result<EmitStatus, ObservationError> {
         self.counters.attempted.fetch_add(1, Ordering::Relaxed);
