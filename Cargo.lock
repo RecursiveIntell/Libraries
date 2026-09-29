@@ -953,6 +953,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "claim-ledger-sign"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "claim-ledger",
+ "clap",
+ "hex",
+ "ring",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+]
+
+[[package]]
 name = "clap"
 version = "4.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
