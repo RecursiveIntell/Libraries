@@ -44,11 +44,8 @@ fn claim_rows(entries: &[LedgerEntry]) -> Vec<Value> {
                         support_state,
                         ..
                     } if id == claim_id => Some(*support_state),
-                    LedgerEvent::SupportAdmission {
-                        claim_id: id,
-                        admitted_support_state,
-                        ..
-                    } if id == claim_id => Some(*admitted_support_state),
+                    // Legacy admissions are retained as events, not projected as support.
+                    // The canonical V1 snapshot folds SupportJudgment, not SupportAdmission.
                     _ => None,
                 })
                 .unwrap_or(SupportState::Unknown);
@@ -185,3 +182,92 @@ impl ClaimLedgerServer {
 }
 #[tool_handler(router=self.tool_router, name="claim-ledger-mcp", version="0.1.0")]
 impl ServerHandler for ClaimLedgerServer {}
+
+#[cfg(test)]
+#[allow(clippy::expect_used)] // Fixture construction failures should fail the tests, never production reads.
+mod tests {
+    use super::*;
+    use claim_ledger::{LedgerEntryBuilder, SupportState};
+
+    fn claim() -> LedgerEntry {
+        LedgerEntryBuilder::new(1, None)
+            .add_claim("claim-1", "source-1", "span-1", "claim text")
+            .expect("valid test claim")
+    }
+
+    #[test]
+    fn legacy_admission_alone_does_not_promote_query_support() {
+        let first = claim();
+        let admission = LedgerEntryBuilder::new(2, Some(first.entry_digest.clone()))
+            .add_support_admission(
+                "receipt-1",
+                "claim-1",
+                "old",
+                "new",
+                SupportState::Supported,
+            )
+            .expect("valid test admission");
+        let rows = claim_rows(&[first, admission]);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0]["support_state"], "unknown");
+    }
+
+    #[test]
+    fn legacy_admission_does_not_override_latest_judgment() {
+        let first = claim();
+        let judgment = LedgerEntryBuilder::new(2, Some(first.entry_digest.clone()))
+            .add_support_judgment(
+                "judgment-1",
+                "claim-1",
+                "bundle-1",
+                SupportState::Unsupported,
+                "fixture",
+            )
+            .expect("valid test judgment");
+        let admission = LedgerEntryBuilder::new(3, Some(judgment.entry_digest.clone()))
+            .add_support_admission(
+                "receipt-1",
+                "claim-1",
+                "judgment-1",
+                "judgment-2",
+                SupportState::Supported,
+            )
+            .expect("valid test admission");
+        let rows = claim_rows(&[first, judgment, admission]);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0]["support_state"], "unsupported");
+    }
+
+    #[tokio::test]
+    async fn admission_only_cannot_clear_proof_debt_gate() {
+        let dir = std::env::temp_dir().join(format!("claim-ledger-mcp-{}", claim_ledger::ulid()));
+        std::fs::create_dir(&dir).expect("test directory");
+        let first = claim();
+        let admission = LedgerEntryBuilder::new(2, Some(first.entry_digest.clone()))
+            .add_support_admission(
+                "receipt-1",
+                "claim-1",
+                "old",
+                "new",
+                SupportState::Supported,
+            )
+            .expect("valid test admission");
+        let ledger = format!(
+            "{}\n{}\n",
+            claim_ledger::serialize_entry(&first).expect("serialize claim"),
+            claim_ledger::serialize_entry(&admission).expect("serialize admission")
+        );
+        std::fs::write(dir.join("claim_ledger.jsonl"), ledger).expect("write test ledger");
+        let server = ClaimLedgerServer::new(dir.clone());
+        let response = server
+            .claim_ledger_evaluate_proof_debt(Parameters(ProofDebtParams {
+                claim_ids: vec!["claim-1".into()],
+                budget_micros: 0,
+            }))
+            .await
+            .expect("evaluate gate");
+        assert_eq!(response.0.data["gate_decision"], "block");
+        assert_eq!(response.0.data["debt_weight_micros"], 250_000);
+        std::fs::remove_dir_all(dir).expect("remove test directory");
+    }
+}
