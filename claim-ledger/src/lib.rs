@@ -60,7 +60,7 @@ pub use ledger::{
     ExpectedLedgerHead, LedgerEntry, LedgerEntryBuilder, LedgerEvent, LedgerSnapshot,
     LedgerVerification, SnapshotClaim, SnapshotClaimSupport, SnapshotContentClaimLink,
     SnapshotContradictionState, SnapshotFactClaimLink, SnapshotSupportJudgment,
-    UnprojectableEventPolicy,
+    SourceSupportObservationV1, UnprojectableEventPolicy,
 };
 pub use receipt::{
     ContradictionResolutionReceipt, ExportReceipt, LedgerAppendReceipt, SupersessionReceipt,

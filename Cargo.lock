@@ -924,7 +924,7 @@ dependencies = [
 
 [[package]]
 name = "claim-ledger"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "chrono",
  "hex",
@@ -950,6 +950,20 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "claim-ledger-sign"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "claim-ledger",
+ "clap",
+ "hex",
+ "ring",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
 ]
 
 [[package]]

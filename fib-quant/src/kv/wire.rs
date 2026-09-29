@@ -132,8 +132,9 @@ mod tests {
 
     #[test]
     fn wire_round_trip_and_rejects_trailing_bytes() {
-        let frame = encode_kv_wire(&fixture()).unwrap();
-        assert_eq!(decode_kv_wire(&frame).unwrap(), fixture());
+        let tensor = fixture();
+        let frame = encode_kv_wire(&tensor).unwrap();
+        assert_eq!(decode_kv_wire(&frame).unwrap(), tensor);
         let mut trailing = frame;
         trailing.push(0);
         assert!(decode_kv_wire(&trailing).is_err());
