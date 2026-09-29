@@ -1,5 +1,6 @@
 //! Public semantic-memory `Embedder` observation wrapper.
 
+use crate::EmitStatus;
 use semantic_memory::embedder::{EmbedBatchFuture, EmbedFuture, Embedder};
 use semantic_memory::{LlmReceiptMetadataV1, MemoryError};
 use stack_observation::{LifecycleStatus, ObservationEnvelope, ObservationKind};
@@ -125,7 +126,8 @@ impl SemanticMemoryReceiptObservationSink {
         }
     }
 
-    /// Emit validated receipt metadata without retaining raw receipt JSON.
+    /// Observe structurally valid, caller-reported receipt metadata.
+    /// This does not verify receipt integrity or retain raw receipt JSON.
     pub fn observe(&self, metadata: &LlmReceiptMetadataV1) -> Result<(), String> {
         metadata.validate()?;
         let mut observation = ObservationEnvelope::metadata(
@@ -134,11 +136,7 @@ impl SemanticMemoryReceiptObservationSink {
             "llm-receipt-metadata",
             self.sequence.fetch_add(1, Ordering::Relaxed),
             ObservationKind::Receipt,
-            if metadata.integrity_verified {
-                LifecycleStatus::Completed
-            } else {
-                LifecycleStatus::Failed
-            },
+            LifecycleStatus::Health,
             format!("LLM receipt metadata {}", metadata.pipeline_id),
         );
         observation.correlation.run_id = Some(metadata.pipeline_id.clone());
@@ -148,13 +146,92 @@ impl SemanticMemoryReceiptObservationSink {
         observation.payload = serde_json::json!({
             "receipt_digest": metadata.receipt_digest,
             "integrity_verified": metadata.integrity_verified,
+            "integrity_verification_basis": "caller_reported",
         });
-        self.client
-            .try_emit(observation)
-            .map(|_| ())
-            .map_err(|error| error.to_string())
+        match self.client.try_emit(observation) {
+            Ok(EmitStatus::Accepted) => Ok(()),
+            Ok(EmitStatus::Dropped) => {
+                Err("receipt metadata observation dropped by collector queue".into())
+            }
+            Ok(EmitStatus::CollectorUnavailable) => {
+                Err("receipt metadata collector unavailable".into())
+            }
+            Err(error) => Err(error.to_string()),
+        }
     }
 }
 
 #[allow(dead_code)]
 fn _memory_error_type_is_public(_: MemoryError) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{start_collector, ActivityStore, ObservationFilter};
+
+    fn metadata(reported: bool) -> LlmReceiptMetadataV1 {
+        LlmReceiptMetadataV1::new(
+            "sha256:source-reported-only",
+            None,
+            "pipeline-test",
+            "provider-test",
+            "model-test",
+            reported,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn caller_reported_integrity_is_not_a_verified_lifecycle_outcome() {
+        let _guard = crate::test_support::global_sink_guard();
+        let store = ActivityStore::open(":memory:").unwrap();
+        let (client, collector) = start_collector(store.clone(), 8);
+        let sink = SemanticMemoryReceiptObservationSink::new(client, "receipt-observer");
+        sink.observe(&metadata(true)).unwrap();
+        sink.observe(&metadata(false)).unwrap();
+        collector.shutdown();
+
+        let events = store
+            .query_observations(&ObservationFilter {
+                producer_id: Some("receipt-observer".into()),
+                ..ObservationFilter::default()
+            })
+            .unwrap();
+        assert_eq!(events.len(), 2);
+        assert!(events
+            .iter()
+            .all(|event| event.status == LifecycleStatus::Health));
+        assert!(events
+            .iter()
+            .all(|event| event.provenance == stack_observation::Provenance::Adapted));
+        assert!(events
+            .iter()
+            .any(|event| event.payload["integrity_verified"] == true));
+        assert!(events
+            .iter()
+            .any(|event| event.payload["integrity_verified"] == false));
+        assert!(events
+            .iter()
+            .all(|event| event.payload["integrity_verification_basis"] == "caller_reported"));
+    }
+
+    #[test]
+    fn unavailable_collector_does_not_claim_observation_delivery() {
+        let _guard = crate::test_support::global_sink_guard();
+        let store = ActivityStore::open(":memory:").unwrap();
+        let (client, collector) = start_collector(store, 8);
+        collector.shutdown();
+        let sink = SemanticMemoryReceiptObservationSink::new(client, "receipt-observer");
+        assert!(sink.observe(&metadata(true)).is_err());
+    }
+
+    #[test]
+    fn full_queue_is_not_reported_as_successful_observation() {
+        let (client, held_receiver) = crate::MonitorClient::test_channel(1);
+        let sink = SemanticMemoryReceiptObservationSink::new(client, "receipt-observer");
+        assert!(sink.observe(&metadata(true)).is_ok());
+        assert!(sink.observe(&metadata(false)).is_err());
+        drop(held_receiver);
+        assert!(sink.observe(&metadata(true)).is_err());
+    }
+}
