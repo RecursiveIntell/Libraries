@@ -1,6 +1,8 @@
 # claim-ledger-mcp
 
-`claim-ledger-mcp` is a local MCP (Model Context Protocol) server that exposes the claim-ledger through stdio. It is a narrow transport and query surface for applications that need to inspect claim records, verify ledger integrity, evaluate proof-debt budgets, and produce export receipts.
+<!-- last-verified: 2026-09-29; source review of query/verification/gate semantics, not release proof -->
+
+`claim-ledger-mcp` is a local MCP (Model Context Protocol) server that exposes claim-ledger records through stdio. It does **not** currently have an independently trusted expected ledger head; its hash-chain check establishes internal consistency only, not ledger authenticity.
 
 > **No cloud dependencies.** This server does not call OpenAI, Anthropic, Pinecone, Weaviate, Supabase, or any hosted service. It reads the ledger from the local filesystem and communicates with its MCP client over stdin/stdout.
 
@@ -15,8 +17,8 @@ This crate gives a local MCP-capable client a stable process boundary around cla
 - start a server with a ledger directory;
 - communicate using MCP over stdio;
 - inspect claim rows and related ledger events;
-- check the current ledger head and hash-chain integrity;
-- evaluate the configured proof-debt gate for selected claims; and
+- check the hash chain's internal consistency (not authenticate its head);
+- inspect a fail-closed proof-debt result while trusted-head authority is unavailable; and
 - create a binding export receipt for a set of claim IDs.
 
 **Authority boundary:** `claim-ledger-mcp` is the transport surface and adapter. It does not become a second claim database or a second claim-truth authority. `claim-ledger` owns claim truth, ledger parsing, verification semantics, identifiers, digests, and receipt types. This server loads the canonical `claim_ledger.jsonl` file from the requested directory and returns MCP results derived from that source.
@@ -77,12 +79,12 @@ The following names are verified directly in `src/server.rs` and are registered 
 
 | Tool | Inputs | Behavior |
 |---|---|---|
-| `claim_ledger_status` | none | Returns the ledger path, entry count, snapshot marker, and the current verification status. |
-| `claim_ledger_verify` | none | Verifies the ledger hash chain against the current last entry (or the empty head) and reports the result. |
-| `claim_ledger_query` | `text`, `state`, `namespace`, `limit` (all optional) | Lists claim rows, optionally filtering by claim text, support state, source/namespace text, and a capped result limit. |
-| `claim_ledger_get` | `claim_id` | Returns ledger events containing the requested claim ID, or `found: false` when none are present. |
-| `claim_ledger_evaluate_proof_debt` | `claim_ids`, `budget_micros` (optional/defaulted) | Computes the proof-debt weight for selected claims and returns an `allow`, `warn`, or `block` gate decision. |
-| `claim_ledger_export_receipt` | `claim_ids`, `operation`, `attempt_id` (optional/defaulted) | Creates and marks successful a binding export receipt whose output binding is the digest of the selected claim IDs. |
+| `claim_ledger_status` | none | Returns the ledger path, entry count, snapshot marker, `ok: false`, `unanchored` status, reason, and internal chain-consistency result. |
+| `claim_ledger_verify` | none | Checks internal consistency against the file's own last entry; `ok` remains false and `verification_status` is `unanchored` without an independent expected head. |
+| `claim_ledger_query` | `text`, `state`, `namespace`, `limit` (all optional) | Lists unanchored claim rows; support state is `unknown`, including for a reported support judgment. A `supported` state filter returns no claims. |
+| `claim_ledger_get` | `claim_id` | Returns raw, untrusted ledger events containing the requested claim ID, or `found: false` when none are present. Both results carry `verification_status: unanchored`. |
+| `claim_ledger_evaluate_proof_debt` | `claim_ids`, `budget_micros` (optional/defaulted) | Returns `block` and a null debt weight with `unanchored` status; it cannot authorize a claim without an independently authenticated expected head. |
+| `claim_ledger_export_receipt` | `claim_ids`, `operation`, `attempt_id` (optional/defaulted) | Constructs an in-memory receipt for the **caller-provided IDs only**. Receipt success means construction succeeded, not that any claim or ledger was authenticated or exported. The response includes `receipt_scope: provided_claim_ids_only` and `verification_status: unanchored`. |
 
 Tool argument schemas and defaults are generated from the parameter structs in `src/tools.rs`. Clients should use MCP `tools/list` as the authoritative runtime enumeration if the implementation changes.
 
@@ -91,11 +93,11 @@ Tool argument schemas and defaults are generated from the parameter structs in `
 - The server reads `<ledger-dir>/claim_ledger.jsonl` for each operation. A missing file is treated as an empty ledger by the current loader.
 - Other filesystem read failures are returned as MCP internal errors.
 - Ledger parse failures are returned as MCP internal errors rather than being silently repaired.
-- Verification returns a structured successful tool result with `ok: false` when the loaded ledger fails verification; a transport-level MCP failure is not used to disguise an invalid chain.
+- Chain checking returns a structured result with `digest_chain_valid`, but `ok` remains false: the expected head currently comes from the same file. An internally consistent digest chain does not authenticate the file or authorize support.
 - Query results are limited to 200 rows even when a larger `limit` is requested. The default limit is 50.
 - Query support-state filtering compares the supplied string to the returned support-state string; callers should use the values emitted by the ledger implementation rather than assuming an undocumented enum list.
-- `claim_ledger_get` matches a claim ID in the serialized event representation. It reports `found: false` when no matching event is present.
-- Proof-debt evaluation uses the current claim rows and the supplied budget. Claims without a supported or partially-supported state contribute to the returned debt weight according to the implementation in `src/server.rs`.
+- `claim_ledger_get` matches a claim ID in the serialized event representation. It reports `found: false` when no matching event is present. Presence and absence are observations of untrusted file bytes, not independently authenticated claims.
+- Proof-debt evaluation is fail-closed while no independent head authority is provisioned. Its debt weight is unknown (`null`), not zero, regardless of the supplied budget or reported support.
 - The server does not write claim entries through these tools. The export-receipt tool constructs a receipt in memory and returns it; it does not append a claim to the ledger.
 - The CLI requires `--ledger-dir`; an omitted or invalid path fails during argument parsing or filesystem access.
 
