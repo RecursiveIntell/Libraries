@@ -35,6 +35,30 @@ pub struct LedgerEntry {
     pub entry_digest: String,
 }
 
+/// Reported support transition in an external, versioned source bundle.
+///
+/// Every reference here belongs to the source bundle, not to a Rust-canonical
+/// claim or judgment namespace. The entry digest binds these reported fields;
+/// it does not validate the source bundle, authenticate proof bytes, or admit
+/// support into the Rust snapshot. Consumers must verify the referenced source
+/// artifact separately before drawing any conclusion from this observation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SourceSupportObservationV1 {
+    pub source_bundle_digest: String,
+    pub source_claim_ref: String,
+    pub source_evidence_bundle_ref: String,
+    pub source_admission_ref: String,
+    pub source_previous_judgment_ref: String,
+    pub source_new_judgment_ref: String,
+    pub reported_state: SupportState,
+    pub method: String,
+    pub rationale: String,
+    /// `None` is distinct from a present (even empty) source-supplied digest.
+    pub proof_payload_digest: Option<String>,
+    pub reported_proof_debt: Vec<crate::types::ProofDebt>,
+}
+
 /// Events that can be appended to the ledger.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -58,6 +82,10 @@ pub enum LedgerEvent {
         previous_support_judgment_ref: String,
         new_support_judgment_ref: String,
         admitted_support_state: SupportState,
+    },
+    /// Source-reported transition only; deliberately unprojectable as support.
+    SourceSupportObservationV1 {
+        observation: SourceSupportObservationV1,
     },
     ContradictionCandidate {
         contradiction_id: String,
@@ -104,6 +132,7 @@ impl LedgerEvent {
             Self::ClaimAdded { .. } => "claim_added",
             Self::SupportJudgment { .. } => "support_judgment",
             Self::SupportAdmission { .. } => "support_admission",
+            Self::SourceSupportObservationV1 { .. } => "source_support_observation_v1",
             Self::ContradictionCandidate { .. } => "contradiction_candidate",
             Self::ContradictionResolved { .. } => "contradiction_resolved",
             Self::EvidenceAttached { .. } => "evidence_attached",
@@ -338,6 +367,14 @@ impl LedgerEntryBuilder {
         })
     }
 
+    /// Record source-reported support without promoting it to a Rust judgment.
+    pub fn add_source_support_observation_v1(
+        self,
+        observation: SourceSupportObservationV1,
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::SourceSupportObservationV1 { observation })
+    }
+
     /// Add a contradiction candidate event.
     pub fn add_contradiction_candidate(
         self,
@@ -452,6 +489,17 @@ fn support_state_name(state: SupportState) -> &'static str {
     }
 }
 
+fn proof_debt_name(debt: crate::types::ProofDebt) -> &'static str {
+    use crate::types::ProofDebt;
+    match debt {
+        ProofDebt::MissingSourceBasis => "missing_source_basis",
+        ProofDebt::MissingBenchmark => "missing_benchmark",
+        ProofDebt::MissingRepro => "missing_repro",
+        ProofDebt::MissingExternalValidation => "missing_external_validation",
+        ProofDebt::None => "none",
+    }
+}
+
 /// Produce the documented canonical preimage for an entry digest.
 pub fn entry_digest_preimage(
     sequence: u64,
@@ -505,6 +553,33 @@ pub fn entry_digest_preimage(
             put_str(&mut out, previous_support_judgment_ref)?;
             put_str(&mut out, new_support_judgment_ref)?;
             put_str(&mut out, support_state_name(*admitted_support_state))?;
+        }
+        LedgerEvent::SourceSupportObservationV1 { observation } => {
+            put_str(&mut out, &observation.source_bundle_digest)?;
+            put_str(&mut out, &observation.source_claim_ref)?;
+            put_str(&mut out, &observation.source_evidence_bundle_ref)?;
+            put_str(&mut out, &observation.source_admission_ref)?;
+            put_str(&mut out, &observation.source_previous_judgment_ref)?;
+            put_str(&mut out, &observation.source_new_judgment_ref)?;
+            put_str(&mut out, support_state_name(observation.reported_state))?;
+            put_str(&mut out, &observation.method)?;
+            put_str(&mut out, &observation.rationale)?;
+            match &observation.proof_payload_digest {
+                None => out.push(0),
+                Some(digest) => {
+                    out.push(1);
+                    put_str(&mut out, digest)?;
+                }
+            }
+            put_u64(
+                &mut out,
+                u64::try_from(observation.reported_proof_debt.len()).map_err(|_| {
+                    ClaimLedgerError::SerializationError("proof debt count exceeds u64".into())
+                })?,
+            );
+            for debt in &observation.reported_proof_debt {
+                put_str(&mut out, proof_debt_name(*debt))?;
+            }
         }
         LedgerEvent::ContradictionCandidate {
             contradiction_id,
@@ -844,6 +919,7 @@ impl SnapshotProjection {
                 state.affected_claim_refs = affected_claim_refs.clone();
             }
             LedgerEvent::SupportAdmission { .. }
+            | LedgerEvent::SourceSupportObservationV1 { .. }
             | LedgerEvent::EvidenceAttached { .. }
             | LedgerEvent::BundleExported { .. }
             | LedgerEvent::ProofDebtConsumed { .. }
