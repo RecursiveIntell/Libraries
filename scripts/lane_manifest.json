@@ -1,5 +1,5 @@
 {
-  "schema_version": "lane_manifest_v1",
+  "schema_version": "lane_manifest_v2",
   "generated_by": "V28 remediation pack",
   "supported_lane": [
     "contract-schema-gen",
@@ -28,6 +28,9 @@
     "continuity-runtime",
     "effect-runtime",
     "mechanism-runtime"
+  ],
+  "semantic_type_scan_extra": [
+    "claim-ledger"
   ],
   "doc_certified_lane": [
     "forge-pilot",
