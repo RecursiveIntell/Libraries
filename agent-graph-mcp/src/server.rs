@@ -544,17 +544,23 @@ mod tests {
     use crate::run_manager::RunManager;
     use crate::store::PersistentStore;
 
-    fn configure_test_integrity_key() {
-        let path = std::env::temp_dir().join("agent-graph-mcp-unit-integrity.key");
+    fn write_test_integrity_key(dir: &std::path::Path) -> std::path::PathBuf {
+        // Per-test key file in its OWN directory outside the SQLite data dir:
+        // concurrent test threads must never share or rewrite one key file (a
+        // mid-rewrite read yields a partial key), and key material must not live
+        // inside the store dir the filesystem-security check guards.
+        let path = dir.join("test-integrity.key");
         std::fs::write(&path, [0x5au8; 32]).expect("test integrity key");
-        std::env::set_var("AGENT_GRAPH_INTEGRITY_KEY_PATH", path);
+        path
     }
 
     #[test]
     fn terminal_projection_failure_rolls_back_sqlite_and_marks_run_volatile() {
-        configure_test_integrity_key();
         let temp = tempfile::tempdir().expect("temp graph database");
-        let store = PersistentStore::open(temp.path()).expect("store");
+        let key_dir = tempfile::tempdir().expect("key directory");
+        let key_path = write_test_integrity_key(key_dir.path());
+        let store =
+            PersistentStore::open_with_integrity_key(temp.path(), Some(&key_path)).expect("store");
         let spec: GraphSpec = serde_json::from_value(serde_json::json!({
             "name":"fault-injection",
             "entry":"x",
@@ -600,7 +606,8 @@ mod tests {
         assert_eq!(public["persistence_status"], "volatile_persistence_failed");
         assert_eq!(public["storage_class"], "volatile");
 
-        let reopened = PersistentStore::open(temp.path()).expect("fresh store");
+        let reopened = PersistentStore::open_with_integrity_key(temp.path(), Some(&key_path))
+            .expect("fresh store");
         assert_eq!(
             reopened.load_execution(&run_id).unwrap().unwrap()["status"],
             "running"
@@ -611,14 +618,15 @@ mod tests {
 
     #[test]
     fn capacity_is_reserved_before_direct_or_approved_checkpoint_consumption() {
-        configure_test_integrity_key();
         let temp = tempfile::tempdir().expect("checkpoint database");
+        let key_dir = tempfile::tempdir().expect("key directory");
+        let key_path = write_test_integrity_key(key_dir.path());
         let server = AgentGraphServer::new(
             "http://localhost".into(),
             "test-model".into(),
             None,
             Some(temp.path().to_owned()),
-            None,
+            Some(key_path.clone()),
         )
         .expect("server");
         server
