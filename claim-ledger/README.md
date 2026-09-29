@@ -5,7 +5,7 @@ claim, evidence, provenance, contradiction, export, and proof-debt events. It
 creates hash-chained entries and verifiable compaction checkpoints; it does not
 perform I/O, operate a search index, or make trust decisions by itself.
 
-**Current crate metadata:** version `0.2.1`, license [MIT](#license), Rust 2021
+**Candidate crate metadata:** version `0.3.0` (unreleased on this branch), license [MIT](#license), Rust 2021
 edition. An MSRV is **not declared**: `Cargo.toml` has no `rust-version` field.
 
 ## Purpose and authority boundary
@@ -270,7 +270,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Public API
 
-All items below are public in `0.2.1`. The crate root re-exports the common
+This inventory describes the current source tree for the unreleased `0.3.0` candidate; it is not a compatibility or release statement. The crate root re-exports the common
 surface; the public modules (`budget`, `candidate`, `envelope`, `error`, `ids`, `ledger`,
 `receipt`, and `types`) also expose their module-level public items.
 
