@@ -31,10 +31,10 @@
 
 use chrono::{TimeZone, Utc};
 use claim_ledger::{
-    admission_event_from_envelope, compact_ledger, compute_entry_digest, fold_snapshot,
-    parse_ledger_entries, serialize_entry, verify_ledger, verify_snapshot, AdmissionEventPayloadV1,
-    CompactionPolicy, EnvelopeVerificationContext, ExpectedLedgerHead, LedgerEntry,
-    LedgerEntryBuilder, LedgerEvent, SnapshotFoldV1, UnprojectableEventPolicy,
+    admission_event_from_envelope, compact_ledger, compute_entry_digest, parse_ledger_entries,
+    serialize_entry, verify_ledger, verify_snapshot, AdmissionEventPayloadV1, CompactionPolicy,
+    EnvelopeVerificationContext, ExpectedLedgerHead, LedgerEntry, LedgerEntryBuilder, LedgerEvent,
+    SnapshotFoldV1, UnprojectableEventPolicy,
 };
 use claim_ledger::{ArtifactEnvelopeV1, PolicyAdmission};
 
