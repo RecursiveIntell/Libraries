@@ -99,7 +99,7 @@ pub use integrity_snapshot::{
 };
 mod integrity_repair_plan;
 pub use integrity_repair_plan::{
-    AuthorityRelationQuarantinePlanError, AuthorityRelationQuarantinePlanV1, OrphanRowV1,
+    AuthorityRelationQuarantinePlanError, AuthorityRelationQuarantinePlanV2, OrphanRowV1,
     OrphanViolationV1, SqliteCellV1,
 };
 pub mod journal;

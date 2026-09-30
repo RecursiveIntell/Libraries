@@ -230,6 +230,36 @@ fn cleanup(staging: NamedTempFile, cause: IntegritySnapshotError) -> IntegritySn
     }
 }
 
+/// Copy an already-pinned, pre-budgeted owner read transaction. The caller must
+/// hold that transaction and validate page_count * page_size before allocating
+/// a destination. Shared by file snapshots and disposable planner evidence.
+/// Busy/locked, incomplete backup and source read errors never become success.
+pub(crate) fn copy_pinned_read_view(
+    source: &Connection,
+    target: &mut Connection,
+    page_count: u64,
+    mut after_step: impl FnMut() -> Result<(), IntegritySnapshotError>,
+) -> Result<(), IntegritySnapshotError> {
+    let backup = Backup::new(source, target)?;
+    let started = Instant::now();
+    for _ in 0..(page_count / 256 + 2) {
+        let state = backup.step(256)?;
+        after_step()?;
+        if started.elapsed() > Duration::from_secs(30) {
+            return Err(IntegritySnapshotError::BackupDeadline);
+        }
+        match state {
+            StepResult::Done => return Ok(()),
+            StepResult::More => {}
+            StepResult::Busy | StepResult::Locked => {
+                return Err(IntegritySnapshotError::BackupBusy)
+            }
+            _ => return Err(IntegritySnapshotError::BackupIncomplete),
+        }
+    }
+    Err(IntegritySnapshotError::BackupIncomplete)
+}
+
 fn snapshot_sync(
     source: &Connection,
     source_base: &Path,
@@ -275,7 +305,6 @@ fn snapshot_sync(
     if bytes > max_bytes {
         return Err(IntegritySnapshotError::LimitExceeded { bytes, max_bytes });
     }
-    let max_steps = page_count / 256 + 2;
     let mut staging = Builder::new()
         .prefix(".semantic-memory-snapshot-")
         .tempfile_in(&parent)
@@ -283,32 +312,9 @@ fn snapshot_sync(
     let result = (|| {
         hook(SnapshotStage::BeforeBackup, &destination)?;
         let mut target = Connection::open(staging.path())?;
-        {
-            let backup = Backup::new(&transaction, &mut target)?;
-            let started = Instant::now();
-            let mut complete = false;
-            for _ in 0..max_steps {
-                let state = backup.step(256)?;
-                hook(SnapshotStage::AfterBackupStep, &destination)?;
-                if started.elapsed() > Duration::from_secs(30) {
-                    return Err(IntegritySnapshotError::BackupDeadline);
-                }
-                match state {
-                    StepResult::Done => {
-                        complete = true;
-                        break;
-                    }
-                    StepResult::More => {}
-                    StepResult::Busy | StepResult::Locked => {
-                        return Err(IntegritySnapshotError::BackupBusy)
-                    }
-                    _ => return Err(IntegritySnapshotError::BackupIncomplete),
-                }
-            }
-            if !complete {
-                return Err(IntegritySnapshotError::BackupIncomplete);
-            }
-        }
+        copy_pinned_read_view(&transaction, &mut target, page_count, || {
+            hook(SnapshotStage::AfterBackupStep, &destination)
+        })?;
         let mode: String = target.query_row("PRAGMA journal_mode=DELETE", [], |r| r.get(0))?;
         if mode != "delete" {
             return Err(IntegritySnapshotError::DestinationNotSealed);

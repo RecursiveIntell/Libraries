@@ -1,11 +1,16 @@
 //! Unsigned, read-only inspection of sealed schema-39 authority orphans.
-//! This module never issues application permission and has no mutation path.
+//! This module never issues application permission and has no source mutation path.
+//! V2 hashes and inspects one private derived SQLite image captured through the
+//! canonical owner's pinned read transaction. It makes no pathname identity,
+//! original-file byte hash, or general database-health claim.
 use crate::{MemoryError, MemoryStore};
-use rusqlite::{types::ValueRef, Connection, OptionalExtension};
+use rusqlite::{serialize::Data, types::ValueRef, Connection, DatabaseName, OptionalExtension};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use std::{collections::BTreeSet, fs::File, io::Read, path::Path};
+use std::collections::BTreeSet;
 
+// Independent cap on each derived SQLite image; not the JSON output budget.
+const MAX_READ_VIEW_BYTES: u64 = 256 * 1024 * 1024;
 const MAX_PLAN_ROWS: usize = 10_000;
 const MAX_PLAN_BYTES: usize = 16 * 1024 * 1024;
 const TABLES: [&str; 5] = [
@@ -35,14 +40,16 @@ pub enum AuthorityRelationQuarantinePlanError {
     LimitExceeded,
     #[error("unsupported foreign key or orphan shape: {0}")]
     UnsupportedShape(String),
-    #[error("snapshot bytes changed during inspection")]
-    SnapshotChanged,
+    #[error("read-view image is empty, oversized, or its size calculation overflowed")]
+    ReadViewLimitExceeded,
+    #[error("serialized read-view size or ownership differs from the bounded image")]
+    InvalidReadView,
+    #[error("bounded read-view backup: {0}")]
+    ReadViewBackup(#[from] crate::IntegritySnapshotError),
     #[error("owner connection: {0}")]
     Owner(#[from] MemoryError),
     #[error("sqlite: {0}")]
     Sqlite(#[from] rusqlite::Error),
-    #[error("source I/O: {0}")]
-    Io(#[from] std::io::Error),
     #[error("serialization: {0}")]
     Json(#[from] serde_json::Error),
 }
@@ -73,11 +80,15 @@ pub struct OrphanRowV1 {
     pub row_sha256: String,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct AuthorityRelationQuarantinePlanV1 {
+pub struct AuthorityRelationQuarantinePlanV2 {
     pub schema_version: &'static str,
     pub disposition: &'static str,
     pub application_authorization_required: bool,
-    pub database_sha256: String,
+    /// Digest of exactly the serialized, private derived image inspected below.
+    /// This is not a digest of the caller's current pathname or original file.
+    pub read_view_sha256: String,
+    pub read_view_size_bytes: u64,
+    pub read_view_format: &'static str,
     pub sqlite_user_version: u32,
     pub schema_manifest_sha256: String,
     pub epochs: Vec<(String, i64)>,
@@ -94,19 +105,6 @@ fn digest<T: Serialize>(value: &T) -> Result<String, Error> {
         "sha256:{:x}",
         Sha256::digest(serde_json::to_vec(value)?)
     ))
-}
-fn file_digest(path: &Path) -> Result<String, Error> {
-    let mut file = File::open(path)?;
-    let mut hash = Sha256::new();
-    let mut buf = [0_u8; 65536];
-    loop {
-        let n = file.read(&mut buf)?;
-        if n == 0 {
-            break;
-        }
-        hash.update(&buf[..n]);
-    }
-    Ok(format!("sha256:{:x}", hash.finalize()))
 }
 fn hex_bytes(bytes: &[u8]) -> String {
     use std::fmt::Write;
@@ -219,33 +217,25 @@ pub(crate) async fn plan(
     store: &MemoryStore,
     max_rows: usize,
     max_bytes: usize,
-) -> Result<AuthorityRelationQuarantinePlanV1, Error> {
+) -> Result<AuthorityRelationQuarantinePlanV2, Error> {
     if !store.inner.read_only {
         return Err(Error::RequiresReadOnlyStore);
     }
     if max_rows == 0 || max_rows > MAX_PLAN_ROWS || max_bytes == 0 || max_bytes > MAX_PLAN_BYTES {
         return Err(Error::LimitExceeded);
     }
-    let path = store.inner.paths.sqlite_path.clone();
-    let before = file_digest(&path)?;
-    let report = store
+    let mut report = store
         .with_read_conn(move |conn| {
-            // Keep a single pinned read view; never invoke owner write helpers.
-            let tx = conn.unchecked_transaction()?;
-            let result = inspect(&tx, max_rows, max_bytes);
-            // Preserve typed errors in the inner result while the pool owns its connection.
-            drop(tx);
-            Ok(result)
+            // The canonical owner retains its one acquired reader and transaction
+            // through the copy. No pathname is reopened or used as evidence.
+            Ok(capture_read_view(
+                conn,
+                max_rows,
+                max_bytes,
+                MAX_READ_VIEW_BYTES,
+            ))
         })
         .await??;
-    let after = file_digest(&store.inner.paths.sqlite_path)?;
-    if before != after {
-        return Err(Error::SnapshotChanged);
-    }
-    let mut report = AuthorityRelationQuarantinePlanV1 {
-        database_sha256: after,
-        ..report
-    };
     report.plan_sha256.clear();
     report.plan_sha256 = digest(&report)?;
     if serde_json::to_vec(&report)?.len() > max_bytes {
@@ -253,15 +243,72 @@ pub(crate) async fn plan(
     }
     Ok(report)
 }
+fn bounded_image_size(page_count: u64, page_size: u64, limit: u64) -> Result<u64, Error> {
+    page_count
+        .checked_mul(page_size)
+        .filter(|bytes| *bytes > 0 && *bytes <= limit && *bytes <= MAX_READ_VIEW_BYTES)
+        .ok_or(Error::ReadViewLimitExceeded)
+}
+
+fn capture_read_view(
+    source: &Connection,
+    max_rows: usize,
+    max_bytes: usize,
+    image_limit: u64,
+) -> Result<AuthorityRelationQuarantinePlanV2, Error> {
+    let transaction = source.unchecked_transaction()?;
+    // A real schema read pins the same view used for admission, budgeting and
+    // backup. Keep source journal admission separate from the private image.
+    let _: i64 = transaction.query_row("SELECT COUNT(*) FROM sqlite_schema", [], |r| r.get(0))?;
+    let mode: String = transaction.query_row("PRAGMA journal_mode", [], |r| r.get(0))?;
+    if mode != "delete" {
+        return Err(Error::NotSealed);
+    }
+    let page_count: u64 = transaction.query_row("PRAGMA page_count", [], |r| r.get(0))?;
+    let page_size: u64 = transaction.query_row("PRAGMA page_size", [], |r| r.get(0))?;
+    let expected_bytes = bounded_image_size(page_count, page_size, image_limit)?;
+
+    // Backup propagates source page-read failures. Serializing the disk source
+    // directly would be weaker: SQLite may zero-fill a failed page read.
+    let mut image = Connection::open_in_memory()?;
+    image.pragma_update(None, "page_size", page_size)?;
+    crate::integrity_snapshot::copy_pinned_read_view(&transaction, &mut image, page_count, || {
+        Ok(())
+    })?;
+    let copied_pages: u64 = image.query_row("PRAGMA page_count", [], |r| r.get(0))?;
+    let copied_page_size: u64 = image.query_row("PRAGMA page_size", [], |r| r.get(0))?;
+    if bounded_image_size(copied_pages, copied_page_size, image_limit)? != expected_bytes {
+        return Err(Error::InvalidReadView);
+    }
+    // Recheck the size before serialization's second full-image allocation.
+    // Inspect a read-only deserialization of exactly the bytes we hash, not a
+    // separately acquired connection or a reopened filesystem path.
+    let serialized = image.serialize(DatabaseName::Main)?;
+    if u64::try_from(serialized.len()).ok() != Some(expected_bytes) {
+        return Err(Error::InvalidReadView);
+    }
+    let read_view_sha256 = format!("sha256:{:x}", Sha256::digest(&*serialized));
+    let Data::Owned(serialized) = serialized else {
+        return Err(Error::InvalidReadView);
+    };
+    drop(image);
+    let mut inspected = Connection::open_in_memory()?;
+    inspected.deserialize(DatabaseName::Main, serialized, true)?;
+    inspected.pragma_update(None, "query_only", true)?;
+    let mut report = inspect(&inspected, max_rows, max_bytes)?;
+    report.read_view_sha256 = read_view_sha256;
+    report.read_view_size_bytes = expected_bytes;
+    // Dropping this read transaction rolls back no writes; all source access
+    // above is read-only. The disposable image never becomes canonical state.
+    drop(transaction);
+    Ok(report)
+}
+
 fn inspect(
     conn: &Connection,
     max_rows: usize,
     max_bytes: usize,
-) -> Result<AuthorityRelationQuarantinePlanV1, Error> {
-    let mode: String = conn.query_row("PRAGMA journal_mode", [], |r| r.get(0))?;
-    if mode != "delete" {
-        return Err(Error::NotSealed);
-    }
+) -> Result<AuthorityRelationQuarantinePlanV2, Error> {
     let version: u32 = conn.query_row("PRAGMA user_version", [], |r| r.get(0))?;
     if version != 39 {
         return Err(Error::UnsupportedSchema);
@@ -459,15 +506,17 @@ fn inspect(
         }
     }
     let rows_sha256 = digest(&rows)?;
-    Ok(AuthorityRelationQuarantinePlanV1 {
-        schema_version: "authority_relation_quarantine_plan_v1",
+    Ok(AuthorityRelationQuarantinePlanV2 {
+        schema_version: "authority_relation_quarantine_plan_v2",
         disposition: if rows.is_empty() {
             "no_orphaned_authority_rows"
         } else {
             "proposal_requires_owner_application_authorization"
         },
         application_authorization_required: true,
-        database_sha256: String::new(),
+        read_view_sha256: String::new(),
+        read_view_size_bytes: 0,
+        read_view_format: "sqlite3_backup_then_serialize_v1",
         sqlite_user_version: version,
         schema_manifest_sha256,
         epochs,
@@ -484,6 +533,64 @@ fn inspect(
 #[cfg(test)]
 mod cell_encoding_tests {
     use super::*;
+
+    #[test]
+    fn read_view_budget_rejects_zero_overflow_and_oversized_images() {
+        assert!(matches!(
+            bounded_image_size(0, 4096, MAX_READ_VIEW_BYTES),
+            Err(Error::ReadViewLimitExceeded)
+        ));
+        assert!(matches!(
+            bounded_image_size(u64::MAX, 4096, MAX_READ_VIEW_BYTES),
+            Err(Error::ReadViewLimitExceeded)
+        ));
+        assert!(matches!(
+            bounded_image_size(65537, 4096, MAX_READ_VIEW_BYTES),
+            Err(Error::ReadViewLimitExceeded)
+        ));
+        assert!(matches!(
+            bounded_image_size(1, 4096, 4095),
+            Err(Error::ReadViewLimitExceeded)
+        ));
+        assert_eq!(
+            bounded_image_size(65536, 4096, u64::MAX).unwrap(),
+            MAX_READ_VIEW_BYTES
+        );
+    }
+
+    #[test]
+    fn capture_rejects_small_image_budget_before_copy_without_source_changes() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("memory.db");
+        let source = Connection::open(&path).unwrap();
+        crate::db::run_migrations(&source).unwrap();
+        source
+            .pragma_update(None, "journal_mode", "DELETE")
+            .unwrap();
+        let before = std::fs::read(&path).unwrap();
+        assert!(matches!(
+            capture_read_view(&source, 100, 100_000, 1),
+            Err(Error::ReadViewLimitExceeded)
+        ));
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+
+    #[test]
+    fn nondefault_page_size_is_preserved_in_derived_read_view() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("memory.db");
+        let source = Connection::open(&path).unwrap();
+        source.pragma_update(None, "page_size", 8192).unwrap();
+        crate::db::run_migrations(&source).unwrap();
+        source
+            .pragma_update(None, "journal_mode", "DELETE")
+            .unwrap();
+        let before = std::fs::read(&path).unwrap();
+        let plan = capture_read_view(&source, 100, 100_000, MAX_READ_VIEW_BYTES).unwrap();
+        assert_eq!(plan.read_view_size_bytes, before.len() as u64);
+        assert!(plan.rows.is_empty());
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
 
     #[test]
     fn preserves_each_sqlite_cell_type_without_json_numeric_or_utf8_coercion() {

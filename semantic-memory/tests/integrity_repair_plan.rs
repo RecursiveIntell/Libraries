@@ -1,4 +1,4 @@
-use rusqlite::Connection;
+use rusqlite::{backup::Backup, Connection, DatabaseName, OpenFlags};
 use semantic_memory::{
     AuthorityRelationQuarantinePlanError, MemoryConfig, MemoryStore, MockEmbedder, SqliteCellV1,
 };
@@ -37,10 +37,28 @@ async fn clean_image_is_explicit_noop_and_unchanged() -> ResultT {
     assert_eq!(plan.disposition, "no_orphaned_authority_rows");
     assert!(plan.violations.is_empty());
     assert!(plan.rows.is_empty());
+    let source = Connection::open_with_flags(
+        tmp.path().join("memory.db"),
+        OpenFlags::SQLITE_OPEN_READ_ONLY,
+    )?;
+    let tx = source.unchecked_transaction()?;
+    let _: i64 = tx.query_row("SELECT COUNT(*) FROM sqlite_schema", [], |r| r.get(0))?;
+    let mut expected = Connection::open_in_memory()?;
+    {
+        let backup = Backup::new(&tx, &mut expected)?;
+        assert_eq!(backup.step(-1)?, rusqlite::backup::StepResult::Done);
+    }
+    let image = expected.serialize(DatabaseName::Main)?;
+    assert_eq!(plan.schema_version, "authority_relation_quarantine_plan_v2");
+    assert_eq!(plan.read_view_format, "sqlite3_backup_then_serialize_v1");
+    assert_eq!(plan.read_view_size_bytes, image.len() as u64);
     assert_eq!(
-        plan.database_sha256,
-        format!("sha256:{:x}", Sha256::digest(&before))
+        plan.read_view_sha256,
+        format!("sha256:{:x}", Sha256::digest(&*image))
     );
+    assert!(serde_json::to_value(&plan)?
+        .get("database_sha256")
+        .is_none());
     assert_eq!(std::fs::read(tmp.path().join("memory.db"))?, before);
     Ok(())
 }

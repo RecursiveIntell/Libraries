@@ -40,11 +40,16 @@ pub struct MemoryAuthority {
 impl MemoryAuthority {
     /// Prepare an unsigned read-only proposal for missing-parent authority rows.
     /// The result confers no permission to apply, restore, or delete anything.
+    /// V2 evidence hashes a private SQLite backup/serialization of the acquired
+    /// read view, never a pathname. Source images must use DELETE journaling and
+    /// exact schema 39; the private derived image is capped at 256 MiB before
+    /// copying and serialization. `max_rows` (1..=10,000) and `max_bytes`
+    /// (1..=16 MiB) separately bound proposal rows and encoded JSON output.
     pub async fn plan_orphaned_authority_quarantine(
         &self,
         max_rows: usize,
         max_bytes: usize,
-    ) -> Result<crate::AuthorityRelationQuarantinePlanV1, crate::AuthorityRelationQuarantinePlanError>
+    ) -> Result<crate::AuthorityRelationQuarantinePlanV2, crate::AuthorityRelationQuarantinePlanError>
     {
         crate::integrity_repair_plan::plan(&self.store, max_rows, max_bytes).await
     }
