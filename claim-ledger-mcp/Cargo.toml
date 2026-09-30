@@ -11,6 +11,7 @@ path = "src/main.rs"
 [dependencies]
 claim-ledger = { path = "../claim-ledger" }
 rmcp = { version = "1", features = ["server", "transport-io"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
 clap = { version = "4", features = ["derive"] }
 schemars = "1"
 serde = { version = "1", features = ["derive"] }
