@@ -33,6 +33,14 @@ pub enum ClaimLedgerError {
     #[error("ledger verification failed: {0}")]
     LedgerCorrupt(String),
 
+    /// A native admission failed envelope verification (stage reason inside).
+    #[error("native admission verification failed: {0}")]
+    AdmissionVerification(String),
+
+    /// The same native admission id was replayed into the fold.
+    #[error("duplicate native admission id: {0}")]
+    DuplicateNativeAdmissionId(String),
+
     /// Serialization or deserialization failure.
     #[error("serialization error: {0}")]
     SerializationError(String),
@@ -53,6 +61,8 @@ impl ClaimLedgerError {
             Self::InvalidSupportTransition(_) => "invalid_support_transition",
             Self::MissingProofPayload => "missing_proof_payload",
             Self::LedgerCorrupt(_) => "ledger_corrupt",
+            Self::AdmissionVerification(_) => "admission_verification",
+            Self::DuplicateNativeAdmissionId(_) => "duplicate_native_admission_id",
             Self::SerializationError(_) => "serialization_error",
             Self::MissingInputRef(_) => "missing_input_ref",
         }
