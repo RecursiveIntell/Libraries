@@ -18,6 +18,7 @@ use crate::{
 };
 
 pub const RESOLVED_POLICY_BASIS_V1_SCHEMA: &str = "profile-runtime.resolved-policy-basis/v1";
+pub const RESOLVED_POLICY_BASIS_V2_SCHEMA: &str = "profile-runtime.resolved-policy-basis/v2";
 const MAX_REFERENCE_BYTES: usize = 4096;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -173,6 +174,79 @@ impl ResolvedPolicyBasisV1 {
             .as_object_mut()
             .ok_or_else(|| PolicyBasisError::InvalidProjection {
                 reason: "basis must serialize as an object".into(),
+            })?;
+        object.remove("basis_digest");
+        ContentDigest::compute_json(&value).map_err(digest_error)
+    }
+}
+
+/// Content-addressed task identity over the existing nonauthorizing V1 projection.
+///
+/// This is not a CURRENT owner pointer or an effect permit. V1 reference
+/// semantics are retained for historical consumers; managed callers must opt
+/// into V2 and separately authenticate current task/owner state.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ResolvedPolicyBasisV2 {
+    pub schema: String,
+    pub basis_ref: String,
+    pub owner_projection: ResolvedPolicyBasisV1,
+    pub basis_digest: ContentDigest,
+}
+
+impl ResolvedPolicyBasisV2 {
+    /// Seal a structurally valid V1 projection as a task-bound V2 value.
+    /// This does not authenticate its caller or establish CURRENT owner state.
+    pub fn from_v1(owner_projection: ResolvedPolicyBasisV1) -> Result<Self, PolicyBasisError> {
+        owner_projection.validate()?;
+        let basis_ref = Self::reference_for(&owner_projection);
+        let mut basis = Self {
+            schema: RESOLVED_POLICY_BASIS_V2_SCHEMA.into(),
+            basis_ref,
+            owner_projection,
+            basis_digest: ContentDigest::compute(b"profile-runtime-policy-basis-v2-unsealed"),
+        };
+        basis.basis_digest = basis.expected_digest()?;
+        basis.validate()?;
+        Ok(basis)
+    }
+
+    /// Verify internal schema, reference and digest consistency only.
+    /// A separate authenticated owner readback is required before any effect.
+    pub fn validate(&self) -> Result<(), PolicyBasisError> {
+        if self.schema != RESOLVED_POLICY_BASIS_V2_SCHEMA {
+            return Err(PolicyBasisError::InvalidProjection {
+                reason: "unsupported V2 schema".into(),
+            });
+        }
+        self.owner_projection.validate()?;
+        validate_reference("basis_ref", &self.basis_ref)?;
+        if self.basis_ref != Self::reference_for(&self.owner_projection) {
+            return Err(PolicyBasisError::InvalidProjection {
+                reason: "V2 task-bound basis reference mismatch".into(),
+            });
+        }
+        if self.basis_digest != self.expected_digest()? {
+            return Err(PolicyBasisError::InvalidProjection {
+                reason: "V2 basis digest mismatch".into(),
+            });
+        }
+        Ok(())
+    }
+
+    fn reference_for(owner_projection: &ResolvedPolicyBasisV1) -> String {
+        format!(
+            "profile-runtime:resolved-policy-basis/v2:{}",
+            owner_projection.basis_digest
+        )
+    }
+
+    fn expected_digest(&self) -> Result<ContentDigest, PolicyBasisError> {
+        let mut value = serde_json::to_value(self).map_err(digest_error)?;
+        let object = value
+            .as_object_mut()
+            .ok_or_else(|| PolicyBasisError::InvalidProjection {
+                reason: "V2 basis must serialize as an object".into(),
             })?;
         object.remove("basis_digest");
         ContentDigest::compute_json(&value).map_err(digest_error)
@@ -416,6 +490,23 @@ pub fn resolve_policy_basis(
     basis.basis_digest = basis.expected_digest()?;
     basis.validate()?;
     Ok(basis)
+}
+
+/// Versioned task-bound projection, without changing legacy V1 references.
+pub fn resolve_policy_basis_v2(
+    context: &ApplicabilityContextV1,
+    profile_set: &ProfileSetV1,
+    rule_set: &CompositionRuleSetV1,
+    outcome: &CompositionOutcomeV1,
+    task: PolicyBasisTaskContextV1,
+) -> Result<ResolvedPolicyBasisV2, PolicyBasisError> {
+    ResolvedPolicyBasisV2::from_v1(resolve_policy_basis(
+        context,
+        profile_set,
+        rule_set,
+        outcome,
+        task,
+    )?)
 }
 
 fn validate_owner_references(

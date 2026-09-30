@@ -198,6 +198,95 @@ fn resolved_basis_is_a_digest_bound_projection_of_exact_owner_outputs() {
 }
 
 #[test]
+fn legacy_v1_references_collide_across_tasks_and_are_not_managed_identity() {
+    let context = context();
+    let profiles = profile_set(&context);
+    let rules = CompositionRuleSetV1::reference_v1();
+    let outcome = compose_profile_runtime(
+        &context,
+        &profiles,
+        &rules,
+        &contributions(),
+        &[],
+        "2026-09-05T20:00:02Z",
+    )
+    .expect("one owner composition");
+    let first = resolve_policy_basis(&context, &profiles, &rules, &outcome, task_context())
+        .expect("first task projection");
+    let mut second_task = task_context();
+    second_task.task_ref = "task:2".into();
+    let second = resolve_policy_basis(&context, &profiles, &rules, &outcome, second_task)
+        .expect("second task projection");
+    first.validate().expect("first digest");
+    second.validate().expect("second digest");
+    assert_ne!(first.basis_digest, second.basis_digest);
+    // Historical V1 references name only the shared composition receipt.
+    // Keep this negative witness: V1 is not a task-bound managed-effect ID.
+    assert_eq!(first.basis_ref, second.basis_ref);
+}
+
+#[test]
+fn task_bound_v2_reference_rejects_collisions_and_tamper() {
+    let context = context();
+    let profiles = profile_set(&context);
+    let rules = CompositionRuleSetV1::reference_v1();
+    let outcome = compose_profile_runtime(
+        &context,
+        &profiles,
+        &rules,
+        &contributions(),
+        &[],
+        "2026-09-05T20:00:02Z",
+    )
+    .expect("one owner composition");
+    let first = profile_runtime::resolve_policy_basis_v2(
+        &context,
+        &profiles,
+        &rules,
+        &outcome,
+        task_context(),
+    )
+    .expect("first task projection");
+    let mut second_task = task_context();
+    second_task.task_ref = "task:2".into();
+    let second = profile_runtime::resolve_policy_basis_v2(
+        &context,
+        &profiles,
+        &rules,
+        &outcome,
+        second_task,
+    )
+    .expect("second task projection");
+    first.validate().expect("first V2 identity");
+    second.validate().expect("second V2 identity");
+    assert_ne!(first.basis_ref, second.basis_ref);
+    assert_ne!(first.basis_digest, second.basis_digest);
+    let round_trip = serde_json::from_slice::<profile_runtime::ResolvedPolicyBasisV2>(
+        &serde_json::to_vec(&first).expect("serialize V2"),
+    )
+    .expect("deserialize V2");
+    round_trip.validate().expect("round-trip V2 identity");
+    let mut tampered_task = first.clone();
+    tampered_task.owner_projection.task_ref = "task:other".into();
+    assert!(
+        tampered_task.validate().is_err(),
+        "nested task tamper must fail"
+    );
+    let mut tampered_ref = first.clone();
+    tampered_ref.basis_ref = second.basis_ref;
+    assert!(
+        tampered_ref.validate().is_err(),
+        "V2 ref substitution must fail"
+    );
+    let mut tampered_digest = first;
+    tampered_digest.basis_digest = second.basis_digest;
+    assert!(
+        tampered_digest.validate().is_err(),
+        "V2 digest substitution must fail"
+    );
+}
+
+#[test]
 fn projection_preserves_blocks_and_rejects_cross_owner_reference_drift() {
     let context = context();
     let profiles = profile_set(&context);
