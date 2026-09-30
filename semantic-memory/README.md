@@ -6,7 +6,7 @@ Local-first hybrid retrieval for Rust, with SQLite as authoritative state and re
 
 `semantic-memory` stores facts, documents and chunks, conversations, episodes, embeddings, temporal state, authority ledgers, and search receipts in SQLite. FTS indexes, vector sidecars, sparse representations, and compressed candidate artifacts accelerate retrieval; they do not replace canonical state and can be reconciled from SQLite.
 
-> **No cloud dependencies.** There are no calls to OpenAI, Anthropic, Pinecone, Weaviate, Supabase, or any hosted service. Storage, retrieval, receipts, and governance all run locally; embeddings come from your own Ollama server or the optional in-process Candle embedder, which downloads its model once from Hugging Face and caches it locally.
+> **Local storage, configurable embedding sources.** Storage and retrieval run locally. Ollama calls go to the configured endpoint; the optional Candle embedder downloads model artifacts from Hugging Face when they are not cached. Review the selected embedder and endpoint before sending private text.
 
 > **Status:** research-grade library with a tested default retrieval contract. Feature-gated research and orchestration modules are not implicit guarantees of `MemoryStore::search()` behavior.
 
@@ -41,7 +41,7 @@ Local-first hybrid retrieval for Rust, with SQLite as authoritative state and re
 
 ```toml
 [dependencies]
-semantic-memory = "0.5.14"
+semantic-memory = "0.5.15"
 tokio = { version = "1", features = ["macros", "rt"] }
 ```
 
@@ -49,7 +49,7 @@ The default build enables `usearch-backend`. For an exact pure-Rust backend with
 
 ```toml
 [dependencies]
-semantic-memory = { version = "0.5.14", default-features = false, features = ["brute-force"] }
+semantic-memory = { version = "0.5.15", default-features = false, features = ["brute-force"] }
 ```
 
 ## Quick start
