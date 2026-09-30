@@ -35,6 +35,8 @@ const REDACTED_CONTENT: &str = "[REDACTED]";
 #[derive(Clone)]
 pub struct MemoryAuthority {
     store: MemoryStore,
+    #[cfg(any(test, feature = "testing"))]
+    witness_recheck_barrier: Option<(Arc<tokio::sync::Notify>, Arc<tokio::sync::Notify>)>,
 }
 
 impl MemoryAuthority {
@@ -55,7 +57,11 @@ impl MemoryAuthority {
     }
 
     pub(crate) fn new(store: MemoryStore) -> Self {
-        Self { store }
+        Self {
+            store,
+            #[cfg(any(test, feature = "testing"))]
+            witness_recheck_barrier: None,
+        }
     }
 
     /// Append a new fact and start a new authority lineage.
@@ -355,6 +361,11 @@ impl MemoryAuthority {
             &response.results,
         )
         .await?;
+        #[cfg(any(test, feature = "testing"))]
+        if let Some((reached, resume)) = &self.witness_recheck_barrier {
+            reached.notify_one();
+            resume.notified().await;
+        }
         let after = self.current_state().await?;
         if before != after
             || retrieval_witness.authority_snapshot_id != after.snapshot_id
@@ -747,6 +758,13 @@ impl MemoryAuthority {
                                 Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string(),
                             ],
                         )?;
+                        // The revocation and its coherence fence commit together.
+                        // Exact replays never enter this branch.
+                        let before_epoch = current_epoch(tx)?;
+                        let after_epoch = before_epoch.checked_add(1).ok_or_else(|| {
+                            MemoryError::Other("authority retrieval epoch overflow".into())
+                        })?;
+                        compare_and_set_epoch(tx, before_epoch, after_epoch)?;
                     }
                     let fact = crate::knowledge::get_fact(tx, &fact_id)?;
                     let origin = load_origin_record(tx, &fact_id)?;
@@ -760,6 +778,18 @@ impl MemoryAuthority {
                 })
             })
             .await
+    }
+
+    /// Pause this test handle after result authorization and witness construction,
+    /// immediately before the final coherence read. No production synchronization
+    /// or authority is provided by this testing-only barrier.
+    #[cfg(any(test, feature = "testing"))]
+    pub fn set_witness_recheck_barrier(
+        &mut self,
+        reached: Arc<tokio::sync::Notify>,
+        resume: Arc<tokio::sync::Notify>,
+    ) {
+        self.witness_recheck_barrier = Some((reached, resume));
     }
 
     /// Install a one-shot fault for the next matching authority stage.
@@ -1410,15 +1440,7 @@ fn execute_mutation_tx(
     fault_gate(fault, AuthorityFaultStage::AfterJournal)?;
 
     fault_gate(fault, AuthorityFaultStage::BeforeEpoch)?;
-    let changed = tx.execute(
-        "UPDATE authority_state SET retrieval_epoch = ?1 WHERE id = 1 AND retrieval_epoch = ?2",
-        params![after_epoch as i64, before_epoch as i64],
-    )?;
-    if changed != 1 {
-        return Err(MemoryError::Other(
-            "authority retrieval epoch changed concurrently".to_string(),
-        ));
-    }
+    compare_and_set_epoch(tx, before_epoch, after_epoch)?;
     tx.execute(
         "UPDATE authority_lineages SET updated_epoch = ?1 WHERE lineage_id = ?2",
         params![after_epoch as i64, lineage_id],
@@ -1867,6 +1889,29 @@ fn verify_all_lineages(tx: &Transaction<'_>) -> Result<(), MemoryError> {
         .collect::<Result<Vec<_>, _>>()?;
     for lineage_id in lineage_ids {
         verify_lineage(tx, &lineage_id)?;
+    }
+    Ok(())
+}
+
+/// All callers retain the owner transaction through the mutation and this CAS.
+fn compare_and_set_epoch(
+    tx: &Transaction<'_>,
+    before_epoch: u64,
+    after_epoch: u64,
+) -> Result<(), MemoryError> {
+    // SQLite INTEGER is signed; never wrap a valid epoch into a negative value.
+    let after = i64::try_from(after_epoch)
+        .map_err(|_| MemoryError::Other("authority retrieval epoch overflow".into()))?;
+    let before = i64::try_from(before_epoch)
+        .map_err(|_| MemoryError::Other("authority retrieval epoch overflow".into()))?;
+    let changed = tx.execute(
+        "UPDATE authority_state SET retrieval_epoch = ?1 WHERE id = 1 AND retrieval_epoch = ?2",
+        params![after, before],
+    )?;
+    if changed != 1 {
+        return Err(MemoryError::Other(
+            "authority retrieval epoch changed concurrently".into(),
+        ));
     }
     Ok(())
 }
