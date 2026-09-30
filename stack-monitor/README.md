@@ -9,9 +9,7 @@ stack adapters → versioned observation envelope → bounded try-send queue
              → collector worker → SQLite observations table
 ```
 
-It is **not yet** a Tauri application or cross-platform transport. The current implementation
-proves the in-process contract, Linux Unix-socket boundary, and launch-managed collector
-lifecycle while keeping the older synchronous `ActivityStore` API as a compatibility path.
+The collector library is accompanied by the `stack-monitor-desktop` Tauri application. The current transport is Unix-specific; a cross-platform transport is not implemented. The older synchronous `ActivityStore` API remains a compatibility path.
 
 ## Implemented pieces
 
@@ -130,14 +128,13 @@ stack-monitor-desktop/scripts/install-user.sh --apply
 stack-monitor-desktop/scripts/install-user.sh --activate
 ```
 
-`--activate` was explicitly approved and run for this host. The collector service is enabled and active;
-a real metadata-only health event traversed the 0600 producer socket and persisted to the installed SQLite database.
+Historical installed-host checks are described in the accompanying evidence files. They do not establish that the service is enabled or active on a new checkout or another machine. `--activate` changes service state; use it only after reviewing the target installation.
 
-## Remaining implementation phases
+## Further integration and validation areas
 
-1. User-service packaging, operational health/metrics, and cross-platform named-pipe abstraction.
-2. Full transactional migration history, retention, redaction, and export policy enforcement.
+1. Cross-platform transport and platform-specific service validation.
+2. Migration, retention, redaction, and export policy regression coverage.
 3. Enriched upstream model/provider/request/timing metadata.
-4. Tool-runtime, semantic-memory, embedding, MCP, and Python adapters.
+4. Remaining MCP/Python automatic wiring; tool-runtime and semantic-memory bridges are already feature-gated in this source.
 5. Failure-injection/performance hardening, packaging, and release closure.
 6. Legacy synchronous adapter retirement and remaining MCP/Python automatic integration wiring.
