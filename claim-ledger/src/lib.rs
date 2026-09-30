@@ -31,6 +31,7 @@ pub mod error;
 pub mod ids;
 pub mod ledger;
 pub mod receipt;
+pub mod trust_root;
 pub mod types;
 
 // Re-export commonly used types at the crate root for ergonomic access.
