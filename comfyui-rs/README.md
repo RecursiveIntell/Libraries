@@ -5,14 +5,17 @@ Async Rust client for ComfyUI -- REST API, WebSocket progress tracking, and work
 ## Example
 
 ```rust
-use comfyui_rs::ComfyClient;
-use serde_json::json;
+use comfyui_rs::{ComfyClient, GenerationOutcome};
+use std::time::Duration;
 
-let client = ComfyClient::new("http://127.0.0.1:8188");
-let workflow = json!({ /* ComfyUI workflow JSON */ });
-let prompt_id = client.queue_prompt(&workflow).await?;
-let output = client.wait_for_completion(&prompt_id).await?;
+async fn submit(workflow: serde_json::Value) -> comfyui_rs::Result<GenerationOutcome> {
+    let client = ComfyClient::new("http://127.0.0.1:8188");
+    let prompt_id = client.queue_prompt(&workflow).await?;
+    client.wait_for_completion(&prompt_id, Duration::from_secs(120)).await
+}
 ```
+
+The server must already be running with the models referenced by a valid ComfyUI API-format workflow. `Txt2ImgRequest` can build a basic workflow; `wait_for_completion_ws` adds progress callbacks. These calls submit work to the configured ComfyUI instance.
 
 ## Ecosystem
 

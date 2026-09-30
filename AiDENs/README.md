@@ -1,52 +1,41 @@
 # AiDENs
 
-**Current run:** `P32-SCHEMA-COMPAT`  
-**Status:** `candidate` — all 17 verification gates pass; P32 schema compat in progress.  
-**Last certified run:** `P30`  
-**Target run:** `P32`  
+An orchestration, inspection, packaging, and supported-local runtime layer for the RecursiveIntell stack.
 
-## What AiDENs is
+AiDENs wires providers, tools, receipts, profiles, and execution flows together. Canonical memory, governance, kernel, identity, and tool-contract semantics remain with their owner crates.
 
-AiDENs is an orchestration, display, packaging, inspection, fixture, operator, and supported-local runtime layer for the RecursiveIntell stack. It wires, scopes, exposes, validates, and coordinates. It does not own canonical truth for memory, governance, kernel, IDs, or tool contracts.
+## Recorded support status
 
-## Current scope
+The checked-in [run record](docs/codex-runs/CURRENT_RUN.json) identifies `P32`, with certification status `candidate`, support label `p32-schema-compat-candidate`, and last certified run `P30`. It records schema compatibility as enabled and boundary-compiler work as no longer deferred.
 
-This repository completed P32 schema-compatibility work building on P31B verification repair:
+That record also has `extracted_replay_certified=false`. Recorded build and packaging results are historical evidence, not a fresh certification of every later Libraries revision. The README does not promote the candidate to a certified release or claim production/cloud readiness.
 
-- Release/run truth ledger recertified: P32 candidate, all gates pass
-- Artifact classification and verifier self-poisoning repaired
-- Static safety hardening: p30_guard 0 hard findings (child.kill already replaced)
-- Build/test/package replay evidence established (15 command receipts)
-- z.py normalize bug fixed for letter-suffix run IDs (P32)
-- Supported-local vertical slice proven (boundary compiler + tool dispatch)
+## Getting started
 
-## What is not claimed
+From the Libraries repository root:
 
-- v11B, v11C, production, broad autonomy, or cloud readiness
-- Boundary compiler runtime integration (deferred to post-P32)
-- Canonical ownership of sibling-crate semantics
-- Full test certification until command bar passes
-- Certified status — current status is `blocked` / `schema-compat-candidate`
+```bash
+cd AiDENs
+cargo metadata --no-deps --format-version 1
+cargo test --workspace --locked --all-targets
+```
 
-## Quick start
+For the broader verification workflow, first read [AGENTS.md](AGENTS.md), the [support profile](SUPPORT_PROFILE.md), and the scripts it invokes, then run:
 
-1. Read `docs/codex-runs/CURRENT_RUN.json` for the active run identity.
-2. Read `AGENTS.md` for execution doctrine.
-3. Run `scripts/verify_current.sh .` after any material change.
-4. Check `docs/codex-runs/BUILD_SCOPE.md` for current build posture.
+```bash
+bash scripts/verify_current.sh .
+```
 
-**Support label:** `p32-schema-compat-candidate` (`supported-local-candidate`)
-**Production status:** not production-cloud-ready  
-**Local candidate status:** schema-compat-in-progress (do not claim certified)
+The verifier writes logs under `target/verify-current` by default and checks documentation/run consistency before Rust gates. Some paths referenced by historical run records, including `docs/codex-runs/BUILD_SCOPE.md`, are absent from this checkout; treat those as evidence gaps rather than assuming the old result has been reproduced.
 
-## Directory guide
+## Workspace guide
 
-- `crates/` — Rust workspace crates
-- `scripts/` — Verification, packaging, and assertion scripts
-- `docs/codex-runs/` — Active run docs and archive
-- `matrices/` — Issue and audit matrices
-- `scaffold/` — Deferrable stub material (see STATUS.md crate inventory for scaffold-only crates)
+- [Cargo.toml](Cargo.toml): current workspace members and dependencies
+- [crates/](crates/): contract, provider, tool, security, receipt, runner, CLI, profile, and integration-test packages
+- [examples/](examples/): local coding, memory-grounded, and daemon-oriented examples
+- [scripts/](scripts/README.md): verification and packaging entry points
+- [tests/](tests/README.md) and [schemas/](schemas/README.md): test and contract guidance
+- [docs/codex-runs/](docs/codex-runs/): recorded run state and historical artifacts
+- [CANONICAL_OWNER_MAP.md](CANONICAL_OWNER_MAP.md): ownership boundaries
 
-## Support
-
-See `SUPPORT_PROFILE.md` for current support posture and known limitations.
+Choose an example's instructions and required capabilities before running it. A fixture or packaging check does not establish broad autonomous execution, provider compatibility, or deployment readiness.

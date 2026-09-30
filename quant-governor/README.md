@@ -27,7 +27,7 @@ The current evaluator constructs direct decisions for its built-in routing paths
 
 ## Install
 
-This crate is a private monorepo package and does not advertise a public repository URL. From a Cargo project with access to the package source or registry, add it with:
+This crate is a Libraries monorepo package and does not advertise a public repository URL. From a Cargo project with access to the package source or registry, add it with:
 
 ```bash
 cargo add quant-governor

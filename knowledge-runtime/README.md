@@ -5,7 +5,7 @@ Bounded orchestration scaffold for semantic-memory: classification, routing, sco
 ## Usage
 
 ```rust
-use knowledge_runtime::{KnowledgeRuntime, QueryResult, QueryTrace};
+use knowledge_runtime::{KnowledgeRuntime, MergedResults, QueryTrace};
 ```
 
 ## What this crate is for

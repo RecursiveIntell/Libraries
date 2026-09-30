@@ -5,7 +5,7 @@ Canonical JSON schema generator for the supported release lane.
 ## Usage
 
 ```rust
-use contract_schema_gen::{generate_all_schemas, verify_committed_schemas};
+use contract_schema_gen::{generate_schemas, check_against_dir};
 ```
 
 ## Purpose
@@ -22,6 +22,9 @@ The generated artifacts are committed under `../schemas/`, and the supported
 gate verifies them with:
 
 ```bash
+# Run from the Libraries repository root.
+cargo run -p contract-schema-gen -- schemas.generated
+cargo run -p contract-schema-gen -- --check schemas
 bash scripts/check_schema_compat.sh
 ```
 

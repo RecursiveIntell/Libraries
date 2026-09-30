@@ -1,6 +1,6 @@
 # context-governor Python bindings
 
-PyO3 bindings that expose the private monorepo's Rust `context-governor` compaction engine to Python. The binding accepts a JSON message transcript and returns a JSON compaction result containing the compacted messages and a receipt with counts, approximate token measurements, a BLAKE3 digest, and warnings.
+PyO3 bindings that expose the Libraries monorepo's Rust `context-governor` compaction engine to Python. The binding accepts a JSON message transcript and returns a JSON compaction result containing the compacted messages and a receipt with counts, approximate token measurements, a BLAKE3 digest, and warnings.
 
 > **No cloud dependencies.** This package is a local Python extension around the Rust compaction engine. The binding itself does not configure or call a cloud provider.
 
@@ -20,7 +20,7 @@ This is a narrow binding, not a complete Python conversation framework. It does 
 
 The public behavior documented here is grounded in `src/lib.rs`, `pyproject.toml`, and `Cargo.toml` in this repository. The binding delegates compaction to the sibling local Rust crate `context-governor`; the exact compaction algorithm, token approximation method, warning conditions, and policy semantics are owned by that crate and are not reimplemented or expanded here. The returned token values are explicitly approximate/estimated fields, not a claim of tokenizer-equivalent counts.
 
-This repository is a private monorepo crate. No standalone public repository URL is provided here.
+This repository is a Libraries monorepo crate. No standalone public repository URL is provided here.
 
 ## Quick start
 

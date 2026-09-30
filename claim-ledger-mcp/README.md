@@ -25,7 +25,7 @@ This crate gives a local MCP-capable client a stable process boundary around cla
 
 ## Current status
 
-Version `0.1.0`. The server builds from the Libraries workspace and provides a focused stdio MCP surface. It is a private monorepo crate rather than a standalone public repository. No production-readiness, hosted-service, benchmark, or external-adoption claim is made here.
+Version `0.1.0`. The server builds from the Libraries workspace and provides a focused stdio MCP surface. It is a Libraries monorepo crate rather than a standalone public repository. No production-readiness, hosted-service, benchmark, or external-adoption claim is made here.
 
 ## Build and install from source
 

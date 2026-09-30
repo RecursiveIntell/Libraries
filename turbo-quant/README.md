@@ -2,45 +2,13 @@
 
 [![Crates.io](https://img.shields.io/crates/v/turbo-quant.svg)](https://crates.io/crates/turbo-quant)
 [![Docs.rs](https://docs.rs/turbo-quant/badge.svg)](https://docs.rs/turbo-quant)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE-MIT)
 
-**The hot tier. Near-lossless. 17ms per agent. Cosine 0.9996.**
+**Experimental vector-compression sidecars and approximate scoring for Rust.**
 
-turbo-quant compresses vectors via polar-coordinate quantization with an optional QJL residual sketch. It's not the highest compression in the stack — that's fib-quant at 50×. What turbo-quant gives you is reconstruction so close to the original that rankings barely shift (rank drift 0.03).
+TurboQuant combines polar quantization with an optional QJL residual sketch. The crate also exposes packed representations, wire formats, sidecar search receipts, and KV-cache shadow measurements. Keep exact vectors or another authoritative source for reranking and recovery.
 
-## Where It Fits
-
-turbo-quant is the **hot-tier codec** in poly-kv. It handles agent-private context that needs to stay sharp:
-
-```
-┌──────────────────────────────────┐
-│  SHARED POOL — fib-quant (50×)   │
-└──────┬──────────┬──────────┬─────┘
-       │          │          │
-  ┌────▼─────┐┌───▼────┐┌────▼─────┐
-  │ Agent 0  ││Agent 1 ││ Agent 9  │  ← you are here
-  │ turbo 8b ││turbo 8b││ turbo 8b │
-  │cos .9996 ││cos.9996││ cos .9996 │
-  │  17ms    ││  17ms  ││   17ms   │
-  └──────────┘└────────┘└──────────┘
-```
-
-This is where conversation turns, tool outputs, and unique agent state live. High fidelity, low latency.
-
-## Benchmarked (2026-06-01)
-
-| Metric | Result |
-|---|---|
-| Recall@1 (8 queries) | **1.000** |
-| Recall@1 (10 agents, shells) | **1.000** — all 10 |
-| Cosine fidelity (768-dim) | **0.9996** |
-| Rank drift vs exact scan | **0.03** |
-| Shell materialize (12 docs) | 17ms avg per agent |
-| Cross-agent interference | **0/90 pairs** |
-| JSON compression (single 768d vector) | 0.6× (JSON overhead > raw f32) |
-| Projected binary compression | ~7× |
-
-**Key insight:** 0.9996 cosine fidelity with 0.03 rank drift. For all practical purposes, the compressed representation preserves the exact ranking. When your hot tier needs to be trustworthy, this is what you use.
+Quality, latency, and byte savings depend on the selected profile and workload. The earlier unqualified agent-shell timings, universal ranking-parity language, and projected compression ratios are not current source-bound guarantees. Measure the complete representation, including metadata and retained exact data.
 
 ## Quick Start
 
@@ -66,23 +34,14 @@ fn main() -> turbo_quant::Result<()> {
 }
 ```
 
-## Two-Tier with poly-kv
+## Integration boundary
 
-```rust
-use poly_kv::{SharedKVPool, KvTensorShape, AttentionType};
-
-// Shared pool built once (fib-quant cold tier)
-let (pool, _) = SharedKVPool::build(&shared_corpus, &shape, 42)?;
-
-// Each agent's shell is turbo-quant — 17ms, near-lossless
-let (shell, receipt) = pool.materialize_shell("agent_7", &agent_tokens, 43)?;
-// receipt.shell_digest is deterministic — same tokens + same seed = same digest
-```
+The [PolyKV workspace](../poly-kv/README.md) has its own pool and adapter APIs. Its TurboQuant adapter currently returns `UnsupportedAdapter`; the older `SharedKVPool`/`AgentShell` examples are not a supported integration path. Use this crate's codec, index, or KV APIs directly when evaluating TurboQuant.
 
 ## How It Works
 
 1. **Normalize** the vector to unit length
-2. **Rotate** with a fast Hadamard transform (deterministic, seeded)
+2. **Rotate** with the selected deterministic, seeded rotation policy
 3. **Polar encode** — compress angles into discrete bins (8-bit by default)
 4. **QJL sketch** — quantized Johnson-Lindenstrauss residual for extra precision
 5. **Pack** into a compact binary representation (`PackedTurboCode`)
@@ -132,13 +91,11 @@ let shadow = cache.shadow_scores(&query)?;
 // Promote only after local benchmarks pass your quality gate
 ```
 
-## Choosing Parameters
+## Choosing parameters
 
-| Use case | bits | projections | Compression | Fidelity |
-|---|---|---|---|---|
-| Hot tier (agent shells) | 8 | 32 | ~8× binary | cos 0.9996 |
-| Semantic search | 8 | dim/4 | ~8× binary | workload-dependent |
-| Maximum compression | 3-4 | dim/16 | ~15-20× binary | expect quality loss |
+Choose dimensions, bit width, projection count, and rotation policy explicitly, then evaluate the profile against an exact baseline. `TurboQuantizer::new` defaults to polar quantization plus QJL. The explicit constructors also expose mode and rotation selection. Inspect [the constructor validation](src/turbo.rs) and [benchmark harness](benches/turbo_quant_search.rs) before comparing profiles.
+
+More bits or projections also cost bytes and computation. A nominal bit budget is not the serialized size of a complete sidecar or a measured application memory saving.
 
 ## What This Crate Is
 
@@ -146,7 +103,7 @@ let shadow = cache.shadow_scores(&query)?;
 - PolarQuant + QJL compression with inner product estimation
 - Sidecar index with explicit approximate-only receipts
 - KV-cache shadow mode for quality measurement
-- Source-compatible upgrade from 0.1.x
+- A checked-in [0.1 API compatibility smoke example](examples/compat_0_1_smoke.rs)
 
 ## What This Crate Is Not
 
@@ -155,22 +112,22 @@ let shadow = cache.shadow_scores(&query)?;
 - Not production-guaranteed — requires workload-specific benchmark gates
 - Not a replacement for exact reranking — `receipt.exact_rerank_required` is always true
 
-## Install
+## Package and source
 
 ```toml
 [dependencies]
 turbo-quant = "0.2"
 ```
 
-MSRV: 1.75
+The local manifest is version 0.2.0 and declares Rust 1.75.0. Registry releases and this workspace checkout can differ; use a path dependency when evaluating the exact source in this tree.
 
 ## Testing
 
 ```bash
-cargo test --all-targets --all-features
-cargo clippy --all-targets --all-features -- -D warnings
+cargo test -p turbo-quant --all-targets --all-features
+cargo clippy -p turbo-quant --all-targets --all-features -- -D warnings
 ```
 
 ## License
 
-MIT
+The package manifest declares MIT; see [LICENSE-MIT](LICENSE-MIT).

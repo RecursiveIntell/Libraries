@@ -4,7 +4,7 @@
 
 `agent-guard` is a Rust crate for representing and organizing security control-plane decisions around agent actions. It exposes a unified `AgentGuard` entry point, a `ControlPlane` integration trait, typed subjects and actions, structured security decisions, and error variants for Linux security mechanisms such as BPF LSM, cgroup v2, Landlock, seccomp, and eBPF.
 
-The crate lives in the private **RecursiveIntell Libraries monorepo**. It is Linux-only and targets Rust 1.75 or newer.
+The crate lives in the **RecursiveIntell Libraries monorepo**. It is Linux-only and targets Rust 1.75 or newer.
 
 > **No cloud dependencies.** This crate is designed as a local security boundary and receipt/data model. The manifest contains Rust libraries only; it does not configure a cloud service, hosted policy engine, or remote control plane.
 
@@ -380,4 +380,4 @@ The requested project license is **MIT**. However, the current `Cargo.toml` insp
 
 ## Repository and contribution context
 
-This crate is maintained as part of the private RecursiveIntell **Libraries** monorepo. Use the monorepo's source, workspace instructions, and validation gates as the authoritative integration context. This README intentionally does not link to a nonexistent standalone `github.com/RecursiveIntell/agent-guard` repository.
+This crate is maintained as part of the RecursiveIntell **Libraries** monorepo. Use the monorepo's source, workspace instructions, and validation gates as the authoritative integration context. This README intentionally does not link to a nonexistent standalone `github.com/RecursiveIntell/agent-guard` repository.

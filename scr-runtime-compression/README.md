@@ -35,7 +35,7 @@ Those links are references to sibling codec owners, not claims that this adapter
 
 ## Installation
 
-This crate is currently a private Libraries monorepo crate. From a workspace that can resolve the sibling path dependencies:
+This crate is currently a Libraries monorepo crate. From a workspace that can resolve the sibling path dependencies:
 
 ```toml
 [dependencies]
@@ -48,7 +48,7 @@ The package metadata declares Rust 2021, MSRV 1.75, and MIT licensing. Default f
 scr-runtime-compression = { path = "../scr-runtime-compression", default-features = false }
 ```
 
-When consuming the crate from the Libraries workspace, use the workspace's normal dependency resolution rather than publishing or cloning this private crate as a standalone repository.
+When consuming the crate from the Libraries workspace, use the workspace's normal dependency resolution rather than publishing or cloning this workspace component as a standalone repository.
 
 ## Quick start
 

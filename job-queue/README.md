@@ -1,27 +1,34 @@
 # job-queue
 
-Production-grade background job queue with SQLite persistence, priority scheduling, and retry lineage tracking.
+Background job queue with SQLite persistence, priority scheduling, and retry lineage tracking.
 
 ## Example
 
 ```rust
-use job_queue::{QueueManager, JobHandler, JobContext};
-use serde_json::json;
+use job_queue::{JobContext, JobHandler, JobResult, QueueConfig, QueueError, QueueJob, QueueManager};
+use serde::{Deserialize, Serialize};
 
-let manager = QueueManager::new("jobs.db")?;
+#[derive(Clone, Serialize, Deserialize)]
+struct ExampleJob { text: String }
 
-// Enqueue a job
-manager.enqueue("send_email", 5, &json!({"to": "user@example.com"}))?;
-
-// Process jobs with a handler
-struct EmailHandler;
-impl JobHandler for EmailHandler {
-    fn handle(&self, ctx: &JobContext) -> Result<()> {
-        // process job...
-        Ok(())
+impl JobHandler for ExampleJob {
+    async fn execute(&self, ctx: &JobContext) -> Result<JobResult, QueueError> {
+        println!("{}", self.text);
+        ctx.emit_progress(1, 1);
+        Ok(JobResult::success())
     }
 }
+
+fn main() -> Result<(), QueueError> {
+    let config = QueueConfig::builder().with_db_path("jobs.db".into()).build();
+    let manager = QueueManager::new(config)?;
+    let id = manager.add(QueueJob::new(ExampleJob { text: "hello".into() }))?;
+    println!("queued {id}");
+    Ok(())
+}
 ```
+
+This example persists a queued job. Start `manager.spawn::<ExampleJob>(emitter)` inside a Tokio runtime to process jobs. `QueueConfig::default()` uses an in-memory database; configure `db_path` for restart persistence.
 
 ## Ecosystem
 
