@@ -172,6 +172,21 @@ pub fn insert_fact_in_tx(
 #[allow(dead_code)] // public API — used by external consumers, not internally
 pub fn delete_fact_with_fts(conn: &Connection, fact_id: &str) -> Result<(), MemoryError> {
     with_transaction(conn, |tx| {
+        // An admin/maintenance connection may have FK checks disabled. Protect
+        // authority and forgetting evidence explicitly before any FTS mutation;
+        // ON DELETE CASCADE is not permission to erase retained history.
+        let has_history: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM authority_lineages WHERE active_head_id = ?1)
+                 OR EXISTS(SELECT 1 FROM authority_versions WHERE fact_id = ?1)
+                 OR EXISTS(SELECT 1 FROM origin_authority_labels WHERE fact_id = ?1)
+                 OR EXISTS(SELECT 1 FROM origin_authority_revocations WHERE fact_id = ?1)
+                 OR EXISTS(SELECT 1 FROM forgotten_facts WHERE fact_id = ?1)",
+            params![fact_id],
+            |row| row.get(0),
+        )?;
+        if has_history {
+            return Err(MemoryError::AuthorityHistoryRetained);
+        }
         let fts_rowid: i64 = tx
             .query_row(
                 "SELECT rowid FROM facts_rowid_map WHERE fact_id = ?1",
@@ -288,6 +303,23 @@ pub fn delete_namespace(
     namespace: &str,
 ) -> Result<NamespaceDeleteReport, MemoryError> {
     with_transaction(conn, |tx| {
+        // The bulk delete does not pass through delete_fact_with_fts. Refuse
+        // before touching sessions or FTS when any fact has retained history,
+        // even if this admin connection has FK enforcement disabled.
+        let has_history: bool = tx.query_row(
+            "SELECT EXISTS(
+                SELECT 1 FROM facts f WHERE f.namespace = ?1 AND (
+                    EXISTS(SELECT 1 FROM authority_lineages WHERE active_head_id = f.id)
+                 OR EXISTS(SELECT 1 FROM authority_versions WHERE fact_id = f.id)
+                 OR EXISTS(SELECT 1 FROM origin_authority_labels WHERE fact_id = f.id)
+                 OR EXISTS(SELECT 1 FROM origin_authority_revocations WHERE fact_id = f.id)
+                 OR EXISTS(SELECT 1 FROM forgotten_facts WHERE fact_id = f.id)))",
+            params![namespace],
+            |row| row.get(0),
+        )?;
+        if has_history {
+            return Err(MemoryError::AuthorityHistoryRetained);
+        }
         let mut report = NamespaceDeleteReport::default();
         let delete_session = |session_id: &str| -> Result<(usize, usize), MemoryError> {
             let message_data: Vec<(i64, String, i64, bool)> = {
@@ -1746,6 +1778,10 @@ mod state_view_regression_tests {
     use crate::db::run_migrations;
     use rusqlite::Connection;
 
+    fn row_count(conn: &Connection, query: &str) -> i64 {
+        conn.query_row(query, [], |row| row.get(0)).unwrap()
+    }
+
     fn seeded() -> Connection {
         let conn = Connection::open_in_memory().unwrap();
         run_migrations(&conn).unwrap();
@@ -1759,6 +1795,202 @@ mod state_view_regression_tests {
             ).unwrap();
         }
         conn
+    }
+
+    // Every retained-history family must independently veto an FK-disabled
+    // admin deletion; the earlier label-only fixture did not cover the others.
+    fn fk_off_history_fixture(family: &str) -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        run_migrations(&conn).unwrap();
+        conn.execute_batch(
+            "PRAGMA foreign_keys=OFF;
+             INSERT INTO facts(id, namespace, content) VALUES
+                 ('victim', 'target', 'fixture victim'),
+                 ('other', 'preserved', 'fixture other');
+             INSERT INTO facts_rowid_map(fact_id) VALUES ('victim');
+             INSERT INTO facts_fts(rowid, content) VALUES (last_insert_rowid(), 'fixture victim');",
+        )
+        .unwrap();
+        match family {
+            "lineage" => conn.execute_batch(
+                "INSERT INTO authority_lineages(lineage_id, active_head_id, updated_epoch)
+                 VALUES ('lineage', 'victim', 0);",
+            ),
+            "version" => conn.execute_batch(
+                "INSERT INTO authority_lineages(lineage_id, active_head_id, updated_epoch)
+                 VALUES ('lineage', 'other', 0);
+                 INSERT INTO authority_versions(fact_id, lineage_id, version, operation_kind, content_digest)
+                 VALUES ('victim', 'lineage', 1, 'append', 'fixture-digest');",
+            ),
+            "label" => conn.execute_batch(
+                "INSERT INTO origin_authority_labels(fact_id, label_json, label_digest, recorded_at)
+                 VALUES ('victim', '{}', 'fixture-digest', '2026-01-01');",
+            ),
+            "revocation" => conn.execute_batch(
+                "INSERT INTO origin_authority_revocations(
+                     revocation_id, fact_id, caller_idempotency_key, principal,
+                     revocation_reference, revoked_at)
+                 VALUES ('revocation', 'victim', 'fixture-revoke', 'fixture',
+                         'fixture-reference', '2026-01-01');",
+            ),
+            "forgotten" => conn.execute_batch(
+                "INSERT INTO forgotten_facts(fact_id, receipt_id, namespace,
+                                             content_digest, forgotten_at)
+                 VALUES ('victim', 'fixture-receipt', 'target', 'fixture-digest', '2026-01-01');",
+            ),
+            "combined" => conn.execute_batch(
+                "INSERT INTO authority_lineages(lineage_id, active_head_id, updated_epoch)
+                 VALUES ('lineage', 'victim', 0);
+                 INSERT INTO authority_versions(fact_id, lineage_id, version, operation_kind, content_digest)
+                 VALUES ('victim', 'lineage', 1, 'append', 'fixture-digest');
+                 INSERT INTO origin_authority_labels(fact_id, label_json, label_digest, recorded_at)
+                 VALUES ('victim', '{}', 'fixture-digest', '2026-01-01');
+                 INSERT INTO origin_authority_revocations(
+                     revocation_id, fact_id, caller_idempotency_key, principal,
+                     revocation_reference, revoked_at)
+                 VALUES ('revocation', 'victim', 'fixture-revoke', 'fixture',
+                         'fixture-reference', '2026-01-01');
+                 INSERT INTO forgotten_facts(fact_id, receipt_id, namespace,
+                                             content_digest, forgotten_at)
+                 VALUES ('victim', 'fixture-receipt', 'target', 'fixture-digest', '2026-01-01');",
+            ),
+            _ => unreachable!("test fixture family"),
+        }
+        .unwrap();
+        assert_eq!(
+            row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+            0
+        );
+        conn
+    }
+
+    #[test]
+    fn all_retained_history_families_block_fk_off_single_and_namespace_deletes() {
+        for family in [
+            "lineage",
+            "version",
+            "label",
+            "revocation",
+            "forgotten",
+            "combined",
+        ] {
+            let conn = fk_off_history_fixture(family);
+            assert!(
+                matches!(
+                    delete_fact_with_fts(&conn, "victim"),
+                    Err(MemoryError::AuthorityHistoryRetained)
+                ),
+                "single delete: {family}"
+            );
+            assert_eq!(
+                row_count(&conn, "SELECT count(*) FROM facts WHERE id='victim'"),
+                1
+            );
+            assert_eq!(
+                row_count(
+                    &conn,
+                    "SELECT count(*) FROM facts_rowid_map WHERE fact_id='victim'"
+                ),
+                1
+            );
+            assert_eq!(
+                row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+                0
+            );
+
+            #[cfg(feature = "admin-ops")]
+            {
+                let conn = fk_off_history_fixture(family);
+                assert!(
+                    matches!(
+                        delete_namespace(&conn, "target"),
+                        Err(MemoryError::AuthorityHistoryRetained)
+                    ),
+                    "namespace delete: {family}"
+                );
+                assert_eq!(row_count(&conn, "SELECT count(*) FROM facts"), 2);
+                assert_eq!(
+                    row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+                    0
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn admin_delete_refuses_authority_linked_fact_even_when_connection_fk_is_off() {
+        let conn = Connection::open_in_memory().unwrap();
+        run_migrations(&conn).unwrap();
+        conn.execute_batch(
+            "PRAGMA foreign_keys=OFF;
+             INSERT INTO facts(id, namespace, content) VALUES ('victim', 'fixture', 'fixture-only');
+             INSERT INTO facts_rowid_map(fact_id) VALUES ('victim');
+             INSERT INTO facts_fts(rowid, content) VALUES (last_insert_rowid(), 'fixture-only');
+             INSERT INTO origin_authority_labels(fact_id, label_json, label_digest, recorded_at)
+             VALUES ('victim', '{}', 'fixture-digest', '2026-01-01');",
+        )
+        .unwrap();
+
+        assert!(matches!(
+            delete_fact_with_fts(&conn, "victim"),
+            Err(MemoryError::AuthorityHistoryRetained)
+        ));
+        assert_eq!(
+            row_count(&conn, "SELECT count(*) FROM facts WHERE id='victim'"),
+            1
+        );
+        assert_eq!(
+            row_count(
+                &conn,
+                "SELECT count(*) FROM facts_rowid_map WHERE fact_id='victim'"
+            ),
+            1
+        );
+        assert_eq!(
+            row_count(
+                &conn,
+                "SELECT count(*) FROM origin_authority_labels WHERE fact_id='victim'"
+            ),
+            1
+        );
+        assert_eq!(
+            row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+            0
+        );
+    }
+
+    #[cfg(feature = "admin-ops")]
+    #[test]
+    fn admin_namespace_delete_refuses_authority_linked_fact_even_when_fk_is_off() {
+        let conn = Connection::open_in_memory().unwrap();
+        run_migrations(&conn).unwrap();
+        conn.execute_batch(
+            "PRAGMA foreign_keys=OFF;
+             INSERT INTO facts(id, namespace, content) VALUES
+                ('victim', 'target', 'fixture victim'), ('other', 'preserved', 'fixture other');
+             INSERT INTO facts_rowid_map(fact_id) VALUES ('victim');
+             INSERT INTO facts_fts(rowid, content) VALUES (last_insert_rowid(), 'fixture victim');
+             INSERT INTO facts_rowid_map(fact_id) VALUES ('other');
+             INSERT INTO facts_fts(rowid, content) VALUES (last_insert_rowid(), 'fixture other');
+             INSERT INTO origin_authority_labels(fact_id, label_json, label_digest, recorded_at)
+             VALUES ('victim', '{}', 'fixture-digest', '2026-01-01');",
+        )
+        .unwrap();
+
+        assert!(matches!(
+            delete_namespace(&conn, "target"),
+            Err(MemoryError::AuthorityHistoryRetained)
+        ));
+        assert_eq!(row_count(&conn, "SELECT count(*) FROM facts"), 2);
+        assert_eq!(row_count(&conn, "SELECT count(*) FROM facts_rowid_map"), 2);
+        assert_eq!(
+            row_count(&conn, "SELECT count(*) FROM origin_authority_labels"),
+            1
+        );
+        assert_eq!(
+            row_count(&conn, "SELECT count(*) FROM pragma_foreign_key_check"),
+            0
+        );
     }
 
     fn supersedes(conn: &Connection, source: &str, target: &str, recorded: &str) {
