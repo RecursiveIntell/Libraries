@@ -1,4 +1,5 @@
 use crate::tools::*;
+use crate::trusted_head::{load_projected_entries, TrustedHeadError, TrustedHeadProjection};
 use claim_ledger::{LedgerEntry, LedgerEvent, SupportState};
 use rmcp::{
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
@@ -69,13 +70,58 @@ fn claim_rows(entries: &[LedgerEntry]) -> Vec<Value> {
 
 pub struct ClaimLedgerServer {
     path: PathBuf,
+    /// Optional operator trust-root JSON text (anchored mode).
+    trust_root: Option<String>,
+    /// Optional independent trusted-head JSON text (anchored mode).
+    expected_head: Option<String>,
     tool_router: ToolRouter<Self>,
 }
 impl ClaimLedgerServer {
     pub fn new(dir: PathBuf) -> Self {
         Self {
             path: dir.join("claim_ledger.jsonl"),
+            trust_root: None,
+            expected_head: None,
             tool_router: Self::tool_router(),
+        }
+    }
+
+    /// Anchored-capable constructor. `trust_root` + `expected_head` texts are
+    /// pre-validated by the CLI; projection happens per tool call against the
+    /// current ledger file.
+    pub fn with_trust(
+        dir: PathBuf,
+        trust_root: Option<String>,
+        expected_head: Option<String>,
+    ) -> Self {
+        Self {
+            path: dir.join("claim_ledger.jsonl"),
+            trust_root,
+            expected_head,
+            tool_router: Self::tool_router(),
+        }
+    }
+
+    /// Per-call projection: anchored when both texts are provisioned
+    /// (fail-closed on any defect), otherwise the #43/#45 unanchored
+    /// contract (empty snapshot, support Unknown).
+    fn project(&self, entries: &[LedgerEntry]) -> Result<TrustedHeadProjection, ErrorData> {
+        let text = entries
+            .iter()
+            .map(|e| claim_ledger::serialize_entry(e).map_err(err))
+            .collect::<Result<Vec<_>, _>>()?
+            .join("\n");
+        match load_projected_entries(
+            &text,
+            self.trust_root.as_deref(),
+            self.expected_head.as_deref(),
+        ) {
+            Ok(p) => Ok(p),
+            Err(TrustedHeadError::MissingExpectedHead(reason)) => {
+                // Unreachable via CLI pairing; typed defensive branch.
+                Err(err(format!("trusted head unavailable: {reason}")))
+            }
+            Err(e) => Err(err(e.to_string())),
         }
     }
 }
@@ -84,20 +130,46 @@ impl ClaimLedgerServer {
     #[tool(description = "Return claim ledger status and counts")]
     async fn claim_ledger_status(&self) -> Result<Json<Output>, ErrorData> {
         let e = load(&self.path)?;
-        Ok(out(
-            json!({"ledger_path":self.path,"entry_count":e.len(),"snapshot_state":"none","ok":false,"verification_status":"unanchored","reason":"independent_expected_head_unavailable","digest_chain_valid":internal_chain_check(&e).is_ok()}),
-        ))
+        match self.project(&e) {
+            Ok(mut p) if p.anchored => {
+                let Some(anchor) = p.anchor.take() else {
+                    return Err(err("anchored projection missing anchor"));
+                };
+                Ok(out(json!({
+                    "ledger_path": self.path,
+                    "entry_count": e.len(),
+                    "snapshot_state": "anchored",
+                    "ok": true,
+                    "verification_status": "anchored",
+                    "anchor_admission_id": anchor.admission_id,
+                    "anchor_signer_id": anchor.signer_id,
+                    "anchor_envelope_digest": anchor.envelope_digest,
+                    "anchor_envelope_verification": anchor.envelope_verification_name,
+                    "digest_chain_valid": true
+                })))
+            }
+            Ok(_) => Ok(out(
+                json!({"ledger_path":self.path,"entry_count":e.len(),"snapshot_state":"none","ok":false,"verification_status":"unanchored","reason":"independent_expected_head_unavailable","digest_chain_valid":internal_chain_check(&e).is_ok()}),
+            )),
+            Err(e) => Err(e),
+        }
     }
     #[tool(description = "Verify hash chain and snapshot integrity")]
     async fn claim_ledger_verify(&self) -> Result<Json<Output>, ErrorData> {
         let e = load(&self.path)?;
-        match internal_chain_check(&e) {
-            Ok(v) => Ok(out(
-                json!({"ok":false,"entry_count":e.len(),"last_sequence":v.last_sequence,"digest_chain_valid":true,"snapshot_valid":false,"verification_status":"unanchored","reason":"independent_expected_head_unavailable"}),
+        match self.project(&e) {
+            Ok(p) if p.anchored => Ok(out(
+                json!({"ok":true,"entry_count":e.len(),"last_sequence":p.last_sequence,"digest_chain_valid":true,"snapshot_valid":true,"verification_status":"anchored","anchor_admission_id":p.anchor.as_ref().map(|a|a.admission_id.clone())}),
             )),
-            Err(x) => Ok(out(
-                json!({"ok":false,"entry_count":e.len(),"digest_chain_valid":false,"verification_status":"unanchored","error":x.to_string()}),
-            )),
+            Ok(_) => match internal_chain_check(&e) {
+                Ok(v) => Ok(out(
+                    json!({"ok":false,"entry_count":e.len(),"last_sequence":v.last_sequence,"digest_chain_valid":true,"snapshot_valid":false,"verification_status":"unanchored","reason":"independent_expected_head_unavailable"}),
+                )),
+                Err(x) => Ok(out(
+                    json!({"ok":false,"entry_count":e.len(),"digest_chain_valid":false,"verification_status":"unanchored","error":x.to_string()}),
+                )),
+            },
+            Err(e2) => Err(e2),
         }
     }
     #[tool(description = "Query claims by text and support state")]
@@ -105,12 +177,33 @@ impl ClaimLedgerServer {
         &self,
         Parameters(p): Parameters<QueryParams>,
     ) -> Result<Json<Output>, ErrorData> {
-        let mut r = claim_rows(&load(&self.path)?);
-        // No independently trusted expected head is provisioned by this server.
-        // A self-consistent JSONL chain cannot authorize support or state filters.
-        for row in &mut r {
-            row["support_state"] = json!(SupportState::Unknown);
-        }
+        let entries = load(&self.path)?;
+        let mut r = claim_rows(&entries);
+        let (verification_status, anchored) = match self.project(&entries)? {
+            proj if proj.anchored => {
+                // Only anchored (verified + fold-projected) support states are
+                // surfaced. Claims absent from the projected support stay
+                // Unknown.
+                for row in &mut r {
+                    let claim_id = row["claim_id"].as_str().unwrap_or("").to_owned();
+                    let state = proj
+                        .claim_support
+                        .get(&claim_id)
+                        .copied()
+                        .unwrap_or(SupportState::Unknown);
+                    row["support_state"] = json!(state);
+                }
+                ("anchored", true)
+            }
+            _ => {
+                // Unanchored mode: a self-consistent JSONL chain cannot
+                // authorize support or state filters (stay Unknown).
+                for row in &mut r {
+                    row["support_state"] = json!(SupportState::Unknown);
+                }
+                ("unanchored", false)
+            }
+        };
         if let Some(t) = p.text {
             let t = t.to_lowercase();
             r.retain(|x| {
@@ -128,7 +221,9 @@ impl ClaimLedgerServer {
             r.retain(|x| x["source_id"].as_str().unwrap_or("").contains(&ns));
         }
         r.truncate(p.limit.unwrap_or(50).min(200));
-        Ok(out(json!({"claims":r,"verification_status":"unanchored"})))
+        Ok(out(
+            json!({"claims":r,"verification_status":verification_status,"anchored":anchored}),
+        ))
     }
     #[tool(description = "Get a claim and its related ledger events")]
     async fn claim_ledger_get(
@@ -136,6 +231,11 @@ impl ClaimLedgerServer {
         Parameters(p): Parameters<GetParams>,
     ) -> Result<Json<Output>, ErrorData> {
         let e = load(&self.path)?;
+        let verification_status = match self.project(&e) {
+            Ok(p) if p.anchored => "anchored",
+            Ok(_) => "unanchored",
+            Err(e2) => return Err(e2),
+        };
         let events: Vec<&LedgerEntry> = e
             .iter()
             .filter(|x| {
@@ -146,11 +246,11 @@ impl ClaimLedgerServer {
             .collect();
         if events.is_empty() {
             return Ok(out(
-                json!({"found":false,"claim_id":p.claim_id,"verification_status":"unanchored","raw_untrusted":true}),
+                json!({"found":false,"claim_id":p.claim_id,"verification_status":verification_status,"raw_untrusted":true}),
             ));
         }
         Ok(out(
-            json!({"found":true,"claim_id":p.claim_id,"events":events,"verification_status":"unanchored","raw_untrusted":true}),
+            json!({"found":true,"claim_id":p.claim_id,"events":events,"verification_status":verification_status,"raw_untrusted":true}),
         ))
     }
     #[tool(description = "Evaluate proof debt gate for claim IDs")]
@@ -158,7 +258,8 @@ impl ClaimLedgerServer {
         &self,
         Parameters(p): Parameters<ProofDebtParams>,
     ) -> Result<Json<Output>, ErrorData> {
-        let rows = claim_rows(&load(&self.path)?);
+        let entries = load(&self.path)?;
+        let rows = claim_rows(&entries);
         let ids = if p.claim_ids.is_empty() {
             rows.iter()
                 .filter_map(|r| r["claim_id"].as_str().map(str::to_owned))
@@ -166,8 +267,19 @@ impl ClaimLedgerServer {
         } else {
             p.claim_ids
         };
+        // Anchored mode attaches the verified anchor but the gate itself
+        // still has no budget instrument in MCP scope: decision stays
+        // conservative (block).
+        let (verification_status, anchor) = match self.project(&entries) {
+            Ok(mut p) if p.anchored => match p.anchor.take() {
+                Some(a) => ("anchored".to_string(), Some(a)),
+                None => return Err(err("anchored projection missing anchor")),
+            },
+            Ok(_) => ("unanchored".to_string(), None),
+            Err(e) => return Err(e),
+        };
         Ok(out(
-            json!({"claim_ids":ids,"budget_micros":p.budget_micros,"debt_weight_micros":null,"gate_decision":"block","verification_status":"unanchored","reason":"independent_expected_head_unavailable"}),
+            json!({"claim_ids":ids,"budget_micros":p.budget_micros,"debt_weight_micros":null,"gate_decision":"block","verification_status":verification_status,"anchor_admission_id":anchor.as_ref().map(|a|a.admission_id.clone()),"reason":"budget_instrument_not_provisioned_in_mcp_scope"}),
         ))
     }
     #[tool(description = "Generate a binding export receipt")]
@@ -184,7 +296,12 @@ impl ClaimLedgerServer {
         );
         r.mark_success();
         let mut value = serde_json::to_value(r).map_err(err)?;
-        value["verification_status"] = json!("unanchored");
+        let verification_status = match self.project(&load(&self.path)?) {
+            Ok(p) if p.anchored => "anchored",
+            Ok(_) => "unanchored",
+            Err(e2) => return Err(e2),
+        };
+        value["verification_status"] = json!(verification_status);
         value["receipt_scope"] = json!("provided_claim_ids_only");
         Ok(out(value))
     }
