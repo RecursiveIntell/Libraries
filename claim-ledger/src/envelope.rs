@@ -9,6 +9,12 @@ use std::collections::{BTreeMap, BTreeSet};
 const ARTIFACT_DIGEST_DOMAIN: &[u8] = b"recursiveintell:artifact-envelope:digest:v1\0";
 const SIGNATURE_DOMAIN: &[u8] = b"recursiveintell:artifact-envelope:signature:v1\0";
 
+/// Returns the signature preimage domain separator (crate-visible for the V2
+/// admission chain, which reuses the identical preimage layout).
+pub(crate) fn signature_signing_domain() -> &'static [u8] {
+    SIGNATURE_DOMAIN
+}
+
 /// Policy decision carried by an artifact envelope.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PolicyAdmission {
@@ -211,6 +217,12 @@ fn artifact_digest(artifact: &[u8]) -> String {
     digest.update((artifact.len() as u64).to_be_bytes());
     digest.update(artifact);
     hex::encode(digest.finalize())
+}
+
+/// Domain-separated artifact digest over exact bytes (crate-public surface
+/// for the V2 admission chain).
+pub fn public_artifact_digest(artifact: &[u8]) -> String {
+    artifact_digest(artifact)
 }
 
 /// Verifier-owned trust roots, authorization, time window, and policy set.

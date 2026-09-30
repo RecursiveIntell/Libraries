@@ -123,6 +123,13 @@ pub enum LedgerEvent {
         amount_micros: u64,
         source: String,
     },
+    /// Native V2 admission of a signed release-artifact envelope (P3.2).
+    ///
+    /// Deliberately unprojectable by snapshot v1; distinct native admission
+    /// IDs are fold-verified by the V2 admission chain.
+    AdmissionEvent {
+        payload: crate::v2_admission::AdmissionEventPayloadV1,
+    },
 }
 
 impl LedgerEvent {
@@ -139,6 +146,7 @@ impl LedgerEvent {
             Self::BundleExported { .. } => "bundle_exported",
             Self::ProofDebtConsumed { .. } => "proof_debt_consumed",
             Self::ProofDebtReplenished { .. } => "proof_debt_replenished",
+            Self::AdmissionEvent { .. } => "admission_event",
         }
     }
 }
@@ -441,6 +449,19 @@ impl LedgerEntryBuilder {
         })
     }
 
+    /// Add a native V2 admission event (P3.2).
+    ///
+    /// Requires the fully verified admission payload; the digest preimage
+    /// writer handles this event's fields in `entry_digest_preimage`.
+    pub fn add_native_admission(
+        self,
+        payload: &crate::v2_admission::AdmissionEventPayloadV1,
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::AdmissionEvent {
+            payload: payload.clone(),
+        })
+    }
+
     fn build(self, event: LedgerEvent) -> Result<LedgerEntry, ClaimLedgerError> {
         let entry_digest =
             compute_entry_digest(self.sequence, self.previous_entry_digest.as_deref(), &event)?;
@@ -652,6 +673,19 @@ pub fn entry_digest_preimage(
             put_u64(&mut out, *amount_micros);
             put_str(&mut out, source)?;
         }
+        LedgerEvent::AdmissionEvent { payload } => {
+            for field in crate::v2_admission::admission_event_preimage_fields(payload) {
+                put_u64(
+                    &mut out,
+                    u64::try_from(field.len()).map_err(|_| {
+                        ClaimLedgerError::SerializationError(
+                            "admission preimage field exceeds u64".into(),
+                        )
+                    })?,
+                );
+                out.extend_from_slice(&field);
+            }
+        }
     }
     Ok(out)
 }
@@ -750,8 +784,8 @@ pub fn verify_ledger(
     }
 }
 
-#[derive(Default)]
-struct SnapshotProjection {
+#[derive(Debug, Default, Clone)]
+pub(crate) struct SnapshotProjection {
     claims: BTreeMap<String, SnapshotClaim>,
     fact_links: BTreeMap<String, SnapshotFactClaimLink>,
     content_links: BTreeMap<String, SnapshotContentClaimLink>,
@@ -812,7 +846,14 @@ impl SnapshotProjection {
         )
     }
 
-    fn apply(&mut self, event: &LedgerEvent) {
+    /// Whether snapshot v1 can project this event (false for admission events).
+    /// Used by the V2 admission chain's fail-closed compaction checks.
+    #[allow(dead_code)]
+    pub fn is_v1_projectable(event: &LedgerEvent) -> bool {
+        Self::event_is_projectable(event)
+    }
+
+    pub(crate) fn apply(&mut self, event: &LedgerEvent) {
         match event {
             LedgerEvent::ClaimAdded {
                 claim_id,
@@ -923,11 +964,12 @@ impl SnapshotProjection {
             | LedgerEvent::EvidenceAttached { .. }
             | LedgerEvent::BundleExported { .. }
             | LedgerEvent::ProofDebtConsumed { .. }
-            | LedgerEvent::ProofDebtReplenished { .. } => {}
+            | LedgerEvent::ProofDebtReplenished { .. }
+            | LedgerEvent::AdmissionEvent { .. } => {}
         }
     }
 
-    fn into_snapshot(
+    pub(crate) fn into_snapshot(
         self,
         sequence: u64,
         entry_digest: Option<String>,
