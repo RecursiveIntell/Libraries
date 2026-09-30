@@ -269,6 +269,10 @@ pub enum MemoryError {
     #[error("inconsistent authority lineage '{lineage_id}': {detail}")]
     AuthorityLineageInconsistent { lineage_id: String, detail: String },
 
+    /// Admin hard-delete would discard retained authority or forgetting evidence.
+    #[error("admin hard-delete denied: fact has retained authority or forgetting history")]
+    AuthorityHistoryRetained,
+
     /// A test-only authority fault was deliberately injected.
     #[error("authority fault injected at stage {stage:?}")]
     AuthorityFaultInjected {
@@ -368,6 +372,7 @@ impl MemoryError {
             Self::OriginAuthorityRejected { .. } => "origin_authority_rejected",
             Self::AuthorityIdempotencyConflict { .. } => "authority_idempotency_conflict",
             Self::AuthorityLineageInconsistent { .. } => "authority_lineage_inconsistent",
+            Self::AuthorityHistoryRetained => "authority_history_retained",
             Self::AuthorityFaultInjected { .. } => "authority_fault_injected",
             Self::ForgettingClosureIncomplete { .. } => "forgetting_closure_incomplete",
             Self::ForgettingBudgetExceeded { .. } => "forgetting_budget_exceeded",

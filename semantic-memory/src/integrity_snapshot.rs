@@ -17,6 +17,91 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use tempfile::{Builder, NamedTempFile};
 
+/// An observation of one canonical SQLite pool connection in this process.
+/// `read_only` describes the store constructor, while `query_only` is read from
+/// the acquired connection. This is not a claim about another process or binary.
+#[derive(Debug, Clone, Serialize)]
+pub struct SqliteConnectionDiagnosticV1 {
+    pub connection_role: &'static str,
+    pub sqlite_version: String,
+    pub sqlite_source_id: String,
+    pub compile_options: Vec<String>,
+    pub journal_mode: String,
+    pub foreign_keys_enabled: bool,
+    pub query_only: bool,
+    pub read_only: bool,
+    pub schema_version: u32,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum SqliteDiagnosticError {
+    #[error("writer diagnostic requires a writable store")]
+    RequiresWritableStore,
+    #[error("owner connection unavailable: {0}")]
+    Owner(#[from] MemoryError),
+    #[error("SQLite diagnostic query failed: {0}")]
+    Database(#[from] rusqlite::Error),
+}
+
+fn observe_sqlite_connection(
+    conn: &Connection,
+    connection_role: &'static str,
+    read_only: bool,
+) -> Result<SqliteConnectionDiagnosticV1, rusqlite::Error> {
+    let sqlite_version = conn.query_row("SELECT sqlite_version()", [], |r| r.get(0))?;
+    let sqlite_source_id = conn.query_row("SELECT sqlite_source_id()", [], |r| r.get(0))?;
+    let journal_mode = conn.query_row("PRAGMA journal_mode", [], |r| r.get(0))?;
+    let foreign_keys_enabled = conn.query_row("PRAGMA foreign_keys", [], |r| r.get(0))?;
+    let query_only = conn.query_row("PRAGMA query_only", [], |r| r.get(0))?;
+    let schema_version = conn.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+    let mut compile_options = conn
+        .prepare("PRAGMA compile_options")?
+        .query_map([], |r| r.get::<_, String>(0))?
+        .collect::<Result<Vec<_>, _>>()?;
+    compile_options.sort();
+    Ok(SqliteConnectionDiagnosticV1 {
+        connection_role,
+        sqlite_version,
+        sqlite_source_id,
+        compile_options,
+        journal_mode,
+        foreign_keys_enabled,
+        query_only,
+        read_only,
+        schema_version,
+    })
+}
+
+impl MemoryStore {
+    /// Observe the canonical reader pool of this store through read queries.
+    /// An already-open writable store can report its query-only readers here;
+    /// opening a new writable store may migrate and is a separate admission.
+    pub async fn sqlite_connection_diagnostic(
+        &self,
+    ) -> Result<SqliteConnectionDiagnosticV1, SqliteDiagnosticError> {
+        let store_read_only = self.inner.read_only;
+        self.with_read_conn(move |conn| {
+            Ok(observe_sqlite_connection(conn, "reader", store_read_only))
+        })
+        .await?
+        .map_err(SqliteDiagnosticError::Database)
+    }
+
+    /// Observe the canonical writer connection using only read queries.
+    /// Opening a writable store may already have migrated it; this does not
+    /// make an unapproved live store safe to open for diagnosis.
+    pub async fn sqlite_writer_connection_diagnostic(
+        &self,
+    ) -> Result<SqliteConnectionDiagnosticV1, SqliteDiagnosticError> {
+        if self.inner.read_only {
+            return Err(SqliteDiagnosticError::RequiresWritableStore);
+        }
+        self.with_write_conn(|conn| Ok(observe_sqlite_connection(conn, "writer", false)))
+            .await?
+            .map_err(SqliteDiagnosticError::Database)
+    }
+}
+
 /// Unsigned file-operation metadata, never a permission or semantic witness.
 #[derive(Debug, Clone, Serialize)]
 pub struct IntegritySnapshotV1 {
