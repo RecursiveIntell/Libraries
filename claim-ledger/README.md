@@ -2,8 +2,10 @@
 
 `claim-ledger` is a deterministic, local-first Rust library for recording
 claim, evidence, provenance, contradiction, export, and proof-debt events. It
-creates hash-chained entries and verifiable compaction checkpoints; it does not
-perform I/O, operate a search index, or make trust decisions by itself.
+creates hash-chained entries and verifiable compaction checkpoints. Core ledger
+and compaction operations return in-memory values; the separate `trust_root`
+module can load operator-provisioned public trust-root data from disk. The
+crate does not operate a search index or grant authority by itself.
 
 **Candidate crate metadata:** version `0.3.0` (unreleased on this branch), license [MIT](#license), Rust 2021
 edition. An MSRV is **not declared**: `Cargo.toml` has no `rust-version` field.
@@ -108,6 +110,7 @@ preimage.
 | `ClaimAdded` | Claim ID, source/span IDs, normalized text |
 | `SupportJudgment` | Bundle-scoped support state and method |
 | `SupportAdmission` | Admission receipt and judgment transition |
+| `AdmissionEvent` | Native release-artifact admission identity, envelope digest, signer, policy, nanosecond timestamp, verification stage, and admitted state |
 | `ContradictionCandidate` | Candidate claim set, pattern, and rationale |
 | `ContradictionResolved` | Resolution receipt, outcome, and affected claims |
 | `EvidenceAttached` | Evidence-bundle attachment and link count |
@@ -268,11 +271,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+## Native admission and trust-root boundaries
+
+The `v2_admission` module adds the release-artifact admission surface.
+`admission_event_from_envelope` verifies exact artifact bytes through the
+existing envelope ladder and returns a payload only for `FullyVerified`.
+`SnapshotFoldV1` rejects duplicate native admission IDs and shares the
+canonical claim/judgment/contradiction projection. Admission events remain
+visible but do not themselves overwrite projected claim support, and snapshot
+v1 compaction leaves them unprojected. An admission ID or recorded verification
+stage alone is not an independent trust root.
+
+The `trust_root` module loads public-key, signer, policy, and time-window
+configuration for envelope verification. Its file-loading API checks Unix
+permissions; callers using its string parser own file access and permissions.
+It does not read or provision private signing seeds. The MCP adapter's optional
+trusted-head mode is described in [claim-ledger-mcp](../claim-ledger-mcp/README.md).
+These are source APIs, not an installed service or release-certification claim.
+
 ## Public API
 
 This inventory describes the current source tree for the unreleased `0.3.0` candidate; it is not a compatibility or release statement. The crate root re-exports the common
 surface; the public modules (`budget`, `candidate`, `envelope`, `error`, `ids`, `ledger`,
-`receipt`, and `types`) also expose their module-level public items.
+`receipt`, `trust_root`, `types`, and `v2_admission`) also expose their module-level public items.
 
 | Area | Crate-root exports | Use |
 | --- | --- | --- |
@@ -285,6 +306,7 @@ surface; the public modules (`budget`, `candidate`, `envelope`, `error`, `ids`, 
 | Proof-debt functions/constants | `proof_debt_weight`, `total_proof_debt_weight`, `total_proof_debt_weight_with_config`, `budget_for_claim`, `evaluate_proof_debt_gate`, `evaluate_proof_debt_gate_with_config`, `evaluate_proof_debt_gate_with_waiver`, `evaluate_proof_debt_gate_with_waiver_and_config`, `verify_proof_debt_waiver`, `PROOF_DEBT_WAIVER_SCHEMA_VERSION`, `PROOF_DEBT_WAIVER_AUTHORIZATION_DOMAIN` | Calculate debt and evaluate gates/waivers. |
 | Candidate boundary | `SimilarClaimCandidateV1`, `ProofPacketCandidateProvenanceV1`, `SIMILAR_CLAIM_CANDIDATE_V1_SCHEMA`, `PROOF_PACKET_CANDIDATE_PROVENANCE_V1_SCHEMA` | Carry non-authoritative candidate provenance and validate the boundary. |
 | Artifact envelopes | `ArtifactEnvelopeV1`, `PolicyAdmission`, `EnvelopeVerificationContext`, `EnvelopeVerificationReport`, `EnvelopeVerificationStatus`, `EnvelopeError` | Bind artifact bytes to an optional Ed25519 signature and report each trust stage without upgrading trust implicitly. |
+| Native admission | `NativeAdmission`, `AdmissionEventPayloadV1`, `AdmissionDecision`, `SnapshotFoldV1`, `admission_event_from_envelope`, `verify_admission`, `fold_snapshot`, `native_admission_id`, `admission_signature_preimage`, `admission_event_preimage_fields`, `NATIVE_ADMISSION_SCHEMA` | Verify release-artifact admission and fold canonical state without treating an admission marker as claim support. |
 | IDs and errors | `normalize_text`, `stable_id`, `ulid`, `sha256_text`, `sha256_bytes`, `ClaimLedgerError` | Normalize text, make IDs/digests, and inspect errors (`ClaimLedgerError::kind`). |
 
 For specialized deterministic ID helpers (claim, evidence, receipt, proof-debt,

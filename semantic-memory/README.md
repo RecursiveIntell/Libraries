@@ -207,6 +207,14 @@ Normal fact reads use `StateView::Current`, which excludes superseded facts. His
 - immutable origin-authority labels and revocations;
 - transition verification, quarantine, and rollback references where declared by the operation.
 
+Origin revocation and its retrieval-epoch increment commit in the same SQLite
+transaction. A first revocation changes the authority snapshot; an exact
+idempotent replay does not advance it again. Witnessed retrieval rejects a
+snapshot change observed by its final coherence check. This is a retrieval
+fence, not final-use authorization, authenticated transport, or live-store
+certification. See the [origin-revocation contract and focused
+gates](docs/origin-revocation-coherence.md).
+
 The compatibility API remains available for ordinary local use. Raw compatibility reads and writes are not equivalent to governed reads: they do not apply the same origin, revocation, scope, purpose, and state decisions. Do not infer a typed transition receipt from a method unless its return contract declares one. Graph utility operations return domain objects and do not universally produce governance receipts.
 
 Hard delete and in-place truth mutation are disabled by default. The `admin-ops` feature exposes administrative operations; use supersession for normal correction workflows.
