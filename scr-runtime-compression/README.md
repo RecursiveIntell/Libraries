@@ -6,7 +6,7 @@ Runtime integration adapter for the semantic-memory compression layer. This crat
 
 > **No cloud dependencies.** This crate does not call OpenAI, Anthropic, Pinecone, Weaviate, Supabase, or any hosted service. Its runtime dependencies are local Rust crates and caller-provided decode functions.
 
-> **Status: integration layer, v0.1.0.** The public adapter and dispatch contracts are present. The crate deliberately fails closed for TurboQuant and FibQuant when no real decoder has been registered; it does not pretend that an identity closure is decompression.
+> **Status: integration layer; current source crate version 0.1.1.** The public adapter and dispatch contracts are present. The crate deliberately fails closed for TurboQuant and FibQuant when no real decoder has been registered; it does not pretend that an identity closure is decompression.
 
 ## Purpose
 
@@ -24,7 +24,7 @@ The crate is useful when semantic-memory needs to carry compression context into
 
 This crate **never owns codec truth**. TurboQuant and FibQuant remain the owners of their encoded representations and decoding semantics. The adapter only carries the discriminant and delegates through a caller-supplied `FallbackDecoderFn<T>`.
 
-The repository contains optional `turbo-quant` and `fib-quant` feature dependencies, but the current `build_adapter` implementation registers only identity handling for `Uncompressed` and returns an error for compressed codecs without a registered real decoder. The semantic-memory bootstrap or another integration owner must wire actual decoder functions and explicitly attest supported codecs with `with_supported_codecs`.
+The repository contains optional `turbo-quant` and `fib-quant` feature dependencies. `build_adapter` can construct an adapter for any `CodecId`, but registers only `Uncompressed` by default. Decoding a selected compressed codec therefore fails with `StrictModeRejected` in strict mode, or `UnsupportedCodec` in non-strict mode. Unsupported Q8/Q4 governance selections fail during construction. The semantic-memory bootstrap or another integration owner must supply its own real decoder and explicitly attest supported codecs with `with_supported_codecs`.
 
 Related codec projects:
 
@@ -42,7 +42,7 @@ This crate is currently a Libraries monorepo crate. From a workspace that can re
 scr-runtime-compression = { path = "../scr-runtime-compression" }
 ```
 
-The package metadata declares Rust 2021, MSRV 1.75, and MIT licensing. Default features are `turbo` and `fib`; these enable the optional sibling dependencies declared in `Cargo.toml`. Disable defaults when only the integration types and uncompressed path are needed:
+The package metadata declares Rust 2021, MSRV 1.75, and MIT licensing. Default features are `turbo` and `fib`. `turbo` enables the sibling TurboQuant path dependency (version requirement `0.2.0`); `fib` enables a registry-only FibQuant dependency (version requirement `0.1.0-beta.1`), not the older alpha in `Libraries/fib-quant`. Disable defaults when only the integration types and uncompressed path are needed:
 
 ```toml
 scr-runtime-compression = { path = "../scr-runtime-compression", default-features = false }
@@ -87,15 +87,14 @@ let adapter = ExactFallbackAdapter::new(Box::new(|codec, bytes| {
             Err(DecompressError::UnsupportedCodec("fib_quant".into()))
         }
     }
-}))
-.with_supported_codecs([CodecId::TurboQuant, CodecId::FibQuant]);
+}));
 
 let raw = adapter.decode_exact(CodecId::Uncompressed, b"raw bytes")?;
 assert_eq!(raw, b"raw bytes");
 # Ok::<(), DecompressError>(())
 ```
 
-The compressed branches above are deliberately placeholders for the owning runtime's real decoder calls; they are not a working TurboQuant or FibQuant decode. Do not register a codec unless the closure truly decodes that representation.
+The compressed branches above are deliberately placeholders for the owning runtime's real decoder calls; they are not a working TurboQuant or FibQuant decode and remain unregistered. Add `.with_supported_codecs(...)` only after replacing a branch with its real decoder.
 
 ### Use dispatch and governance
 
@@ -173,7 +172,7 @@ The adapter accepts a `FallbackDecoderFn<T>` with signature `Fn(CodecId, &[u8]) 
 - `CodecDispatch::Force(codec)`: explicit selection, bypassing governance;
 - `CodecDispatch::Governed { policy, request }`: evaluate `quant-governor` policy;
 - `select_codec(policy, request)`: return a `CodecId` or governor error;
-- `build_adapter(dispatch)`: construct an adapter for the selected codec, rejecting unsupported codec implementations.
+- `build_adapter(dispatch)`: construct an adapter for the selected `CodecId`; reject unsupported Q8/Q4 governance selections during construction. TurboQuant and FibQuant decoding remains fail-closed.
 
 ## Errors and edge cases
 
@@ -209,13 +208,14 @@ This crate therefore sits on the runtime integration seam. It does not own seman
 
 ## Verification
 
-Run from the crate directory or provide the manifest path:
+Run these focused checks from the Libraries repository root:
 
 ```bash
-cargo check --manifest-path /home/sikmindz/Coding/Libraries/scr-runtime-compression/Cargo.toml
-cargo test --manifest-path /home/sikmindz/Coding/Libraries/scr-runtime-compression/Cargo.toml
-cargo fmt --manifest-path /home/sikmindz/Coding/Libraries/scr-runtime-compression/Cargo.toml -- --check
-cargo doc --no-deps --manifest-path /home/sikmindz/Coding/Libraries/scr-runtime-compression/Cargo.toml
+# From the Libraries repository root:
+cargo check -p scr-runtime-compression
+cargo test -p scr-runtime-compression
+cargo fmt -p scr-runtime-compression -- --check
+cargo doc -p scr-runtime-compression --no-deps
 ```
 
 The focused tests cover path metadata, codec identity, strict-mode rejection, uncompressed identity, supported-codec registration, batch behavior, and governance selection. A full workspace check may exercise additional sibling-crate constraints and should be run from the Libraries workspace when changing integration wiring.
@@ -224,7 +224,7 @@ The focused tests cover path metadata, codec identity, strict-mode rejection, un
 
 ### Current status
 
-- v0.1.0 package metadata is present.
+- Current source crate version: `0.1.1`.
 - Runtime metadata wrapper, codec identity, dispatch helpers, typed errors, and exact-fallback adapter are implemented.
 - Uncompressed identity handling is available.
 - Compressed decode is fail-closed until a real decoder is supplied and explicitly registered.
@@ -244,4 +244,4 @@ These are roadmap items, not capabilities claimed by the current crate.
 
 ## License
 
-Licensed under the MIT License. The package metadata declares `license = "MIT"`; this crate directory does not currently contain a separate `LICENSE` file, so the repository-level legal text is authoritative.
+The package metadata declares `license = "MIT"`. This crate directory does not currently contain a separate `LICENSE` file; check the applicable notices before redistribution.

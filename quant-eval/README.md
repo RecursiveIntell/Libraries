@@ -32,17 +32,19 @@ Therefore, outputs from these paths are synthetic or simulated harness artifacts
 
 ## Install
 
-Add the crate from the local workspace or a published package source selected by your project:
+To use the source documented here, point a separate Cargo project at the Libraries checkout:
 
 ```toml
 [dependencies]
-quant-eval = "0.1.0"
+quant-eval = { path = "/path/to/Libraries/quant-eval" }
 ```
 
-For a source checkout, build from the crate directory:
+The current source crate version is `0.1.0`; a local manifest version does not establish registry release availability.
+
+For a source checkout, build from the Libraries repository root:
 
 ```bash
-cargo build --manifest-path /home/sikmindz/Coding/Libraries/quant-eval/Cargo.toml
+cargo build -p quant-eval
 ```
 
 The package declares Rust 2021 and MSRV 1.75. Runtime dependencies are `thiserror`, `serde`, `serde_json`, `chrono`, `sha2`, and `blake3`.
@@ -139,15 +141,14 @@ These are the public re-exports in `src/lib.rs`:
 
 ## Verification
 
-Run the crate's checks from the crate directory:
+Run the crate's checks from the Libraries repository root:
 
 ```bash
-cd /home/sikmindz/Coding/Libraries/quant-eval
-cargo fmt --check
-cargo check
-cargo test
-cargo test --test integration
-cargo doc --no-deps
+cargo fmt -p quant-eval -- --check
+cargo check -p quant-eval
+cargo test -p quant-eval
+cargo test -p quant-eval --test integration
+cargo doc -p quant-eval --no-deps
 ```
 
 These commands verify formatting, compilation, unit and integration tests, and documentation generation. Passing them does not turn the synthetic or simulated benchmark paths into real-workload evidence.
