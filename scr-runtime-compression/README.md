@@ -35,17 +35,19 @@ Those links are references to sibling codec owners, not claims that this adapter
 
 ## Installation
 
-This crate is currently a Libraries monorepo crate. From a workspace that can resolve the sibling path dependencies:
+This is a Libraries monorepo crate. For a separate consumer project, point to the complete checkout; the governance example below also directly imports `quant-governor`:
 
 ```toml
 [dependencies]
-scr-runtime-compression = { path = "../scr-runtime-compression" }
+scr-runtime-compression = { path = "/path/to/Libraries/scr-runtime-compression" }
+quant-governor = { path = "/path/to/Libraries/quant-governor" }
 ```
 
 The package metadata declares Rust 2021, MSRV 1.75, and MIT licensing. Default features are `turbo` and `fib`. `turbo` enables the sibling TurboQuant path dependency (version requirement `0.2.0`); `fib` enables a registry-only FibQuant dependency (version requirement `0.1.0-beta.1`), not the older alpha in `Libraries/fib-quant`. Disable defaults when only the integration types and uncompressed path are needed:
 
 ```toml
-scr-runtime-compression = { path = "../scr-runtime-compression", default-features = false }
+scr-runtime-compression = { path = "/path/to/Libraries/scr-runtime-compression", default-features = false }
+quant-governor = { path = "/path/to/Libraries/quant-governor" }
 ```
 
 When consuming the crate from the Libraries workspace, use the workspace's normal dependency resolution rather than publishing or cloning this workspace component as a standalone repository.
