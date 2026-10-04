@@ -10,7 +10,7 @@ SQLite implementation of the cea-store contract
 - Snapshot status: **Critical dependency**
 
 ## What this crate is for
-This README exists to satisfy manifest truth and to give contributors a truthful front door for the current library stack. The active finish-line control plane lives at the repository root in `PACK_README.md`, `MASTER_ISSUE_MATRIX.md`, `MASTER_ISSUE_CHANGE_MATRIX.md`, `AGENTS.md`, and the docs index at `docs/README.md`.
+This package belongs to the [Primitives workspace](../Cargo.toml). For current repository guidance, see the [Primitives overview](../README.md), [Libraries support profile](../../SUPPORT_PROFILE.md), and [documentation index](../../docs/README.md). The snapshot labels below are not a current build certification.
 
 This crate currently serves low-frequency evaluation persistence. It is not part of the supported-core default-members bar, and it is not claimed as a hot-path pooled store on the shipped root surface.
 
