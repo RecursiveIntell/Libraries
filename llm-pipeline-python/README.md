@@ -55,14 +55,14 @@ python -m pip install target/wheels/<wheel-file>.whl
 
 The Rust dependency is currently referenced as a sibling checkout (`../llm-pipeline`), so that crate must be available at the expected path when building this repository.
 
-> **Packaging note:** `src/lib.rs` declares the native PyO3 module as `_native` and the examples below use the requested `llm_pipeline_python` import surface. Before publishing a wheel, verify the package/module mapping in `pyproject.toml` against the generated artifact; the current manifest also contains the project name `llm-pipeline` and `llm_pipeline._native` module mapping.
+> **Packaging note:** The distribution is `llm-pipeline`; the Python package is `llm_pipeline`, with maturin mapping the native extension to `llm_pipeline._native`. `python/llm_pipeline/__init__.py` re-exports `LlmConfig` and `Pipeline`. This is the committed source mapping; verify it against a built wheel before publishing or claiming wheel import compatibility.
 
 ## Quick start
 
 The configuration and pipeline objects are created from the native extension. `LlmConfig` builder methods return a modified copy; they do not mutate the original object.
 
 ```python
-from llm_pipeline_python import LlmConfig, Pipeline
+from llm_pipeline import LlmConfig, Pipeline
 
 config = LlmConfig(temperature=0.7, max_tokens=2048)
 config = config.with_temperature(0.3)
@@ -161,7 +161,7 @@ Build the Python extension and run an import/API smoke check after `maturin deve
 ```bash
 maturin develop
 python - <<'PY'
-from llm_pipeline_python import LlmConfig, Pipeline
+from llm_pipeline import LlmConfig, Pipeline
 
 config = LlmConfig(temperature=0.7, max_tokens=2048)
 config = config.with_temperature(0.3)
