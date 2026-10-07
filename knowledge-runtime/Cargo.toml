@@ -6,7 +6,8 @@ rust-version = "1.75"
 description = "Bounded orchestration scaffold for semantic-memory: classification, routing, scoped entity resolution, provenance-preserving merge, and projection status tracking"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/RecursiveIntell/knowledge-runtime"
+repository = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/knowledge-runtime"
 
 [lib]
 doctest = false
