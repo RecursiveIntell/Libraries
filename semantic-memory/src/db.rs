@@ -2508,6 +2508,14 @@ pub fn get_search_receipt(
         });
     }
 
+    if b3_digest(receipt_json.as_bytes()) != receipt_digest {
+        return Err(MemoryError::CorruptData {
+            table: "search_receipts",
+            row_id: receipt_id.to_string(),
+            detail: "stored receipt payload digest mismatch".to_string(),
+        });
+    }
+
     let stored: StoredVectorSearchReceiptV1 =
         serde_json::from_str(&receipt_json).map_err(|err| MemoryError::CorruptData {
             table: "search_receipts",
