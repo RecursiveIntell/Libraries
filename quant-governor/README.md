@@ -27,18 +27,14 @@ The current evaluator constructs direct decisions for its built-in routing paths
 
 ## Install
 
-This crate is a Libraries monorepo package and does not advertise a public repository URL. From a Cargo project with access to the package source or registry, add it with:
-
-```bash
-cargo add quant-governor
-```
-
-The package manifest declares Rust 1.75 as its minimum Rust version and uses the 2021 edition. For a local checkout, use a path dependency instead:
+This crate is a package in the [Libraries repository](https://github.com/RecursiveIntell/Libraries). To use the source documented here, point a separate Cargo project at this checkout:
 
 ```toml
 [dependencies]
-quant-governor = { path = "../quant-governor" }
+quant-governor = { path = "/path/to/Libraries/quant-governor" }
 ```
+
+The current source crate version is `0.1.1`. The package manifest declares Rust 1.75 as its minimum Rust version and uses the 2021 edition. A local manifest version does not establish registry release availability.
 
 ## Quick start
 
@@ -171,7 +167,7 @@ The crate forbids `unsafe_code`, denies missing documentation, and denies broken
 
 ## Status and roadmap
 
-**Status:** `0.1.0`, an early policy-routing library. The current implementation provides policy evaluation, profile metadata, presets, serializable decision types, and receipt data structures.
+**Current source crate version:** `0.1.1`, an early policy-routing library. The current implementation provides policy evaluation, profile metadata, presets, serializable decision types, and receipt data structures.
 
 **Not currently provided:** codec implementations, encoding/decoding execution, measured quality evaluation, persistence, network/cloud integration, or a public hosted service.
 
