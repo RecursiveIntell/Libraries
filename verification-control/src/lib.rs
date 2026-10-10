@@ -1773,7 +1773,13 @@ pub fn schedule_check_plan(
         &budget_lineage,
         &degradation_markers,
     ));
-    let proof_blocked = !plan.proof_obligations_remaining.is_empty()
+    // S2-01.06: a plan must name at least one required check. An empty (or
+    // all-blank) check set can never justify promotion — nothing has been
+    // verified — so block promotion rather than letting a schema-only or
+    // dry-run artifact pass as an accepted task.
+    let no_required_checks = plan.check_names.iter().all(|name| name.trim().is_empty());
+    let proof_blocked = no_required_checks
+        || !plan.proof_obligations_remaining.is_empty()
         || matches!(
             plan.evidence_admissibility,
             EvidenceAdmissibilityV1::Inadmissible | EvidenceAdmissibilityV1::Unknown

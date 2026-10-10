@@ -426,6 +426,114 @@ fn scheduler_blocks_promotion_when_proof_obligations_remain() {
     assert!(exactness_budget.failure_artifact_refs[0].contains("proof-obligation"));
 }
 
+fn demo_case(target: &str) -> VerificationCase {
+    VerificationCase::new(
+        VerificationCaseClass::RefutationGap,
+        CaseRegion {
+            namespace: "demo".into(),
+            scope_key: Some(ScopeKey::namespace_only("demo")),
+            target_key: target.into(),
+            region_id: None,
+            region_digest_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("{target}-v1"))),
+            as_of_recorded_at: None,
+        },
+        TraceCtx::generate(),
+        AttemptId::new(format!("attempt-{target}")),
+        "2026-03-12T00:00:00Z",
+        false,
+        false,
+    )
+}
+
+fn fresh_budget(case: &VerificationCase) -> BudgetLineage {
+    BudgetLineage {
+        budget_family: "verification".into(),
+        retry_family: case.attempt_id.clone(),
+        queue_hop_count: 0,
+        max_time_budget_ms: Some(10_000),
+        remaining_time_budget_ms: Some(9_500),
+        max_cost_budget_units: None,
+        remaining_cost_budget_units: None,
+        exhausted: false,
+    }
+}
+
+#[test]
+fn scheduler_blocks_promotion_when_no_required_checks() {
+    // S2-01.06: a plan that names no checks can never justify promotion.
+    let case = demo_case("claim:no-checks");
+    let plan = CheckPlan::new(
+        case.case_id.clone(),
+        CheckMethod::ExactBoundedOracle,
+        Vec::new(),
+        PromotionClass::P1,
+        ReversibilityClass::ReversibleScoped,
+        true,
+        false,
+        false,
+        "no required checks named",
+        json!({}),
+    );
+
+    let decision = schedule_check_plan(&case, &plan, fresh_budget(&case), Vec::new(), Vec::new());
+
+    assert!(
+        decision.promotion_blocked,
+        "a plan with no required checks must not promote"
+    );
+}
+
+#[test]
+fn scheduler_blocks_promotion_when_check_names_are_all_blank() {
+    // Whitespace/blank check names are as empty as none at all.
+    let case = demo_case("claim:blank-checks");
+    let plan = CheckPlan::new(
+        case.case_id.clone(),
+        CheckMethod::ExactBoundedOracle,
+        vec!["   ".into(), "".into()],
+        PromotionClass::P1,
+        ReversibilityClass::ReversibleScoped,
+        true,
+        false,
+        false,
+        "blank check names",
+        json!({}),
+    );
+
+    let decision = schedule_check_plan(&case, &plan, fresh_budget(&case), Vec::new(), Vec::new());
+
+    assert!(
+        decision.promotion_blocked,
+        "blank check names must not promote"
+    );
+}
+
+#[test]
+fn scheduler_does_not_over_block_a_complete_plan() {
+    // Control: named checks + admissible + no obligations + budget ok -> not blocked.
+    let case = demo_case("claim:complete");
+    let plan = CheckPlan::new(
+        case.case_id.clone(),
+        CheckMethod::ExactBoundedOracle,
+        vec!["exact_bounded_oracle".into()],
+        PromotionClass::P1,
+        ReversibilityClass::ReversibleScoped,
+        true,
+        false,
+        false,
+        "complete plan",
+        json!({}),
+    );
+
+    let decision = schedule_check_plan(&case, &plan, fresh_budget(&case), Vec::new(), Vec::new());
+
+    assert!(
+        !decision.promotion_blocked,
+        "a complete admissible plan with named checks must remain promotable"
+    );
+}
+
 #[test]
 fn boundary_repair_record_is_schema_stable() {
     let record = BoundaryRepairRecord::new(
