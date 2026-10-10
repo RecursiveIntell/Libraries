@@ -535,6 +535,63 @@ fn scheduler_does_not_over_block_a_complete_plan() {
 }
 
 #[test]
+fn scheduler_blocks_promotion_when_degraded() {
+    // A degraded plan maps to Restricted admissibility (CheckPlan::new) and must
+    // not promote: explicit degradation beats confident fiction.
+    let case = demo_case("claim:degraded");
+    let plan = CheckPlan::new(
+        case.case_id.clone(),
+        CheckMethod::ExactBoundedOracle,
+        vec!["exact_bounded_oracle".into()],
+        PromotionClass::P1,
+        ReversibilityClass::ReversibleScoped,
+        true,
+        false,
+        true, // degraded
+        "degraded plan",
+        json!({}),
+    );
+    assert_eq!(
+        plan.evidence_admissibility,
+        crate::EvidenceAdmissibilityV1::Restricted
+    );
+
+    let decision = schedule_check_plan(&case, &plan, fresh_budget(&case), Vec::new(), Vec::new());
+
+    assert!(
+        decision.promotion_blocked,
+        "a degraded (restricted-admissibility) plan must not promote"
+    );
+}
+
+#[test]
+fn scheduler_blocks_promotion_when_admissibility_is_restricted() {
+    // A non-degraded plan whose evidence_admissibility is explicitly Restricted
+    // must also block: no advisory artifact self-promotes into truth.
+    let case = demo_case("claim:restricted");
+    let mut plan = CheckPlan::new(
+        case.case_id.clone(),
+        CheckMethod::ExactBoundedOracle,
+        vec!["exact_bounded_oracle".into()],
+        PromotionClass::P1,
+        ReversibilityClass::ReversibleScoped,
+        true,
+        false,
+        false,
+        "restricted evidence",
+        json!({}),
+    );
+    plan.evidence_admissibility = crate::EvidenceAdmissibilityV1::Restricted;
+
+    let decision = schedule_check_plan(&case, &plan, fresh_budget(&case), Vec::new(), Vec::new());
+
+    assert!(
+        decision.promotion_blocked,
+        "restricted-admissibility evidence must not promote"
+    );
+}
+
+#[test]
 fn boundary_repair_record_is_schema_stable() {
     let record = BoundaryRepairRecord::new(
         BoundaryArtifactKind::LoopIterationReport,
