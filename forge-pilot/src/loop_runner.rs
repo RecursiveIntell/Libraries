@@ -149,7 +149,11 @@ impl LoopRunner {
         }
         let ambient = [
             ("memory_dir", self.config.memory_dir.as_str(), "./memory"),
-            ("forge_db_path", self.config.forge_db_path.as_str(), "./forge.db"),
+            (
+                "forge_db_path",
+                self.config.forge_db_path.as_str(),
+                "./forge.db",
+            ),
             ("workspace_path", self.config.workspace_path.as_str(), "."),
         ]
         .into_iter()

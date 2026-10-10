@@ -207,7 +207,10 @@ async fn observation_only_refuses_ambient_default_paths() {
     match err {
         PilotError::ObservationOnlyAmbientPath { field } => {
             assert!(
-                matches!(field.as_str(), "memory_dir" | "forge_db_path" | "workspace_path"),
+                matches!(
+                    field.as_str(),
+                    "memory_dir" | "forge_db_path" | "workspace_path"
+                ),
                 "unexpected field {field}"
             );
         }
