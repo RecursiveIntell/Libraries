@@ -235,3 +235,43 @@ async fn observation_only_accepts_explicit_paths() {
 
     assert_eq!(report.actions_executed, 0);
 }
+
+#[tokio::test]
+async fn observation_only_cannot_escape_into_execution_or_canonical_import() {
+    // S3-01.06: even with PERMISSIVE governance installed and a target that WOULD
+    // execute an action (the oracle setup above does), observation-only mode must
+    // produce no action and no canonical import/export — nothing may escape into
+    // patch execution or canonical import.
+    let dir = tempdir();
+    let memory = open_memory_store(dir.path());
+    let forge = open_forge_store(dir.path());
+    let scope = Scope::new("pilot-observation-only-escape");
+    let mut config = base_loop_config(scope.clone());
+    point_config_at_dir(&mut config, dir.path());
+    write_source_file(
+        dir.path(),
+        "src/lib.rs",
+        "pub fn escape_fixture() -> bool { true }\n",
+    );
+
+    import_v3_bundle(&memory, &forge, &scope.namespace, &sample_bundle("escape")).await;
+    // Governance would otherwise allow the action (the oracle test relies on this).
+    install_permissive_governance(&memory).await;
+    config.observation_only = true;
+
+    let resources = resources(memory, forge, &config);
+    let mut runner = LoopRunner::new(config, resources);
+    let report = runner.run().await.unwrap();
+
+    assert_eq!(report.actions_executed, 0, "no action may execute");
+    assert_eq!(report.exports_completed, 0, "no canonical export may occur");
+    assert_eq!(report.imports_completed, 0, "no canonical import may occur");
+    assert!(
+        report.iterations.iter().all(|i| i.action_family.is_none()),
+        "no iteration may record an action family"
+    );
+    assert!(
+        report.receipt.non_authoritative,
+        "pilot output remains non-authoritative"
+    );
+}
