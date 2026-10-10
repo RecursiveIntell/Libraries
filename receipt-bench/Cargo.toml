@@ -5,7 +5,8 @@ edition = "2021"
 description = "Replayable benchmark substrate for semantic search, compression, and memory operations"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/sikmindz/receipt-bench"
+repository = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/receipt-bench"
 keywords = ["benchmark", "receipt", "provenance", "replay"]
 categories = ["development-tools", "benchmarking"]
 

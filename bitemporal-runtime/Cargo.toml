@@ -7,6 +7,8 @@ description = "Bitemporal truth primitives — valid_time/recorded_time tracking
 license = "MIT OR Apache-2.0"
 authors = ["sikmindz"]
 readme = "README.md"
+repository = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/bitemporal-runtime"
 
 [dependencies]
 chrono = { version = "0.4.44", features = ["serde"] }
