@@ -187,3 +187,48 @@ async fn observation_only_mode_never_executes_the_oracle_family() {
         "pilot output remains non-authoritative"
     );
 }
+
+#[tokio::test]
+async fn observation_only_refuses_ambient_default_paths() {
+    // S3-01.04: ambient default paths are forbidden in observation-only mode, so a
+    // misconfigured read-only run fails loudly instead of opening a real store.
+    let dir = tempdir();
+    let memory = open_memory_store(dir.path());
+    let forge = open_forge_store(dir.path());
+    let scope = Scope::new("pilot-observation-only-paths");
+    // base_loop_config leaves the ambient defaults (./memory, ./forge.db, .).
+    let mut config = base_loop_config(scope);
+    config.observation_only = true;
+
+    let resources = resources(memory, forge, &config);
+    let mut runner = LoopRunner::new(config, resources);
+    let err = runner.run().await.unwrap_err();
+
+    match err {
+        PilotError::ObservationOnlyAmbientPath { field } => {
+            assert!(
+                matches!(field.as_str(), "memory_dir" | "forge_db_path" | "workspace_path"),
+                "unexpected field {field}"
+            );
+        }
+        other => panic!("expected ObservationOnlyAmbientPath, got {other:?}"),
+    }
+}
+
+#[tokio::test]
+async fn observation_only_accepts_explicit_paths() {
+    // Explicit paths satisfy the guard; execution stays unreachable.
+    let dir = tempdir();
+    let memory = open_memory_store(dir.path());
+    let forge = open_forge_store(dir.path());
+    let scope = Scope::new("pilot-observation-only-explicit");
+    let mut config = base_loop_config(scope);
+    point_config_at_dir(&mut config, dir.path());
+    config.observation_only = true;
+
+    let resources = resources(memory, forge, &config);
+    let mut runner = LoopRunner::new(config, resources);
+    let report = runner.run().await.unwrap();
+
+    assert_eq!(report.actions_executed, 0);
+}
