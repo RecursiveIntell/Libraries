@@ -1,0 +1,13 @@
+[package]
+name = "constitutive-witness"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+description = "Experimental exact finite-dimensional constitutive feasibility witnesses"
+publish = false
+
+# Explicit experimental satellite; no default workspace/runtime integration.
+[workspace]
+
+[dependencies]
