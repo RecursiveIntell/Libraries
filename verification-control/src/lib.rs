@@ -1778,11 +1778,21 @@ pub fn schedule_check_plan(
     // verified — so block promotion rather than letting a schema-only or
     // dry-run artifact pass as an accepted task.
     let no_required_checks = plan.check_names.iter().all(|name| name.trim().is_empty());
+    // Degraded verification quality and restricted evidence must BLOCK promotion,
+    // never silently pass. `interpret_promotion_eligibility` already blocks on
+    // `degraded`; this gate previously did not, so the two promotion gates
+    // disagreed and a caller using only the scheduler decision could promote
+    // degraded/restricted evidence. Libraries CLAUDE.md forbids an advisory or
+    // orchestration artifact self-promoting into truth, and forge-pilot's law says
+    // explicit degradation beats confident fiction — so both must block here too.
     let proof_blocked = no_required_checks
+        || plan.degraded
         || !plan.proof_obligations_remaining.is_empty()
         || matches!(
             plan.evidence_admissibility,
-            EvidenceAdmissibilityV1::Inadmissible | EvidenceAdmissibilityV1::Unknown
+            EvidenceAdmissibilityV1::Inadmissible
+                | EvidenceAdmissibilityV1::Unknown
+                | EvidenceAdmissibilityV1::Restricted
         );
 
     SchedulerDecision {
