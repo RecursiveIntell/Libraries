@@ -503,11 +503,20 @@ impl LoopRunner {
                 })
                 .cloned()
                 .collect::<Vec<_>>();
-            let execution_permit = policy_decision.issue_execution_permit(
-                &verification_case,
-                &check_plan,
-                &approval_records,
-            );
+            let execution_permit = if self.config.observation_only {
+                // S3-01: bounded read-only investigation mode. Never mint an
+                // execution permit, so the `execute_plan` path below is
+                // unreachable and the attempt is recorded as Blocked (a stop
+                // reason), not Succeeded. Reuses the existing permit veto lane —
+                // no new architecture, no new evidence schema.
+                Err(verification_policy::PermitIssuanceError::AutonomyDenied)
+            } else {
+                policy_decision.issue_execution_permit(
+                    &verification_case,
+                    &check_plan,
+                    &approval_records,
+                )
+            };
             let scheduler_decision = schedule_check_plan(
                 &verification_case,
                 &check_plan,
