@@ -159,7 +159,7 @@ cargo check
 cargo test
 python -m pip install --upgrade maturin
 maturin develop
-python -c 'from context_governor._native import compact; print(compact("[{\\"role\\":\\"user\\",\\"content\\":\\"hello\\"}]", "verification", 4096))'
+python -c 'from context_governor._native import compact; import json; print(compact(json.dumps([{"role": "user", "content": "hello"}]), "verification", 4096))'
 ```
 
 The final command is a smoke test of import and JSON output after installation. For a clean wheel path, use `maturin build --release` followed by installation of the wheel produced under `target/wheels/`.
