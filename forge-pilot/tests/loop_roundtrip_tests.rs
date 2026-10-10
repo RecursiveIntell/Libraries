@@ -138,3 +138,52 @@ async fn canonical_roundtrip_records_durable_failure_receipt_when_import_breaks(
         .error_message
         .contains("no such table: claim_versions"));
 }
+
+#[tokio::test]
+async fn observation_only_mode_never_executes_the_oracle_family() {
+    // S3-01: the bounded read-only mode must make `execute_plan` unreachable.
+    // This mirrors the executing oracle setup above; the ONLY difference is
+    // `observation_only = true`, so the assertion is a real differential.
+    let dir = tempdir();
+    let memory = open_memory_store(dir.path());
+    let forge = open_forge_store(dir.path());
+    let scope = Scope::new("pilot-observation-only");
+    let mut config = base_loop_config(scope.clone());
+    point_config_at_dir(&mut config, dir.path());
+    write_source_file(
+        dir.path(),
+        "src/lib.rs",
+        "pub fn observation_only_fixture() -> bool { true }\n",
+    );
+
+    import_v3_bundle(
+        &memory,
+        &forge,
+        &scope.namespace,
+        &sample_bundle("observation-only"),
+    )
+    .await;
+    install_permissive_governance(&memory).await;
+
+    // The same setup that executes an Oracle action above, but read-only.
+    config.observation_only = true;
+
+    let resources = resources(memory, forge, &config);
+    let mut runner = LoopRunner::new(config, resources);
+    let report = runner.run().await.unwrap();
+
+    assert_eq!(
+        report.actions_executed, 0,
+        "observation-only mode must never execute a plan"
+    );
+    for iteration in &report.iterations {
+        assert_eq!(
+            iteration.action_family, None,
+            "no action family may be recorded in observation-only mode"
+        );
+    }
+    assert!(
+        report.receipt.non_authoritative,
+        "pilot output remains non-authoritative"
+    );
+}
