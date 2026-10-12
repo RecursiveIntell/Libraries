@@ -52,9 +52,12 @@ mod tests {
     #[test]
     fn validate_fails_closed_and_never_silently_passes() {
         let v = SchemaValidator::new();
-        let err = v
-            .validate(&serde_json::json!({"any": "thing"}))
-            .expect_err("validate must fail closed, never return a false Ok(())");
-        assert!(matches!(err, JcsError::SchemaError(_)));
+        assert!(
+            matches!(
+                v.validate(&serde_json::json!({"any": "thing"})),
+                Err(JcsError::SchemaError(_))
+            ),
+            "validate must fail closed with a schema error, never return a false Ok(())"
+        );
     }
 }
