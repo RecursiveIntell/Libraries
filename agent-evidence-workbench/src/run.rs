@@ -5,6 +5,8 @@ use std::{path::Path, time::Instant};
 use tokio::process::Command;
 
 pub async fn run_command(cmd: &str, args: &[String], cwd: &Path) -> Result<CheckResult> {
+    let command = shlex::try_join(std::iter::once(cmd).chain(args.iter().map(String::as_str)))
+        .map_err(|error| crate::error::Error::Invalid(format!("invalid command argv: {error}")))?;
     let start = Instant::now();
     let output = Command::new(cmd)
         .args(args)
@@ -15,10 +17,7 @@ pub async fn run_command(cmd: &str, args: &[String], cwd: &Path) -> Result<Check
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
     let digest = |s: &str| hex::encode(Sha256::digest(s.as_bytes()));
     Ok(CheckResult {
-        command: std::iter::once(cmd)
-            .chain(args.iter().map(String::as_str))
-            .collect::<Vec<_>>()
-            .join(" "),
+        command,
         exit_code: output.status.code(),
         stdout_digest: digest(&stdout),
         stderr_digest: digest(&stderr),
