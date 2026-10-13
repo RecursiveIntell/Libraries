@@ -804,7 +804,7 @@ pub fn compact_context_with_memory_sink(
                 .to_string(),
         );
     }
-    let (mut compacted_messages, emitted_message_membership_checks) =
+    let (mut compacted_messages, emitted_message_membership_checks, generated_summary_index) =
         assemble_compacted_messages(&request.messages, &plan, &summary, &compaction_policy);
     plan.hot_path_operation_counts
         .emitted_message_membership_checks = emitted_message_membership_checks;
@@ -824,7 +824,12 @@ pub fn compact_context_with_memory_sink(
     ) || (post_finalize_reserve > 0
         && matches!(request.policy.budget_mode, BudgetMode::SoftWarn))
     {
-        compacted_messages = enforce_budget(compacted_messages, &compaction_policy, &mut warnings)?;
+        compacted_messages = enforce_budget(
+            compacted_messages,
+            &compaction_policy,
+            generated_summary_index,
+            &mut warnings,
+        )?;
     }
 
     let compacted_tokens = count_tokens_messages(&compacted_messages, &request.policy);
@@ -2108,7 +2113,7 @@ fn assemble_compacted_messages(
     plan: &ContextAllocationPlanV1,
     summary: &str,
     policy: &CompactionPolicy,
-) -> (Vec<Message>, usize) {
+) -> (Vec<Message>, usize, usize) {
     let mut out = Vec::new();
     let dispositions = PlanDispositionIndex::new(plan);
     let mut emitted = BTreeSet::new();
@@ -2163,6 +2168,7 @@ fn assemble_compacted_messages(
         metadata: BTreeMap::from([("compressed_summary".to_string(), Value::Bool(true))]),
     };
     emitted.insert((summary_msg.role.clone(), summary_msg.content.clone()));
+    let generated_summary_index = out.len();
     out.push(summary_msg);
 
     for (offset, msg) in messages[tail_start..].iter().enumerate() {
@@ -2185,7 +2191,7 @@ fn assemble_compacted_messages(
     if let Some(idx) = latest_user_idx {
         out.push(messages[idx].clone());
     }
-    (out, checks)
+    (out, checks, generated_summary_index)
 }
 
 fn choose_summary_role(previous: Option<&str>) -> &'static str {
@@ -2341,22 +2347,22 @@ fn looks_like_search_results(text: &str) -> bool {
 fn enforce_budget(
     mut messages: Vec<Message>,
     policy: &CompactionPolicy,
+    summary_idx: usize,
     warnings: &mut Vec<String>,
 ) -> Result<Vec<Message>, ContextGovernorError> {
     let target = policy.target_tokens;
     if count_tokens_messages(&messages, policy) <= target {
         return Ok(messages);
     }
-    let Some(summary_idx) = messages
-        .iter()
-        .position(|m| m.content.starts_with(SUMMARY_PREFIX))
-    else {
+    // The assembler owns this position. An inherited or caller-supplied
+    // summary-looking message is protected source, not this pass's summary.
+    if summary_idx >= messages.len() {
         let minimum = count_tokens_messages(&messages, policy);
         return Err(ContextGovernorError::BudgetExceeded {
             target,
             actual: minimum,
         });
-    };
+    }
 
     let mut without_summary = messages.clone();
     without_summary.remove(summary_idx);
