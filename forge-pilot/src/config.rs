@@ -29,6 +29,11 @@ pub struct LoopConfig {
     pub halt_urgency_threshold: f64,
     pub max_retries_per_target: u32,
     pub allow_advisory_only_steps: bool,
+    /// S3-01: bounded read-only investigation mode. When true the loop never
+    /// mints an execution permit, so `act::execute_plan` is unreachable and every
+    /// iteration is recorded as non-executing. Reuses the existing permit veto
+    /// lane — no new architecture, no new evidence schema.
+    pub observation_only: bool,
     pub scope: Scope,
     pub workspace_path: String,
     pub memory_dir: String,
@@ -95,6 +100,7 @@ impl Default for LoopConfig {
             halt_urgency_threshold: 0.25,
             max_retries_per_target: 2,
             allow_advisory_only_steps: false,
+            observation_only: false,
             scope: default_scope.clone(),
             workspace_path: ".".into(),
             memory_dir: "./memory".into(),

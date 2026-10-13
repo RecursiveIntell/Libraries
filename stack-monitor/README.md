@@ -117,8 +117,8 @@ Run the non-activating release validator with:
 stack-monitor-desktop/scripts/validate-release.sh
 ```
 
-It verifies tests, strict Clippy, release binaries, Tauri build output, service syntax, and
-required artifact paths. It does not install, enable, publish, or start the user service.
+It runs tests, strict Clippy, release binary builds, and the Tauri build, then checks
+required binary, configuration, service-file, and frontend artifact paths. It does not validate systemd service syntax. It does not install, enable, publish, or start the user service.
 
 The staged user installer is:
 

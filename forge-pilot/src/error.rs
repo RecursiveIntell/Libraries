@@ -33,6 +33,8 @@ pub enum PilotError {
     ControlPlaneReplay(String),
     #[error("execution permit error: {0}")]
     ExecutionPermit(#[from] PermitIssuanceError),
+    #[error("observation-only mode requires an explicit path; {field} is an ambient default")]
+    ObservationOnlyAmbientPath { field: String },
     #[error("{0}")]
     Other(String),
 }
@@ -54,6 +56,7 @@ impl PilotError {
             Self::UnsupportedPatchFixture { .. } => "unsupported_patch_fixture",
             Self::ControlPlaneReplay(..) => "control_plane_replay",
             Self::ExecutionPermit(..) => "execution_permit",
+            Self::ObservationOnlyAmbientPath { .. } => "observation_only_ambient_path",
             Self::Other(..) => "other",
         }
     }

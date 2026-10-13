@@ -135,8 +135,41 @@ impl LoopRunner {
         &self.history
     }
 
+    /// S3-01.04: observation-only mode forbids ambient default paths.
+    ///
+    /// A "read-only" process that inherits the process defaults (`./memory`,
+    /// `./forge.db`, `.`) can silently open — and create or migrate — a real
+    /// store, because store opening is a caller-side side effect that happens
+    /// before this runner exists (see the S3-01.01 trace). Requiring explicit
+    /// paths makes such a misconfiguration fail loudly (typed error) instead of
+    /// pointing the read-only mode at a live store.
+    fn validate_observation_only_paths(&self) -> Result<(), PilotError> {
+        if !self.config.observation_only {
+            return Ok(());
+        }
+        let ambient = [
+            ("memory_dir", self.config.memory_dir.as_str(), "./memory"),
+            (
+                "forge_db_path",
+                self.config.forge_db_path.as_str(),
+                "./forge.db",
+            ),
+            ("workspace_path", self.config.workspace_path.as_str(), "."),
+        ]
+        .into_iter()
+        .find(|(_, value, default)| value == default);
+        match ambient {
+            Some((field, _, _)) => Err(PilotError::ObservationOnlyAmbientPath {
+                field: field.to_string(),
+            }),
+            None => Ok(()),
+        }
+    }
+
     /// Runs a single observation against the configured scope and stores.
+    /// In observation-only mode this refuses ambient default paths.
     pub async fn observe(&self) -> Result<Observation, PilotError> {
+        self.validate_observation_only_paths()?;
         observe_scope(
             &self.resources.runtime,
             &self.resources.memory_store,
@@ -147,6 +180,7 @@ impl LoopRunner {
 
     /// Runs the full OODA loop until a halt condition is reached.
     pub async fn run(&mut self) -> Result<LoopReport, PilotError> {
+        self.validate_observation_only_paths()?;
         let started = Instant::now();
         let started_at = chrono::Utc::now();
         let trace_ctx = TraceCtx::generate();
@@ -503,11 +537,20 @@ impl LoopRunner {
                 })
                 .cloned()
                 .collect::<Vec<_>>();
-            let execution_permit = policy_decision.issue_execution_permit(
-                &verification_case,
-                &check_plan,
-                &approval_records,
-            );
+            let execution_permit = if self.config.observation_only {
+                // S3-01: bounded read-only investigation mode. Never mint an
+                // execution permit, so the `execute_plan` path below is
+                // unreachable and the attempt is recorded as Blocked (a stop
+                // reason), not Succeeded. Reuses the existing permit veto lane —
+                // no new architecture, no new evidence schema.
+                Err(verification_policy::PermitIssuanceError::AutonomyDenied)
+            } else {
+                policy_decision.issue_execution_permit(
+                    &verification_case,
+                    &check_plan,
+                    &approval_records,
+                )
+            };
             let scheduler_decision = schedule_check_plan(
                 &verification_case,
                 &check_plan,
