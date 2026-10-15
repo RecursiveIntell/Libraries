@@ -3,8 +3,10 @@ use std::collections::BTreeSet;
 
 /// A typed anchor extracted by a reducer.
 ///
-/// `source_span` is populated only when the reducer knows a precise input
-/// offset. Summary/extractive anchors whose offsets are unknown use `None`.
+/// `source_span` is an input range hint, not a guaranteed field location.
+/// `reduce_json` anchors always use `None` because a parsed
+/// `serde_json::Value` does not retain byte offsets. The other reducers
+/// currently report a coarse range rather than a precise offset.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct ReducerAnchor {
@@ -19,11 +21,15 @@ pub struct ReducerAnchor {
 pub struct ReducerOutput {
     pub compacted: String,
     pub anchors: Vec<ReducerAnchor>,
-    /// True only when the final rendered character cap shortened `compacted`.
-    /// Earlier selection/snippet losses are reported independently in `loss_flags`.
+    /// Whether the reducer's final length cap shortened `compacted`. For
+    /// `reduce_json` this is exactly the final character cap; earlier JSON
+    /// selection and snippet losses are reported separately in `loss_flags`.
     pub was_truncated: bool,
     pub approx_tokens: usize,
-    /// Known lossy projection operations, including omissions before final rendering.
+    /// Known lossy projection operations. `reduce_json` reports each
+    /// selection, nesting and snippet loss by cause; the other reducers
+    /// currently report only final truncation, so an empty list from them
+    /// does not prove the projection was lossless.
     pub loss_flags: Vec<String>,
 }
 
@@ -85,11 +91,31 @@ pub fn reduce_json(content: &str, max_chars: usize) -> ReducerOutput {
         }
     };
 
+    // Error extraction is another bounded preview. Inspect the parsed keys
+    // directly so a detail-only error is found too.
+    let error_field = ["error", "message", "detail"]
+        .iter()
+        .find_map(|key| value.get(*key).map(|found| (*key, found)));
+    let error_text = error_field.map(|(_, found)| found.to_string());
+    let error_complete = error_text
+        .as_ref()
+        .is_some_and(|text| text.chars().count() <= 120);
+
     let mut lines: Vec<String> = Vec::new();
     if let Some(object) = value.as_object() {
         let keys: Vec<String> = object.keys().cloned().collect();
         lines.push(format!("json:keys={}", keys.join(",")));
-        if keys.len() > 20 {
+        // A value skipped by the 20-field preview is not lost when it is the
+        // error field and the error extraction below emits it in full.
+        let omitted_values = keys
+            .iter()
+            .skip(20)
+            .filter(|key| {
+                !(error_complete
+                    && error_field.is_some_and(|(error_key, _)| error_key == key.as_str()))
+            })
+            .count();
+        if omitted_values > 0 {
             push_loss_flag(&mut loss_flags, "object_values_omitted");
         }
         for key in keys.iter().take(20) {
@@ -136,24 +162,15 @@ pub fn reduce_json(content: &str, max_chars: usize) -> ReducerOutput {
         }
     }
 
-    // Error extraction is another bounded preview; signal clipping separately.
-    let lower = content.to_lowercase();
-    if lower.contains("error") || lower.contains("err") || lower.contains("message") {
-        if let Some(message) = value
-            .get("error")
-            .or_else(|| value.get("message"))
-            .or_else(|| value.get("detail"))
-        {
-            let error_text = message.to_string();
-            if error_text.chars().count() > 120 {
-                push_loss_flag(&mut loss_flags, "error_snippet_truncated");
-            }
-            lines.push(format!(
-                "error={}",
-                error_text.chars().take(120).collect::<String>()
-            ));
-            push_nonpositional_anchor(&mut anchors, "json_error", &error_text);
+    if let Some(error_text) = error_text.as_ref() {
+        if !error_complete {
+            push_loss_flag(&mut loss_flags, "error_snippet_truncated");
         }
+        lines.push(format!(
+            "error={}",
+            error_text.chars().take(120).collect::<String>()
+        ));
+        push_nonpositional_anchor(&mut anchors, "json_error", error_text);
     }
 
     let rendered = lines.join("\n");
@@ -733,6 +750,50 @@ mod tests {
             .loss_flags
             .iter()
             .any(|flag| flag == "json_value_snippet_truncated"));
+    }
+
+    #[test]
+    fn json_reducer_does_not_flag_an_error_value_emitted_in_full() {
+        let mut fields: Vec<String> = (0..20).map(|i| format!("\"a{i:02}\":\"v{i}\"")).collect();
+        fields.push("\"message\":\"short failure\"".to_string());
+        let input = format!("{{{}}}", fields.join(","));
+        let out = reduce_json(&input, 4096);
+
+        assert!(out.compacted.contains("short failure"));
+        assert!(
+            !out.loss_flags
+                .iter()
+                .any(|flag| flag == "object_values_omitted"),
+            "the only skipped value is emitted in full as the error: {:?}",
+            out.loss_flags
+        );
+
+        // A clipped error value is still a lost object value.
+        let mut long_fields: Vec<String> =
+            (0..20).map(|i| format!("\"a{i:02}\":\"v{i}\"")).collect();
+        long_fields.push(format!("\"message\":\"{}\"", "m".repeat(200)));
+        let long_input = format!("{{{}}}", long_fields.join(","));
+        let long_out = reduce_json(&long_input, 4096);
+        assert!(long_out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "object_values_omitted"));
+        assert!(long_out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "error_snippet_truncated"));
+    }
+
+    #[test]
+    fn json_reducer_reports_a_clipped_detail_only_error() {
+        let input = serde_json::json!({"detail": "d".repeat(200)}).to_string();
+        let out = reduce_json(&input, 4096);
+
+        assert!(out.compacted.contains("error="));
+        assert!(out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "error_snippet_truncated"));
     }
 
     #[test]
