@@ -2,6 +2,9 @@ use serde_json::Value;
 use std::collections::BTreeSet;
 
 /// A typed anchor extracted by a reducer.
+///
+/// `source_span` is populated only when the reducer knows a precise input
+/// offset. Summary/extractive anchors whose offsets are unknown use `None`.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct ReducerAnchor {
@@ -16,8 +19,11 @@ pub struct ReducerAnchor {
 pub struct ReducerOutput {
     pub compacted: String,
     pub anchors: Vec<ReducerAnchor>,
+    /// True only when the final rendered character cap shortened `compacted`.
+    /// Earlier selection/snippet losses are reported independently in `loss_flags`.
     pub was_truncated: bool,
     pub approx_tokens: usize,
+    /// Known lossy projection operations, including omissions before final rendering.
     pub loss_flags: Vec<String>,
 }
 
@@ -41,91 +47,127 @@ fn push_anchor(
     }
 }
 
+fn push_nonpositional_anchor(anchors: &mut Vec<ReducerAnchor>, kind: &str, value: &str) {
+    if !value.trim().is_empty() {
+        anchors.push(ReducerAnchor {
+            kind: kind.to_string(),
+            value: value.trim().to_string(),
+            source_span: None,
+        });
+    }
+}
+
+fn push_loss_flag(loss_flags: &mut Vec<String>, flag: &str) {
+    if !loss_flags.iter().any(|existing| existing == flag) {
+        loss_flags.push(flag.to_string());
+    }
+}
+
 /// Reduce JSON content to keys, known-path values, and errors.
 pub fn reduce_json(content: &str, max_chars: usize) -> ReducerOutput {
     let mut anchors = Vec::new();
+    let mut loss_flags = Vec::new();
     let value: Value = match serde_json::from_str(content) {
-        Ok(v) => v,
+        Ok(value) => value,
         Err(_) => {
+            let was_truncated = content.chars().count() > max_chars;
+            let mut loss_flags = vec!["invalid_json".to_string()];
+            if was_truncated {
+                push_loss_flag(&mut loss_flags, "truncated");
+            }
             return ReducerOutput {
-                compacted: content.chars().take(max_chars).collect::<String>(),
-                anchors: vec![],
-                was_truncated: content.len() > max_chars,
+                compacted: content.chars().take(max_chars).collect(),
+                anchors,
+                was_truncated,
                 approx_tokens: approx_tokens_for_text(content),
-                loss_flags: vec!["invalid_json".to_string()],
+                loss_flags,
             };
         }
     };
+
     let mut lines: Vec<String> = Vec::new();
-    if let Some(obj) = value.as_object() {
-        let keys: Vec<String> = obj.keys().cloned().collect();
+    if let Some(object) = value.as_object() {
+        let keys: Vec<String> = object.keys().cloned().collect();
         lines.push(format!("json:keys={}", keys.join(",")));
+        if keys.len() > 20 {
+            push_loss_flag(&mut loss_flags, "object_values_omitted");
+        }
         for key in keys.iter().take(20) {
-            if let Some(v) = obj.get(key) {
-                let text = match v {
-                    Value::String(s) => s.clone(),
-                    Value::Number(n) => n.to_string(),
-                    Value::Bool(b) => b.to_string(),
+            if let Some(value) = object.get(key) {
+                let text = match value {
+                    Value::String(value) => value.clone(),
+                    Value::Number(value) => value.to_string(),
+                    Value::Bool(value) => value.to_string(),
                     Value::Null => "null".to_string(),
-                    Value::Array(arr) => format!("[len={}]", arr.len()),
-                    Value::Object(map) => format!(
-                        "{{keys={}}}",
-                        map.keys().cloned().collect::<Vec<_>>().join(",")
-                    ),
+                    Value::Array(items) => {
+                        push_loss_flag(&mut loss_flags, "nested_json_summarized");
+                        format!("[len={}]", items.len())
+                    }
+                    Value::Object(fields) => {
+                        push_loss_flag(&mut loss_flags, "nested_json_summarized");
+                        format!(
+                            "{{keys={}}}",
+                            fields.keys().cloned().collect::<Vec<_>>().join(",")
+                        )
+                    }
                 };
+                if text.chars().count() > 80 {
+                    push_loss_flag(&mut loss_flags, "json_value_snippet_truncated");
+                }
                 let entry = format!("{}={}", key, text.chars().take(80).collect::<String>());
-                push_anchor(
-                    &mut anchors,
-                    "json_field",
-                    &entry,
-                    0,
-                    content.len().min(max_chars),
-                );
+                // The parsed JSON value does not retain original byte offsets;
+                // these are semantic preview anchors, not source locations.
+                push_nonpositional_anchor(&mut anchors, "json_field", &entry);
                 lines.push(entry);
             }
         }
-    } else if let Some(arr) = value.as_array() {
-        lines.push(format!("json:array_len={}", arr.len()));
-        for (idx, item) in arr.iter().take(8).enumerate() {
-            let snippet = item.to_string().chars().take(60).collect::<String>();
-            lines.push(format!("[{idx}]={snippet}"));
+    } else if let Some(array) = value.as_array() {
+        lines.push(format!("json:array_len={}", array.len()));
+        if array.len() > 8 {
+            push_loss_flag(&mut loss_flags, "array_items_omitted");
+        }
+        for (index, item) in array.iter().take(8).enumerate() {
+            let serialized = item.to_string();
+            if serialized.chars().count() > 60 {
+                push_loss_flag(&mut loss_flags, "array_item_snippet_truncated");
+            }
+            let snippet = serialized.chars().take(60).collect::<String>();
+            lines.push(format!("[{index}]={snippet}"));
         }
     }
-    // error detection
+
+    // Error extraction is another bounded preview; signal clipping separately.
     let lower = content.to_lowercase();
     if lower.contains("error") || lower.contains("err") || lower.contains("message") {
-        if let Some(msg) = value
+        if let Some(message) = value
             .get("error")
             .or_else(|| value.get("message"))
             .or_else(|| value.get("detail"))
         {
-            let err_text = msg.to_string();
+            let error_text = message.to_string();
+            if error_text.chars().count() > 120 {
+                push_loss_flag(&mut loss_flags, "error_snippet_truncated");
+            }
             lines.push(format!(
                 "error={}",
-                err_text.chars().take(120).collect::<String>()
+                error_text.chars().take(120).collect::<String>()
             ));
-            push_anchor(
-                &mut anchors,
-                "json_error",
-                &err_text,
-                0,
-                content.len().min(max_chars),
-            );
+            push_nonpositional_anchor(&mut anchors, "json_error", &error_text);
         }
     }
-    let compacted = lines.join("\n");
-    let was_truncated = compacted.len() > max_chars;
-    let compacted = compacted.chars().take(max_chars).collect::<String>();
+
+    let rendered = lines.join("\n");
+    let was_truncated = rendered.chars().count() > max_chars;
+    if was_truncated {
+        push_loss_flag(&mut loss_flags, "truncated");
+    }
+    let compacted = rendered.chars().take(max_chars).collect::<String>();
     ReducerOutput {
         approx_tokens: approx_tokens_for_text(&compacted),
         compacted,
         anchors,
         was_truncated,
-        loss_flags: if was_truncated {
-            vec!["truncated".to_string()]
-        } else {
-            vec![]
-        },
+        loss_flags,
     }
 }
 
@@ -587,6 +629,126 @@ mod tests {
         assert!(out.compacted.contains("status"));
         assert!(out.compacted.contains("error"));
         assert!(!out.was_truncated);
+    }
+
+    #[test]
+    fn json_reducer_reports_omitted_late_object_values_without_false_span() {
+        let mut object = serde_json::Map::new();
+        for index in 0..20 {
+            object.insert(
+                format!("key_{index:02}"),
+                serde_json::json!(format!("ordinary-{index}")),
+            );
+        }
+        object.insert(
+            "key_99_late".to_string(),
+            serde_json::json!("LATE_VALUE_SENTINEL"),
+        );
+        let input = serde_json::to_string(&object).unwrap();
+        let out = reduce_json(&input, 4096);
+
+        assert!(
+            !out.was_truncated,
+            "the final character cap was not reached"
+        );
+        assert!(
+            out.compacted.contains("key_99_late"),
+            "all object keys are listed"
+        );
+        assert!(!out.compacted.contains("LATE_VALUE_SENTINEL"));
+        assert!(out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "object_values_omitted"));
+        assert!(
+            out.anchors
+                .iter()
+                .filter(|a| a.kind == "json_field")
+                .all(|a| { a.source_span.is_none() }),
+            "parsed-value anchors must not claim imprecise byte positions"
+        );
+    }
+
+    #[test]
+    fn json_reducer_reports_array_and_nested_value_selection_losses() {
+        let array = (0..9)
+            .map(|index| format!("item-{index}"))
+            .collect::<Vec<_>>();
+        let array_out = reduce_json(&serde_json::to_string(&array).unwrap(), 4096);
+        assert!(!array_out.was_truncated);
+        assert!(array_out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "array_items_omitted"));
+        assert!(array_out.compacted.contains("json:array_len=9"));
+
+        let nested = serde_json::json!({
+            "object": {"nested": "NESTED_VALUE_SENTINEL"},
+        })
+        .to_string();
+        let nested_out = reduce_json(&nested, 4096);
+        assert!(!nested_out.was_truncated);
+        assert!(nested_out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "nested_json_summarized"));
+        assert!(!nested_out.compacted.contains("NESTED_VALUE_SENTINEL"));
+    }
+
+    #[test]
+    fn json_reducer_reports_string_snippet_clipping_independent_of_final_cap() {
+        let input =
+            serde_json::json!({"large": format!("{}VALUE_SUFFIX_SENTINEL", "x".repeat(90))})
+                .to_string();
+        let out = reduce_json(&input, 4096);
+
+        assert!(!out.was_truncated);
+        assert!(out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "json_value_snippet_truncated"));
+        assert!(!out.compacted.contains("VALUE_SUFFIX_SENTINEL"));
+        assert!(out
+            .anchors
+            .iter()
+            .filter(|a| a.kind == "json_field")
+            .all(|a| { a.source_span.is_none() }));
+    }
+
+    #[test]
+    fn json_reducer_final_cap_flag_is_distinct_and_character_counted() {
+        let input = serde_json::json!({"large": "界".repeat(100)}).to_string();
+        let unicode = reduce_json(&input, 200);
+        assert!(unicode.compacted.chars().count() <= 200);
+        assert!(!unicode.was_truncated, "the character cap was not reached");
+        assert!(unicode
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "json_value_snippet_truncated"));
+
+        let capped = reduce_json(&input, 24);
+        assert!(capped.was_truncated);
+        assert!(capped.loss_flags.iter().any(|flag| flag == "truncated"));
+        assert!(capped
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "json_value_snippet_truncated"));
+    }
+
+    #[test]
+    fn json_reducer_error_anchor_does_not_claim_a_precise_source_span() {
+        let input = serde_json::json!({"error": "x".repeat(200)}).to_string();
+        let out = reduce_json(&input, 4096);
+
+        assert!(out
+            .loss_flags
+            .iter()
+            .any(|flag| flag == "error_snippet_truncated"));
+        assert!(out
+            .anchors
+            .iter()
+            .filter(|a| a.kind == "json_error")
+            .all(|a| { a.source_span.is_none() }));
     }
 
     #[test]
