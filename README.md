@@ -1,5 +1,7 @@
 # RecursiveIntell Libraries
 
+<!-- last-verified: 2026-10-26 -->
+
 Reusable Rust components for local-first AI: semantic memory, agent execution, evidence and provenance, governed tool use, and experimental compression.
 
 This repository brings those components together so their contracts can be developed and tested in one place. SQLite-backed memory owns durable records. Graphs coordinate work. Bridges translate between owners. Receipts make decisions and transformations inspectable. Retrieval indexes, compressed representations, and runtime projections remain derived from their authoritative sources.
@@ -41,7 +43,15 @@ cargo metadata --no-deps --format-version 1
 cargo run --locked -p agent-graph --example basic
 ```
 
-The [basic example](agent-graph/examples/basic.rs) runs three nodes, passes state along their edges, and prints the result. More examples cover [parallel execution](agent-graph/examples/parallel.rs), [checkpointing](agent-graph/examples/checkpointing.rs), and [human-in-the-loop execution](agent-graph/examples/human_in_loop.rs).
+The [basic example](agent-graph/examples/basic.rs) runs three nodes, passes state along their edges, and prints the result. In the observed run, the final output was:
+
+```text
+Final state:
+  message: Hello from
+  complete: true
+```
+
+More examples cover [parallel execution](agent-graph/examples/parallel.rs), [checkpointing](agent-graph/examples/checkpointing.rs), and [human-in-the-loop execution](agent-graph/examples/human_in_loop.rs).
 
 For a focused package check:
 
