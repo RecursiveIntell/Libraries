@@ -14,9 +14,9 @@ use crate::error::MemoryError;
 use crate::vector_backend::{VectorBackend, VectorHit, VectorIndexConfig};
 
 use poly_kv::{
-    BranchConfig, CompressionPolicyV1, DType, ExactFallback, ExactKvBlock, KvLayout, KvPoolStore,
-    KvRole, KvTensorShape, LayerId, ModelFingerprint, PoolBuilder, QualityGateResultV1,
-    SharedKvPool, TokenizerFingerprint,
+    CompressionPolicyV1, DType, ExactFallback, ExactKvBlock, KvLayout, KvPoolStore, KvRole,
+    KvTensorShape, LayerId, ModelFingerprint, PoolBuilder, QualityGateResultV1, SharedKvPool,
+    TokenizerFingerprint,
 };
 
 /// PolyKV-backed vector index for compressed embedding storage and search.

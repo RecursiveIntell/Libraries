@@ -6,7 +6,7 @@ use crate::db;
 use crate::db::{bytes_to_embedding, parse_optional_json, with_transaction};
 #[cfg(feature = "hnsw")]
 use crate::db::{enqueue_pending_index_op, PendingIndexOpKind};
-#[cfg(feature = "hnsw")]
+#[cfg(all(feature = "hnsw", feature = "admin-ops"))]
 use crate::episodes;
 use crate::error::MemoryError;
 use crate::quantize::{self, Quantizer};
