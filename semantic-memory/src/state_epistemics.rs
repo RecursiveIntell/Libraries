@@ -777,7 +777,6 @@ impl MemoryStore {
         let results = self
             .search_with_view(query, top_k, namespaces, None, state_view.clone())
             .await?;
-        let result_ids: Vec<String> = results.iter().map(result_id).collect();
         let fact_ids: Vec<String> = results
             .iter()
             .filter_map(|result| match &result.source {

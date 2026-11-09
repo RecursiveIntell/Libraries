@@ -233,7 +233,6 @@ pub fn apply_temporal_boost(items: Vec<TemporalSearchItem>) -> Vec<TemporalSearc
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::TimeZone;
 
     fn test_episode(
         recorded_at: DateTime<Utc>,

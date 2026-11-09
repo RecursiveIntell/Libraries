@@ -204,7 +204,9 @@ fn build_active_backend(config: VectorIndexConfig) -> Result<Arc<dyn VectorBacke
     {
         return Ok(Arc::new(super::hnsw_backend::HnswBackend::new(config)?));
     }
+    // Unreachable when `hnsw` is also enabled: `hnsw` takes precedence by design.
     #[cfg(feature = "usearch-backend")]
+    #[allow(unreachable_code)]
     {
         return Ok(Arc::new(super::usearch_backend::UsearchBackend::new(
             config,
@@ -233,7 +235,9 @@ fn load_active_backend(
             dir, basename, config,
         )?));
     }
+    // Unreachable when `hnsw` is also enabled: `hnsw` takes precedence by design.
     #[cfg(feature = "usearch-backend")]
+    #[allow(unreachable_code)]
     {
         return Ok(Arc::new(super::usearch_backend::UsearchBackend::load(
             dir, basename, config,

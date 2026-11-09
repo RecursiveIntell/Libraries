@@ -1,5 +1,4 @@
 #![allow(deprecated)]
-#![allow(unused_imports, unused_variables, unreachable_code)]
 #![allow(
     clippy::bool_assert_comparison,
     clippy::collapsible_if,
