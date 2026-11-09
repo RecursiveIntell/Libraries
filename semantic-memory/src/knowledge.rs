@@ -10,7 +10,9 @@ use crate::db::{enqueue_pending_index_op, PendingIndexOpKind};
 use crate::episodes;
 use crate::error::MemoryError;
 use crate::quantize::{self, Quantizer};
-use crate::types::{Fact, NamespaceDeleteReport};
+use crate::types::Fact;
+#[cfg(feature = "admin-ops")]
+use crate::types::NamespaceDeleteReport;
 use crate::{merge_trace_ctx, MemoryStore};
 use rusqlite::{params, Connection, OptionalExtension};
 use stack_ids::TraceCtx;
