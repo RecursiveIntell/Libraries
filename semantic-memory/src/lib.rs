@@ -3178,7 +3178,7 @@ impl MemoryStore {
                             r.get::<_, Option<String>>(0)?,
                             r.get::<_, Option<i64>>(1)?.map(|v| v as usize),
                         ))
-                    }
+                    },
                 )
                 .unwrap_or((None, None));
 

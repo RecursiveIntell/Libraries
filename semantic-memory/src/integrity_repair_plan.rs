@@ -168,11 +168,7 @@ fn capture(
 ) -> Result<OrphanRowV1, Error> {
     // table is from the closed static allowlist, never caller-controlled.
     let mut stmt = conn.prepare(&format!("SELECT rowid, * FROM \"{table}\" WHERE rowid=?1"))?;
-    let columns: Vec<_> = stmt
-        .column_names()
-        .skip(1)
-        .map(|s| s.to_owned())
-        .collect();
+    let columns: Vec<_> = stmt.column_names().skip(1).map(|s| s.to_owned()).collect();
     let mut rows = stmt.query([rowid])?;
     let raw = rows
         .next()?

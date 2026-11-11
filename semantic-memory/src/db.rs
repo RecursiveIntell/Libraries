@@ -3256,21 +3256,27 @@ pub fn verify_integrity_sync(
             0
         });
     let chunk_count: usize = conn
-        .query_row("SELECT COUNT(*) FROM chunks", [], |row| row.get::<_, i64>(0))
+        .query_row("SELECT COUNT(*) FROM chunks", [], |row| {
+            row.get::<_, i64>(0)
+        })
         .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count chunks: {e}"));
             0
         });
     let message_count: usize = conn
-        .query_row("SELECT COUNT(*) FROM messages", [], |row| row.get::<_, i64>(0))
+        .query_row("SELECT COUNT(*) FROM messages", [], |row| {
+            row.get::<_, i64>(0)
+        })
         .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count messages: {e}"));
             0
         });
     let episode_count: usize = conn
-        .query_row("SELECT COUNT(*) FROM episodes", [], |row| row.get::<_, i64>(0))
+        .query_row("SELECT COUNT(*) FROM episodes", [], |row| {
+            row.get::<_, i64>(0)
+        })
         .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count episodes: {e}"));
