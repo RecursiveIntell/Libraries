@@ -1,4 +1,4 @@
-use rusqlite::{backup::Backup, Connection, DatabaseName, OpenFlags};
+use rusqlite::{backup::Backup, Connection, OpenFlags};
 use semantic_memory::{
     AuthorityRelationQuarantinePlanError, MemoryConfig, MemoryStore, MockEmbedder, SqliteCellV1,
 };
@@ -48,7 +48,7 @@ async fn clean_image_is_explicit_noop_and_unchanged() -> ResultT {
         let backup = Backup::new(&tx, &mut expected)?;
         assert_eq!(backup.step(-1)?, rusqlite::backup::StepResult::Done);
     }
-    let image = expected.serialize(DatabaseName::Main)?;
+    let image = expected.serialize("main")?;
     assert_eq!(plan.schema_version, "authority_relation_quarantine_plan_v2");
     assert_eq!(plan.read_view_format, "sqlite3_backup_then_serialize_v1");
     assert_eq!(plan.read_view_size_bytes, image.len() as u64);

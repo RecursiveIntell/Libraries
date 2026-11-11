@@ -13,7 +13,7 @@ cea-core = { version = "0.1.0", path = "../cea-core" }
 cea-store = { version = "0.1.0", path = "../cea-store" }
 chrono = "0.4"
 forge-policy = { version = "0.1.0", path = "../forge-policy" }
-rusqlite = { version = "0.32", features = ["bundled"] }
+rusqlite = { version = "0.41", features = ["bundled"] }
 
 [dev-dependencies]
 check-runner = { version = "0.1.0", path = "../check-runner" }
