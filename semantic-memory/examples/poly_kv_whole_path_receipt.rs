@@ -231,7 +231,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let mapped = statement.query_map([&generation_id], |row| {
         Ok((
-            row.get::<_, usize>(0)?,
+            row.get::<_, i64>(0)? as usize,
             row.get::<_, String>(1)?,
             row.get::<_, String>(2)?,
             row.get::<_, Vec<u8>>(3)?,

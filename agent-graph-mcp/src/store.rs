@@ -1079,7 +1079,7 @@ impl PersistentStore {
             for (seq, event_type, event_json) in events {
                 tx.execute(
                     "INSERT INTO events (run_id, seq, event_type, event_json) VALUES (?1, ?2, ?3, ?4)",
-                    params![run_id, *seq, event_type, event_json],
+                    params![run_id, *seq as i64, event_type, event_json],
                 )
                 .map_err(|e| format!("terminal event insert error: {e}"))?;
             }
@@ -1842,7 +1842,7 @@ impl PersistentStore {
         conn.execute(
             "INSERT OR IGNORE INTO events (run_id, seq, event_type, event_json)
              VALUES (?1, ?2, ?3, ?4)",
-            params![run_id, seq, event_type, event_json],
+            params![run_id, seq as i64, event_type, event_json],
         )
         .map_err(|e| format!("save_event error: {e}"))?;
         Ok(())
@@ -1859,8 +1859,8 @@ impl PersistentStore {
             .prepare("SELECT seq, event_json FROM events WHERE run_id = ?1 AND seq >= ?2 ORDER BY seq LIMIT ?3")
             .map_err(|e| format!("load events error: {e}"))?;
         let events: Vec<Value> = stmt
-            .query_map(params![run_id, cursor, limit.min(200) as i64], |row| {
-                let seq: u64 = row.get(0)?;
+            .query_map(params![run_id, cursor as i64, limit.min(200) as i64], |row| {
+                let seq: u64 = row.get::<_, i64>(0)? as u64;
                 let event_json: String = row.get(1)?;
                 let event = serde_json::from_str::<Value>(&event_json)
                     .unwrap_or_else(|_| serde_json::json!({"receipt":"terminal event persisted with reduced fidelity"}));
@@ -1879,20 +1879,20 @@ impl PersistentStore {
         if !exists {
             return Ok(None);
         }
-        let first: u64 = conn
-            .query_row(
+        let first: u64 =
+            conn.query_row(
                 "SELECT MIN(seq) FROM events WHERE run_id = ?1",
                 params![run_id],
-                |row| row.get(0),
+                |row| row.get::<_, i64>(0),
             )
-            .map_err(|e| format!("load events first cursor error: {e}"))?;
-        let next_cursor: u64 = conn
-            .query_row(
+            .map_err(|e| format!("load events first cursor error: {e}"))? as u64;
+        let next_cursor: u64 =
+            conn.query_row(
                 "SELECT COALESCE(MAX(seq) + 1, 0) FROM events WHERE run_id = ?1",
                 params![run_id],
-                |row| row.get(0),
+                |row| row.get::<_, i64>(0),
             )
-            .map_err(|e| format!("load events next cursor error: {e}"))?;
+            .map_err(|e| format!("load events next cursor error: {e}"))? as u64;
         Ok(Some(
             serde_json::json!({"run_id":run_id,"events":events,"next_cursor":next_cursor,"gap":cursor<first,"truncated":false,"dropped":first,"projection":"terminal_persisted_projection","replay_capability":"integrity_only","replayable_execution":false,"resume_supported":false}),
         ))
