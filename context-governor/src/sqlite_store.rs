@@ -188,7 +188,7 @@ impl SqliteContextStore {
         let mut statement = self.conn.prepare("PRAGMA table_info(exact_items)")?;
         let mut primary_key_columns = statement
             .query_map([], |row| {
-                Ok((row.get::<_, usize>(5)?, row.get::<_, String>(1)?))
+                Ok((row.get::<_, i64>(5)? as usize, row.get::<_, String>(1)?))
             })?
             .filter_map(Result::ok)
             .filter(|(position, _)| *position > 0)
@@ -422,7 +422,7 @@ impl ContextStore for SqliteContextStore {
             Ok((
                 row.get::<usize, String>(0)?,
                 row.get::<usize, String>(1)?,
-                row.get::<usize, usize>(2)?,
+                row.get::<usize, i64>(2)? as usize,
                 row.get::<usize, String>(3)?,
                 row.get::<usize, String>(4)?,
             ))
@@ -541,10 +541,14 @@ impl ContextStore for SqliteContextStore {
     fn status(&self) -> Result<StoreStatusV1, ContextGovernorError> {
         let receipt_count: usize =
             self.conn
-                .query_row("SELECT COUNT(*) FROM receipts", [], |row| row.get(0))?;
+                .query_row("SELECT COUNT(*) FROM receipts", [], |row| {
+                    row.get::<_, i64>(0)
+                })? as usize;
         let exact_item_count: usize =
             self.conn
-                .query_row("SELECT COUNT(*) FROM exact_items", [], |row| row.get(0))?;
+                .query_row("SELECT COUNT(*) FROM exact_items", [], |row| {
+                    row.get::<_, i64>(0)
+                })? as usize;
         let total_bytes: i64 = self
             .conn
             .query_row(
