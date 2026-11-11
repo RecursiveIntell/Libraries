@@ -102,7 +102,7 @@ candle-embedder = ["dep:candle-core", "dep:candle-nn", "dep:candle-transformers"
 
 
 [dependencies]
-lru = "0.16.3"
+lru = "0.19"
 bytemuck = { version = "1", features = ["derive"] }
 blake3 = { workspace = true }
 sha2 = { workspace = true }
