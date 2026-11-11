@@ -376,7 +376,8 @@ impl ContextStore for SqliteContextStore {
             Ok(StoreReceiptInfoV1 {
                 receipt_id: row.get(0)?,
                 stored_at: row.get(1)?,
-                compacted_token_count: row.get(2)?,
+                // rusqlite 0.41: read i64, convert (usize FromSql removed).
+                compacted_token_count: row.get::<_, i64>(2)? as usize,
                 exact_item_count: 0,
                 recovery_durability,
             })
