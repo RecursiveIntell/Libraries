@@ -1261,7 +1261,8 @@ fn configure_connection(
     }
 
     if max_db_size_bytes > 0 {
-        let page_size: u64 = conn.query_row("PRAGMA page_size", [], |row| row.get(0))?;
+        let page_size: u64 =
+            conn.query_row("PRAGMA page_size", [], |row| row.get::<_, i64>(0))? as u64;
         let max_page_count = max_db_size_bytes.div_ceil(page_size);
 
         // SM-AUD-0065: Validate max_page_count before setting pragma
@@ -1277,9 +1278,10 @@ fn configure_connection(
         let actual_max_page_count: u64 = conn.query_row(
             &format!("PRAGMA max_page_count = {}", max_page_count),
             [],
-            |row| row.get(0),
-        )?;
-        let page_count: u64 = conn.query_row("PRAGMA page_count", [], |row| row.get(0))?;
+            |row| row.get::<_, i64>(0),
+        )? as u64;
+        let page_count: u64 =
+            conn.query_row("PRAGMA page_count", [], |row| row.get::<_, i64>(0))? as u64;
 
         if page_count > actual_max_page_count {
             return Err(MemoryError::DatabaseSizeLimitExceeded {
@@ -2657,7 +2659,7 @@ pub fn check_embedding_metadata(
         .query_row(
             "SELECT model_name, dimensions FROM embedding_metadata WHERE id = 1",
             [],
-            |row| Ok((row.get(0)?, row.get(1)?)),
+            |row| Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)? as usize)),
         )
         .ok();
 
@@ -2678,14 +2680,16 @@ pub fn check_embedding_metadata(
                          embeddings_dirty = 1,
                          updated_at = datetime('now')
                      WHERE id = 1",
-                    params![config.model, config.dimensions],
+                    // rusqlite 0.41: bind via i64 (usize ToSql removed).
+                    params![config.model, config.dimensions as i64],
                 )?;
             }
         }
         None => {
             conn.execute(
                 "INSERT INTO embedding_metadata (id, model_name, dimensions) VALUES (1, ?1, ?2)",
-                params![config.model, config.dimensions],
+                // rusqlite 0.41: bind via i64 (usize ToSql removed).
+                params![config.model, config.dimensions as i64],
             )?;
         }
     }
@@ -3245,25 +3249,29 @@ pub fn verify_integrity_sync(
     }
 
     let fact_count: usize = conn
-        .query_row("SELECT COUNT(*) FROM facts", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM facts", [], |row| row.get::<_, i64>(0))
+        .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count facts: {e}"));
             0
         });
     let chunk_count: usize = conn
-        .query_row("SELECT COUNT(*) FROM chunks", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM chunks", [], |row| row.get::<_, i64>(0))
+        .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count chunks: {e}"));
             0
         });
     let message_count: usize = conn
-        .query_row("SELECT COUNT(*) FROM messages", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM messages", [], |row| row.get::<_, i64>(0))
+        .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count messages: {e}"));
             0
         });
     let episode_count: usize = conn
-        .query_row("SELECT COUNT(*) FROM episodes", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM episodes", [], |row| row.get::<_, i64>(0))
+        .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count episodes: {e}"));
             0
@@ -3273,8 +3281,9 @@ pub fn verify_integrity_sync(
         .query_row(
             "SELECT COUNT(*) FROM facts WHERE embedding IS NULL",
             [],
-            |row| row.get(0),
+            |row| row.get::<_, i64>(0),
         )
+        .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count facts missing embeddings: {e}"));
             0
@@ -3283,8 +3292,9 @@ pub fn verify_integrity_sync(
         .query_row(
             "SELECT COUNT(*) FROM chunks WHERE embedding IS NULL",
             [],
-            |row| row.get(0),
+            |row| row.get::<_, i64>(0),
         )
+        .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count chunks missing embeddings: {e}"));
             0
@@ -3293,8 +3303,9 @@ pub fn verify_integrity_sync(
         .query_row(
             "SELECT COUNT(*) FROM episodes WHERE embedding IS NULL",
             [],
-            |row| row.get(0),
+            |row| row.get::<_, i64>(0),
         )
+        .map(|v| v as usize)
         .unwrap_or_else(|e| {
             issues.push(format!("failed to count episodes missing embeddings: {e}"));
             0
@@ -3375,8 +3386,9 @@ pub fn verify_integrity_sync(
             .query_row(
                 "SELECT dimensions FROM embedding_metadata WHERE id = 1",
                 [],
-                |row| row.get(0),
+                |row| row.get::<_, i64>(0),
             )
+            .map(|v| v as usize)
             .unwrap_or_else(|e| {
                 issues.push(format!("failed to read embedding dimensions: {e}"));
                 0
@@ -3548,7 +3560,10 @@ fn verify_fts_drift(
     }
 
     let sql = format!("SELECT COUNT(*) FROM {}", map_table);
-    let indexed_count: usize = conn.query_row(&sql, [], |row| row.get(0)).unwrap_or(0);
+    let indexed_count: usize = conn
+        .query_row(&sql, [], |row| row.get::<_, i64>(0))
+        .map(|v| v as usize)
+        .unwrap_or(0);
     if indexed_count != source_count {
         issues.push(format!(
             "FTS {} index drift: {} rows in map vs {} source rows",
