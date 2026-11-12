@@ -1319,6 +1319,23 @@ pub(crate) fn resolve_allocator(policy: &CompactionPolicy) -> AllocatorMode {
 pub(crate) fn is_aggressive_allocator(policy: &CompactionPolicy) -> bool {
     matches!(resolve_allocator(policy), AllocatorMode::AggressiveV1)
 }
+
+/// Maximum `approx_tokens` for a head message to stay verbatim under
+/// `AggressiveV1`. Head items above this are summarized into the plan instead
+/// of being emitted exactly.
+///
+/// Set effectively unbounded (`1_000_000_000` approx-tokens — roughly a
+/// thousand times the largest supported window): head messages within
+/// `protect_first_n` are preserved verbatim regardless of size. The previous
+/// 1,000-token cap silently demoted long opening task specifications and
+/// pinned instructions to summaries, losing exact detail on large-context work
+/// where verbatim fidelity of the task statement matters most.
+///
+/// Head preservation is still bounded by position (`protect_first_n`), so this
+/// does not admit unbounded context — it only stops size from disqualifying a
+/// head item that the policy already designated as protected.
+pub(crate) const AGGRESSIVE_HEAD_KEEP_MAX_TOKENS: usize = 1_000_000_000;
+
 pub(crate) fn is_aggressive_allocator_mode(mode: &AllocatorMode) -> bool {
     matches!(mode, AllocatorMode::AggressiveV1)
 }
@@ -1410,7 +1427,8 @@ fn allocate_items_v1(
     for item in &items {
         let in_head = item.start_index < policy.protect_first_n;
         let in_tail = item.start_index + policy.protect_last_n >= len;
-        let protected_head = in_head && (!aggressive || item.approx_tokens <= 1_000);
+        let protected_head =
+            in_head && (!aggressive || item.approx_tokens <= AGGRESSIVE_HEAD_KEEP_MAX_TOKENS);
         let protected_tail = in_tail
             && (!aggressive
                 || item.approx_tokens <= 300
@@ -2142,11 +2160,12 @@ fn assemble_compacted_messages(
                 continue;
             };
             let keep_head = matches!(item.item_type, ItemType::LatestUserMessage)
-                || (dispositions.is_kept(item) && (!aggressive || item.approx_tokens <= 1_000))
+                || (dispositions.is_kept(item)
+                    && (!aggressive || item.approx_tokens <= AGGRESSIVE_HEAD_KEEP_MAX_TOKENS))
                 || (matches!(
                     item.authority_class,
                     AuthorityClass::MustPreserveExact | AuthorityClass::ActiveTask
-                ) && (!aggressive || item.approx_tokens <= 1_000));
+                ) && (!aggressive || item.approx_tokens <= AGGRESSIVE_HEAD_KEEP_MAX_TOKENS));
             if keep_head {
                 out.push(msg.clone());
                 emitted.insert((msg.role.clone(), msg.content.clone()));
