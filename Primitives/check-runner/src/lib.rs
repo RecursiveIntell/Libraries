@@ -829,12 +829,11 @@ mod tests {
             "timed-out child process should be gone, pid={child_pid}, kill_result={kill_result}, errno={errno}"
         );
     }
-/// Serializes process-environment mutation. libc::setenv/unsetenv race with
-/// concurrent std::env readers in other test threads; std 1.99's UB check
-/// aborts the process when they collide (seen as env.rs panics in CI). All
-/// tests that mutate the environment hold this lock for their whole body.
-static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
+    /// Serializes process-environment mutation. libc::setenv/unsetenv race with
+    /// concurrent std::env readers in other test threads; std 1.99's UB check
+    /// aborts the process when they collide (seen as env.rs panics in CI). All
+    /// tests that mutate the environment hold this lock for their whole body.
+    static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
     #[test]
     fn host_backend_clears_disallowed_environment_variables() {
