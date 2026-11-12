@@ -7,7 +7,6 @@ description = "Unsafe syscall wrappers for check-runner process-group operations
 reason = [
     "killpg() for process-group termination — no safe Rust wrapper exists",
     "kill(pid, 0) for liveness check — std::process::Command does not expose PID",
-    "set_var/remove_var in test-only context — required to test env filtering",
 ]
 [dependencies]
 libc = "0.2"
