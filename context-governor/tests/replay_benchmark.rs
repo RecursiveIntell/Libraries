@@ -218,3 +218,54 @@ fn aggressive_replay_compaction_hits_budget_without_losing_exact_recovery() {
     assert_eq!(governed.recoverable_probes, full.total_probes);
     assert!(governed.active_task_visible);
 }
+
+#[test]
+fn aggressive_allocator_preserves_oversized_head_message_verbatim() {
+    // Regression: the aggressive allocator previously capped verbatim head
+    // preservation at 1,000 approx-tokens, silently demoting a long opening
+    // task specification to a summary. A head item designated protected by
+    // position must survive exactly, regardless of size.
+    let marker = "HEAD_SPEC_MARKER_9f3c";
+    let body = format!(
+        "{marker}\nAcceptance gate: cargo test --lib must pass.\n{}",
+        "requirement: exact contractual detail must survive compaction verbatim.\n".repeat(150)
+    );
+    let head_tokens = context_governor::approx_tokens_text(&body);
+    assert!(
+        head_tokens > 1_000,
+        "fixture must exceed the old 1,000-token cap, got {head_tokens}"
+    );
+
+    let response = context_governor::compact_context(CompactRequest {
+        hmac_key_path: None,
+        session_id: "synthetic-oversized-head".into(),
+        messages: vec![
+            msg("user", &body),
+            msg(
+                "tool",
+                &"bulk log line that should be reduced\n".repeat(2000),
+            ),
+            msg("user", "Latest task: continue."),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: head_tokens + 400,
+            protect_first_n: 1,
+            protect_last_n: 1,
+            summary_max_chars: 2400,
+            allocator: "aggressive_v1".into(),
+            budget_mode: context_governor::BudgetMode::HardCascade,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .expect("compaction should succeed");
+
+    let preserved_verbatim = response
+        .compacted_messages
+        .iter()
+        .any(|message| message.content == body);
+    assert!(
+        preserved_verbatim,
+        "head message of {head_tokens} tokens must be emitted verbatim, not summarized"
+    );
+}
