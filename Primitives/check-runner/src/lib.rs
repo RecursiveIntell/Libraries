@@ -757,6 +757,7 @@ mod tests {
 
     #[test]
     fn host_backend_run_command_times_out() {
+        let _env_guard = ENV_MUTEX.lock().unwrap();
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_io()
             .enable_time()
@@ -782,6 +783,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn host_backend_timeout_kills_spawned_child_process_group() {
+        let _env_guard = ENV_MUTEX.lock().unwrap();
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_io()
             .enable_time()
@@ -827,9 +829,16 @@ mod tests {
             "timed-out child process should be gone, pid={child_pid}, kill_result={kill_result}, errno={errno}"
         );
     }
+/// Serializes process-environment mutation. libc::setenv/unsetenv race with
+/// concurrent std::env readers in other test threads; std 1.99's UB check
+/// aborts the process when they collide (seen as env.rs panics in CI). All
+/// tests that mutate the environment hold this lock for their whole body.
+static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 
     #[test]
     fn host_backend_clears_disallowed_environment_variables() {
+        let _env_guard = ENV_MUTEX.lock().unwrap();
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_io()
             .enable_time()
