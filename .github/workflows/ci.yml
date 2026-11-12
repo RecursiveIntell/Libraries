@@ -21,6 +21,12 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+      - name: Install pinned cargo-deny
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39
+        with:
+          tool: cargo-deny@0.19.8
+      - name: Check advisories for the locked default-feature root graph
+        run: cargo deny --locked check advisories
       - name: Record CI source-bound evidence
         run: |
           sudo apt-get update
