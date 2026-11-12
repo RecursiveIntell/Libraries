@@ -278,6 +278,31 @@ fn recursive_lineage_rejects_host_loss_of_non_text_message_metadata() {
 }
 
 #[test]
+fn stale_snapshot_after_concurrent_tip_advance_is_refused() {
+    let tmp = TempDir::new().unwrap();
+    let store = certified_store(tmp.path());
+    let root = save_root(&store, "stale-snapshot-tip-advance");
+    // A foreground operation captures the old projection before another
+    // operation publishes a new authenticated tip.
+    let stale = next_request(&root, 2);
+    let advanced = advance(&store, &root, 2);
+    let error = store.compact_next_v2(stale, None).unwrap_err();
+    match error {
+        ContextGovernorError::LineageIntegrityMismatch { reason, .. } => {
+            assert_eq!(
+                reason,
+                "parent compacted transcript is not the exact child-input prefix"
+            );
+        }
+        other => panic!("unexpected stale-snapshot error: {other:?}"),
+    }
+    let fresh = store
+        .compact_next_v2(next_request(&advanced, 3), None)
+        .unwrap();
+    assert_eq!(fresh.receipt.generation, 3);
+}
+
+#[test]
 fn recursive_lineage_still_rejects_parent_text_drift() {
     let tmp = TempDir::new().unwrap();
     let store = certified_store(tmp.path());
