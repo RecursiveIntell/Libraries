@@ -269,3 +269,56 @@ fn aggressive_allocator_preserves_oversized_head_message_verbatim() {
         "head message of {head_tokens} tokens must be emitted verbatim, not summarized"
     );
 }
+
+#[test]
+fn aggressive_allocator_demotes_head_message_above_sized_cap() {
+    // Pins AGGRESSIVE_HEAD_KEEP_MAX_TOKENS (75,000). The cap is deliberately
+    // finite: the compaction target is 20% of the model window, so an
+    // effectively unbounded head budget lets one oversized head item consume
+    // the whole target and forces CannotMeetTarget. This test fails if the cap
+    // is raised back toward "unbounded" or removed entirely.
+    let marker = "HEAD_OVERSIZE_MARKER_4b7d";
+    let body = format!(
+        "{marker}\n{}",
+        "oversized pasted blob line for cap boundary coverage.\n".repeat(6_000)
+    );
+    let head_tokens = context_governor::approx_tokens_text(&body);
+    assert!(
+        head_tokens > 75_000,
+        "fixture must exceed the sized 75,000 cap, got {head_tokens}"
+    );
+
+    let response = context_governor::compact_context(CompactRequest {
+        hmac_key_path: None,
+        session_id: "synthetic-oversize-head".into(),
+        messages: vec![
+            msg("user", &body),
+            msg(
+                "tool",
+                &"bulk log line that should be reduced\n".repeat(2000),
+            ),
+            msg("user", "Latest task: continue."),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 40_000,
+            protect_first_n: 1,
+            protect_last_n: 1,
+            summary_max_chars: 2400,
+            allocator: "aggressive_v1".into(),
+            budget_mode: context_governor::BudgetMode::HardCascade,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .expect("compaction should succeed once the oversized head is summarized");
+
+    let kept_verbatim = response
+        .compacted_messages
+        .iter()
+        .any(|message| message.content == body);
+    assert!(
+        !kept_verbatim,
+        "head message of {head_tokens} tokens exceeds the 75,000 cap and must be \
+         summarized rather than emitted verbatim"
+    );
+}

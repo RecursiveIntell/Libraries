@@ -1324,17 +1324,21 @@ pub(crate) fn is_aggressive_allocator(policy: &CompactionPolicy) -> bool {
 /// `AggressiveV1`. Head items above this are summarized into the plan instead
 /// of being emitted exactly.
 ///
-/// Set effectively unbounded (`1_000_000_000` approx-tokens — roughly a
-/// thousand times the largest supported window): head messages within
-/// `protect_first_n` are preserved verbatim regardless of size. The previous
-/// 1,000-token cap silently demoted long opening task specifications and
-/// pinned instructions to summaries, losing exact detail on large-context work
-/// where verbatim fidelity of the task statement matters most.
+/// Sized from measured host traffic (1,281 receipts, 345 head-window items):
+/// 75,000 preserves 98.3% of head items verbatim. The previous 1,000-token cap
+/// demoted 63.2% of them, which was the actual defect this value corrects.
 ///
-/// Head preservation is still bounded by position (`protect_first_n`), so this
-/// does not admit unbounded context — it only stops size from disqualifying a
-/// head item that the policy already designated as protected.
-pub(crate) const AGGRESSIVE_HEAD_KEEP_MAX_TOKENS: usize = 1_000_000_000;
+/// Deliberately finite rather than effectively unbounded: the compaction target
+/// is 20% of the model window (200,000 on a 1M window, 25,600 on a 128k
+/// window). An unbounded cap let a single oversized head item consume the whole
+/// budget and force `CannotMeetTarget`, and that failure mode was
+/// window-dependent. 75,000 still exceeds a 128k-window target, so a fully
+/// window-relative bound remains the correct long-term design; this value caps
+/// the pathological outlier without disabling the guard outright.
+///
+/// Head preservation is also bounded by position (`protect_first_n`), so this
+/// does not admit unbounded context.
+pub(crate) const AGGRESSIVE_HEAD_KEEP_MAX_TOKENS: usize = 75_000;
 
 pub(crate) fn is_aggressive_allocator_mode(mode: &AllocatorMode) -> bool {
     matches!(mode, AllocatorMode::AggressiveV1)
