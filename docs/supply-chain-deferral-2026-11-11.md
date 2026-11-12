@@ -20,6 +20,7 @@ tracked ignores so gates stay green, and are documented here for pickup.
 | RUSTSEC-2025-0081 | unic-char-property 0.9.0 | same tauri chain | icu_properties |
 | RUSTSEC-2025-0098 | unic-ucd-version 0.9.0 | same tauri chain | icu_properties |
 | RUSTSEC-2025-0100 | unic-ucd-ident 0.9.0 | same tauri chain | icu_properties |
+| RUSTSEC-2024-0429 | glib 0.18.5 | gtk 0.18 stack pinned by tauri v2 (VariantStrIter unsoundness) | glib 0.20/gtk 0.20 — requires tauri major bump |
 
 Risk rationale: "unmaintained" advisories flag *no upstream maintenance*, not a
 known vulnerability in current use. These crates sit behind tauri v2 (desktop

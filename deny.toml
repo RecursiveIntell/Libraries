@@ -24,6 +24,11 @@ ignore = [
     # glib/gtk 0.18 -> tauri v2 desktop shells. Re-evaluate on any tauri major
     # bump.
     "RUSTSEC-2024-0370", # proc-macro-error — gtk/glib -> tauri
+    # Deferred 2026-11-11, review 2027-05. glib 0.18.5 VariantStrIter iterator
+    # unsoundness (RUSTSEC-2024-0429): patched only in the glib 0.20/gtk 0.20
+    # stack, which tauri v2 pins to 0.18. Same exit criterion as the tauri
+    # chain above: re-evaluate on any tauri major bump.
+    "RUSTSEC-2024-0429", # glib — gtk 0.18 -> tauri
     # Deferred 2026-11-11, review 2027-05. Transitive: unic 0.9 chain via
     # urlpattern -> tauri-utils -> tauri v2. Upstream recommends icu_properties;
     # the migration is inside tauri, not this workspace.
