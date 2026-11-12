@@ -29,6 +29,12 @@ EXCLUDED_DIR_NAMES = {
 
 EXCLUDED_DIR_PREFIXES = ("tmp", "tmp-", "target-")
 
+# This tracked historical build tree has an exact external quarantine manifest.
+# Do not exclude unrelated directories merely sharing its underscore basename.
+EXCLUDED_RELATIVE_DIRS = {
+    Path("_salvage_from_libraries2/Libraries2/target_schema_gen"),
+}
+
 EXCLUDED_FILE_EXTENSIONS = {
     ".zip",
     ".tar",
@@ -98,6 +104,8 @@ def should_include_file(path: Path, output_path: Path) -> bool:
 def iter_source_files(root: Path, output_path: Path) -> list[Path]:
     files: list[Path] = []
     for path in root.rglob("*"):
+        if any(parent in EXCLUDED_RELATIVE_DIRS for parent in path.relative_to(root).parents):
+            continue
         if not path.is_file():
             continue
         if should_include_file(path, output_path):
