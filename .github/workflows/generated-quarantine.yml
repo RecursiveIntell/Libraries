@@ -1,0 +1,22 @@
+name: generated-quarantine
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Exact archive recovery and source-pack exclusion
+        run: python -m unittest discover -s scripts -p test_verify_quarantine_manifest.py -v
+      - name: Retained root-document classification
+        run: python scripts/check_root_archive_manifest.py
