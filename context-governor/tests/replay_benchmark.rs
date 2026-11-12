@@ -322,3 +322,58 @@ fn aggressive_allocator_demotes_head_message_above_sized_cap() {
          summarized rather than emitted verbatim"
     );
 }
+
+#[test]
+fn aggressive_allocator_honours_policy_head_cap() {
+    // The head cap is policy-owned so the host can scale it with the model's
+    // effective window. `None` keeps the standalone default; an explicit value
+    // must win in both directions.
+    let body = format!(
+        "HEAD_CAP_MARKER_7c1e\n{}",
+        "head requirement line for policy cap coverage.\n".repeat(400)
+    );
+    let head_tokens = context_governor::approx_tokens_text(&body);
+    assert!(
+        (1_000..75_000).contains(&head_tokens),
+        "fixture must sit between the tight and wide caps, got {head_tokens}"
+    );
+
+    let run = |cap: usize| {
+        context_governor::compact_context(CompactRequest {
+            hmac_key_path: None,
+            session_id: format!("synthetic-head-cap-{cap}"),
+            messages: vec![
+                msg("user", &body),
+                msg(
+                    "tool",
+                    &"bulk log line that should be reduced\n".repeat(2000),
+                ),
+                msg("user", "Latest task: continue."),
+            ],
+            policy: CompactionPolicy {
+                target_tokens: 40_000,
+                protect_first_n: 1,
+                protect_last_n: 1,
+                summary_max_chars: 2400,
+                allocator: "aggressive_v1".into(),
+                budget_mode: context_governor::BudgetMode::HardCascade,
+                head_max_tokens: Some(cap),
+                ..Default::default()
+            },
+            focus: None,
+        })
+        .expect("compaction should succeed")
+    };
+
+    let tight = run(1_000);
+    assert!(
+        !tight.compacted_messages.iter().any(|m| m.content == body),
+        "a {head_tokens}-token head must be summarized when head_max_tokens=1000"
+    );
+
+    let wide = run(75_000);
+    assert!(
+        wide.compacted_messages.iter().any(|m| m.content == body),
+        "a {head_tokens}-token head must stay verbatim when head_max_tokens=75000"
+    );
+}
