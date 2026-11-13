@@ -108,10 +108,8 @@ pub fn should_retrieve(query: &str) -> bool {
             return false;
         }
     }
-    if trimmed.starts_with('/') {
-        return false;
-    }
-    true
+    // clippy::needless_bool (rust 1.100): reduce the guard to its expression.
+    !trimmed.starts_with('/')
 }
 
 /// Sanitize a raw query string for safe use in an FTS5 MATCH expression.

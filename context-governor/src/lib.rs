@@ -596,6 +596,14 @@ pub struct CompactionPolicy {
     pub max_provenance_bytes: Option<usize>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_net_savings_tokens: Option<usize>,
+    /// Maximum `approx_tokens` for a head message to stay verbatim under
+    /// `AggressiveV1`. `None` falls back to `AGGRESSIVE_HEAD_KEEP_MAX_TOKENS`.
+    ///
+    /// The host computes this from the model's effective window (a fraction of
+    /// it) so head preservation scales with the route instead of being an
+    /// absolute constant that can exceed the whole target on a small window.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub head_max_tokens: Option<usize>,
 }
 
 impl Default for CompactionPolicy {
@@ -616,6 +624,7 @@ impl Default for CompactionPolicy {
             max_lineage_generation: None,
             max_provenance_bytes: None,
             min_net_savings_tokens: None,
+            head_max_tokens: None,
         }
     }
 }
@@ -1340,6 +1349,18 @@ pub(crate) fn is_aggressive_allocator(policy: &CompactionPolicy) -> bool {
 /// does not admit unbounded context.
 pub(crate) const AGGRESSIVE_HEAD_KEEP_MAX_TOKENS: usize = 75_000;
 
+/// Effective head-preservation cap for this policy.
+///
+/// The host derives a window-relative value (a fraction of the model's
+/// effective input budget) and passes it via
+/// [`CompactionPolicy::head_max_tokens`]; this constant is only the standalone
+/// default for callers that do not compute one.
+fn head_keep_max_tokens(policy: &CompactionPolicy) -> usize {
+    policy
+        .head_max_tokens
+        .unwrap_or(AGGRESSIVE_HEAD_KEEP_MAX_TOKENS)
+}
+
 pub(crate) fn is_aggressive_allocator_mode(mode: &AllocatorMode) -> bool {
     matches!(mode, AllocatorMode::AggressiveV1)
 }
@@ -1428,11 +1449,11 @@ fn allocate_items_v1(
 
     let len = items.len();
     let aggressive = is_aggressive_allocator_mode(&allocator);
+    let head_limit = head_keep_max_tokens(policy);
     for item in &items {
         let in_head = item.start_index < policy.protect_first_n;
         let in_tail = item.start_index + policy.protect_last_n >= len;
-        let protected_head =
-            in_head && (!aggressive || item.approx_tokens <= AGGRESSIVE_HEAD_KEEP_MAX_TOKENS);
+        let protected_head = in_head && (!aggressive || item.approx_tokens <= head_limit);
         let protected_tail = in_tail
             && (!aggressive
                 || item.approx_tokens <= 300
@@ -2141,6 +2162,7 @@ fn assemble_compacted_messages(
     let mut emitted = BTreeSet::new();
     let mut checks = 0usize;
     let aggressive = is_aggressive_allocator(policy);
+    let head_limit = head_keep_max_tokens(policy);
     let item_by_index = plan
         .items
         .iter()
@@ -2165,11 +2187,11 @@ fn assemble_compacted_messages(
             };
             let keep_head = matches!(item.item_type, ItemType::LatestUserMessage)
                 || (dispositions.is_kept(item)
-                    && (!aggressive || item.approx_tokens <= AGGRESSIVE_HEAD_KEEP_MAX_TOKENS))
+                    && (!aggressive || item.approx_tokens <= head_limit))
                 || (matches!(
                     item.authority_class,
                     AuthorityClass::MustPreserveExact | AuthorityClass::ActiveTask
-                ) && (!aggressive || item.approx_tokens <= AGGRESSIVE_HEAD_KEEP_MAX_TOKENS));
+                ) && (!aggressive || item.approx_tokens <= head_limit));
             if keep_head {
                 out.push(msg.clone());
                 emitted.insert((msg.role.clone(), msg.content.clone()));
