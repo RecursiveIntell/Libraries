@@ -1,6 +1,6 @@
 # RecursiveIntell Libraries
 
-<!-- last-verified: 2026-10-26 -->
+<!-- last-verified: 2026-10-28 -->
 
 Reusable Rust components for local-first AI: semantic memory, agent execution, evidence and provenance, governed tool use, and experimental compression.
 
@@ -43,7 +43,7 @@ cargo metadata --no-deps --format-version 1
 cargo run --locked -p agent-graph --example basic
 ```
 
-The [basic example](agent-graph/examples/basic.rs) runs three nodes, passes state along their edges, and prints the result. In the observed run, the final output was:
+The [basic example](agent-graph/examples/basic.rs) runs three nodes, passes state along their edges, and prints the result. The final-state portion of the observed run was:
 
 ```text
 Final state:
