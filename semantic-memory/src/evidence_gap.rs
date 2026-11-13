@@ -593,7 +593,7 @@ impl MemoryStore {
             });
         }
 
-        let (baseline_resolution, baseline_edges) = self
+        let (baseline_resolution, _) = self
             .resolve_evidence_state(&results, request.budget)
             .await?;
         let baseline_gaps = diagnose_gaps(

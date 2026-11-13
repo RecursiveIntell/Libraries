@@ -1,6 +1,6 @@
 [package]
 name = "claim-ledger"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 description = "Deterministic, local-first claim/evidence/provenance ledger. Creates receipts for all material operations."
 license = "MIT"

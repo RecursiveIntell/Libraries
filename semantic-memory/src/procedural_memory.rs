@@ -596,9 +596,20 @@ impl MemoryStore {
                          (artifact_id, principal, capability_domain, capability_name, action_kind,
                           version, supersedes, artifact_digest, artifact_json, created_at)
                          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
-                        params![artifact.artifact_id, artifact.principal, artifact.capability.domain,
-                            artifact.capability.name, artifact.action.kind, artifact.version,
-                            artifact.supersedes, artifact.artifact_digest, artifact_json, now()],
+                        params![
+                            artifact.artifact_id,
+                            artifact.principal,
+                            artifact.capability.domain,
+                            artifact.capability.name,
+                            artifact.action.kind,
+                            // rusqlite 0.41 removed the unsound u64 ToSql impl
+                            // (SQLite integers are i64); bind via i64 cast.
+                            artifact.version as i64,
+                            artifact.supersedes,
+                            artifact.artifact_digest,
+                            artifact_json,
+                            now()
+                        ],
                     ).map_err(|error| MemoryError::ProceduralMemoryRejected { reason: error.to_string() })?;
                     for fact_id in &artifact.evidence_test_envelope.source_fact_ids {
                         let fact_id = fact_id.strip_prefix("fact:").unwrap_or(fact_id);

@@ -31,7 +31,9 @@ pub mod error;
 pub mod ids;
 pub mod ledger;
 pub mod receipt;
+pub mod trust_root;
 pub mod types;
+pub mod v2_admission;
 
 // Re-export commonly used types at the crate root for ergonomic access.
 pub use budget::{
@@ -48,8 +50,8 @@ pub use candidate::{
     PROOF_PACKET_CANDIDATE_PROVENANCE_V1_SCHEMA, SIMILAR_CLAIM_CANDIDATE_V1_SCHEMA,
 };
 pub use envelope::{
-    ArtifactEnvelopeV1, EnvelopeError, EnvelopeVerificationContext, EnvelopeVerificationReport,
-    EnvelopeVerificationStatus, PolicyAdmission,
+    public_artifact_digest, ArtifactEnvelopeV1, EnvelopeError, EnvelopeVerificationContext,
+    EnvelopeVerificationReport, EnvelopeVerificationStatus, PolicyAdmission,
 };
 pub use error::ClaimLedgerError;
 pub use ids::{normalize_text, sha256_bytes, sha256_text, stable_id, ulid};
@@ -60,7 +62,7 @@ pub use ledger::{
     ExpectedLedgerHead, LedgerEntry, LedgerEntryBuilder, LedgerEvent, LedgerSnapshot,
     LedgerVerification, SnapshotClaim, SnapshotClaimSupport, SnapshotContentClaimLink,
     SnapshotContradictionState, SnapshotFactClaimLink, SnapshotSupportJudgment,
-    UnprojectableEventPolicy,
+    SourceSupportObservationV1, UnprojectableEventPolicy,
 };
 pub use receipt::{
     ContradictionResolutionReceipt, ExportReceipt, LedgerAppendReceipt, SupersessionReceipt,
@@ -71,4 +73,9 @@ pub use types::{
     ContradictionStatus, EvidenceBundle, EvidenceLink, EvidenceRelation, ProofDebt, SourceArtifact,
     SourceIndex, SourceSpan, Supersession, SupportAdmission, SupportAdmissionMethod,
     SupportJudgment, SupportProofPayload, SupportState,
+};
+pub use v2_admission::{
+    admission_event_from_envelope, admission_event_preimage_fields, admission_signature_preimage,
+    fold_snapshot, native_admission_id, verify_admission, AdmissionDecision,
+    AdmissionEventPayloadV1, NativeAdmission, SnapshotFoldV1, NATIVE_ADMISSION_SCHEMA,
 };

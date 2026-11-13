@@ -6,7 +6,7 @@ Canonical effective constitution and profile composition runtime for the local-f
 
 ```rust
 use profile_runtime::{
-    ApplicabilityContext, EffectiveConstitution, CompositionReceipt, ProfileSet,
+    ApplicabilityContextV1, EffectiveConstitutionV1, CompositionReceiptV1, ProfileSetV1,
 };
 ```
 

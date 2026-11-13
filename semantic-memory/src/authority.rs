@@ -35,11 +35,33 @@ const REDACTED_CONTENT: &str = "[REDACTED]";
 #[derive(Clone)]
 pub struct MemoryAuthority {
     store: MemoryStore,
+    #[cfg(any(test, feature = "testing"))]
+    witness_recheck_barrier: Option<(Arc<tokio::sync::Notify>, Arc<tokio::sync::Notify>)>,
 }
 
 impl MemoryAuthority {
+    /// Prepare an unsigned read-only proposal for missing-parent authority rows.
+    /// The result confers no permission to apply, restore, or delete anything.
+    /// V2 evidence hashes a private SQLite backup/serialization of the acquired
+    /// read view, never a pathname. Source images must use DELETE journaling and
+    /// exact schema 39; the private derived image is capped at 256 MiB before
+    /// copying and serialization. `max_rows` (1..=10,000) and `max_bytes`
+    /// (1..=16 MiB) separately bound proposal rows and encoded JSON output.
+    pub async fn plan_orphaned_authority_quarantine(
+        &self,
+        max_rows: usize,
+        max_bytes: usize,
+    ) -> Result<crate::AuthorityRelationQuarantinePlanV2, crate::AuthorityRelationQuarantinePlanError>
+    {
+        crate::integrity_repair_plan::plan(&self.store, max_rows, max_bytes).await
+    }
+
     pub(crate) fn new(store: MemoryStore) -> Self {
-        Self { store }
+        Self {
+            store,
+            #[cfg(any(test, feature = "testing"))]
+            witness_recheck_barrier: None,
+        }
     }
 
     /// Append a new fact and start a new authority lineage.
@@ -339,6 +361,11 @@ impl MemoryAuthority {
             &response.results,
         )
         .await?;
+        #[cfg(any(test, feature = "testing"))]
+        if let Some((reached, resume)) = &self.witness_recheck_barrier {
+            reached.notify_one();
+            resume.notified().await;
+        }
         let after = self.current_state().await?;
         if before != after
             || retrieval_witness.authority_snapshot_id != after.snapshot_id
@@ -390,6 +417,61 @@ impl MemoryAuthority {
             authority_state: after,
             response,
             retrieval_witness,
+        })
+    }
+
+    /// Emit a byte-bound request and coherent response for cross-language consumers.
+    ///
+    /// This additive API is Current/Recall-only (there is no historical-view
+    /// parameter). Request validity is checked before retrieval even on an empty
+    /// store. All resource decisions and epoch checks remain in the existing
+    /// owner path. The digest is integrity evidence, not authentication or authority.
+    pub async fn search_governed_witnessed_v2(
+        &self,
+        request_id: String,
+        query: &str,
+        top_k: usize,
+        request: GovernedAccessRequestV1,
+    ) -> Result<crate::GovernedWitnessedSearchResponseV2, crate::GovernedWitnessedSearchErrorV2>
+    {
+        use crate::origin_authority::{
+            valid_access_request, GovernedWitnessedSearchPayloadV2,
+            GovernedWitnessedSearchRequestBindingV2,
+        };
+        use crate::GovernedWitnessedSearchErrorV2 as Error;
+        use sha2::{Digest, Sha256};
+
+        if request_id.trim().is_empty() {
+            return Err(Error::InvalidRequestId);
+        }
+        let limit = u64::try_from(top_k).map_err(|_| Error::InvalidLimit)?;
+        if limit == 0 {
+            return Err(Error::InvalidLimit);
+        }
+        if request.purpose != crate::GovernedAccessPurposeV1::Recall {
+            return Err(Error::UnsupportedPurpose);
+        }
+        if !valid_access_request(&request) {
+            return Err(Error::InvalidAccessRequest);
+        }
+        let response = self
+            .search_governed_witnessed(request_id.clone(), query, Some(top_k), request.clone())
+            .await?;
+        let payload_json = serde_json::to_string(&GovernedWitnessedSearchPayloadV2 {
+            schema_version: "governed_witnessed_search_payload_v2",
+            request: GovernedWitnessedSearchRequestBindingV2 {
+                request_id,
+                query: query.to_owned(),
+                top_k: limit,
+                access_request: request,
+            },
+            response,
+        })?;
+        let payload_sha256 = format!("sha256:{:x}", Sha256::digest(payload_json.as_bytes()));
+        Ok(crate::GovernedWitnessedSearchResponseV2 {
+            schema_version: "governed_witnessed_search_response_v2".into(),
+            payload_json,
+            payload_sha256,
         })
     }
 
@@ -676,6 +758,13 @@ impl MemoryAuthority {
                                 Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string(),
                             ],
                         )?;
+                        // The revocation and its coherence fence commit together.
+                        // Exact replays never enter this branch.
+                        let before_epoch = current_epoch(tx)?;
+                        let after_epoch = before_epoch.checked_add(1).ok_or_else(|| {
+                            MemoryError::Other("authority retrieval epoch overflow".into())
+                        })?;
+                        compare_and_set_epoch(tx, before_epoch, after_epoch)?;
                     }
                     let fact = crate::knowledge::get_fact(tx, &fact_id)?;
                     let origin = load_origin_record(tx, &fact_id)?;
@@ -689,6 +778,18 @@ impl MemoryAuthority {
                 })
             })
             .await
+    }
+
+    /// Pause this test handle after result authorization and witness construction,
+    /// immediately before the final coherence read. No production synchronization
+    /// or authority is provided by this testing-only barrier.
+    #[cfg(any(test, feature = "testing"))]
+    pub fn set_witness_recheck_barrier(
+        &mut self,
+        reached: Arc<tokio::sync::Notify>,
+        resume: Arc<tokio::sync::Notify>,
+    ) {
+        self.witness_recheck_barrier = Some((reached, resume));
     }
 
     /// Install a one-shot fault for the next matching authority stage.
@@ -1339,15 +1440,7 @@ fn execute_mutation_tx(
     fault_gate(fault, AuthorityFaultStage::AfterJournal)?;
 
     fault_gate(fault, AuthorityFaultStage::BeforeEpoch)?;
-    let changed = tx.execute(
-        "UPDATE authority_state SET retrieval_epoch = ?1 WHERE id = 1 AND retrieval_epoch = ?2",
-        params![after_epoch as i64, before_epoch as i64],
-    )?;
-    if changed != 1 {
-        return Err(MemoryError::Other(
-            "authority retrieval epoch changed concurrently".to_string(),
-        ));
-    }
+    compare_and_set_epoch(tx, before_epoch, after_epoch)?;
     tx.execute(
         "UPDATE authority_lineages SET updated_epoch = ?1 WHERE lineage_id = ?2",
         params![after_epoch as i64, lineage_id],
@@ -1796,6 +1889,29 @@ fn verify_all_lineages(tx: &Transaction<'_>) -> Result<(), MemoryError> {
         .collect::<Result<Vec<_>, _>>()?;
     for lineage_id in lineage_ids {
         verify_lineage(tx, &lineage_id)?;
+    }
+    Ok(())
+}
+
+/// All callers retain the owner transaction through the mutation and this CAS.
+fn compare_and_set_epoch(
+    tx: &Transaction<'_>,
+    before_epoch: u64,
+    after_epoch: u64,
+) -> Result<(), MemoryError> {
+    // SQLite INTEGER is signed; never wrap a valid epoch into a negative value.
+    let after = i64::try_from(after_epoch)
+        .map_err(|_| MemoryError::Other("authority retrieval epoch overflow".into()))?;
+    let before = i64::try_from(before_epoch)
+        .map_err(|_| MemoryError::Other("authority retrieval epoch overflow".into()))?;
+    let changed = tx.execute(
+        "UPDATE authority_state SET retrieval_epoch = ?1 WHERE id = 1 AND retrieval_epoch = ?2",
+        params![after, before],
+    )?;
+    if changed != 1 {
+        return Err(MemoryError::Other(
+            "authority retrieval epoch changed concurrently".into(),
+        ));
     }
     Ok(())
 }

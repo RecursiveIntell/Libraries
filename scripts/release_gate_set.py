@@ -20,6 +20,7 @@ RELEASE_GATE_COMMANDS = [
     "bash scripts/check_mirror_discipline.sh",
     "bash scripts/check_hotspot_budgets.sh",
     "python3 scripts/check_public_type_drift.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 scripts/test_check_public_type_drift.py",
     "python3 scripts/check_root_archive_manifest.py",
     "python3 scripts/check_public_api_docs.py",
     "bash scripts/check_schema_compat.sh",

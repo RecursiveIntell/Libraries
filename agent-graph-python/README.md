@@ -18,7 +18,7 @@ The diagram summarizes the current boundary: Python objects are converted to JSO
 
 ## Scope and claim boundary
 
-This is a **0.1.0 private monorepo binding**, not a standalone replacement for the Rust engine. The public Python surface in this repository is the surface implemented in `src/lib.rs`; it should not be assumed to expose every Rust `agent-graph` capability.
+This is a **0.1.0 Libraries monorepo binding**, not a standalone replacement for the Rust engine. The public Python surface in this repository is the surface implemented in `src/lib.rs`; it should not be assumed to expose every Rust `agent-graph` capability.
 
 In particular:
 
@@ -178,7 +178,7 @@ The package metadata names the Python distribution `agent-graph` and the import 
 
 - Version: `0.1.0`.
 - Implemented surface: `AgentState`, `START`, `END`, `StateGraph`, JSON conversion, shared Tokio runtime, and the current event-sink-backed stream path.
-- Repository status: private Libraries monorepo crate; no standalone public engine repository is linked here.
+- Repository status: Libraries monorepo crate; no standalone public engine repository is linked here.
 
 ### Roadmap boundary
 

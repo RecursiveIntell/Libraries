@@ -282,11 +282,13 @@ mod tests {
         });
         assert_eq!(client.stats().accepted, 1);
         assert_eq!(client.stats().dropped, 0);
+        // The collector runs concurrently: it may persist the accepted event
+        // before this thread queries the store. Assert only after shutdown.
+        assert_eq!(collector.shutdown().persisted, 1);
         assert_eq!(
             store.observation_count_for_producer("graph-test").unwrap(),
-            0
+            1
         );
-        assert_eq!(collector.shutdown().persisted, 1);
         let _ = EmitStatus::Accepted;
     }
 }

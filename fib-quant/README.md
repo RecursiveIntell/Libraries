@@ -14,7 +14,7 @@ fib-quant provides CPU reference paths for spherical-block quantization, determi
 
 ## Where It Fits
 
-fib-quant is the **cold-tier codec** in poly-kv. It handles shared context that's large, stable, and accessed by many agents:
+fib-quant supplies an optional value codec for the experimental [PolyKV pool](../poly-kv/README.md). It can encode shared pool artifacts when that adapter and its quality budget are explicitly selected:
 
 ```text
 ┌──────────────────────────────────┐
@@ -24,7 +24,7 @@ fib-quant is the **cold-tier codec** in poly-kv. It handles shared context that'
 └──────────┬──────────┬────────────┘
            │          │
       ┌────▼───┐ ┌───▼────┐
-      │ Agent0 │ │ Agent1 │  ...  ← turbo-quant hot tier
+      │ Agent0 │ │ Agent1 │  ...  ← downstream consumers
       └────────┘ └────────┘
 ```
 
@@ -110,11 +110,13 @@ PolyKV can opt into the `fibquant-adapter` feature and select `FibQuantValueCode
 - vLLM, FlashInfer, TensorRT-LLM, or HuggingFace integration
 - Default-on compression in any downstream project
 
-## Install
+## Use this workspace source
+
+The local manifest still declares `0.1.0-alpha.1`, which is yanked on crates.io. The registry has a separate non-yanked `0.1.0-beta.4` release (checked September 30, 2026); its source and API must be reviewed separately. For the source documented here, depend on this checkout:
 
 ```toml
 [dependencies]
-fib-quant = "0.1.0-alpha.1"
+fib-quant = { path = "/path/to/Libraries/fib-quant" }
 ```
 
 MSRV: 1.75

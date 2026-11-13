@@ -720,6 +720,49 @@ pub struct GovernedWitnessedSearchResponseV1 {
     pub retrieval_witness: crate::RetrievalWitnessV1,
 }
 
+/// Exact UTF-8 payload emitted by the memory owner. The SHA-256 digest binds
+/// transport bytes only: it is NOT owner authentication or an access permit.
+/// Consumers must check bytes before parsing and compare the complete request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GovernedWitnessedSearchResponseV2 {
+    pub schema_version: String,
+    pub payload_json: String,
+    pub payload_sha256: String,
+}
+
+#[derive(Serialize)]
+pub(crate) struct GovernedWitnessedSearchRequestBindingV2 {
+    pub request_id: String,
+    pub query: String,
+    pub top_k: u64,
+    pub access_request: GovernedAccessRequestV1,
+}
+
+#[derive(Serialize)]
+pub(crate) struct GovernedWitnessedSearchPayloadV2 {
+    pub schema_version: &'static str,
+    pub request: GovernedWitnessedSearchRequestBindingV2,
+    pub response: GovernedWitnessedSearchResponseV1,
+}
+
+/// V2 admission failures are distinguishable from retrieval and serialization errors.
+#[derive(Debug, thiserror::Error)]
+pub enum GovernedWitnessedSearchErrorV2 {
+    #[error("governed witnessed V2 request_id is empty")]
+    InvalidRequestId,
+    #[error("governed witnessed V2 limit must be positive and fit u64")]
+    InvalidLimit,
+    #[error("governed witnessed V2 supports Current Recall only")]
+    UnsupportedPurpose,
+    #[error("governed witnessed V2 access request is structurally invalid")]
+    InvalidAccessRequest,
+    #[error(transparent)]
+    Retrieval(#[from] crate::MemoryError),
+    #[error(transparent)]
+    Serialization(#[from] serde_json::Error),
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GovernedFactListResponseV1 {
     pub facts: Vec<Fact>,
@@ -791,19 +834,10 @@ pub(crate) fn decide(
     )
 }
 
-/// The sole policy evaluator for every governed read and mutation path. Callers may acquire
-/// candidates through caches, replay, graph traversal, or a direct ID, but only this function may
-/// authorize returning content. It deliberately has no permissive compatibility branch.
-pub fn evaluate_governed_access_v1(
-    resource_id: &str,
-    resource_namespace: Option<&str>,
-    label: Option<&OriginAuthorityLabelV1>,
-    dynamic_revocation: Option<&str>,
-    request: &GovernedAccessRequestV1,
-) -> OriginAuthorityDecisionV1 {
-    let mut reasons = Vec::new();
-    let mut allowed = true;
-    if request.policy_version != GOVERNED_ACCESS_POLICY_V1
+/// Structural validity only; never grants access to a resource.
+/// Shared with V2 pre-retrieval validation, including the zero-candidate path.
+pub(crate) fn valid_access_request(request: &GovernedAccessRequestV1) -> bool {
+    !(request.policy_version != GOVERNED_ACCESS_POLICY_V1
         || request.policy_digest
             != access_request_digest(
                 &request.caller,
@@ -820,8 +854,22 @@ pub fn evaluate_governed_access_v1(
         || request.caller.0.trim().is_empty()
         || request.subject.0.trim().is_empty()
         || request.audiences.0.is_empty()
-        || !request.scope.is_bound()
-    {
+        || !request.scope.is_bound())
+}
+
+/// The sole policy evaluator for every governed read and mutation path. Callers may acquire
+/// candidates through caches, replay, graph traversal, or a direct ID, but only this function may
+/// authorize returning content. It deliberately has no permissive compatibility branch.
+pub fn evaluate_governed_access_v1(
+    resource_id: &str,
+    resource_namespace: Option<&str>,
+    label: Option<&OriginAuthorityLabelV1>,
+    dynamic_revocation: Option<&str>,
+    request: &GovernedAccessRequestV1,
+) -> OriginAuthorityDecisionV1 {
+    let mut reasons = Vec::new();
+    let mut allowed = true;
+    if !valid_access_request(request) {
         allowed = false;
         reasons.push("invalid_access_request".into());
     }

@@ -102,11 +102,12 @@ candle-embedder = ["dep:candle-core", "dep:candle-nn", "dep:candle-transformers"
 
 
 [dependencies]
-lru = "0.16.3"
+lru = "0.19"
 bytemuck = { version = "1", features = ["derive"] }
 blake3 = { workspace = true }
 sha2 = { workspace = true }
-rusqlite = { workspace = true, features = ["bundled", "blob"] }
+rusqlite = { workspace = true, features = ["bundled", "blob", "backup", "serialize"] }
+tempfile = { workspace = true }
 reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
@@ -134,9 +135,9 @@ scr-runtime-compression = { version = "0.1.0", path = "../scr-runtime-compressio
 # virtual workspace root. This avoids Cargo's multiple-workspace-root error.
 poly-kv = { version = "0.1.0-alpha.1", path = "../poly-kv/crates/poly-kv", optional = true }
 # Candle in-process embedder deps (feature-gated, CPU-only)
-candle-core = { version = "0.10", optional = true }
-candle-nn = { version = "0.10", optional = true }
-candle-transformers = { version = "0.10", optional = true }
+candle-core = { version = "0.11", optional = true }
+candle-nn = { version = "0.11", optional = true }
+candle-transformers = { version = "0.11", optional = true }
 hf-hub = { version = "1.0.0-rc.1", default-features = false, features = ["blocking"], optional = true }
 tokenizers = { version = "0.23", default-features = false, features = ["onig"], optional = true }
 
@@ -151,7 +152,6 @@ cxx = { version = "1.0", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
-tempfile = { workspace = true }
 semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
 
 [[example]]

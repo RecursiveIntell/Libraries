@@ -6,7 +6,7 @@ Local-first hybrid retrieval for Rust, with SQLite as authoritative state and re
 
 `semantic-memory` stores facts, documents and chunks, conversations, episodes, embeddings, temporal state, authority ledgers, and search receipts in SQLite. FTS indexes, vector sidecars, sparse representations, and compressed candidate artifacts accelerate retrieval; they do not replace canonical state and can be reconciled from SQLite.
 
-> **No cloud dependencies.** There are no calls to OpenAI, Anthropic, Pinecone, Weaviate, Supabase, or any hosted service. Storage, retrieval, receipts, and governance all run locally; embeddings come from your own Ollama server or the optional in-process Candle embedder, which downloads its model once from Hugging Face and caches it locally.
+> **Local storage, configurable embedding sources.** Storage and retrieval run locally. Ollama calls go to the configured endpoint; the optional Candle embedder downloads model artifacts from Hugging Face when they are not cached. Review the selected embedder and endpoint before sending private text.
 
 > **Status:** research-grade library with a tested default retrieval contract. Feature-gated research and orchestration modules are not implicit guarantees of `MemoryStore::search()` behavior.
 
@@ -41,7 +41,7 @@ Local-first hybrid retrieval for Rust, with SQLite as authoritative state and re
 
 ```toml
 [dependencies]
-semantic-memory = "0.5.14"
+semantic-memory = "0.5.15"
 tokio = { version = "1", features = ["macros", "rt"] }
 ```
 
@@ -49,7 +49,7 @@ The default build enables `usearch-backend`. For an exact pure-Rust backend with
 
 ```toml
 [dependencies]
-semantic-memory = { version = "0.5.14", default-features = false, features = ["brute-force"] }
+semantic-memory = { version = "0.5.15", default-features = false, features = ["brute-force"] }
 ```
 
 ## Quick start
@@ -206,6 +206,14 @@ Normal fact reads use `StateView::Current`, which excludes superseded facts. His
 - export and replay;
 - immutable origin-authority labels and revocations;
 - transition verification, quarantine, and rollback references where declared by the operation.
+
+Origin revocation and its retrieval-epoch increment commit in the same SQLite
+transaction. A first revocation changes the authority snapshot; an exact
+idempotent replay does not advance it again. Witnessed retrieval rejects a
+snapshot change observed by its final coherence check. This is a retrieval
+fence, not final-use authorization, authenticated transport, or live-store
+certification. See the [origin-revocation contract and focused
+gates](docs/origin-revocation-coherence.md).
 
 The compatibility API remains available for ordinary local use. Raw compatibility reads and writes are not equivalent to governed reads: they do not apply the same origin, revocation, scope, purpose, and state decisions. Do not infer a typed transition receipt from a method unless its return contract declares one. Graph utility operations return domain objects and do not universally produce governance receipts.
 

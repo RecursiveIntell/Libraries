@@ -1,29 +1,211 @@
 {
   "allowlist": [
     {
+      "id": "TYPE-RECEIPT-001",
       "name": "CrateReceiptV1",
-      "owners": ["contract-schema-gen", "stack-ids"],
-      "reason": "Existing cross-crate receipt shapes remain intentionally distinct until canonical contract extraction."
+      "owners": [
+        "contract-schema-gen",
+        "stack-ids"
+      ],
+      "definitions": [
+        {
+          "owner": "contract-schema-gen",
+          "path": "contract-schema-gen/src/receipt.rs",
+          "domain": "schema_generation_receipt"
+        },
+        {
+          "owner": "stack-ids",
+          "path": "stack-ids/src/receipt.rs",
+          "domain": "stack_identity_receipt"
+        }
+      ],
+      "failure_mode": "Legacy same-name receipt shapes could be reinterpreted across schema/identity domains",
+      "why_temporarily_allowed": "Both V1 definitions already exist; equivalence is not assumed and no adapter may promote one into the other",
+      "removal_condition": "Resolve named consumer overlap with versioned owner contract or rename the nonowner surface"
     },
     {
+      "id": "TYPE-STOP-001",
       "name": "ExecutionStopReason",
-      "owners": ["kernel-execution", "verification-control"],
-      "reason": "Execution and control layers carry distinct owner-local stop contracts."
+      "owners": [
+        "kernel-execution",
+        "verification-control"
+      ],
+      "definitions": [
+        {
+          "owner": "kernel-execution",
+          "path": "kernel-execution/src/lib.rs",
+          "domain": "kernel_execution_stop"
+        },
+        {
+          "owner": "verification-control",
+          "path": "verification-control/src/lib.rs",
+          "domain": "verification_control_stop"
+        }
+      ],
+      "failure_mode": "An execution stop may be mistaken for a control disposition",
+      "why_temporarily_allowed": "Existing owner-local stop contracts are not implicitly interchangeable",
+      "removal_condition": "Add typed mapping/conformance or domain-qualified V2 naming before removing allowance"
     },
     {
+      "id": "TYPE-OUTCOME-001",
       "name": "Outcome",
-      "owners": ["contract-schema-gen", "stack-ids"],
-      "reason": "Existing cross-crate outcome shapes remain intentionally distinct until canonical contract extraction."
+      "owners": [
+        "contract-schema-gen",
+        "stack-ids"
+      ],
+      "definitions": [
+        {
+          "owner": "contract-schema-gen",
+          "path": "contract-schema-gen/src/receipt.rs",
+          "domain": "schema_generation_outcome"
+        },
+        {
+          "owner": "stack-ids",
+          "path": "stack-ids/src/receipt.rs",
+          "domain": "stack_identity_outcome"
+        }
+      ],
+      "failure_mode": "Same-name outcomes may launder success predicates between receipt families",
+      "why_temporarily_allowed": "Existing V1 names are quarantined at exact paths without assuming shared semantics",
+      "removal_condition": "Resolve actual consumer overlap and retire or version the duplicate domain contract"
     },
     {
+      "id": "TYPE-REFUTATION-001",
       "name": "RefutationResult",
-      "owners": ["semantic-memory", "semantic-memory-forge"],
-      "reason": "Memory retrieval and forge export retain separate owner-local refutation contracts."
+      "owners": [
+        "semantic-memory",
+        "semantic-memory-forge"
+      ],
+      "definitions": [
+        {
+          "owner": "semantic-memory",
+          "path": "semantic-memory/src/decoder.rs",
+          "domain": "memory_decoder_refutation"
+        },
+        {
+          "owner": "semantic-memory-forge",
+          "path": "semantic-memory-forge/src/bundle.rs",
+          "domain": "causal_verification_refutation"
+        }
+      ],
+      "failure_mode": "Decoder status could be promoted into causal-verification evidence",
+      "why_temporarily_allowed": "Existing decoder and causal evidence records serve different inspected paths",
+      "removal_condition": "Add negative cross-family conformance and domain-qualified V2 naming"
     },
     {
+      "id": "TYPE-SYNDROME-001",
       "name": "Syndrome",
-      "owners": ["recursive-kernel-core", "semantic-memory"],
-      "reason": "Kernel and memory layers retain separate syndrome contracts at their boundary."
+      "owners": [
+        "recursive-kernel-core",
+        "semantic-memory"
+      ],
+      "definitions": [
+        {
+          "owner": "recursive-kernel-core",
+          "path": "recursive-kernel-core/src/lib.rs",
+          "domain": "kernel_syndrome"
+        },
+        {
+          "owner": "semantic-memory",
+          "path": "semantic-memory/src/decoder.rs",
+          "domain": "memory_decoder_syndrome"
+        }
+      ],
+      "failure_mode": "Memory decoder output could be mistaken for kernel proof",
+      "why_temporarily_allowed": "Both owner-local V1 surfaces exist at fixed definitions",
+      "removal_condition": "Require explicit conversion and proof boundary or rename/version the local surface"
+    },
+    {
+      "id": "TYPE-CONTRADICTION-001",
+      "name": "ContradictionStatus",
+      "owners": [
+        "claim-ledger",
+        "forge-memory-bridge"
+      ],
+      "definitions": [
+        {
+          "owner": "claim-ledger",
+          "path": "claim-ledger/src/types.rs",
+          "domain": "claim_support_adjudication"
+        },
+        {
+          "owner": "forge-memory-bridge",
+          "path": "forge-memory-bridge/src/batch.rs",
+          "domain": "forge_projection_contradiction"
+        }
+      ],
+      "failure_mode": "Candidate/resolved claim support states may be confused with bridge projection status",
+      "why_temporarily_allowed": "V1 variants differ; relationship remains mapping-required, not declared equivalent",
+      "removal_condition": "Prove a typed loss-aware mapping or separate versioned names and remove exception"
+    },
+    {
+      "id": "TYPE-EVIDENCE-BUNDLE-001",
+      "name": "EvidenceBundle",
+      "owners": [
+        "claim-ledger",
+        "semantic-memory-forge"
+      ],
+      "definitions": [
+        {
+          "owner": "claim-ledger",
+          "path": "claim-ledger/src/types.rs",
+          "domain": "claim_support_evidence_bundle"
+        },
+        {
+          "owner": "semantic-memory-forge",
+          "path": "semantic-memory-forge/src/bundle.rs",
+          "domain": "causal_verification_evidence_bundle"
+        }
+      ],
+      "failure_mode": "Claim-support evidence could be silently read as causal verification or vice versa",
+      "why_temporarily_allowed": "Source fields demonstrate distinct families; no implicit cross-family conversion is allowed",
+      "removal_condition": "Add cross-language/cross-family negative fixtures and domain-qualified public wire names"
+    },
+    {
+      "id": "TYPE-LEDGER-ENTRY-001",
+      "name": "LedgerEntry",
+      "owners": [
+        "claim-ledger",
+        "verification-control"
+      ],
+      "definitions": [
+        {
+          "owner": "claim-ledger",
+          "path": "claim-ledger/src/ledger.rs",
+          "domain": "claim_support_event_ledger"
+        },
+        {
+          "owner": "verification-control",
+          "path": "verification-control/src/lib.rs",
+          "domain": "verification_case_ledger"
+        }
+      ],
+      "failure_mode": "Verification case entry could be treated as claim-support admission",
+      "why_temporarily_allowed": "Existing claim and verification event families use distinct source types and digest/identity contracts",
+      "removal_condition": "Add explicit adapter or domain-qualified V2 names; then remove temporary allowance"
+    },
+    {
+      "id": "TYPE-LEDGER-EVENT-001",
+      "name": "LedgerEvent",
+      "owners": [
+        "claim-ledger",
+        "verification-control"
+      ],
+      "definitions": [
+        {
+          "owner": "claim-ledger",
+          "path": "claim-ledger/src/ledger.rs",
+          "domain": "claim_support_event_ledger"
+        },
+        {
+          "owner": "verification-control",
+          "path": "verification-control/src/lib.rs",
+          "domain": "verification_case_ledger"
+        }
+      ],
+      "failure_mode": "Verification case event could be treated as claim-support event",
+      "why_temporarily_allowed": "Existing event variants differ; no same-name conversion is admitted",
+      "removal_condition": "Add explicit adapter or domain-qualified V2 names; then remove temporary allowance"
     }
   ]
 }

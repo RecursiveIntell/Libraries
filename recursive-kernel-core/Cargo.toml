@@ -5,6 +5,9 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Non-authoritative recursive inference kernel schemas and operator contracts"
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/recursive-kernel-core"
 
 [dependencies]
 serde = { workspace = true, features = ["derive"] }

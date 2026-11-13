@@ -16,7 +16,7 @@ ExecCtx ──► Payload / LlmCall ──► PayloadOutput<Value> ──► typ
    └── Chain composes payloads sequentially; agent-graph supplies branching control flow.
 ```
 
-> Current crate version: `0.2.0` · Rust 2021 · MIT
+> Current source crate version: `0.3.0` · Rust 2021 · MIT
 >
 > This README describes the checked-in implementation. It does not claim provider uptime, model quality, benchmark superiority, or successful external calls without a locally reproduced run.
 

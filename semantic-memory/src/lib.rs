@@ -1,5 +1,4 @@
 #![allow(deprecated)]
-#![allow(unused_imports, unused_variables, unreachable_code)]
 #![allow(
     clippy::bool_assert_comparison,
     clippy::collapsible_if,
@@ -92,6 +91,16 @@ pub(crate) mod db;
 /// Bounded evidence-gap retrieval and state-aware reranking over existing authority/search paths.
 pub mod evidence_gap;
 mod forgetting;
+mod integrity_snapshot;
+pub use integrity_snapshot::{
+    IntegritySnapshotError, IntegritySnapshotV1, SqliteConnectionDiagnosticV1,
+    SqliteDiagnosticError,
+};
+mod integrity_repair_plan;
+pub use integrity_repair_plan::{
+    AuthorityRelationQuarantinePlanError, AuthorityRelationQuarantinePlanV2, OrphanRowV1,
+    OrphanViolationV1, SqliteCellV1,
+};
 pub mod journal;
 mod procedural_memory;
 /// Public read-only metadata for externally retained LLM receipts.
@@ -180,10 +189,10 @@ pub use origin_authority::{
     CallerPrincipalV1, DelegationElevationLeaseV1, ElevationRequirementV1, GovernedAccessPurposeV1,
     GovernedAccessRequestV1, GovernedFactAccessV1, GovernedFactListResponseV1,
     GovernedGraphResponseV1, GovernedProjectionResponseV1, GovernedReplayResponseV1,
-    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, GovernedWitnessedSearchResponseV1,
-    NamespaceScopeV1, OriginAuthorityDecisionV1, OriginAuthorityLabelV1, OriginAuthorityRecordV1,
-    OriginClassV1, OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1,
-    SubjectPrincipalV1,
+    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, GovernedWitnessedSearchErrorV2,
+    GovernedWitnessedSearchResponseV1, GovernedWitnessedSearchResponseV2, NamespaceScopeV1,
+    OriginAuthorityDecisionV1, OriginAuthorityLabelV1, OriginAuthorityRecordV1, OriginClassV1,
+    OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1, SubjectPrincipalV1,
 };
 pub use procedural_memory::{
     validate_procedure_artifact_v1, verify_procedure_lifecycle_receipt_v1,
@@ -1780,7 +1789,9 @@ impl MemoryStore {
     /// Verify database integrity.
     ///
     /// In `Quick` mode, checks table existence and row counts.
-    /// In `Full` mode, also verifies FTS consistency and runs SQLite integrity_check.
+    /// In `Full` mode, also verifies FTS consistency and runs SQLite integrity_check
+    /// and foreign_key_check. FK violations are reported without repairing rows;
+    /// failure to execute the FK check returns a database error.
     pub async fn verify_integrity(
         &self,
         mode: db::VerifyMode,
@@ -3135,16 +3146,25 @@ impl MemoryStore {
     pub async fn stats(&self) -> Result<MemoryStats, MemoryError> {
         let db_path = self.inner.paths.sqlite_path.clone();
         self.with_read_conn(move |conn| {
-            let total_facts: u64 =
+            // rusqlite 0.41 removed the unsound u64/usize FromSql impls
+            // (SQLite integers are i64); read i64 and convert.
+            let total_facts: i64 =
                 conn.query_row("SELECT COUNT(*) FROM facts", [], |r| r.get(0))?;
-            let total_documents: u64 =
+            let total_documents: i64 =
                 conn.query_row("SELECT COUNT(*) FROM documents", [], |r| r.get(0))?;
-            let total_chunks: u64 =
+            let total_chunks: i64 =
                 conn.query_row("SELECT COUNT(*) FROM chunks", [], |r| r.get(0))?;
-            let total_sessions: u64 =
+            let total_sessions: i64 =
                 conn.query_row("SELECT COUNT(*) FROM sessions", [], |r| r.get(0))?;
-            let total_messages: u64 =
+            let total_messages: i64 =
                 conn.query_row("SELECT COUNT(*) FROM messages", [], |r| r.get(0))?;
+            let (total_facts, total_documents, total_chunks, total_sessions, total_messages) = (
+                total_facts as u64,
+                total_documents as u64,
+                total_chunks as u64,
+                total_sessions as u64,
+                total_messages as u64,
+            );
 
             let db_size = std::fs::metadata(&db_path).map(|m| m.len()).unwrap_or(0);
 
@@ -3152,7 +3172,13 @@ impl MemoryStore {
                 .query_row(
                     "SELECT model_name, dimensions FROM embedding_metadata WHERE id = 1",
                     [],
-                    |r| Ok((Some(r.get(0)?), Some(r.get(1)?))),
+                    // rusqlite 0.41: read i64, convert (usize impl removed).
+                    |r| {
+                        Ok((
+                            r.get::<_, Option<String>>(0)?,
+                            r.get::<_, Option<i64>>(1)?.map(|v| v as usize),
+                        ))
+                    },
                 )
                 .unwrap_or((None, None));
 

@@ -5,17 +5,23 @@ Model-aware batch processing queue with ETA estimation for Tauri applications.
 ## Example
 
 ```rust
-use ai_batch_queue::{BatchQueue, BatchJob};
+use ai_batch_queue::{build_job, BatchQueue, OverwritePolicy, SizeBucket};
 
-let queue = BatchQueue::new();
-let job = BatchJob::new("generate-images", items, "stable-diffusion");
-queue.enqueue(job)?;
-
-// Mark next job as running (model-aware scheduling)
-if let Some(job_id) = queue.next_queued()? {
-    queue.mark_running(&job_id)?;
+fn main() -> anyhow::Result<()> {
+    let queue = BatchQueue::<String>::new();
+    let job = build_job(
+        "llava", "tag", OverwritePolicy::Skip,
+        vec![("image-1".into(), "photo.jpg".into(), SizeBucket::Medium)],
+    );
+    queue.enqueue(job)?;
+    if let Some(job) = queue.next_queued() {
+        queue.mark_running(&job.id)?;
+    }
+    Ok(())
 }
 ```
+
+The default queue is in-memory. Implement `BatchStore` for persistence and `BatchItemHandler` for processing, then use the executor for background work. The example only enqueues and changes status; it does not process an image.
 
 ## Ecosystem
 

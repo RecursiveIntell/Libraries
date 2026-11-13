@@ -47,7 +47,7 @@ See `src/lib.rs` for the re-export boundary and module list.
 
 ## Architecture
 
-![llm-tool-runtime architecture](docs/llm-tool-runtime.svg)
+The public API is implemented in [src/lib.rs](src/lib.rs); the contract and adapter roles are described below.
 
 Caller-owned input enters the public `Tool` surface and leaves as typed artifacts, status, receipts, or explicit errors. External persistence, transport, policy, and execution remain caller/integration responsibilities unless represented by a public trait.
 

@@ -10,9 +10,9 @@ description = "MCP server exposing agent-graph + llm-pipeline for graph-orchestr
 agent-graph = { version = "0.2.0", path = "../agent-graph" }
 llm-pipeline = { version = "0.3.0", path = "../llm-pipeline", features = ["openai"] }
 async-trait = "0.1"
-rmcp = { version = "1", features = ["server", "transport-io"] }
+rmcp = { version = "3.9", features = ["server", "transport-io"] }
 anyhow = "1"
-rusqlite = { version = "0.32", features = ["bundled"] }
+rusqlite = { version = "0.41", features = ["bundled"] }
 schemars = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -73,6 +73,7 @@ fn compact(
         messages: msgs,
         policy,
         focus: None,
+        hmac_key_path: None,
     };
 
     let response = compact_context(request).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;

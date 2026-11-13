@@ -5,13 +5,17 @@ Robust Ollama vision model toolkit for image tagging and captioning with structu
 ## Example
 
 ```rust
-use ollama_vision::{OllamaVision, VisionRequest};
+use ollama_vision::{CaptionOptions, OllamaVisionConfig};
+use std::path::Path;
 
-let client = OllamaVision::new("http://localhost:11434");
-let request = VisionRequest::new("llava:latest", "/path/to/image.jpg")
-    .with_prompt("Describe this image");
-let response = client.generate(&request).await?;
+async fn caption(path: &Path) -> Result<String, ollama_vision::CaptionError> {
+    let config = OllamaVisionConfig::with_model("llava");
+    let client = reqwest::Client::new();
+    ollama_vision::caption_image(&client, &config, path, &CaptionOptions::default()).await
+}
 ```
+
+Run Ollama and pull the selected vision model before calling it. The image must be readable at the supplied path. `tag_image` returns parsed tags; the `_base64` variants accept image bytes encoded by the caller. Requests send the image to the configured Ollama endpoint.
 
 ## Ecosystem
 

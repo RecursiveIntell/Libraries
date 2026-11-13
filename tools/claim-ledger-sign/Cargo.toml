@@ -1,0 +1,29 @@
+[package]
+name = "claim-ledger-sign"
+version = "0.1.0"
+edition = "2021"
+description = "Operator-side signing tool: binds exact artifact bytes to an Ed25519-signed, policy-bound envelope for verifier-side acceptance."
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "claim-ledger-sign"
+path = "src/main.rs"
+
+[features]
+default = []
+# Test-only deterministic key construction; never a production default.
+testing = []
+
+[dependencies]
+claim-ledger = { path = "../../claim-ledger" }
+ring = { version = "0.17", default-features = false }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hex = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
+sha2 = "0.10"
+
+[lints]
+workspace = true

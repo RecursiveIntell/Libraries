@@ -329,7 +329,7 @@ pub fn detect_plan_content(content: &str) -> bool {
     }
     // Explicit plan language
     let lower = content.to_lowercase();
-    if lower.contains("todo")
+    lower.contains("todo")
         || lower.contains("action item")
         || lower.contains("acceptance criteria")
         || lower.contains("implementation plan")
@@ -337,10 +337,6 @@ pub fn detect_plan_content(content: &str) -> bool {
         || lower.contains("milestone")
         || lower.contains("step ")
         || lower.contains("phase ")
-    {
-        return true;
-    }
-    false
 }
 
 /// Build provider-neutral steps from messages.

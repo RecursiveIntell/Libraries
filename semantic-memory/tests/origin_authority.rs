@@ -486,3 +486,393 @@ async fn pr11_unlabelled_message_is_denied_before_witness_matching() {
     assert!(!decision.allowed);
     assert!(witnessed.retrieval_witness.ordered_result_ids.is_empty());
 }
+
+fn revoke_permit() -> AuthorityPermit {
+    AuthorityPermit::operator_system(
+        "principal:alice",
+        "epoch-regression",
+        AuthorityPermit::REVOKE_ORIGIN_CAPABILITY,
+    )
+}
+
+async fn epoch_fixture_fact(store: &MemoryStore, key: &str) -> String {
+    store
+        .authority()
+        .append(
+            permit(
+                "principal:alice",
+                label(
+                    "principal:alice",
+                    &["principal:alice"],
+                    OriginRiskV1::Low,
+                    AuthorityScopeV1::Universal,
+                    AuthorityScopeV1::Universal,
+                    AuthorityScopeV1::Universal,
+                ),
+            ),
+            key.into(),
+            "general".into(),
+            format!("revocable epoch sentinel {key}"),
+            None,
+        )
+        .await
+        .unwrap()
+        .affected_ids[0]
+        .clone()
+}
+
+#[tokio::test]
+async fn revocation_advances_authority_state_once_and_replay_is_stable() {
+    let (store, tmp) = store();
+    let fact = epoch_fixture_fact(&store, "epoch-first").await;
+    let other = epoch_fixture_fact(&store, "epoch-other").await;
+    let authority = store.authority();
+    let origin = authority.get_origin_authority(&fact).await.unwrap();
+    let before = authority.current_state().await.unwrap();
+    authority
+        .revoke_origin(
+            revoke_permit(),
+            "epoch-revoke".into(),
+            &fact,
+            "revocation:epoch".into(),
+        )
+        .await
+        .unwrap();
+    let after = authority.current_state().await.unwrap();
+    assert_eq!(after.retrieval_epoch.0, before.retrieval_epoch.0 + 1);
+    assert_ne!(after.snapshot_id, before.snapshot_id);
+    assert_eq!(origin, authority.get_origin_authority(&fact).await.unwrap());
+    authority
+        .revoke_origin(
+            revoke_permit(),
+            "epoch-revoke".into(),
+            &fact,
+            "revocation:epoch".into(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(authority.current_state().await.unwrap(), after);
+    for (id, reference) in [
+        (&fact, "revocation:different"),
+        (&other, "revocation:epoch"),
+    ] {
+        assert!(matches!(
+            authority
+                .revoke_origin(revoke_permit(), "epoch-revoke".into(), id, reference.into())
+                .await,
+            Err(MemoryError::AuthorityIdempotencyConflict { .. })
+        ));
+        assert_eq!(authority.current_state().await.unwrap(), after);
+    }
+    drop(authority);
+    drop(store);
+    let reopened = MemoryStore::open_with_embedder(
+        MemoryConfig {
+            base_dir: tmp.path().to_path_buf(),
+            ..Default::default()
+        },
+        Box::new(MockEmbedder::new(768)),
+    )
+    .unwrap();
+    assert_eq!(reopened.authority().current_state().await.unwrap(), after);
+    let denied = reopened
+        .authority()
+        .get_fact_governed(
+            &fact,
+            access("principal:alice", GovernedAccessPurposeV1::Recall),
+        )
+        .await
+        .unwrap();
+    assert!(!denied.decision.allowed);
+    assert_eq!(
+        denied.decision.revocation_reference.as_deref(),
+        Some("revocation:epoch")
+    );
+}
+
+#[tokio::test]
+async fn revocation_epoch_failure_rolls_back_and_max_epoch_replay_is_safe() {
+    let (store, tmp) = store();
+    let fact = epoch_fixture_fact(&store, "rollback-first").await;
+    let other = epoch_fixture_fact(&store, "rollback-other").await;
+    let authority = store.authority();
+    authority
+        .revoke_origin(
+            revoke_permit(),
+            "committed".into(),
+            &fact,
+            "revocation:committed".into(),
+        )
+        .await
+        .unwrap();
+    let db = rusqlite::Connection::open(tmp.path().join("memory.db")).unwrap();
+    db.execute(
+        "UPDATE authority_state SET retrieval_epoch = ?1 WHERE id = 1",
+        [i64::MAX],
+    )
+    .unwrap();
+    let before = authority.current_state().await.unwrap();
+    let error = authority
+        .revoke_origin(
+            revoke_permit(),
+            "overflow".into(),
+            &other,
+            "revocation:overflow".into(),
+        )
+        .await
+        .unwrap_err();
+    assert!(error.to_string().contains("epoch overflow"), "{error}");
+    assert_eq!(authority.current_state().await.unwrap(), before);
+    assert_eq!(db.query_row("SELECT COUNT(*) FROM origin_authority_revocations WHERE caller_idempotency_key = 'overflow'", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
+    assert!(
+        authority
+            .get_fact_governed(
+                &other,
+                access("principal:alice", GovernedAccessPurposeV1::Recall)
+            )
+            .await
+            .unwrap()
+            .decision
+            .allowed
+    );
+    authority
+        .revoke_origin(
+            revoke_permit(),
+            "committed".into(),
+            &fact,
+            "revocation:committed".into(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(authority.current_state().await.unwrap(), before);
+    // A failure after insertion also rolls back both writes. Only this disposable
+    // fixture's epoch is reset; production rollback must never lower an epoch.
+    db.execute(
+        "UPDATE authority_state SET retrieval_epoch = 10 WHERE id = 1",
+        [],
+    )
+    .unwrap();
+    db.execute_batch("CREATE TRIGGER fail_revocation_epoch BEFORE UPDATE OF retrieval_epoch ON authority_state BEGIN SELECT RAISE(ABORT, 'fixture epoch failure'); END;").unwrap();
+    let before = authority.current_state().await.unwrap();
+    assert!(authority
+        .revoke_origin(
+            revoke_permit(),
+            "sql-failure".into(),
+            &other,
+            "revocation:sql-failure".into()
+        )
+        .await
+        .is_err());
+    assert_eq!(authority.current_state().await.unwrap(), before);
+    assert_eq!(
+        db.query_row(
+            "SELECT COUNT(*) FROM origin_authority_revocations WHERE fact_id = ?1",
+            [&other],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        0
+    );
+}
+
+#[tokio::test]
+async fn second_owner_observes_revocation_and_exact_replay_advances_once() {
+    let (store, tmp) = store();
+    let fact = epoch_fixture_fact(&store, "two-owner").await;
+    let second = MemoryStore::open_with_embedder(
+        MemoryConfig {
+            base_dir: tmp.path().to_path_buf(),
+            ..Default::default()
+        },
+        Box::new(MockEmbedder::new(768)),
+    )
+    .unwrap();
+    let before = second.authority().current_state().await.unwrap();
+    let first = store.authority();
+    let second = second.authority();
+    let (a, b) = tokio::join!(
+        first.revoke_origin(
+            revoke_permit(),
+            "two-owner-revoke".into(),
+            &fact,
+            "revocation:two-owner".into()
+        ),
+        second.revoke_origin(
+            revoke_permit(),
+            "two-owner-revoke".into(),
+            &fact,
+            "revocation:two-owner".into()
+        )
+    );
+    // SQLite's deferred transaction upgrade may report BUSY to one writer.
+    // A caller retry is an exact replay and must not advance the epoch again.
+    assert!(a.is_ok() || b.is_ok());
+    for result in [a, b] {
+        if let Err(MemoryError::Database(rusqlite::Error::SqliteFailure(code, _))) = result {
+            assert!(matches!(
+                code.code,
+                rusqlite::ErrorCode::DatabaseBusy | rusqlite::ErrorCode::DatabaseLocked
+            ));
+        } else {
+            result.unwrap();
+        }
+    }
+    second
+        .revoke_origin(
+            revoke_permit(),
+            "two-owner-revoke".into(),
+            &fact,
+            "revocation:two-owner".into(),
+        )
+        .await
+        .unwrap();
+    let after = second.current_state().await.unwrap();
+    assert_eq!(after.retrieval_epoch.0, before.retrieval_epoch.0 + 1);
+    assert_eq!(first.current_state().await.unwrap(), after);
+    assert!(
+        !second
+            .get_fact_governed(
+                &fact,
+                access("principal:alice", GovernedAccessPurposeV1::Recall)
+            )
+            .await
+            .unwrap()
+            .decision
+            .allowed
+    );
+}
+
+#[tokio::test]
+async fn revocation_between_allowed_witness_and_recheck_denies_v1_and_v2() {
+    use std::sync::Arc;
+    use std::time::Duration;
+    use tokio::sync::Notify;
+    for v2 in [false, true] {
+        let (store, tmp) = store();
+        let fact = epoch_fixture_fact(&store, "witness-race").await;
+        let mut reader = store.authority();
+        let control = reader
+            .search_governed_witnessed(
+                "control".into(),
+                "revocable epoch sentinel",
+                Some(10),
+                access("principal:alice", GovernedAccessPurposeV1::Recall),
+            )
+            .await
+            .unwrap();
+        assert!(control
+            .response
+            .decisions
+            .iter()
+            .any(|d| d.allowed && d.fact_id == fact));
+        assert!(!control.response.results.is_empty());
+        let writer_store = MemoryStore::open_with_embedder(
+            MemoryConfig {
+                base_dir: tmp.path().to_path_buf(),
+                ..Default::default()
+            },
+            Box::new(MockEmbedder::new(768)),
+        )
+        .unwrap();
+        let reached = Arc::new(Notify::new());
+        let resume = Arc::new(Notify::new());
+        reader.set_witness_recheck_barrier(reached.clone(), resume.clone());
+        let task = tokio::spawn(async move {
+            if v2 {
+                match reader
+                    .search_governed_witnessed_v2(
+                        "race-v2".into(),
+                        "revocable epoch sentinel",
+                        10,
+                        access("principal:alice", GovernedAccessPurposeV1::Recall),
+                    )
+                    .await
+                {
+                    Err(semantic_memory::GovernedWitnessedSearchErrorV2::Retrieval(error)) => {
+                        Err(error)
+                    }
+                    other => panic!("expected V2 retrieval rejection, got {other:?}"),
+                }
+            } else {
+                reader
+                    .search_governed_witnessed(
+                        "race-v1".into(),
+                        "revocable epoch sentinel",
+                        Some(10),
+                        access("principal:alice", GovernedAccessPurposeV1::Recall),
+                    )
+                    .await
+                    .map(|_| ())
+            }
+        });
+        // Timeouts bound fixture failures; notifications, never sleeps, order the race.
+        tokio::time::timeout(Duration::from_secs(10), reached.notified())
+            .await
+            .unwrap();
+        writer_store
+            .authority()
+            .revoke_origin(
+                revoke_permit(),
+                "race-revoke".into(),
+                &fact,
+                "revocation:race".into(),
+            )
+            .await
+            .unwrap();
+        resume.notify_one();
+        let result = tokio::time::timeout(Duration::from_secs(10), task)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(
+            matches!(result, Err(MemoryError::AuthoritySnapshotChanged { .. })),
+            "{result:?}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn rejected_revocations_leave_epoch_and_rows_unchanged() {
+    let (store, tmp) = store();
+    let fact = epoch_fixture_fact(&store, "rejected-revocation").await;
+    let authority = store.authority();
+    let before = authority.current_state().await.unwrap();
+    let wrong_capability = AuthorityPermit::operator_system(
+        "principal:alice",
+        "epoch-regression",
+        AuthorityPermit::APPEND_CAPABILITY,
+    );
+    for (permit, id, key, reference) in [
+        (
+            wrong_capability,
+            fact.as_str(),
+            "wrong-capability",
+            "revocation:rejected",
+        ),
+        (
+            revoke_permit(),
+            "absent-fact",
+            "absent-origin",
+            "revocation:rejected",
+        ),
+        (revoke_permit(), fact.as_str(), "empty-reference", ""),
+    ] {
+        assert!(matches!(
+            authority
+                .revoke_origin(permit, key.into(), id, reference.into())
+                .await,
+            Err(MemoryError::OriginAuthorityRejected { .. })
+        ));
+        assert_eq!(authority.current_state().await.unwrap(), before);
+    }
+    let db = rusqlite::Connection::open(tmp.path().join("memory.db")).unwrap();
+    assert_eq!(
+        db.query_row(
+            "SELECT COUNT(*) FROM origin_authority_revocations",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        0
+    );
+}
