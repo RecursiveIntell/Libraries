@@ -296,8 +296,10 @@ fn snapshot_sync(
     let transaction = source.unchecked_transaction()?;
     // A real read pins the WAL view before either budgeting or backup.
     let _: i64 = transaction.query_row("SELECT COUNT(*) FROM sqlite_schema", [], |r| r.get(0))?;
-    let page_count: u64 = transaction.query_row("PRAGMA page_count", [], |r| r.get(0))?;
-    let page_size: u64 = transaction.query_row("PRAGMA page_size", [], |r| r.get(0))?;
+    let page_count: u64 =
+        transaction.query_row("PRAGMA page_count", [], |r| r.get::<_, i64>(0))? as u64;
+    let page_size: u64 =
+        transaction.query_row("PRAGMA page_size", [], |r| r.get::<_, i64>(0))? as u64;
     let bytes = page_count
         .checked_mul(page_size)
         .filter(|v| *v > 0)

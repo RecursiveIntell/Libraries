@@ -10,7 +10,7 @@ Serializable mindstate payload types for forge-engine
 - Snapshot status: **Present**
 
 ## What this crate is for
-This README exists to satisfy manifest truth and to give contributors a truthful front door for the current library stack. The active finish-line control plane lives at the repository root in `PACK_README.md`, `MASTER_ISSUE_MATRIX.md`, `MASTER_ISSUE_CHANGE_MATRIX.md`, `AGENTS.md`, and the docs index at `docs/README.md`.
+This package belongs to the [Primitives workspace](../Cargo.toml). For current repository guidance, see the [Primitives overview](../README.md), [Libraries support profile](../../SUPPORT_PROFILE.md), and [documentation index](../../docs/README.md). The snapshot labels below are not a current build certification.
 
 ## Non-negotiables
 - Keep this crate aligned with the canonical authority map.

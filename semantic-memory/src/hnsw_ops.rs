@@ -72,29 +72,33 @@ pub(crate) fn rebuild_hnsw_from_sqlite(
         .query_row(
             "SELECT COUNT(*) FROM facts WHERE embedding IS NOT NULL",
             [],
-            |r| r.get(0),
+            |r| r.get::<_, i64>(0),
         )
+        .map(|v| v as usize)
         .unwrap_or(0);
     let chunk_count: usize = conn
         .query_row(
             "SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL",
             [],
-            |r| r.get(0),
+            |r| r.get::<_, i64>(0),
         )
+        .map(|v| v as usize)
         .unwrap_or(0);
     let message_count: usize = conn
         .query_row(
             "SELECT COUNT(*) FROM messages WHERE embedding IS NOT NULL",
             [],
-            |r| r.get(0),
+            |r| r.get::<_, i64>(0),
         )
+        .map(|v| v as usize)
         .unwrap_or(0);
     let episode_count: usize = conn
         .query_row(
             "SELECT COUNT(*) FROM episodes WHERE embedding IS NOT NULL",
             [],
-            |r| r.get(0),
+            |r| r.get::<_, i64>(0),
         )
+        .map(|v| v as usize)
         .unwrap_or(0);
     let source_row_count = fact_count + chunk_count + message_count + episode_count;
     let build_receipt_id = uuid::Uuid::new_v4().to_string();

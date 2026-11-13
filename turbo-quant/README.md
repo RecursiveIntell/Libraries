@@ -47,7 +47,7 @@ The [PolyKV workspace](../poly-kv/README.md) has its own pool and adapter APIs. 
 5. **Pack** into a compact binary representation (`PackedTurboCode`)
 6. **Search** via approximate inner product without full decompression
 
-The key property: **data-oblivious construction.** No k-means. No trained codebook. The entire quantizer is reconstructed from four integers: `(dim, bits, projections, seed)`.
+The key property: **data-oblivious construction.** No k-means. No trained codebook. In this source revision, `TurboQuantizer::new` takes `(dim, bits, projections, seed)` and selects `PolarWithQjl` plus `Auto` rotation. Explicit constructors also take mode and rotation choices. Retain the complete `CodecProfileV1` and source version when reproducing encoded data; four integers alone do not identify every supported profile.
 
 ## Sidecar Search
 
@@ -99,7 +99,7 @@ More bits or projections also cost bytes and computation. A nominal bit budget i
 
 ## What This Crate Is
 
-- Deterministic sidecar codec (reconstructible from four integers)
+- Deterministic sidecar codec with explicit mode, rotation, and versioned profile metadata
 - PolarQuant + QJL compression with inner product estimation
 - Sidecar index with explicit approximate-only receipts
 - KV-cache shadow mode for quality measurement

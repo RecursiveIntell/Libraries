@@ -233,7 +233,8 @@ impl ActivityStore {
                 event.source_crate,
                 event.adapter_id,
                 serde_json::to_string(&event.provenance)?,
-                event.producer_sequence,
+                // rusqlite 0.41: u64 ToSql removed; bind via i64.
+                event.producer_sequence as i64,
                 serde_json::to_string(&event.kind)?,
                 serde_json::to_string(&event.status)?,
                 serde_json::to_string(&event.privacy.tier)?,
@@ -412,20 +413,20 @@ impl ActivityStore {
         let total: u64 = conn.query_row(
             "SELECT COUNT(*) FROM activity WHERE timestamp >= ? AND timestamp <= ?",
             params![start_str, end_str],
-            |row| row.get(0),
-        )?;
+            |row| row.get::<_, i64>(0),
+        )? as u64;
 
         let llm_calls: u64 = conn.query_row(
             "SELECT COUNT(*) FROM activity WHERE timestamp >= ? AND timestamp <= ? AND event_type = 'llm_call'",
             params![start_str, end_str],
-            |row| row.get(0),
-        )?;
+            |row| row.get::<_, i64>(0),
+        )? as u64;
 
         let tool_invocations: u64 = conn.query_row(
             "SELECT COUNT(*) FROM activity WHERE timestamp >= ? AND timestamp <= ? AND event_type = 'tool_invocation'",
             params![start_str, end_str],
-            |row| row.get(0),
-        )?;
+            |row| row.get::<_, i64>(0),
+        )? as u64;
 
         // By type
         let mut by_type_stmt = conn.prepare(
@@ -433,7 +434,7 @@ impl ActivityStore {
         )?;
         let by_type: Vec<(String, u64)> = by_type_stmt
             .query_map(params![start_str, end_str], |row| {
-                Ok((row.get(0)?, row.get(1)?))
+                Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)? as u64))
             })?
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -443,7 +444,7 @@ impl ActivityStore {
         )?;
         let by_crate: Vec<(String, u64)> = by_crate_stmt
             .query_map(params![start_str, end_str], |row| {
-                Ok((row.get(0)?, row.get(1)?))
+                Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)? as u64))
             })?
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -461,14 +462,20 @@ impl ActivityStore {
     /// Get total event count.
     pub fn total_count(&self) -> Result<u64, StoreError> {
         let conn = self.conn.lock().unwrap();
-        let count: u64 = conn.query_row("SELECT COUNT(*) FROM activity", [], |row| row.get(0))?;
+        let count: u64 = conn.query_row("SELECT COUNT(*) FROM activity", [], |row| {
+            row.get::<_, i64>(0)
+        })? as u64;
         Ok(count)
     }
 
     /// Count normalized observation envelopes.
     pub fn observation_count(&self) -> Result<u64, StoreError> {
         let conn = self.conn.lock().unwrap();
-        Ok(conn.query_row("SELECT COUNT(*) FROM observations", [], |row| row.get(0))?)
+        Ok(
+            conn.query_row("SELECT COUNT(*) FROM observations", [], |row| {
+                row.get::<_, i64>(0)
+            })? as u64,
+        )
     }
 
     /// Count normalized observations from one producer sequence domain.
@@ -477,8 +484,8 @@ impl ActivityStore {
         Ok(conn.query_row(
             "SELECT COUNT(*) FROM observations WHERE producer_id = ?1",
             params![producer_id],
-            |row| row.get(0),
-        )?)
+            |row| row.get::<_, i64>(0),
+        )? as u64)
     }
 
     /// Count normalized observations with one stable event ID.
@@ -487,8 +494,8 @@ impl ActivityStore {
         Ok(conn.query_row(
             "SELECT COUNT(*) FROM observations WHERE event_id = ?1",
             params![event_id],
-            |row| row.get(0),
-        )?)
+            |row| row.get::<_, i64>(0),
+        )? as u64)
     }
 
     /// Query normalized observations using typed columns and envelope decoding.

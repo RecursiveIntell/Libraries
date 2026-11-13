@@ -71,7 +71,7 @@ Policy controls:
 - `BudgetMode::FailClosed` — refuse when required exact content cannot fit
 - `TokenCounterKind::ApproxChars` — explicit char/4 estimator recorded in receipts
 - `TokenCounterKind::ProviderChatApprox` — provider-style chat overhead heuristic, still recorded as approximate
-- `TokenCounterKind::TiktokenCl100k` — native-tokenizer-labelled surface that currently falls back loudly unless a host/native feature is wired; receipts do not fake exact provider counts
+- `TokenCounterKind::TiktokenCl100k` — the optional `tiktoken` feature uses `cl100k_base` text counts when tokenizer initialization succeeds; the default build falls back to the provider-chat approximation and emits a warning. This does not establish exact full-provider chat accounting
 
 Content kinds:
 
@@ -127,6 +127,7 @@ let response = compact_context(CompactRequest {
     }],
     policy: CompactionPolicy::default(),
     focus: None,
+    hmac_key_path: None,
 })?;
 
 println!("{}", response.receipt.receipt_id);

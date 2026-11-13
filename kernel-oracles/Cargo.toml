@@ -5,6 +5,9 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Bounded exact/conservative oracle paths for the recursive inference kernel"
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/kernel-oracles"
 
 [dependencies]
 chrono = { workspace = true, features = ["serde"] }

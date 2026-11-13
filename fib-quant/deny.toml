@@ -1,7 +1,14 @@
 [advisories]
 version = 2
 yanked = "warn"
-ignore = []
+# Deferred 2026-11-11 per the operator decision recorded in
+# docs/supply-chain-deferral-2026-11-11.md (review 2027-05): both have no
+# patched release upstream; unmaintained = no maintenance, not a known
+# vulnerability in this usage.
+ignore = [
+    "RUSTSEC-2025-0141", # bincode 1.3.3 — team ceased development; v1.3.3 declared complete
+    "RUSTSEC-2024-0436", # paste 1.0.15 — via simba -> nalgebra; transitive
+]
 
 [licenses]
 version = 2

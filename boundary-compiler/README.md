@@ -9,7 +9,7 @@ This crate implements [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html) �
 - Duplicate-key rejection (RFC 8785 mandates duplicate object keys are errors)
 - blake3 Content-Digest of the JCS string
 - Boundary profiles for dialect, schema ID+version, canonicalization profile, unknown-field policy, and resource ceilings
-- Optional JSON Schema validation before/after canonicalization
+- JSON Schema conformance requires a dedicated validator at the call site before canonicalization
 
 ## Integration
 
@@ -20,4 +20,4 @@ Replaces `semantic_memory::graph::canonical_json_string()` with a standards-comp
 - `canonicalizer` — Core RFC 8785 JCS canonicalization (strict JSON parser, duplicate-key detection, RFC 8785 escaping rules)
 - `digest` — blake3 Content-Digest computation over JCS bytes
 - `profile` — BoundaryProfile enum with dialect, schema ID+version, canonicalization profile, unknown-field policy, resource ceilings
-- `schema` — Optional JSON Schema validation before/after canonicalization
+- `schema` — Compatibility API only: `SchemaValidator::validate` always returns `JcsError::SchemaError`; no `jsonschema` feature is defined
