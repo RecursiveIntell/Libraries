@@ -1,88 +1,137 @@
 use crate::model::{AgentClaim, CheckResult, ClaimStatus};
 
-/// Exact-token command identity for claim verification.
-///
-/// Substring matching is **not** admitted here: a passing command whose text
-/// merely *contains* "test"/"build"/"lint" must never promote a claim to
-/// `Verified` (a `contest-helper` script is not a test run, `prebuild-all` is
-/// not a build, `lintel-check` is not a lint). The previous implementation used
-/// `command.to_lowercase().contains(..)`, which allowed exactly that promotion
-/// (R0 finding B-02).
-///
-/// Conservative bias: composite commands (shell separators) are rejected for
-/// promotion purposes — claim evidence must be a single-purpose command whose
-/// program and verb are unambiguous.
-const SHELL_SEPARATORS: [char; 5] = [';', '|', '&', '\n', '\r'];
-
-fn tokens(command: &str) -> Vec<String> {
-    command
-        .split_whitespace()
-        .map(|t| {
-            t.trim_matches(|c: char| c == '"' || c == '\'' || c == '`' || c == ',')
-                .to_lowercase()
-        })
-        .filter(|t| !t.is_empty())
-        .collect()
-}
-
-/// Split a command into its program and argument tokens; `None` when the
-/// command is composite (contains shell separators).
+/// Parse the recorded argv spelling, not arbitrary words anywhere in it.
+/// `run_command` executes directly (without a shell) and records a quoted,
+/// round-trippable argv. Legacy unquoted shell compositions stay unsupported.
 fn program_and_args(command: &str) -> Option<(String, Vec<String>)> {
-    if command.chars().any(|c| SHELL_SEPARATORS.contains(&c)) {
+    let tokens = shlex::split(command)?;
+    let (program, args) = tokens.split_first()?;
+    if args
+        .iter()
+        .any(|arg| matches!(arg.as_str(), "&&" | "||" | ";" | "|" | "&"))
+    {
         return None;
     }
-    let t = tokens(command);
-    let (program, args) = t.split_first()?;
-    Some((program.clone(), args.to_vec()))
+    let program = program.rsplit(['/', '\\']).next()?.to_string();
+    if program.is_empty() {
+        return None;
+    }
+    Some((program, args.to_vec()))
 }
 
-/// True only for commands that are, by exact program/verb identity, a test run.
+/// Successful help, version, collection and dry-run invocations prove no check.
+fn executes_check(args: &[String]) -> bool {
+    !args.iter().any(|a| {
+        matches!(
+            a.as_str(),
+            "--help"
+                | "-h"
+                | "--version"
+                | "-V"
+                | "--dry-run"
+                | "--collect-only"
+                | "--co"
+                | "--no-run"
+                | "--list"
+                | "--fixtures"
+                | "--fixtures-per-test"
+                | "--markers"
+        )
+    })
+}
+
+fn verb(args: &[String]) -> Option<&str> {
+    // Cargo's optional toolchain selector precedes its subcommand.
+    let args = if args.first().is_some_and(|a| a.starts_with('+')) {
+        &args[1..]
+    } else {
+        args
+    };
+    args.first().map(String::as_str)
+}
+
+fn package_script(args: &[String], expected: &str) -> bool {
+    args.first().is_some_and(|a| a == expected)
+        || (args.first().is_some_and(|a| a == "run") && args.get(1).is_some_and(|a| a == expected))
+}
+
+fn has_input(args: &[String]) -> bool {
+    args.iter().any(|a| !a.is_empty() && !a.starts_with('-'))
+}
+
+/// Recognize an actual test operation, never a directory or trailing argument.
 pub fn is_test_command(command: &str) -> bool {
     let Some((program, args)) = program_and_args(command) else {
         return false;
     };
-    let has = |v: &str| args.iter().any(|a| a == v);
+    if !executes_check(&args) {
+        return false;
+    }
     match program.as_str() {
         "pytest" => true,
         "cargo" | "go" | "mvn" | "gradle" | "dotnet" | "swift" | "make" => {
-            has("test") || has("tests")
+            matches!(verb(&args), Some("test" | "tests"))
         }
-        "python" | "python3" => args.windows(2).any(|w| w[0] == "-m" && w[1] == "pytest"),
-        "npm" | "pnpm" | "yarn" | "bun" | "npx" | "node" => has("test") || has("tests"),
-        // Canonical repository runners (e.g. scripts/run_tests.sh) are test runs
-        // by identity of the program path, never by substring of the whole line.
-        _ if program.starts_with("./scripts/") || program.ends_with("run_tests.sh") => true,
+        "python" | "python3" => {
+            args.first().is_some_and(|a| a == "-m") && args.get(1).is_some_and(|a| a == "pytest")
+        }
+        "npm" | "pnpm" | "yarn" | "bun" => package_script(&args, "test"),
+        "run_tests.sh" => true,
         _ => false,
     }
 }
 
-/// True only for commands that are, by exact program/verb identity, a build.
+/// A compile-only check or arbitrary default Make target is not a build.
 pub fn is_build_command(command: &str) -> bool {
     let Some((program, args)) = program_and_args(command) else {
         return false;
     };
-    let has = |v: &str| args.iter().any(|a| a == v);
+    if !executes_check(&args) {
+        return false;
+    }
     match program.as_str() {
-        "cargo" => has("build") || has("check"),
-        "go" | "mvn" | "gradle" | "dotnet" | "swift" | "npm" | "pnpm" | "yarn" | "bun" => {
-            has("build")
-        }
-        "make" => args.is_empty() || has("build") || has("all"),
+        "cargo" | "go" | "gradle" | "dotnet" | "swift" | "make" => verb(&args) == Some("build"),
+        "mvn" => matches!(verb(&args), Some("package" | "install")),
+        "npm" | "pnpm" | "yarn" | "bun" => package_script(&args, "build"),
         _ => false,
     }
 }
 
-/// True only for commands that are, by exact program/verb identity, a lint/format check.
+/// Lint/format evidence must run a checking operation, not a formatter write,
+/// version probe, language server, or script argument named `lint`.
 pub fn is_lint_command(command: &str) -> bool {
     let Some((program, args)) = program_and_args(command) else {
         return false;
     };
-    let has = |v: &str| args.iter().any(|a| a == v);
+    if !executes_check(&args) {
+        return false;
+    }
+    let has_check = args.iter().any(|a| a == "--check");
+    if args.iter().any(|a| {
+        matches!(
+            a.as_str(),
+            "--print-config"
+                | "--inspect-config"
+                | "--env-info"
+                | "--init"
+                | "--show-settings"
+                | "--show-files"
+                | "--find-config-path"
+                | "--bug-report"
+                | "--list-optional"
+        )
+    }) {
+        return false;
+    }
     match program.as_str() {
-        "cargo" => has("clippy") || has("fmt"),
-        "ruff" | "eslint" | "biome" | "prettier" | "golangci-lint" | "shellcheck" | "hadolint"
-        | "ty" | "mypy" | "flake8" | "black" => true,
-        "npm" | "pnpm" | "yarn" | "bun" => has("lint") || has("format"),
+        "cargo" => verb(&args) == Some("clippy") || (verb(&args) == Some("fmt") && has_check),
+        "ruff" => verb(&args) == Some("check") || (verb(&args) == Some("format") && has_check),
+        "biome" => matches!(verb(&args), Some("check" | "lint")),
+        "ty" => verb(&args) == Some("check"),
+        "golangci-lint" => verb(&args) == Some("run"),
+        "prettier" | "black" => has_check && has_input(&args),
+        "eslint" | "mypy" | "flake8" | "shellcheck" | "hadolint" => has_input(&args),
+        "npm" | "pnpm" | "yarn" | "bun" => package_script(&args, "lint"),
         _ => false,
     }
 }
@@ -229,7 +278,7 @@ mod tests {
         );
         assert_eq!(
             verify("build_succeeds", &[("cargo check", true)]),
-            ClaimStatus::Verified
+            ClaimStatus::Unsupported
         );
         assert_eq!(
             verify("lint_clean", &[("cargo clippy -- -D warnings", true)]),

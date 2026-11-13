@@ -11,6 +11,7 @@ chrono = { workspace = true, features = ["serde"] }
 sha2 = { workspace = true }
 hex = "0.4"
 regex = "1"
+shlex = "2.0.1"
 clap = { version = "4", features = ["derive"] }
 tokio = { workspace = true, features = ["rt", "process", "macros"] }
 thiserror = { workspace = true }
