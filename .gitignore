@@ -6,3 +6,6 @@ __pycache__/
 
 # compiled native extensions (build artifacts)
 *.so
+
+# Exact generated subtree; recovery inventory is in docs/quarantine/.
+/_salvage_from_libraries2/Libraries2/target_schema_gen/

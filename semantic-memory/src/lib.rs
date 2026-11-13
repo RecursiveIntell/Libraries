@@ -1,5 +1,4 @@
 #![allow(deprecated)]
-#![allow(unused_imports, unused_variables, unreachable_code)]
 #![allow(
     clippy::bool_assert_comparison,
     clippy::collapsible_if,
@@ -3147,16 +3146,25 @@ impl MemoryStore {
     pub async fn stats(&self) -> Result<MemoryStats, MemoryError> {
         let db_path = self.inner.paths.sqlite_path.clone();
         self.with_read_conn(move |conn| {
-            let total_facts: u64 =
+            // rusqlite 0.41 removed the unsound u64/usize FromSql impls
+            // (SQLite integers are i64); read i64 and convert.
+            let total_facts: i64 =
                 conn.query_row("SELECT COUNT(*) FROM facts", [], |r| r.get(0))?;
-            let total_documents: u64 =
+            let total_documents: i64 =
                 conn.query_row("SELECT COUNT(*) FROM documents", [], |r| r.get(0))?;
-            let total_chunks: u64 =
+            let total_chunks: i64 =
                 conn.query_row("SELECT COUNT(*) FROM chunks", [], |r| r.get(0))?;
-            let total_sessions: u64 =
+            let total_sessions: i64 =
                 conn.query_row("SELECT COUNT(*) FROM sessions", [], |r| r.get(0))?;
-            let total_messages: u64 =
+            let total_messages: i64 =
                 conn.query_row("SELECT COUNT(*) FROM messages", [], |r| r.get(0))?;
+            let (total_facts, total_documents, total_chunks, total_sessions, total_messages) = (
+                total_facts as u64,
+                total_documents as u64,
+                total_chunks as u64,
+                total_sessions as u64,
+                total_messages as u64,
+            );
 
             let db_size = std::fs::metadata(&db_path).map(|m| m.len()).unwrap_or(0);
 
@@ -3164,7 +3172,13 @@ impl MemoryStore {
                 .query_row(
                     "SELECT model_name, dimensions FROM embedding_metadata WHERE id = 1",
                     [],
-                    |r| Ok((Some(r.get(0)?), Some(r.get(1)?))),
+                    // rusqlite 0.41: read i64, convert (usize impl removed).
+                    |r| {
+                        Ok((
+                            r.get::<_, Option<String>>(0)?,
+                            r.get::<_, Option<i64>>(1)?.map(|v| v as usize),
+                        ))
+                    },
                 )
                 .unwrap_or((None, None));
 

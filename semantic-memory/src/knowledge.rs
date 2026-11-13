@@ -6,11 +6,13 @@ use crate::db;
 use crate::db::{bytes_to_embedding, parse_optional_json, with_transaction};
 #[cfg(feature = "hnsw")]
 use crate::db::{enqueue_pending_index_op, PendingIndexOpKind};
-#[cfg(feature = "hnsw")]
+#[cfg(all(feature = "hnsw", feature = "admin-ops"))]
 use crate::episodes;
 use crate::error::MemoryError;
 use crate::quantize::{self, Quantizer};
-use crate::types::{Fact, NamespaceDeleteReport};
+use crate::types::Fact;
+#[cfg(feature = "admin-ops")]
+use crate::types::NamespaceDeleteReport;
 use crate::{merge_trace_ctx, MemoryStore};
 use rusqlite::{params, Connection, OptionalExtension};
 use stack_ids::TraceCtx;
@@ -995,8 +997,8 @@ impl MemoryStore {
             let current_count: usize = conn.query_row(
                 "SELECT COUNT(*) FROM facts WHERE namespace = ?1",
                 rusqlite::params![&ns],
-                |row| row.get(0),
-            )?;
+                |row| row.get::<_, i64>(0),
+            )? as usize;
             if current_count >= max_facts_per_namespace {
                 return Err(MemoryError::NamespaceFull {
                     namespace: ns.clone(),
@@ -1084,8 +1086,8 @@ impl MemoryStore {
             let current_count: usize = conn.query_row(
                 "SELECT COUNT(*) FROM facts WHERE namespace = ?1",
                 rusqlite::params![&ns],
-                |row| row.get(0),
-            )?;
+                |row| row.get::<_, i64>(0),
+            )? as usize;
             if current_count >= max_facts_per_namespace {
                 return Err(MemoryError::NamespaceFull {
                     namespace: ns.clone(),
@@ -1400,8 +1402,8 @@ impl MemoryStore {
                     let current_count: usize = tx.query_row(
                         "SELECT COUNT(*) FROM facts WHERE namespace = ?1",
                         [&payload.namespace],
-                        |row| row.get(0),
-                    )?;
+                        |row| row.get::<_, i64>(0),
+                    )? as usize;
                     if current_count >= max_facts_per_namespace {
                         return Err(MemoryError::NamespaceFull {
                             namespace: payload.namespace.clone(),
@@ -1625,7 +1627,7 @@ impl MemoryStore {
                     sequence: envelope.sequence,
                 });
             }
-            let count: usize = tx.query_row("SELECT COUNT(*) FROM facts WHERE namespace=?1", [&replacement.namespace], |row| row.get(0))?;
+            let count: usize = tx.query_row("SELECT COUNT(*) FROM facts WHERE namespace=?1", [&replacement.namespace], |row| row.get::<_, i64>(0))? as usize;
             if count >= limit { return Err(MemoryError::NamespaceFull { namespace: replacement.namespace.clone(), count, limit }); }
             insert_fact_in_tx(&tx, &replacement.fact_id, &replacement.namespace, &replacement.content, &embedding_bytes, q8_bytes.as_deref(), replacement.source.as_deref(), replacement.metadata.as_ref())?;
             if let Some((weights, representation)) = sparse.as_ref().zip(sparse_representation.as_deref()) { db::store_sparse_vector(&tx, &format!("fact:{}", replacement.fact_id), weights, representation)?; }

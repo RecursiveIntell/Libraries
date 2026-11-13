@@ -827,9 +827,34 @@ mod tests {
             "timed-out child process should be gone, pid={child_pid}, kill_result={kill_result}, errno={errno}"
         );
     }
-
     #[test]
     fn host_backend_clears_disallowed_environment_variables() {
+        const CHILD: &str = "CHECK_RUNNER_ENV_SCRUB_TEST_CHILD";
+        const SECRET: &str = "AWS_SECRET_ACCESS_KEY";
+        const SENTINEL: &str = "forbidden";
+        const VERIFIED: &str = "host backend environment scrub verified";
+
+        if std::env::var_os(CHILD).is_none() {
+            let child = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "tests::host_backend_clears_disallowed_environment_variables",
+                    "--nocapture",
+                ])
+                .env(CHILD, "1")
+                .env(SECRET, SENTINEL)
+                .output()
+                .unwrap();
+            let stdout = String::from_utf8_lossy(&child.stdout);
+            assert!(
+                child.status.success() && stdout.contains(VERIFIED),
+                "environment scrub subprocess failed: {stdout}\n{}",
+                String::from_utf8_lossy(&child.stderr)
+            );
+            return;
+        }
+
+        assert_eq!(std::env::var(SECRET).as_deref(), Ok(SENTINEL));
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_io()
             .enable_time()
@@ -839,7 +864,6 @@ mod tests {
         let backend = HostBackend::new(&config);
         let workspace = tempfile::tempdir().unwrap();
 
-        check_runner_sys::set_env("AWS_SECRET_ACCESS_KEY", "forbidden");
         let output = runtime
             .block_on(backend.run_command(
                 workspace.path(),
@@ -849,8 +873,7 @@ mod tests {
                 5,
             ))
             .unwrap();
-        check_runner_sys::remove_env("AWS_SECRET_ACCESS_KEY");
-
         assert_eq!(output.stdout, "missing");
+        println!("{VERIFIED}");
     }
 }

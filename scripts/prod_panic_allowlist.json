@@ -24,7 +24,7 @@
     "reason": "Decision digest serializes closed serde-derived contract fields; the public decision API is intentionally infallible."
   },
   {
-    "entry": "semantic-memory/src/procedural_memory.rs:1724",
+    "entry": "semantic-memory/src/procedural_memory.rs:1735",
     "reason": "Procedure digest serializes a closed serde contract; the digest helper is intentionally infallible and has no fallback semantics."
   },
   {

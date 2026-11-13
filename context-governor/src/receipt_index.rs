@@ -821,7 +821,8 @@ fn lineage_catalog_payload(
             session_id: row.get(2)?,
             generation,
             parent_receipt_id: row.get(4)?,
-            file_bytes: row.get(5)?,
+            // rusqlite 0.41: read i64, convert (u64 FromSql removed).
+            file_bytes: row.get::<_, i64>(5)? as u64,
             modified_ns: row.get(6)?,
             changed_ns: row.get(7)?,
         })
@@ -896,7 +897,8 @@ fn stored_fingerprints(
         Ok((
             row.get::<_, String>(0)?,
             (
-                row.get::<_, u64>(1)?,
+                // rusqlite 0.41: read i64, convert (u64 FromSql removed).
+                row.get::<_, i64>(1)? as u64,
                 row.get::<_, i64>(2)?,
                 row.get::<_, i64>(3)?,
             ),

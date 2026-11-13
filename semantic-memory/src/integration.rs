@@ -930,7 +930,6 @@ mod tests {
     use crate::discord::*;
     use crate::provenance::*;
     use crate::routing::*;
-    use crate::subtraction::*;
 
     // ── Wire 1 tests ───────────────────────────────────────────────────
 

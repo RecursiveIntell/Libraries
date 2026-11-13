@@ -911,7 +911,6 @@ mod tests {
         let graph = ConflictGraph::from_syndromes(&results, &syndromes);
         let mp = pass_messages(&graph, 100, 0.001);
         let clean_conf = mp.node_confidences.get("clean").unwrap();
-        let conflicted_conf = mp.node_confidences.get("conflicted").unwrap();
         // Both are connected and both start at 0.9, so they pull each other
         // toward 0.9 * 0.7 + 0.9 * 0.3 = 0.9. But they'll converge at 0.9
         // since both start equal. Let's test with different initial values.

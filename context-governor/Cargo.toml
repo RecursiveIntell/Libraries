@@ -45,7 +45,7 @@ thiserror = "2"
 uuid = { version = "1", features = ["v4", "serde"] }
 
 [dependencies.rusqlite]
-version = "0.32"
+version = "0.41"
 features = ["bundled", "serde_json"]
 
 [dependencies.tiktoken-rs]

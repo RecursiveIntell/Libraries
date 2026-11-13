@@ -4,7 +4,7 @@
 //! canonical owner's pinned read transaction. It makes no pathname identity,
 //! original-file byte hash, or general database-health claim.
 use crate::{MemoryError, MemoryStore};
-use rusqlite::{serialize::Data, types::ValueRef, Connection, DatabaseName, OptionalExtension};
+use rusqlite::{serialize::Data, types::ValueRef, Connection, OptionalExtension};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
@@ -168,12 +168,7 @@ fn capture(
 ) -> Result<OrphanRowV1, Error> {
     // table is from the closed static allowlist, never caller-controlled.
     let mut stmt = conn.prepare(&format!("SELECT rowid, * FROM \"{table}\" WHERE rowid=?1"))?;
-    let columns: Vec<_> = stmt
-        .column_names()
-        .iter()
-        .skip(1)
-        .map(|s| (*s).to_owned())
-        .collect();
+    let columns: Vec<_> = stmt.column_names().skip(1).map(|s| s.to_owned()).collect();
     let mut rows = stmt.query([rowid])?;
     let raw = rows
         .next()?
@@ -264,26 +259,31 @@ fn capture_read_view(
     if mode != "delete" {
         return Err(Error::NotSealed);
     }
-    let page_count: u64 = transaction.query_row("PRAGMA page_count", [], |r| r.get(0))?;
-    let page_size: u64 = transaction.query_row("PRAGMA page_size", [], |r| r.get(0))?;
+    let page_count: u64 =
+        transaction.query_row("PRAGMA page_count", [], |r| r.get::<_, i64>(0))? as u64;
+    let page_size: u64 =
+        transaction.query_row("PRAGMA page_size", [], |r| r.get::<_, i64>(0))? as u64;
     let expected_bytes = bounded_image_size(page_count, page_size, image_limit)?;
 
     // Backup propagates source page-read failures. Serializing the disk source
     // directly would be weaker: SQLite may zero-fill a failed page read.
     let mut image = Connection::open_in_memory()?;
-    image.pragma_update(None, "page_size", page_size)?;
+    // rusqlite 0.41: PRAGMA values bind as i64 (u64 ToSql removed).
+    image.pragma_update(None, "page_size", page_size as i64)?;
     crate::integrity_snapshot::copy_pinned_read_view(&transaction, &mut image, page_count, || {
         Ok(())
     })?;
-    let copied_pages: u64 = image.query_row("PRAGMA page_count", [], |r| r.get(0))?;
-    let copied_page_size: u64 = image.query_row("PRAGMA page_size", [], |r| r.get(0))?;
+    let copied_pages: u64 =
+        image.query_row("PRAGMA page_count", [], |r| r.get::<_, i64>(0))? as u64;
+    let copied_page_size: u64 =
+        image.query_row("PRAGMA page_size", [], |r| r.get::<_, i64>(0))? as u64;
     if bounded_image_size(copied_pages, copied_page_size, image_limit)? != expected_bytes {
         return Err(Error::InvalidReadView);
     }
     // Recheck the size before serialization's second full-image allocation.
     // Inspect a read-only deserialization of exactly the bytes we hash, not a
     // separately acquired connection or a reopened filesystem path.
-    let serialized = image.serialize(DatabaseName::Main)?;
+    let serialized = image.serialize("main")?;
     if u64::try_from(serialized.len()).ok() != Some(expected_bytes) {
         return Err(Error::InvalidReadView);
     }
@@ -293,7 +293,7 @@ fn capture_read_view(
     };
     drop(image);
     let mut inspected = Connection::open_in_memory()?;
-    inspected.deserialize(DatabaseName::Main, serialized, true)?;
+    inspected.deserialize("main", serialized, true)?;
     inspected.pragma_update(None, "query_only", true)?;
     let mut report = inspect(&inspected, max_rows, max_bytes)?;
     report.read_view_sha256 = read_view_sha256;

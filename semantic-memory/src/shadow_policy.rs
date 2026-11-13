@@ -728,7 +728,9 @@ impl MemoryStore {
                         params![
                             proposal.principal,
                             proposal.policy_kind.as_str(),
-                            next_version,
+                            // rusqlite 0.41 removed the unsound u64 ToSql impl;
+                            // bind the version via i64.
+                            next_version as i64,
                             serde_json::to_string(&next_policy).map_err(|e| {
                                 MemoryError::ShadowPolicyRejected {
                                     reason: e.to_string(),
@@ -754,7 +756,9 @@ impl MemoryStore {
                         params![
                             proposal.principal,
                             proposal.policy_kind.as_str(),
-                            next_version,
+                            // rusqlite 0.41 removed the unsound u64 ToSql impl;
+                            // bind the version via i64.
+                            next_version as i64,
                             serde_json::to_string(&next_policy).map_err(|e| {
                                 MemoryError::ShadowPolicyRejected {
                                     reason: e.to_string(),
@@ -864,10 +868,11 @@ impl MemoryStore {
                         "SELECT version, policy_json, policy_digest, proposal_id, activated_at
                          FROM shadow_policy_versions
                          WHERE principal = ?1 AND policy_kind = ?2 AND version = ?3",
-                        params![principal, policy_kind.as_str(), target_version],
+                        // rusqlite 0.41: bind the version via i64 (u64 ToSql removed).
+                        params![principal, policy_kind.as_str(), target_version as i64],
                         |row| {
                             Ok((
-                                row.get::<_, u64>(0)?,
+                                row.get::<_, i64>(0)? as u64,
                                 row.get::<_, String>(1)?,
                                 row.get::<_, String>(2)?,
                                 row.get::<_, String>(3)?,
@@ -899,7 +904,8 @@ impl MemoryStore {
                     params![
                         principal,
                         policy_kind.as_str(),
-                        target.0,
+                        // rusqlite 0.41: bind the version via i64 (u64 ToSql removed).
+                        target.0 as i64,
                         target.1,
                         target.2,
                         target.3,
@@ -1223,7 +1229,16 @@ fn load_active_tx(
         "SELECT version, policy_json, policy_digest, source_proposal_id, activated_by, activated_at
          FROM shadow_active_policies WHERE principal = ?1 AND policy_kind = ?2",
         params![principal, kind.as_str()],
-        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?)),
+        |row| {
+            Ok((
+                row.get::<_, i64>(0)? as u64,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+            ))
+        }
     ).optional()?;
     row.map(
         |(version, policy_json, policy_digest, source_proposal_id, activated_by, activated_at)| {
