@@ -61,7 +61,7 @@ pub enum CheckKind {
     Test,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct ParsedCheckOutput {
     pub check_kind: CheckKind,
     pub exit_code: i32,
@@ -119,7 +119,7 @@ pub struct CheckCommand {
     pub env: Vec<(String, String)>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CommandOutput {
     pub stdout: String,
     pub stderr: String,
@@ -156,6 +156,22 @@ pub fn is_env_allowed(key: &str) -> bool {
 
 pub struct HostBackend {
     timeout_secs: u64,
+}
+
+/// Ordinary process-group cleanup, not containment against setsid escapes.
+#[cfg(unix)]
+struct OwnedProcessGroup {
+    pid: i32,
+    armed: bool,
+}
+
+#[cfg(unix)]
+impl Drop for OwnedProcessGroup {
+    fn drop(&mut self) {
+        if self.armed {
+            check_runner_sys::kill_process_group(self.pid);
+        }
+    }
 }
 
 impl HostBackend {
@@ -218,10 +234,25 @@ impl ExecutionBackend for HostBackend {
             .spawn()
             .map_err(|error| RunnerError::Other(format!("failed to spawn {program}: {error}")))?;
         #[cfg(unix)]
-        let child_pid = child.id().map(|pid| pid as i32);
+        let child_pid = child
+            .id()
+            .ok_or_else(|| RunnerError::Other("spawned command has no process identity".into()))?
+            as i32;
         let wait = child.wait_with_output();
         tokio::pin!(wait);
+        // Declared after wait: cancellation drops the group guard before the
+        // child's wait future. Kill-on-drop of just the leader is insufficient.
+        #[cfg(unix)]
+        let mut group = OwnedProcessGroup {
+            pid: child_pid,
+            armed: true,
+        };
         let output = tokio::time::timeout(Duration::from_secs(timeout), &mut wait).await;
+
+        #[cfg(unix)]
+        if matches!(&output, Ok(Ok(_))) {
+            group.armed = false;
+        }
 
         let duration_ms = start.elapsed().as_millis() as u64;
         match output {
@@ -235,21 +266,7 @@ impl ExecutionBackend for HostBackend {
                 "command {program} failed: {error}"
             ))),
             Err(_) => {
-                // P1-1: V30 HARDENING — scoped-allow for architectural process-group termination.
-                // This unsafe block is NOT a casual shortcut. It is the only Unix mechanism to
-                // terminate an entire spawned process group when a command times out. The child
-                // was spawned with process_group(0) — kill() on the parent PID alone would leave
-                // orphaned children. No safe Rust wrapper exists for killpg(); this is the minimal
-                // correct primitive. Evidence:
-                // - tokio::process::Command does not expose PID for safe killpg() dispatch
-                // - std::process::Command::kill() hits the same syscall internally (always unsafe)
-                // - Precondition: child_pid is a process group leader spawned in this session
-                // - Postcondition: entire process group receives SIGKILL, all processes terminated
-                #[allow(clippy::arc_with_non_send_sync)]
-                check_runner_sys::kill_process_group(
-                    child_pid.expect("child PID must be Some immediately after spawn"),
-                );
-
+                // The armed guard handles both timeout and future cancellation.
                 Err(RunnerError::CommandTimeout {
                     command: format!("{program} {}", args.join(" ")),
                     timeout_secs: timeout,

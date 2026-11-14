@@ -54,7 +54,7 @@ pub use exec::{
 };
 
 // Adapter types
-pub use adapters::{CargoAdapter, ProjectAdapter};
+pub use adapters::{CargoAdapter, ProjectAdapter, PythonAdapter};
 
 // Store types
 pub use store::ForgeStore;
