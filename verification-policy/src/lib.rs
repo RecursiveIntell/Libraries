@@ -610,6 +610,18 @@ pub struct PolicyDecision {
     pub approval_satisfied: bool,
     #[serde(default)]
     pub reasons: Vec<String>,
+    /// Runtime-only owner binding. Serialized policy reports are projections,
+    /// never a way to manufacture a fresh execution capability.
+    #[serde(skip)]
+    #[schemars(skip)]
+    execution_binding: Option<Box<RuntimeDecisionBinding>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RuntimeDecisionBinding {
+    case: VerificationCase,
+    plan: CheckPlan,
+    decision: PolicyDecision,
 }
 
 impl PolicyDecision {
@@ -633,6 +645,26 @@ pub fn approval_matches(
     plan: &CheckPlan,
     evaluated_at: &str,
 ) -> bool {
+    if approval.validate().is_err() {
+        return false;
+    }
+    let Ok(instant) = chrono::DateTime::parse_from_rfc3339(evaluated_at) else {
+        return false;
+    };
+    let Ok(approved_at) = chrono::DateTime::parse_from_rfc3339(&approval.approved_at) else {
+        return false;
+    };
+    if approved_at > instant {
+        return false;
+    }
+    if let Some(expires_at) = &approval.scope.expires_at {
+        let Ok(expiry) = chrono::DateTime::parse_from_rfc3339(expires_at) else {
+            return false;
+        };
+        if expiry <= approved_at || instant >= expiry {
+            return false;
+        }
+    }
     if approval
         .case_id
         .as_ref()
@@ -672,30 +704,36 @@ pub fn approval_matches(
     {
         return false;
     }
-    if approval
-        .scope
-        .expires_at
-        .as_ref()
-        .is_some_and(|expires_at| expires_at.as_str() <= evaluated_at)
-    {
-        return false;
-    }
-
     true
 }
 
 /// Selects the newest policy snapshot that is effective for the requested timestamp.
 pub fn policy_as_of<'a>(policies: &'a [PolicySnapshot], as_of: &str) -> Option<&'a PolicySnapshot> {
-    policies
-        .iter()
-        .filter(|policy| {
-            policy.effective_from.as_str() <= as_of
-                && policy
-                    .effective_to
-                    .as_ref()
-                    .map_or(true, |effective_to| effective_to.as_str() > as_of)
-        })
-        .max_by(|left, right| left.effective_from.cmp(&right.effective_from))
+    let instant = chrono::DateTime::parse_from_rfc3339(as_of).ok()?;
+    let mut selected = None;
+    for policy in policies {
+        // A malformed authoritative policy set cannot silently fall back to an
+        // older or more permissive snapshot. All times are compared as instants.
+        policy.validate().ok()?;
+        let start = chrono::DateTime::parse_from_rfc3339(&policy.effective_from).ok()?;
+        let end = policy
+            .effective_to
+            .as_deref()
+            .map(chrono::DateTime::parse_from_rfc3339)
+            .transpose()
+            .ok()?;
+        if end.is_some_and(|end| end <= start) {
+            return None;
+        }
+        if start <= instant && end.map_or(true, |end| instant < end) {
+            match selected {
+                Some((_, prior)) if start < prior => {}
+                Some((_, prior)) if start == prior => return None,
+                _ => selected = Some((policy, start)),
+            }
+        }
+    }
+    selected.map(|(policy, _)| policy)
 }
 
 /// Evaluates one verification case against policy and emits a promotion-aware decision record.
@@ -771,7 +809,7 @@ pub fn evaluate_policy(
         reasons.push("constitutional obligation refs are missing".into());
     }
 
-    PolicyDecision {
+    let mut decision = PolicyDecision {
         schema_version: POLICY_DECISION_V1_SCHEMA.into(),
         decision_id: PolicyDecisionId::generate(),
         policy_version: snapshot.policy_version.clone(),
@@ -788,7 +826,14 @@ pub fn evaluate_policy(
         approval_required,
         approval_satisfied,
         reasons,
-    }
+        execution_binding: None,
+    };
+    decision.execution_binding = Some(Box::new(RuntimeDecisionBinding {
+        case: case.clone(),
+        plan: plan.clone(),
+        decision: decision.clone(),
+    }));
+    decision
 }
 
 #[cfg(test)]

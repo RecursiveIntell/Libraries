@@ -80,6 +80,7 @@ pub struct ExecutionPermit {
     citation: V25CitationContext,
     obligation_refs: V25ControlObligationRefs,
     commit_token: CommitToken,
+    execution_input: serde_json::Value,
 }
 
 impl ExecutionPermit {
@@ -106,6 +107,11 @@ impl ExecutionPermit {
     /// Returns the effect scope covered by this permit.
     pub fn scope(&self) -> &ExecutionPermitScope {
         &self.scope
+    }
+
+    /// Compare exact owner-admitted execution input, never only a plan ID.
+    pub fn admits_input(&self, input: &serde_json::Value) -> bool {
+        self.execution_input == *input
     }
 
     /// Returns the approval record lineage, when human approval was required.
@@ -193,6 +199,15 @@ impl PolicyDecision {
         plan: &CheckPlan,
         approvals: &[ApprovalRecord],
     ) -> Result<ExecutionPermit, PermitIssuanceError> {
+        let binding = self
+            .execution_binding
+            .as_ref()
+            .ok_or(PermitIssuanceError::DecisionContextMismatch)?;
+        let mut observed = self.clone();
+        observed.execution_binding = None;
+        if binding.case != *case || binding.plan != *plan || binding.decision != observed {
+            return Err(PermitIssuanceError::DecisionContextMismatch);
+        }
         if self.case_id != case.case_id || self.plan_id != plan.plan_id {
             return Err(PermitIssuanceError::DecisionContextMismatch);
         }
@@ -254,6 +269,7 @@ impl PolicyDecision {
             citation: self.citation.clone(),
             obligation_refs: self.obligation_refs.clone(),
             commit_token,
+            execution_input: plan.input.clone(),
         })
     }
 }

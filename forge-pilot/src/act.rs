@@ -29,7 +29,7 @@ use std::path::Path;
 use verification_policy::ExecutionPermit;
 
 /// An advisory-only plan that produces no promotable evidence.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AdvisoryPlan {
     pub description: String,
 }
@@ -38,7 +38,7 @@ pub struct AdvisoryPlan {
 ///
 /// Each variant determines which kernel oracle or paired-patch path
 /// will be used during the act phase.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PlanKind {
     OracleExactBounded {
         oracle_slice_id: OracleSliceId,
@@ -69,6 +69,35 @@ pub enum PlanKind {
 }
 
 impl PlanKind {
+    /// Full executable and observed input for CheckPlan/permit binding.
+    /// This value is not an authority; verification-policy owns admission.
+    pub fn execution_input(
+        &self,
+        config: &forge_engine::ForgeConfig,
+        observation: &Observation,
+    ) -> Result<serde_json::Value, serde_json::Error> {
+        let action = serde_json::to_value(self)?;
+        let config = serde_json::to_value(config)?;
+        let observation = serde_json::to_value(observation)?;
+        Ok(
+            serde_json::json!({"schema_version":"pilot_execution_input_v1", "action": action, "forge_config": config, "observation": observation}),
+        )
+    }
+
+    pub fn check_method(&self) -> verification_control::CheckMethod {
+        use verification_control::CheckMethod;
+        match self {
+            Self::OracleExactBounded { .. } => CheckMethod::ExactBoundedOracle,
+            Self::OracleConservative => CheckMethod::ConservativeOracle,
+            Self::OracleDeltaParity { .. } => CheckMethod::DeltaParityOracle,
+            Self::OracleTemporalReplay { .. } => CheckMethod::TemporalReplayOracle,
+            Self::OracleCausalRefuter { .. } => CheckMethod::CausalRefuter,
+            Self::OracleMinimalPerturbation { .. } => CheckMethod::MinimalPerturbationOracle,
+            Self::PairedPatch { .. } => CheckMethod::PairedPatch,
+            Self::AdvisoryOnlyVerificationPlan(_) => CheckMethod::AdvisoryOnly,
+        }
+    }
+
     /// Returns the superseded claim version targeted by this plan, if any.
     pub fn supersedes_claim_version_id(&self) -> Option<ClaimVersionId> {
         None
@@ -208,6 +237,13 @@ pub async fn execute_plan(
             target_key
         )));
     }
+    if permit.scope().namespace() != config.scope.namespace
+        || permit.scope().namespace() != observation.scope_key.namespace
+        || permit.scope().method() != plan.check_method()
+        || !permit.admits_input(&plan.execution_input(&config.forge_config, observation)?)
+    {
+        return Err(PilotError::ExecutionBindingMismatch);
+    }
     match plan {
         PlanKind::OracleExactBounded { .. }
         | PlanKind::OracleConservative
@@ -252,12 +288,21 @@ async fn execute_oracle_plan(
         .ok_or(PilotError::MissingCompiledContext)?;
 
     let oracle_execution = match plan {
-        PlanKind::OracleExactBounded { .. } => OracleExecution {
-            assessment: evaluate_exact_bounded(compiled),
-            delta_parity: None,
-            temporal_replay: None,
-            refutation: None,
-        },
+        PlanKind::OracleExactBounded { oracle_slice_id } => {
+            let assessment =
+                evaluate_exact_bounded(compiled).ok_or(PilotError::ExecutionBindingMismatch)?;
+            // The oracle owner selects the supported slice. A caller-selected
+            // ID cannot silently relabel that result as a different slice.
+            if assessment.slice_id != *oracle_slice_id {
+                return Err(PilotError::ExecutionBindingMismatch);
+            }
+            OracleExecution {
+                assessment: Some(assessment),
+                delta_parity: None,
+                temporal_replay: None,
+                refutation: None,
+            }
+        }
         PlanKind::OracleConservative => OracleExecution {
             assessment: Some(evaluate_conservative(compiled)),
             delta_parity: None,
