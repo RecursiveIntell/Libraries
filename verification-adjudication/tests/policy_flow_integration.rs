@@ -133,7 +133,9 @@ fn build_approval(case: &VerificationCase, plan: &CheckPlan) -> ApprovalRecord {
             reusable: true,
         },
         "operator",
-        "2026-03-12T00:00:01Z",
+        // The policy is evaluated at case detection (00:00:00), so this
+        // authorization must predate that instant rather than borrow future time.
+        "2026-03-11T23:59:59Z",
         vec![
             "artifact:claim-alpha".into(),
             "artifact:oracle-snapshot".into(),
