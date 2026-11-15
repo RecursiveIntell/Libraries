@@ -5,10 +5,18 @@ use forge_engine::{
 };
 use std::path::PathBuf;
 
+fn admitted_tool(env_key: &str) -> PathBuf {
+    // These paths are provisioned explicitly by the root CI lane. Neither the
+    // test nor production admits PATH-selected tooling or an older interpreter.
+    let tool = PathBuf::from(std::env::var_os(env_key).unwrap_or_default());
+    assert!(tool.is_absolute() && tool.is_file(), "missing {env_key} tool");
+    tool
+}
+
 async fn adapter() -> PythonAdapter {
     PythonAdapter::new(
-        PathBuf::from("/usr/bin/python3"),
-        PathBuf::from("/home/sikmindz/.local/bin/ruff"),
+        admitted_tool("FORGE_TEST_PYTHON"),
+        admitted_tool("FORGE_TEST_RUFF"),
     )
     .await
     .unwrap()
@@ -88,12 +96,12 @@ async fn empty_python_suite_cannot_be_a_passing_experiment() {
 #[tokio::test]
 async fn python_tools_are_explicit_and_bad_summaries_refuse() {
     assert!(
-        PythonAdapter::new("python3".into(), "/home/sikmindz/.local/bin/ruff".into())
+        PythonAdapter::new("python3".into(), admitted_tool("FORGE_TEST_RUFF"))
             .await
             .is_err()
     );
     assert!(
-        PythonAdapter::new("/bin/false".into(), "/home/sikmindz/.local/bin/ruff".into())
+        PythonAdapter::new("/bin/false".into(), admitted_tool("FORGE_TEST_RUFF"))
             .await
             .is_err()
     );
