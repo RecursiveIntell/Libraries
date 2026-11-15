@@ -120,10 +120,7 @@ impl Default for LoopConfig {
             },
             forge_config: ForgeConfig::default(),
             patch_plan_seeds: Vec::new(),
-            policy_snapshots: vec![PolicySnapshot::permissive(
-                "forge-pilot.default",
-                "2026-03-12T00:00:00Z",
-            )],
+            policy_snapshots: Vec::new(),
             approval_records: Vec::new(),
             calibration_abstention_threshold_micros: 500_000,
         }

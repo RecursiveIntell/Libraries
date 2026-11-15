@@ -2,9 +2,9 @@ use crate::error::PilotError;
 use crate::observe::Observation;
 use crate::orient::TargetCandidate;
 use semantic_memory::MemoryStore;
-use serde_json::json;
+
 use verification_adjudication::AdjudicationResult;
-use verification_control::{CheckMethod, PromotionClass, ReversibilityClass, VerificationCase};
+use verification_control::{PromotionClass, ReversibilityClass, VerificationCase};
 
 pub(super) fn promotion_class_for_plan(
     plan: &crate::act::PlanKind,
@@ -71,60 +71,4 @@ pub(super) async fn execute_rollback_invalidation(
         .await
         .map_err(PilotError::Memory)?;
     Ok(Some(invalidated))
-}
-
-pub(super) fn map_check_method(plan: &crate::act::PlanKind) -> CheckMethod {
-    match plan {
-        crate::act::PlanKind::OracleExactBounded { .. } => CheckMethod::ExactBoundedOracle,
-        crate::act::PlanKind::OracleConservative => CheckMethod::ConservativeOracle,
-        crate::act::PlanKind::OracleDeltaParity { .. } => CheckMethod::DeltaParityOracle,
-        crate::act::PlanKind::OracleTemporalReplay { .. } => CheckMethod::TemporalReplayOracle,
-        crate::act::PlanKind::OracleCausalRefuter { .. } => CheckMethod::CausalRefuter,
-        crate::act::PlanKind::OracleMinimalPerturbation { .. } => {
-            CheckMethod::MinimalPerturbationOracle
-        }
-        crate::act::PlanKind::PairedPatch { .. } => CheckMethod::PairedPatch,
-        crate::act::PlanKind::AdvisoryOnlyVerificationPlan(_) => CheckMethod::AdvisoryOnly,
-    }
-}
-
-pub(super) fn plan_input(plan: &crate::act::PlanKind) -> serde_json::Value {
-    match plan {
-        crate::act::PlanKind::OracleExactBounded { oracle_slice_id } => {
-            json!({ "oracle_slice_id": oracle_slice_id })
-        }
-        crate::act::PlanKind::OracleConservative => json!({ "mode": "conservative" }),
-        crate::act::PlanKind::OracleDeltaParity {
-            changed_node_ids,
-            max_iterations,
-        } => json!({
-            "changed_node_ids": changed_node_ids,
-            "max_iterations": max_iterations,
-        }),
-        crate::act::PlanKind::OracleTemporalReplay { cutoff_recorded_at } => {
-            json!({ "cutoff_recorded_at": cutoff_recorded_at })
-        }
-        crate::act::PlanKind::OracleCausalRefuter {
-            target_node_id,
-            max_removed_nodes,
-        }
-        | crate::act::PlanKind::OracleMinimalPerturbation {
-            target_node_id,
-            max_removed_nodes,
-        } => json!({
-            "target_node_id": target_node_id,
-            "max_removed_nodes": max_removed_nodes,
-        }),
-        crate::act::PlanKind::PairedPatch {
-            fixture_path,
-            description,
-            ..
-        } => json!({
-            "fixture_path": fixture_path,
-            "description": description,
-        }),
-        crate::act::PlanKind::AdvisoryOnlyVerificationPlan(plan) => {
-            json!({ "description": plan.description })
-        }
-    }
 }

@@ -1,7 +1,7 @@
 //! Evidence bundles, hypothesis edges, receipts, and verification plans.
 //!
-//! Phase 5 claim policy: this module produces PROVISIONAL LOCAL ATTRIBUTIONS
-//! from one paired baseline/patched run on one fixed workload slice.
+//! Claim policy: unpaired observations and provisional local component checks
+//! on one fixed workload slice remain distinct from independent acceptance.
 //! It does NOT produce robust causal confirmation, generalized effect claims,
 //! or production-level statistical guarantees, but it does model first-class
 //! verification trials and named falsification artifacts.
@@ -20,10 +20,14 @@ const LOCAL_AUTHORING_METADATA_KEY: &str = "living_memory_authoring";
 
 /// How strong a causal claim this bundle makes.
 ///
-/// Phase 5 only supports `ProvisionalSinglePair`.
+/// Counts of repeated component checks do not establish task-level significance.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ClaimStrength {
+    /// Unpaired diagnostic observation; no causal attribution is asserted.
+    ObservationOnly,
+    /// Repeated component checks, not independent task-level significance.
+    ProvisionalRepeatedChecks,
     /// Provisional local attribution from one paired intervention on one fixed workload slice.
     #[default]
     ProvisionalSinglePair,
@@ -32,6 +36,13 @@ pub enum ClaimStrength {
 impl std::fmt::Display for ClaimStrength {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::ObservationOnly => {
+                write!(f, "unpaired diagnostic observation; no causal attribution")
+            }
+            Self::ProvisionalRepeatedChecks => write!(
+                f,
+                "provisional repeated component checks; no task-level significance"
+            ),
             Self::ProvisionalSinglePair => {
                 write!(f, "provisional local attribution from one paired intervention on one fixed workload slice")
             }
@@ -949,7 +960,11 @@ impl ExperimentEvidenceBundle {
         {
             semantic_memory_forge::VerificationLifecycleState::Contradicted
         } else if completed_trial_count > 0
-            || self.assessment.as_ref().is_some_and(|assessment| {
+            && self
+                .pair_comparability
+                .as_ref()
+                .is_some_and(|pair| pair.valid)
+            && self.assessment.as_ref().is_some_and(|assessment| {
                 matches!(
                     assessment.reproducibility,
                     AssessmentCategory::Strong | AssessmentCategory::Adequate
@@ -1019,7 +1034,15 @@ impl ExperimentEvidenceBundle {
             }),
             timeout_secs: None,
             failure_mode: None,
-            request_schema_version: Some("living_memory.phase5.bundle.v1".into()),
+            request_schema_version: Some(
+                match self.claim_strength {
+                    ClaimStrength::ProvisionalSinglePair => "living_memory.phase5.bundle.v1",
+                    ClaimStrength::ObservationOnly | ClaimStrength::ProvisionalRepeatedChecks => {
+                        "living_memory.component_observation.v2"
+                    }
+                }
+                .into(),
+            ),
             response_schema_version: Some("semantic_memory_forge.evidence_bundle.v3".into()),
         });
 
@@ -1039,8 +1062,9 @@ impl ExperimentEvidenceBundle {
             estimate: self.scores.weighted_total,
             estimate_uncertainty: None,
             confidence,
-            trial_count: self.verification_trials.len().max(1) as u32,
-            variance_aware: self.verification_trials.len() > 1,
+            trial_count: completed_trial_count,
+            // No variance estimator is executed by this adapter.
+            variance_aware: false,
             verification_trials,
             comparability_snapshot,
             refutations,
@@ -1135,33 +1159,31 @@ impl ExperimentEvidenceBundle {
                 config_flags: snapshot.config_flags.clone(),
             });
 
-        let pair_comparability = authoring
-            .as_ref()
-            .and_then(|authoring| authoring.pair_comparability.clone())
-            .or_else(|| {
-                canonical
-                    .comparability_snapshot
-                    .as_ref()
-                    .map(|snapshot| PairComparability {
-                        valid: snapshot.comparable.unwrap_or(false),
-                        violations: snapshot.violations.clone(),
-                    })
-            });
+        let pair_comparability = if let Some(authoring) = authoring.as_ref() {
+            authoring.pair_comparability.clone()
+        } else {
+            canonical
+                .comparability_snapshot
+                .as_ref()
+                .map(|snapshot| PairComparability {
+                    valid: snapshot.comparable.unwrap_or(false),
+                    violations: snapshot.violations.clone(),
+                })
+        };
 
-        let treatment = authoring
-            .as_ref()
-            .and_then(|authoring| authoring.treatment.clone())
-            .or_else(|| {
-                if canonical.treatment.description.is_empty() {
-                    None
-                } else {
-                    Some(Treatment {
-                        kind: "patch_applied".into(),
-                        patch_hash: String::new(),
-                        patch_summary: canonical.treatment.description.clone(),
-                    })
-                }
-            });
+        let treatment = if let Some(authoring) = authoring.as_ref() {
+            authoring.treatment.clone()
+        } else {
+            if canonical.treatment.description.is_empty() {
+                None
+            } else {
+                Some(Treatment {
+                    kind: "canonical_treatment_unspecified".into(),
+                    patch_hash: String::new(),
+                    patch_summary: canonical.treatment.description.clone(),
+                })
+            }
+        };
 
         let covariates = authoring
             .as_ref()
@@ -1269,7 +1291,7 @@ impl ExperimentEvidenceBundle {
             claim_strength: authoring
                 .as_ref()
                 .map(|authoring| authoring.claim_strength)
-                .unwrap_or_default(),
+                .unwrap_or(ClaimStrength::ObservationOnly),
             identification_rationale: Some(canonical.identification_rationale.clone()),
             known_threats: authoring
                 .as_ref()

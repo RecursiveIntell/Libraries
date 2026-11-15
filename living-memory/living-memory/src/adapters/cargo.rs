@@ -285,9 +285,29 @@ fn parse_test_output(stdout: &str, stderr: &str, exit_code: i32) -> ParsedCheckO
         }
     }
 
+    // Exit zero is insufficient when no test executed. Preserve the raw output
+    // and report a non-passing semantic check for empty/ignored-only suites.
+    // This is a parser guard, not an independent anti-forgery evaluator.
+    let executed = stdout.lines().chain(stderr.lines()).any(|line| {
+        line.strip_prefix("test result: ok. ")
+            .and_then(|summary| summary.split_once(" passed;"))
+            .and_then(|(count, _)| count.parse::<u64>().ok())
+            .is_some_and(|count| count > 0)
+    }) || stdout.lines().any(|line| {
+        serde_json::from_str::<serde_json::Value>(line)
+            .ok()
+            .is_some_and(|value| {
+                value.get("type").and_then(|value| value.as_str()) == Some("test")
+                    && value.get("event").and_then(|value| value.as_str()) == Some("ok")
+            })
+    });
     ParsedCheckOutput {
         check_kind: CheckKind::Test,
-        exit_code,
+        exit_code: if exit_code == 0 && !executed {
+            -2
+        } else {
+            exit_code
+        },
         effects,
         raw_stdout: stdout.to_string(),
         raw_stderr: stderr.to_string(),

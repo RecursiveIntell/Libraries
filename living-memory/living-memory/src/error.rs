@@ -65,6 +65,13 @@ pub enum ForgeError {
     #[error("workspace path error: {0}")]
     WorkspacePath(PathBuf),
 
+    #[error("experiment incomplete after {completed_sides} sides: {reason}")]
+    ExperimentIncomplete {
+        completed_sides: usize,
+        reason: String,
+        trials: Vec<crate::experiment::TrialRecord>,
+    },
+
     #[error("experiment failed: {0}")]
     ExperimentFailed(String),
 
@@ -111,6 +118,7 @@ impl ForgeError {
             Self::NotFound(_) => "not_found",
             Self::WorkspacePath(_) => "workspace_path",
             Self::ExperimentFailed(_) => "experiment_failed",
+            Self::ExperimentIncomplete { .. } => "experiment_incomplete",
             Self::LimitExceeded { .. } => "limit_exceeded",
             Self::Export(_) => "export",
             Self::WriteThroughBlocked => "write_through_blocked",

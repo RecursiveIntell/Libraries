@@ -403,6 +403,11 @@ pub async fn import_promoted_hyperedge_batch(
 
 pub fn base_loop_config(scope: Scope) -> LoopConfig {
     let mut config = LoopConfig::default_for_scope(scope.clone(), ".");
+    // Reference authority is explicit fixture input, never a production default.
+    config.policy_snapshots = vec![verification_policy::PolicySnapshot::permissive(
+        "forge-pilot.test-fixture",
+        "2026-03-12T00:00:00Z",
+    )];
     config.memory_dir = "./memory".into();
     config.forge_db_path = "./forge.db".into();
     config.runtime_config = RuntimeConfig {

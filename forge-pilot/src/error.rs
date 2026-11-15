@@ -35,6 +35,10 @@ pub enum PilotError {
     ExecutionPermit(#[from] PermitIssuanceError),
     #[error("observation-only mode requires an explicit path; {field} is an ambient default")]
     ObservationOnlyAmbientPath { field: String },
+    #[error("no unambiguous valid policy applies at {as_of}")]
+    PolicyUnavailable { as_of: String },
+    #[error("execution input, namespace or method differs from the admitted permit")]
+    ExecutionBindingMismatch,
     #[error("{0}")]
     Other(String),
 }
@@ -57,6 +61,8 @@ impl PilotError {
             Self::ControlPlaneReplay(..) => "control_plane_replay",
             Self::ExecutionPermit(..) => "execution_permit",
             Self::ObservationOnlyAmbientPath { .. } => "observation_only_ambient_path",
+            Self::PolicyUnavailable { .. } => "policy_unavailable",
+            Self::ExecutionBindingMismatch => "execution_binding_mismatch",
             Self::Other(..) => "other",
         }
     }

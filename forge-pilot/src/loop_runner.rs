@@ -44,8 +44,8 @@ mod loop_runner_helpers;
 mod loop_runner_report;
 
 use loop_runner_helpers::{
-    currently_promoted, execute_rollback_invalidation, map_check_method, plan_input,
-    promotion_class_for_plan, reversibility_class_for_plan,
+    currently_promoted, execute_rollback_invalidation, promotion_class_for_plan,
+    reversibility_class_for_plan,
 };
 use loop_runner_report::apply_loop_report_boundary_repairs;
 pub use loop_runner_report::{
@@ -411,11 +411,18 @@ impl LoopRunner {
                 ));
             };
 
+            let iteration_started_at = iteration_timestamp.to_rfc3339();
+            // Resolve authority before consuming target retry/history state.
+            let policy_snapshot =
+                policy_as_of(&self.config.policy_snapshots, &iteration_started_at)
+                    .cloned()
+                    .ok_or_else(|| PilotError::PolicyUnavailable {
+                        as_of: iteration_started_at.clone(),
+                    })?;
             self.history.mark_selected(&selected.stable_key);
             totals
                 .targets_investigated
                 .push(selected.stable_key.clone());
-            let iteration_started_at = iteration_timestamp.to_rfc3339();
             let trial_id = TrialId::generate();
             let verification_case = VerificationCase::new(
                 selected.target.case_class(),
@@ -442,7 +449,7 @@ impl LoopRunner {
             );
             let check_plan = CheckPlan::new(
                 verification_case.case_id.clone(),
-                map_check_method(&selected.plan),
+                selected.plan.check_method(),
                 selected.plan.check_names(),
                 promotion_class_for_plan(&selected.plan, degraded),
                 reversibility_class_for_plan(&selected.plan),
@@ -456,7 +463,9 @@ impl LoopRunner {
                 ),
                 degraded,
                 selected.rationale.clone(),
-                plan_input(&selected.plan),
+                selected
+                    .plan
+                    .execution_input(&self.config.forge_config, &observation)?,
             );
             let mut check_plan = check_plan;
             check_plan.target_exactness = if degraded {
@@ -498,21 +507,6 @@ impl LoopRunner {
                     ]
                 },
             });
-            let policy_snapshot =
-                policy_as_of(&self.config.policy_snapshots, &iteration_started_at)
-                    .cloned()
-                    .unwrap_or_else(|| {
-                        self.config
-                            .policy_snapshots
-                            .first()
-                            .cloned()
-                            .unwrap_or_else(|| {
-                                verification_policy::PolicySnapshot::permissive(
-                                    "forge-pilot.fallback",
-                                    iteration_started_at.clone(),
-                                )
-                            })
-                    });
             let budget_exhausted = started.elapsed().as_secs() >= self.config.time_budget_secs;
             let policy_decision = evaluate_policy(
                 &policy_snapshot,
@@ -870,6 +864,12 @@ impl LoopRunner {
                         .iter()
                         .map(|blocked| format!("{:?}: {}", blocked.step_kind, blocked.reason))
                         .collect();
+                    if let Err(error) = &execution_permit {
+                        blocked_checks.push(format!(
+                            "{:?}: execution permit refused: {error}",
+                            check_plan.method
+                        ));
+                    }
                     if check_plan.degraded {
                         blocked_checks.push("plan degraded".into());
                     }

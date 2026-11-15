@@ -62,6 +62,17 @@ pub struct TypedLocatedEffect {
 pub struct TrialRecord {
     /// Which side of the experiment.
     pub side: TrialSide,
+    /// One-based pair index and unique physical side identity.
+    pub pair_index: u32,
+    pub trial_id: String,
+    pub workspace_path: PathBuf,
+    pub baseline_fingerprint: String,
+    pub completed: bool,
+    /// Actual output from this side, never duplicated from another trial.
+    pub check_outputs: Vec<crate::exec::backend::ParsedCheckOutput>,
+    /// Physical output, separate from parser-derived semantic outcomes. None
+    /// means an attempted command failed without a completed output record.
+    pub raw_command_outputs: Vec<Option<crate::exec::backend::CommandOutput>>,
     /// Summarized check pass/fail flags.
     pub fmt_pass: bool,
     pub clippy_pass: bool,
@@ -71,11 +82,11 @@ pub struct TrialRecord {
     /// Duration in milliseconds.
     pub duration_ms: u64,
     /// Seed used for reproducibility.
-    pub seed: u64,
+    pub seed: Option<u64>,
     /// Whether caches were warm.
     pub cache_mode: CacheMode,
     /// Whether network was available.
-    pub network_available: bool,
+    pub network_available: Option<bool>,
     /// Whether timing data is admissible.
     pub timing_admissible: bool,
 }
@@ -377,7 +388,7 @@ pub struct ExperimentExportRecord {
 // ── Experiment execution ──
 
 /// Configuration for a single experiment.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExperimentConfig {
     pub mode: ExperimentMode,
     pub trial_count: u32,
@@ -408,9 +419,15 @@ pub struct ExperimentResult {
     pub run_id: String,
     pub mode: ExperimentMode,
     pub baseline_descriptor: BaselineDescriptor,
+    /// Exact first-pair outputs for existing single-pair callers. For repeated
+    /// runs the complete per-side evidence is in `trials`; `diff` spans pairs.
     pub baseline_result: CheckResult,
     pub patched_result: CheckResult,
     pub diff: ExperimentDiff,
+    pub patch_hash: String,
+    pub source_hash: String,
+    pub command_plan: serde_json::Value,
+    pub pair_comparability: crate::lab::evidence::PairComparability,
     pub trials: Vec<TrialRecord>,
     pub completed_at: String,
 }
@@ -449,57 +466,236 @@ impl<'a> PairedExperimentRunner<'a> {
         patch: &crate::runtime::patch::types::StructuredPatch,
         experiment_config: &ExperimentConfig,
     ) -> ForgeResult<ExperimentResult> {
+        // Admission belongs at the execution ingress, including direct library
+        // callers. Never stage or execute a patch the canonical owner rejects.
+        let validation = crate::runtime::patch::validate::validate_patch(patch, self.config);
+        if !validation.ok {
+            return Err(ForgeError::PatchValidation {
+                violations: validation.violations,
+            });
+        }
+        // Replication/follow-up and caller-selected measurement policies do not
+        // yet have a qualified execution/evidence contract. Refuse them rather
+        // than label a single correctness pair as replicated or timing evidence.
+        if experiment_config.mode == ExperimentMode::VerificationFollowup
+            || experiment_config.trial_count == 0
+            || (experiment_config.mode == ExperimentMode::RepeatedPaired
+                && experiment_config.trial_count < 2)
+            || experiment_config.trial_count
+                > experiment_config.workspace_policy.max_retained_workspaces / 2
+            || (experiment_config.mode == ExperimentMode::Paired
+                && experiment_config.trial_count != 1)
+            || experiment_config.comparability.timing_admissible
+            || experiment_config.comparability.require_fingerprint_match
+                != ComparabilityPolicy::default().require_fingerprint_match
+            || experiment_config.comparability.min_trials
+                != ComparabilityPolicy::default().min_trials
+            || experiment_config.statistics_policy.min_paired_trials
+                != StatisticsPolicy::default().min_paired_trials
+            || experiment_config
+                .statistics_policy
+                .require_timing_admissibility
+                != StatisticsPolicy::default().require_timing_admissibility
+            || experiment_config.workspace_policy.max_workspace_bytes
+                != WorkspacePolicy::default().max_workspace_bytes
+            || experiment_config.workspace_policy.max_retained_workspaces
+                != WorkspacePolicy::default().max_retained_workspaces
+            || experiment_config.workspace_policy.retain_failed_workspaces
+            || experiment_config
+                .workspace_policy
+                .workspace_cleanup_ttl_secs
+                != WorkspacePolicy::default().workspace_cleanup_ttl_secs
+        {
+            return Err(ForgeError::Config(
+                "correctness pairs must fit the retained workspace limit; follow-up, timing and custom experiment policies are unsupported".into(),
+            ));
+        }
+        let commands = self.adapter.check_commands(self.config);
+        for kind in [
+            crate::exec::backend::CheckKind::Fmt,
+            crate::exec::backend::CheckKind::Clippy,
+            crate::exec::backend::CheckKind::Test,
+        ] {
+            if commands
+                .iter()
+                .filter(|command| command.kind == kind)
+                .count()
+                != 1
+            {
+                return Err(ForgeError::Config(
+                    "paired experiments require exactly one fmt, clippy and test command".into(),
+                ));
+            }
+        }
+
+        let mut command_plan = Vec::new();
+        for command in &commands {
+            command_plan.push(serde_json::json!({
+                "kind": command.kind, "program": command.program, "args": command.args,
+                "environment_fingerprint": blake3::hash(&serde_json::to_vec(&command.env)?).to_hex().to_string(),
+            }));
+        }
+        let command_plan = serde_json::Value::Array(command_plan);
         let run_id = uuid::Uuid::new_v4().to_string();
         let _started_at = chrono::Utc::now().to_rfc3339();
 
         tracing::info!(run_id = %run_id, mode = ?experiment_config.mode, "starting experiment");
 
-        // Prepare workspace
-        let workspace = self.backend.prepare_workspace(fixture_path).await?;
-        let ws_path = &workspace.host_path;
-
-        // Capture baseline provenance
-        let baseline_descriptor = crate::baseline::capture_baseline_provenance(ws_path).await?;
-
+        // Freeze the input once. Every physical side starts from the same
+        // snapshot, never from a baseline build's mutated working directory.
+        let source_hash = workspace_digest(fixture_path)?;
+        let snapshot = sandbox_workspace::prepare_workspace(fixture_path)?;
+        if workspace_digest(&snapshot.host_path)? != source_hash
+            || workspace_digest(fixture_path)? != source_hash
+        {
+            return Err(ForgeError::Fixture(
+                "source changed while staging snapshot".into(),
+            ));
+        }
+        let patch_hash = blake3::hash(&serde_json::to_vec(patch)?)
+            .to_hex()
+            .to_string();
         let timeout = self.config.container.command_timeout_secs;
+        if timeout == 0 {
+            return Err(ForgeError::Config(
+                "command timeout must be positive".into(),
+            ));
+        }
         let mut all_trials = Vec::new();
+        let mut baseline_results = Vec::new();
+        let mut patched_results = Vec::new();
+        let mut descriptors = Vec::new();
+        let mut diffs = Vec::new();
+        let mut retained = Vec::new();
 
-        // Run baseline checks
-        tracing::info!(run_id = %run_id, "running baseline checks");
-        let baseline_result = self
-            .run_checks(ws_path, timeout, TrialSide::Baseline, &mut all_trials)
-            .await?;
-
-        // Apply patch to workspace
-        tracing::info!(run_id = %run_id, "applying patch");
-        let _line_map = crate::runtime::patch::apply::apply_patch(patch, ws_path)?;
-
-        // Run patched checks
-        tracing::info!(run_id = %run_id, "running patched checks");
-        let patched_result = self
-            .run_checks(ws_path, timeout, TrialSide::Patched, &mut all_trials)
-            .await?;
-
-        // Compute typed diff
-        let diff = ExperimentDiff::from_paired(&baseline_result, &patched_result);
-
-        let completed_at = chrono::Utc::now().to_rfc3339();
-        tracing::info!(
-            run_id = %run_id,
-            regressions = diff.regressions,
-            improvements = diff.improvements,
-            "experiment completed"
-        );
-
+        for pair_index in 1..=experiment_config.trial_count {
+            for side in [TrialSide::Baseline, TrialSide::Patched] {
+                let side_result: ForgeResult<CheckResult> = async {
+                    let workspace = self.backend.prepare_workspace(&snapshot.host_path).await?;
+                    if workspace_digest(&workspace.host_path)? != source_hash {
+                        return Err(ForgeError::Fixture(
+                            "staged source differs from frozen input".into(),
+                        ));
+                    }
+                    let descriptor =
+                        crate::baseline::capture_baseline_provenance(&workspace.host_path).await?;
+                    let fingerprint = descriptor.fingerprint();
+                    descriptors.push(descriptor);
+                    if side == TrialSide::Patched {
+                        crate::runtime::patch::apply::apply_patch(patch, &workspace.host_path)?;
+                    }
+                    let result = self
+                        .run_checks(
+                            &workspace.host_path,
+                            &commands,
+                            timeout,
+                            (side, pair_index, &fingerprint),
+                            &mut all_trials,
+                        )
+                        .await;
+                    retained.push(workspace);
+                    result
+                }
+                .await;
+                match side_result {
+                    Ok(result) => match side {
+                        TrialSide::Baseline => baseline_results.push(result),
+                        TrialSide::Patched => patched_results.push(result),
+                    },
+                    Err(error) => {
+                        return Err(ForgeError::ExperimentIncomplete {
+                            completed_sides: all_trials
+                                .iter()
+                                .filter(|trial| trial.completed)
+                                .count(),
+                            reason: error.to_string(),
+                            trials: all_trials,
+                        })
+                    }
+                }
+            }
+            let baseline =
+                baseline_results
+                    .last()
+                    .ok_or_else(|| ForgeError::ExperimentIncomplete {
+                        completed_sides: all_trials.iter().filter(|trial| trial.completed).count(),
+                        reason: "pair completed without a baseline result".into(),
+                        trials: all_trials.clone(),
+                    })?;
+            let patched =
+                patched_results
+                    .last()
+                    .ok_or_else(|| ForgeError::ExperimentIncomplete {
+                        completed_sides: all_trials.iter().filter(|trial| trial.completed).count(),
+                        reason: "pair completed without a patched result".into(),
+                        trials: all_trials.clone(),
+                    })?;
+            diffs.push(ExperimentDiff::from_paired(baseline, patched));
+        }
+        let baseline_descriptor = descriptors[0].clone();
+        let mut violations = Vec::new();
+        if descriptors
+            .iter()
+            .any(|value| value.fingerprint() != baseline_descriptor.fingerprint())
+        {
+            violations.push("baseline environment/provenance fingerprint drift".into());
+        }
+        if baseline_descriptor.rustc_version.is_empty()
+            || baseline_descriptor.cargo_version.is_empty()
+            || baseline_descriptor.rustc_version == "unknown"
+            || baseline_descriptor.cargo_version == "unknown"
+        {
+            violations.push("toolchain provenance unavailable".into());
+        }
+        let mut diff = diffs[0].clone();
+        for next in diffs.iter().skip(1) {
+            diff.effects.extend(next.effects.clone());
+            diff.improvements += next.improvements;
+            diff.regressions += next.regressions;
+            diff.stable_passes += next.stable_passes;
+            diff.stable_failures += next.stable_failures;
+        }
+        diff.sample_warning = Some(format!(
+            "{} physical correctness pairs; no independent task-level or performance significance established",
+            experiment_config.trial_count,
+        ));
+        let unstable = |results: &[CheckResult]| {
+            results.iter().skip(1).any(|result| {
+                (result.fmt_pass, result.clippy_pass, result.test_pass)
+                    != (
+                        results[0].fmt_pass,
+                        results[0].clippy_pass,
+                        results[0].test_pass,
+                    )
+            })
+        };
+        if unstable(&baseline_results) || unstable(&patched_results) {
+            violations.push("check outcomes vary across pairs; inconclusive".into());
+            diff.effects.push(TypedLocatedEffect {
+                kind: EffectKind::FlakySignal,
+                file: None,
+                line: None,
+                message: "check outcomes vary across pairs".into(),
+                in_baseline: true,
+                in_patched: true,
+            });
+        }
         Ok(ExperimentResult {
             run_id,
             mode: experiment_config.mode,
             baseline_descriptor,
-            baseline_result,
-            patched_result,
+            baseline_result: baseline_results.remove(0),
+            patched_result: patched_results.remove(0),
             diff,
+            patch_hash,
+            source_hash,
+            command_plan,
+            pair_comparability: crate::lab::evidence::PairComparability {
+                valid: violations.is_empty(),
+                violations,
+            },
             trials: all_trials,
-            completed_at,
+            completed_at: chrono::Utc::now().to_rfc3339(),
         })
     }
 
@@ -507,18 +703,26 @@ impl<'a> PairedExperimentRunner<'a> {
     async fn run_checks(
         &self,
         workspace: &Path,
+        commands: &[crate::exec::backend::CheckCommand],
         timeout: u64,
-        side: TrialSide,
+        identity: (TrialSide, u32, &str),
         trials: &mut Vec<TrialRecord>,
     ) -> ForgeResult<CheckResult> {
-        let commands = self.adapter.check_commands(self.config);
         let start = std::time::Instant::now();
+        let (side, pair_index, baseline_fingerprint) = identity;
 
-        let mut fmt_output = crate::exec::backend::ParsedCheckOutput::default();
-        let mut clippy_output = crate::exec::backend::ParsedCheckOutput::default();
-        let mut test_output = crate::exec::backend::ParsedCheckOutput::default();
+        let unrun = crate::exec::backend::ParsedCheckOutput {
+            exit_code: -2,
+            ..Default::default()
+        };
+        let mut fmt_output = unrun.clone();
+        let mut clippy_output = unrun.clone();
+        let mut test_output = unrun;
+        let mut terminal_error = None;
+        let mut check_outputs = Vec::new();
+        let mut raw_command_outputs = Vec::new();
 
-        for cmd in &commands {
+        for cmd in commands {
             let args: Vec<&str> = cmd.args.iter().map(|s| s.as_str()).collect();
             let env: Vec<(&str, &str)> = cmd
                 .env
@@ -534,34 +738,39 @@ impl<'a> PairedExperimentRunner<'a> {
             let kind = cmd.kind.clone();
             match output {
                 Ok(output) => {
+                    raw_command_outputs.push(Some(output.clone()));
                     let parsed = self.adapter.parse_check_output(
                         cmd,
                         &output.stdout,
                         &output.stderr,
                         output.exit_code,
                     );
+                    check_outputs.push(parsed.clone());
                     match kind {
                         crate::exec::backend::CheckKind::Fmt => fmt_output = parsed,
                         crate::exec::backend::CheckKind::Clippy => clippy_output = parsed,
                         crate::exec::backend::CheckKind::Test => test_output = parsed,
                     }
                 }
-                Err(ForgeError::CommandTimeout { .. }) => {
+                Err(error) => {
+                    raw_command_outputs.push(None);
                     // Record timeout as failure
                     let parsed = crate::exec::backend::ParsedCheckOutput {
                         check_kind: kind.clone(),
                         exit_code: -1,
                         effects: vec![],
                         raw_stdout: String::new(),
-                        raw_stderr: "timeout".to_string(),
+                        raw_stderr: error.to_string(),
                     };
+                    check_outputs.push(parsed.clone());
                     match kind {
                         crate::exec::backend::CheckKind::Fmt => fmt_output = parsed,
                         crate::exec::backend::CheckKind::Clippy => clippy_output = parsed,
                         crate::exec::backend::CheckKind::Test => test_output = parsed,
                     }
+                    terminal_error = Some(error);
+                    break;
                 }
-                Err(e) => return Err(e),
             }
         }
 
@@ -579,17 +788,67 @@ impl<'a> PairedExperimentRunner<'a> {
 
         trials.push(TrialRecord {
             side,
+            pair_index,
+            trial_id: uuid::Uuid::new_v4().to_string(),
+            workspace_path: workspace.to_path_buf(),
+            baseline_fingerprint: baseline_fingerprint.into(),
+            completed: terminal_error.is_none() && check_outputs.len() == commands.len(),
+            check_outputs,
+            raw_command_outputs,
             fmt_pass: check_result.fmt_pass,
             clippy_pass: check_result.clippy_pass,
             test_pass: check_result.test_pass,
             backend_kind: self.backend.kind(),
             duration_ms,
-            seed: 0,
+            seed: None,
             cache_mode: CacheMode::Unknown,
-            network_available: true,
+            network_available: None,
             timing_admissible: false,
         });
 
-        Ok(check_result)
+        match terminal_error {
+            Some(error) => Err(error),
+            None => Ok(check_result),
+        }
     }
+}
+
+/// Strict content identity for a frozen, regular-file source tree. Symlinks,
+/// special files, unreadable entries and disappearing inputs are not skipped.
+fn workspace_digest(root: &Path) -> ForgeResult<String> {
+    if !root.is_dir() {
+        return Err(ForgeError::Fixture("fixture is not a directory".into()));
+    }
+    let mut files = Vec::new();
+    for entry in walkdir::WalkDir::new(root).follow_links(false) {
+        let entry = entry.map_err(|error| ForgeError::Fixture(error.to_string()))?;
+        if entry.file_type().is_dir() {
+            continue;
+        }
+        if !entry.file_type().is_file() {
+            return Err(ForgeError::Fixture(
+                "non-regular source entry refused".into(),
+            ));
+        }
+        files.push(
+            entry
+                .path()
+                .strip_prefix(root)
+                .map_err(|error| ForgeError::Fixture(error.to_string()))?
+                .to_path_buf(),
+        );
+    }
+    files.sort();
+    let mut hasher = blake3::Hasher::new();
+    for path in files {
+        let name = path
+            .to_str()
+            .ok_or_else(|| ForgeError::Fixture("non-UTF8 source path refused".into()))?;
+        let bytes = std::fs::read(root.join(&path))?;
+        hasher.update(&(name.len() as u64).to_le_bytes());
+        hasher.update(name.as_bytes());
+        hasher.update(&(bytes.len() as u64).to_le_bytes());
+        hasher.update(&bytes);
+    }
+    Ok(hasher.finalize().to_hex().to_string())
 }
