@@ -84,6 +84,7 @@ impl PlanKind {
         )
     }
 
+    /// Map a validated pilot action to its canonical verification method.
     pub fn check_method(&self) -> verification_control::CheckMethod {
         use verification_control::CheckMethod;
         match self {
