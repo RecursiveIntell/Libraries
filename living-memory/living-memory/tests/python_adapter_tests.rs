@@ -9,7 +9,10 @@ fn admitted_tool(env_key: &str) -> PathBuf {
     // These paths are provisioned explicitly by the root CI lane. Neither the
     // test nor production admits PATH-selected tooling or an older interpreter.
     let tool = PathBuf::from(std::env::var_os(env_key).unwrap_or_default());
-    assert!(tool.is_absolute() && tool.is_file(), "missing {env_key} tool");
+    assert!(
+        tool.is_absolute() && tool.is_file(),
+        "missing {env_key} tool"
+    );
     tool
 }
 
