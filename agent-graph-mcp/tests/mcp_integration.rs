@@ -530,17 +530,19 @@ fn tampered_terminal_receipt_fails_closed_after_mcp_restart() {
     assert!(!receipt.to_string().contains("never disclose"));
 }
 
-
 #[test]
 fn v2_terminal_receipt_exposes_signed_bundle_warm_and_cold() {
     let temp = tempfile::tempdir().expect("graph receipt database");
     let run_id = {
         let mut first = Mcp::new_with_data_dir(temp.path());
-        first.call("graph_create", json!({
-            "spec":{"name":"v2-bundle","entry":"x",
-                    "nodes":[{"id":"x","type":"passthrough"}],
-                    "edges":[{"from":"x","to":"END"}]}
-        }));
+        first.call(
+            "graph_create",
+            json!({
+                "spec":{"name":"v2-bundle","entry":"x",
+                        "nodes":[{"id":"x","type":"passthrough"}],
+                        "edges":[{"from":"x","to":"END"}]}
+            }),
+        );
         let completed = first.call(
             "graph_execute",
             json!({"graph_id":"v2-bundle","input":{"request":"authenticated bundle"}}),
@@ -549,19 +551,30 @@ fn v2_terminal_receipt_exposes_signed_bundle_warm_and_cold() {
         let run_id = completed["run_id"].as_str().expect("run ID").to_owned();
         let warm = first.call("graph_run_receipt", json!({"run_id":run_id}));
         assert_eq!(warm["ok"], true);
-        assert_eq!(warm["data"]["receipt"]["schema"], "agent-graph-mcp-receipt-v2");
-        assert_eq!(warm["data"]["receipt"]["persistence_status"], "durable_terminal");
+        assert_eq!(
+            warm["data"]["receipt"]["schema"],
+            "agent-graph-mcp-receipt-v2"
+        );
+        assert_eq!(
+            warm["data"]["receipt"]["persistence_status"],
+            "durable_terminal"
+        );
         assert_eq!(warm["data"]["bundle"]["payload"]["run_id"], run_id);
-        assert!(warm["data"]["bundle_digest"].as_str()
+        assert!(warm["data"]["bundle_digest"]
+            .as_str()
             .is_some_and(|s| s.starts_with("hmac-sha256:")));
         run_id
     };
     let mut restarted = Mcp::new_with_data_dir(temp.path());
     let cold = restarted.call("graph_run_receipt", json!({"run_id":run_id}));
     assert_eq!(cold["ok"], true);
-    assert_eq!(cold["data"]["receipt"]["schema"], "agent-graph-mcp-receipt-v2");
+    assert_eq!(
+        cold["data"]["receipt"]["schema"],
+        "agent-graph-mcp-receipt-v2"
+    );
     assert_eq!(cold["data"]["bundle"]["payload"]["run_id"], run_id);
-    assert!(cold["data"]["bundle_digest"].as_str()
+    assert!(cold["data"]["bundle_digest"]
+        .as_str()
         .is_some_and(|s| s.starts_with("hmac-sha256:")));
 }
 
@@ -570,11 +583,14 @@ fn mutated_or_legacy_unbound_terminal_bundle_fails_closed() {
     let temp = tempfile::tempdir().expect("graph receipt database");
     let run_id = {
         let mut first = Mcp::new_with_data_dir(temp.path());
-        first.call("graph_create", json!({
-            "spec":{"name":"v2-tamper","entry":"x",
-                    "nodes":[{"id":"x","type":"passthrough"}],
-                    "edges":[{"from":"x","to":"END"}]}
-        }));
+        first.call(
+            "graph_create",
+            json!({
+                "spec":{"name":"v2-tamper","entry":"x",
+                        "nodes":[{"id":"x","type":"passthrough"}],
+                        "edges":[{"from":"x","to":"END"}]}
+            }),
+        );
         let completed = first.call(
             "graph_execute",
             json!({"graph_id":"v2-tamper","input":{"request":"signed bundle"}}),
@@ -591,7 +607,8 @@ fn mutated_or_legacy_unbound_terminal_bundle_fails_closed() {
                 json!({"payload":{"run_id":run_id,"output":{"forged":true}}}).to_string(),
                 &run_id
             ],
-        ).expect("simulate bundle substitution without key");
+        )
+        .expect("simulate bundle substitution without key");
     }
     let mut restarted = Mcp::new_with_data_dir(temp.path());
     let denied = restarted.call("graph_run_receipt", json!({"run_id":run_id}));
@@ -604,7 +621,8 @@ fn mutated_or_legacy_unbound_terminal_bundle_fails_closed() {
         conn.execute(
             "UPDATE terminal_receipts SET bundle_digest = NULL WHERE run_id = ?1",
             rusqlite::params![&run_id],
-        ).expect("simulate legacy row without bundle signature");
+        )
+        .expect("simulate legacy row without bundle signature");
     }
     let mut restarted = Mcp::new_with_data_dir(temp.path());
     let denied = restarted.call("graph_run_receipt", json!({"run_id":run_id}));
