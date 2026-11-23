@@ -469,7 +469,7 @@ fn completed_persistent_run_is_readable_after_mcp_restart() {
 
     let mut restarted = Mcp::new_with_data_dir(temp.path());
     let recovered = restarted.call("graph_run_get", json!({"run_id":run_id}));
-    assert_eq!(recovered["data"]["status"], "completed");
+    assert_eq!(recovered["data"]["status"], "completed", "{recovered}");
     assert_eq!(recovered["data"]["success"], true);
     assert_eq!(
         recovered["data"]["final_state"],
@@ -1564,7 +1564,8 @@ fn durable_checkpoint_approval_survives_restart_and_resumes_exact_bound_checkpoi
         assert_eq!(completed["data"]["status"], "completed");
         assert_eq!(
             completed["data"]["receipt"]["checkpoint"]["checkpoint_id"],
-            checkpoint_id
+            checkpoint_id,
+            "{completed}"
         );
         assert_eq!(
             completed["data"]["receipt"]["approval"]["approval_id"],
