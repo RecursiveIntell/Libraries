@@ -601,6 +601,7 @@ impl PersistentStore {
                 receipt_json TEXT NOT NULL,
                 bundle_json TEXT NOT NULL,
                 receipt_digest TEXT NOT NULL,
+                bundle_digest TEXT,
                 persisted_at TEXT NOT NULL DEFAULT (datetime('now')),
                 FOREIGN KEY (run_id) REFERENCES executions(run_id)
             );
@@ -682,6 +683,7 @@ impl PersistentStore {
         .map_err(|e| format!("idempotency quarantine error: {e}"))?;
         for (table, column, definition) in [
             ("executions", "budgets_json", "TEXT"),
+            ("terminal_receipts", "bundle_digest", "TEXT"),
             ("checkpoints", "checkpoint_id", "TEXT"),
             ("checkpoints", "graph_id", "TEXT"),
             ("checkpoints", "graph_version", "TEXT"),
@@ -1060,6 +1062,15 @@ impl PersistentStore {
         let receipt: Value = serde_json::from_str(receipt_json)
             .map_err(|e| format!("terminal receipt JSON error: {e}"))?;
         let receipt_digest = hmac_sha256(&receipt, key);
+        let bundle: Value = serde_json::from_str(bundle_json)
+            .map_err(|e| format!("terminal bundle JSON error: {e}"))?;
+        // The existing receipt MAC does not cover the redacted output in the
+        // independently persisted bundle. Bind the entire bundle separately,
+        // with domain separation, before publishing it to any cold reader.
+        let bundle_digest = hmac_sha256(
+            &serde_json::json!({"schema":"graph-terminal-bundle-hmac-v1","bundle":bundle}),
+            key,
+        );
         let mut conn = self.conn.lock().map_err(|e| format!("lock error: {e}"))?;
         let tx = conn
             .transaction()
@@ -1092,13 +1103,14 @@ impl PersistentStore {
             return Err("injected terminal projection failure after events".into());
         }
         tx.execute(
-            "INSERT INTO terminal_receipts (run_id, receipt_json, bundle_json, receipt_digest) VALUES (?1, ?2, ?3, ?4)
+            "INSERT INTO terminal_receipts (run_id, receipt_json, bundle_json, receipt_digest, bundle_digest) VALUES (?1, ?2, ?3, ?4, ?5)
              ON CONFLICT(run_id) DO UPDATE SET
                receipt_json = CASE WHEN excluded.receipt_json = 'null' THEN terminal_receipts.receipt_json ELSE excluded.receipt_json END,
                bundle_json = CASE WHEN excluded.bundle_json = 'null' THEN terminal_receipts.bundle_json ELSE excluded.bundle_json END,
                receipt_digest = CASE WHEN excluded.receipt_json = 'null' THEN terminal_receipts.receipt_digest ELSE excluded.receipt_digest END,
+               bundle_digest = CASE WHEN excluded.receipt_json = 'null' THEN terminal_receipts.bundle_digest ELSE excluded.bundle_digest END,
                persisted_at = datetime('now')",
-            params![run_id, receipt_json, bundle_json, receipt_digest],
+            params![run_id, receipt_json, bundle_json, receipt_digest, bundle_digest],
         ).map_err(|e| format!("terminal receipt insert error: {e}"))?;
         tx.commit()
             .map_err(|e| format!("terminal transaction commit error: {e}"))?;
@@ -1110,21 +1122,36 @@ impl PersistentStore {
             .require_integrity_key()
             .map_err(|_| "INTEGRITY_KEY_REQUIRED".to_owned())?;
         let conn = self.conn.lock().map_err(|e| format!("lock error: {e}"))?;
-        let row: Result<(String, String), _> = conn.query_row(
-            "SELECT receipt_json, receipt_digest FROM terminal_receipts WHERE run_id = ?1",
+        let row: Result<(String, String, String, Option<String>), _> = conn.query_row(
+            "SELECT receipt_json, bundle_json, receipt_digest, bundle_digest FROM terminal_receipts WHERE run_id = ?1",
             params![run_id],
-            |row| Ok((row.get(0)?, row.get(1)?)),
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
         );
         match row {
-            Ok((receipt_json, receipt_digest)) => {
+            Ok((receipt_json, bundle_json, receipt_digest, bundle_digest)) => {
                 let receipt: Value = serde_json::from_str(&receipt_json)
-                    .map_err(|e| format!("stored receipt JSON error: {e}"))?;
-                if hmac_sha256(&receipt, key) != receipt_digest {
+                    .map_err(|_| "RECEIPT_INTEGRITY_FAILURE".to_owned())?;
+                let bundle: Value = serde_json::from_str(&bundle_json)
+                    .map_err(|_| "RECEIPT_INTEGRITY_FAILURE".to_owned())?;
+                let expected_bundle_digest = hmac_sha256(
+                    &serde_json::json!({"schema":"graph-terminal-bundle-hmac-v1","bundle":bundle}),
+                    key,
+                );
+                if hmac_sha256(&receipt, key) != receipt_digest
+                    || bundle_digest.as_deref() != Some(expected_bundle_digest.as_str())
+                {
+                    // Older unbound rows cannot be upgraded by assuming the
+                    // bundle has the same custody as a signed receipt.
                     return Err("RECEIPT_INTEGRITY_FAILURE".into());
                 }
-                Ok(Some(
-                    serde_json::json!({"receipt":receipt,"receipt_digest":receipt_digest,"storage_class":"sqlite_terminal_receipt","replay_capability":"integrity_only"}),
-                ))
+                Ok(Some(serde_json::json!({
+                    "receipt":receipt,
+                    "bundle":bundle,
+                    "receipt_digest":receipt_digest,
+                    "bundle_digest":bundle_digest,
+                    "storage_class":"sqlite_terminal_receipt",
+                    "replay_capability":"integrity_only"
+                })))
             }
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
             Err(e) => Err(format!("load terminal receipt error: {e}")),
