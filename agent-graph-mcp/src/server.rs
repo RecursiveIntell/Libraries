@@ -2291,28 +2291,37 @@ impl AgentGraphServer {
                     .ok_or_else(|| invalid_params(format!("run '{run_id}' not found")))?
             };
             if matches!(r.status.as_str(), "completed" | "failed" | "cancelled") {
-                let persist = Self::persist_terminal(self.store.clone(), r.clone());
-                if let Ok(runs) = self.runs.lock() {
-                    if self.store.is_none() {
-                        runs.mark_persistence(&run_id, "volatile_no_store", None);
-                    } else {
-                        match persist {
-                            Ok(()) => runs.mark_persistence(&run_id, "durable_terminal", None),
-                            Err(error) => runs.mark_persistence(
-                                &run_id,
-                                "volatile_persistence_failed",
-                                Some(error),
-                            ),
-                        }
+                // Completion is not durability. The single async completion
+                // callback owns terminal persistence and acknowledgement.
+                // Writing again from a waiter races with that owner and can
+                // replace a signed terminal record with a stale projection.
+                if self.store.is_some() && r.persistence_status == "pending" {
+                    if Instant::now() < deadline {
+                        std::thread::sleep(Duration::from_millis(10));
+                        continue;
                     }
+                    return Ok(output_with_meta(
+                        serde_json::json!({
+                            "run_id": run_id,
+                            "status": "terminal_persistence_pending",
+                            "timed_out": true,
+                            "completion_unknown": true
+                        }),
+                        None,
+                        None,
+                        Some(&run_id),
+                    ));
                 }
-                let mut public = self
-                    .runs
-                    .lock()
-                    .ok()
-                    .and_then(|runs| runs.get(&run_id).map(|record| record.public()))
-                    .unwrap_or_else(|| r.public());
-                if let Ok(Some(stored)) = self.stored_run(&run_id) {
+                let mut public = r.public();
+                if self.store.is_some() && r.persistence_status == "durable_terminal" {
+                    // Never trust a cold or warm terminal claim if the
+                    // persisted receipt cannot be independently reread.
+                    let Some(stored) = self.stored_run(&run_id).ok().flatten() else {
+                        return Ok(error_output(
+                            "durable terminal record could not be verified",
+                            "DURABLE_TERMINAL_UNVERIFIED",
+                        ));
+                    };
                     if let (Some(public_object), Some(stored_object)) =
                         (public.as_object_mut(), stored.as_object())
                     {
