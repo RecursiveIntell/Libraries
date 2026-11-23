@@ -701,7 +701,7 @@ impl RunManager {
             .iter()
             .filter_map(|m| m.get("model_alias").cloned())
             .collect();
-        let receipt = serde_json::json!({"schema":"agent-graph-mcp-receipt-v1","run_id":run_id,"trace":trace,"graph_version":graph_version,
+        let receipt = serde_json::json!({"schema":"agent-graph-mcp-receipt-v2","run_id":run_id,"trace":trace,"graph_version":graph_version,
             "input_digest":digest(&input),"output_digest":digest(&state_value),"step_count":steps.len(),"models":models,
             "provider":provider,"default_model":configured_model,"model_labels":model_labels,
             "core":core_receipt,"dependency_envelopes":dependency_envelopes,"dependency_envelopes_complete":dependency_envelopes_complete,"replay_capability":if resumed { "deterministic_local_resume" } else { "integrity_only" },
