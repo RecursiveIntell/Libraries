@@ -1563,8 +1563,7 @@ fn durable_checkpoint_approval_survives_restart_and_resumes_exact_bound_checkpoi
             restarted.call("graph_run_wait", json!({"run_id":run_id,"timeout_ms":5000}));
         assert_eq!(completed["data"]["status"], "completed");
         assert_eq!(
-            completed["data"]["receipt"]["checkpoint"]["checkpoint_id"],
-            checkpoint_id,
+            completed["data"]["receipt"]["checkpoint"]["checkpoint_id"], checkpoint_id,
             "{completed}"
         );
         assert_eq!(
