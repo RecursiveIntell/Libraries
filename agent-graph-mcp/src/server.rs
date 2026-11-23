@@ -2483,19 +2483,9 @@ impl AgentGraphServer {
         &self,
         Parameters(RunReceiptParams { run_id }): Parameters<RunReceiptParams>,
     ) -> Result<Json<StructuredOutput>, ErrorData> {
-        if let Some(r) = self
-            .runs
-            .lock()
-            .map_err(|e| internal_error(e.to_string()))?
-            .get(&run_id)
-        {
-            return Ok(output_with_meta(
-                r.receipt.clone(),
-                None,
-                None,
-                Some(&run_id),
-            ));
-        }
+        // The durable SQLite record is the canonical terminal owner. Never
+        // return the in-memory pre-persistence copy ahead of a signed record,
+        // and never bypass a failed integrity check by falling back to cache.
         if let Some(store) = &self.store {
             match store.load_terminal_receipt(&run_id) {
                 Ok(Some(receipt)) => {
@@ -2504,7 +2494,7 @@ impl AgentGraphServer {
                 Ok(None) => {}
                 Err(error) if error == "RECEIPT_INTEGRITY_FAILURE" => {
                     return Ok(error_output(
-                        "terminal receipt integrity validation failed",
+                        "terminal receipt or bundle integrity validation failed",
                         "RECEIPT_INTEGRITY_FAILURE",
                     ));
                 }
@@ -2516,6 +2506,21 @@ impl AgentGraphServer {
                 }
                 Err(error) => return Err(internal_error(error)),
             }
+        }
+        if let Some(r) = self
+            .runs
+            .lock()
+            .map_err(|e| internal_error(e.to_string()))?
+            .get(&run_id)
+        {
+            // A volatile in-flight receipt has neither a durable bundle nor
+            // a signed terminal outcome; Ares will refuse it as incomplete.
+            return Ok(output_with_meta(
+                r.receipt.clone(),
+                None,
+                None,
+                Some(&run_id),
+            ));
         }
         Ok(error_output(
             format!("run '{run_id}' not found"),
