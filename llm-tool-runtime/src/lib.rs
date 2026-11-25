@@ -4,6 +4,7 @@ pub mod registry;
 pub mod runtime;
 pub mod semantic_memory;
 pub mod starter_tools;
+pub mod tool_observation_store;
 
 pub use contracts::*;
 pub use provider::*;

@@ -13,6 +13,7 @@ documentation = "https://docs.rs/knowledge-runtime"
 doctest = false
 
 [dependencies]
+bitemporal-runtime = { path = "../bitemporal-runtime" }
 constraint-compiler = { path = "../constraint-compiler" }
 forge-memory-bridge = { path = "../forge-memory-bridge" }
 kernel-execution = { path = "../kernel-execution" }
