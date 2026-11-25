@@ -167,6 +167,7 @@ pub struct KnowledgeRuntime {
     config: RuntimeConfig,
     entity_registry: EntityRegistry,
     projection_tracker: ProjectionTracker,
+    bitemporal_records: Vec<bitemporal_runtime::BitemporalRecord<String>>,
 }
 
 impl KnowledgeRuntime {
@@ -189,7 +190,18 @@ impl KnowledgeRuntime {
             config,
             entity_registry,
             projection_tracker,
+            bitemporal_records: Vec::new(),
         })
+    }
+
+    /// Wire a bitemporal record source so the temporal route answers as-of
+    /// version selection from `bitemporal-runtime` (empty = existing behavior).
+    pub fn with_bitemporal_records(
+        mut self,
+        records: Vec<bitemporal_runtime::BitemporalRecord<String>>,
+    ) -> Self {
+        self.bitemporal_records = records;
+        self
     }
 
     pub(crate) fn adapter_ref(&self) -> &SemanticMemoryAdapter {
@@ -447,7 +459,35 @@ impl KnowledgeRuntime {
         trace.recorded_as_of = Some(recorded_at_or_before.to_string());
         trace.temporal_mode = Some(temporal_mode.to_string());
 
-        let results = merged.results.into_iter().map(|m| m.result).collect();
+        let mut results: Vec<SearchResult> = merged.results.into_iter().map(|m| m.result).collect();
+        if !self.bitemporal_records.is_empty() {
+            if let (Ok(v), Ok(r)) = (
+                chrono::DateTime::parse_from_rfc3339(valid_at),
+                chrono::DateTime::parse_from_rfc3339(recorded_at_or_before),
+            ) {
+                let asof = crate::temporal::bitemporal_bridge::as_of(
+                    &self.bitemporal_records,
+                    v.with_timezone(&chrono::Utc),
+                    r.with_timezone(&chrono::Utc),
+                );
+                if !asof.is_empty() {
+                    results = asof
+                        .into_iter()
+                        .map(|rec| SearchResult {
+                            content: rec.value,
+                            source: semantic_memory::SearchSource::Fact {
+                                fact_id: rec.id,
+                                namespace: scope.namespace.clone(),
+                            },
+                            score: 1.0,
+                            bm25_rank: None,
+                            vector_rank: None,
+                            cosine_similarity: None,
+                        })
+                        .collect();
+                }
+            }
+        }
         Ok((results, trace))
     }
 
