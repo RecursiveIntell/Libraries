@@ -1,8 +1,10 @@
 use forge_engine::{ForgeStore, ForgeToolReceiptSink};
+use llm_tool_runtime::semantic_memory::ToolObservationMemory;
 use llm_tool_runtime::{
     ToolApprovalState, ToolBackendKind, ToolBudgetContext, ToolPlannerStage, ToolReceipt,
     ToolReceiptSink, ToolRetryOwner,
 };
+use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder};
 use semantic_memory_forge::ForgeToolReceiptV2;
 use stack_ids::{AttemptId, ContentDigest, TraceCtx, TrialId};
 use std::sync::Arc;
@@ -78,4 +80,118 @@ async fn forge_tool_receipt_sink_persists_raw_receipt() {
     assert_eq!(raw.family_receipt_id.as_deref(), Some("attempt-family-1"));
     assert_eq!(raw.replay_parent_receipt_id.as_deref(), Some("retry-0"));
     assert_eq!(raw.planner_stage, "Execution");
+}
+
+#[tokio::test]
+async fn receipt_retries_preserve_first_write_and_reject_conflicts() {
+    let dir = TempDir::new().unwrap();
+    let path = dir.path().join("forge.db");
+    let store = Arc::new(ForgeStore::open(&path).unwrap());
+    let retry_store = ForgeStore::open(&path).unwrap();
+    let sink = ForgeToolReceiptSink::new(store.clone());
+    let mut receipt = sample_receipt();
+    sink.persist(&receipt).await.unwrap();
+
+    let first = store.get_tool_receipt("receipt-1").unwrap().unwrap();
+    let mut replay = store.get_tool_receipt("receipt-1").unwrap().unwrap();
+    replay.recorded_at = "2030-01-01T00:00:00Z".into();
+    assert!(!retry_store.insert_tool_receipt(&replay).unwrap());
+    sink.persist(&receipt).await.unwrap();
+
+    replay.error_class = Some(String::new());
+    let error = retry_store.insert_tool_receipt(&replay).unwrap_err();
+    assert!(matches!(
+        error,
+        forge_engine::ForgeError::ToolReceiptConflict { .. }
+    ));
+
+    receipt.input_digest = ContentDigest::compute_str("conflicting input");
+    let error = sink.persist(&receipt).await.unwrap_err();
+    assert_eq!(
+        error.class,
+        llm_tool_runtime::ToolErrorClass::ReceiptPersistence
+    );
+    let stored = store.get_tool_receipt("receipt-1").unwrap().unwrap();
+    assert_eq!(stored, first);
+}
+
+#[tokio::test]
+async fn projection_reopens_only_committed_scoped_receipts() {
+    let dir = TempDir::new().unwrap();
+    let path = dir.path().join("forge.db");
+    let memory_config = MemoryConfig {
+        base_dir: dir.path().join("mem"),
+        ..Default::default()
+    };
+    let open_memory = || {
+        MemoryStore::open_with_embedder(
+            memory_config.clone(),
+            Box::new(MockEmbedder::new(memory_config.embedding.dimensions)),
+        )
+        .unwrap()
+    };
+    let memory = open_memory();
+    let store = Arc::new(ForgeStore::open(&path).unwrap());
+    let sink =
+        ForgeToolReceiptSink::with_observation_scope(store.clone(), "run_verification", "pilot")
+            .unwrap();
+    let wrong_scope =
+        ForgeToolReceiptSink::with_observation_scope(store.clone(), "run_verification", "other")
+            .unwrap();
+    let mut receipt = sample_receipt();
+    assert!(sink
+        .project_observation(&memory, &receipt.receipt_id)
+        .await
+        .is_err());
+    sink.persist(&receipt).await.unwrap();
+    let first = store
+        .get_tool_receipt(&receipt.receipt_id)
+        .unwrap()
+        .unwrap();
+    assert!(wrong_scope
+        .project_observation(&memory, &receipt.receipt_id)
+        .await
+        .is_err());
+    assert!(wrong_scope.persist(&receipt).await.is_err());
+    receipt.receipt_id = "legacy-receipt".into();
+    ForgeToolReceiptSink::new(store.clone())
+        .persist(&receipt)
+        .await
+        .unwrap();
+    assert!(sink
+        .project_observation(&memory, &receipt.receipt_id)
+        .await
+        .is_err());
+    receipt.receipt_id = "failed-receipt".into();
+    receipt.error_class = Some(llm_tool_runtime::ToolErrorClass::Execution);
+    sink.persist(&receipt).await.unwrap();
+    drop(wrong_scope);
+    drop(sink);
+    drop(store);
+    let reopened = Arc::new(ForgeStore::open(&path).unwrap());
+    let projector =
+        ForgeToolReceiptSink::with_observation_scope(reopened.clone(), "run_verification", "pilot")
+            .unwrap();
+    for id in ["receipt-1", "receipt-1", "failed-receipt"] {
+        projector.project_observation(&memory, id).await.unwrap();
+    }
+    assert_eq!(reopened.get_tool_receipt("receipt-1").unwrap(), Some(first));
+    drop(memory);
+    let memory = open_memory();
+    let mut results = memory
+        .find_similar_tool_observations("run_verification", "pilot", 10)
+        .await
+        .unwrap()
+        .observations;
+    results.sort_by(|a, b| a.receipt_id.cmp(&b.receipt_id));
+    assert_eq!(results.len(), 2);
+    assert_eq!(results[0].summary, "Tool run_verification failed");
+    assert_eq!(results[1].summary, "Tool run_verification succeeded");
+    assert_eq!(results[1].receipt_id.as_deref(), Some("receipt-1"));
+    assert!(memory
+        .find_similar_tool_observations("run_verification", "other", 10)
+        .await
+        .unwrap()
+        .observations
+        .is_empty());
 }

@@ -56,6 +56,10 @@ pub enum MemoryError {
         receipt_id: String,
     },
 
+    /// A derived fact was replayed with different content or metadata.
+    #[error("Derived fact identity already belongs to different material")]
+    DerivedFactConflict,
+
     /// Canonical content digest computation failed.
     #[error("Digest error: {0}")]
     DigestError(String),
@@ -339,6 +343,7 @@ impl MemoryError {
             Self::VectorBlobLengthMismatch { .. } => "vector_blob_length_mismatch",
             Self::VectorCodecProfileMismatch { .. } => "vector_codec_profile_mismatch",
             Self::SearchReceiptConflict { .. } => "search_receipt_conflict",
+            Self::DerivedFactConflict => "derived_fact_conflict",
             Self::DigestError(_) => "digest_error",
             Self::SearchReceiptNotFound { .. } => "search_receipt_not_found",
             Self::AuthoritySnapshotChanged { .. } => "authority_snapshot_changed",

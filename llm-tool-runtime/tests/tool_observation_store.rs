@@ -23,6 +23,45 @@ fn record(scope: &str, summary: &str) -> ToolObservationMemoryRecordV1 {
 }
 
 #[tokio::test]
+async fn receipt_identity_not_summary_controls_replays() {
+    let dir = tempfile::tempdir().unwrap();
+    let cfg = MemoryConfig {
+        base_dir: dir.path().join("mem"),
+        ..Default::default()
+    };
+    let dims = cfg.embedding.dimensions;
+    let store = MemoryStore::open_with_embedder(cfg, Box::new(MockEmbedder::new(dims))).unwrap();
+    let first = record("scope-a", "read-only status succeeded");
+    let (a, b) = tokio::join!(
+        store.store_tool_observation(first.clone()),
+        store.store_tool_observation(first.clone()),
+    );
+    a.unwrap();
+    b.unwrap();
+    let mut second = first.clone();
+    second.receipt_id = Some("rcpt-2".into());
+    store.store_tool_observation(second).await.unwrap();
+    let mut conflict = first;
+    conflict.status = "failed".into();
+    assert!(store.store_tool_observation(conflict).await.is_err());
+    // Similarity search intentionally collapses repeated text; use the
+    // namespace's owner rows to check independent persisted identities.
+    let mut ids: Vec<_> = store
+        .list_facts("scope-a", 10, 0)
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|fact| {
+            let metadata = fact.metadata.unwrap();
+            assert_eq!(metadata["status"], "succeeded");
+            metadata["receipt_id"].as_str().unwrap().to_owned()
+        })
+        .collect();
+    ids.sort();
+    assert_eq!(ids, ["rcpt-1", "rcpt-2"]);
+}
+
+#[tokio::test]
 async fn store_and_find_roundtrip_with_scope_isolation() {
     let dir = tempfile::tempdir().unwrap();
     let cfg = MemoryConfig {

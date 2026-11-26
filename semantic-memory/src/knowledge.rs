@@ -1031,6 +1031,117 @@ impl MemoryStore {
         Ok(fact_id)
     }
 
+    /// Insert a rebuildable, non-authoritative projection with an owner key.
+    /// The same namespace, source and key may only be replayed with identical
+    /// content and metadata. This local index is not a replication event.
+    pub async fn insert_derived_fact_once(
+        &self,
+        namespace: &str,
+        source: &str,
+        key: &str,
+        content: &str,
+        metadata: serde_json::Value,
+    ) -> Result<(), MemoryError> {
+        self.validate_content("fact.content", content)?;
+        let mut identity = blake3::Hasher::new_derive_key("semantic-memory derived fact v1");
+        for part in [namespace, source, key] {
+            identity.update(&(part.len() as u64).to_be_bytes());
+            identity.update(part.as_bytes());
+        }
+        let hash = identity.finalize();
+        let mut uuid_bytes = [0; 16];
+        uuid_bytes.copy_from_slice(&hash.as_bytes()[..16]);
+        let id = uuid::Builder::from_custom_bytes(uuid_bytes)
+            .into_uuid()
+            .to_string();
+        if let Some(existing) = self.get_fact(&id).await? {
+            if existing.namespace == namespace
+                && existing.source.as_deref() == Some(source)
+                && existing.content == content
+                && existing.metadata.as_ref() == Some(&metadata)
+            {
+                return Ok(());
+            }
+            return Err(MemoryError::DerivedFactConflict);
+        }
+
+        let (embedding, sparse, representation) = self
+            .embed_text_with_sparse_internal(content, crate::EmbeddingPurpose::Document)
+            .await?;
+        self.validate_embedding_dimensions(&embedding)?;
+        let embedding_bytes = db::embedding_to_bytes(&embedding);
+        let q8 = Quantizer::new(self.inner.config.embedding.dimensions)
+            .quantize(&embedding)
+            .map(|qv| quantize::pack_quantized(&qv))
+            .ok();
+        let max_facts = self.inner.config.limits.max_facts_per_namespace;
+        let ns = namespace.to_owned();
+        let src = source.to_owned();
+        let content = content.to_owned();
+        self.with_write_conn(move |conn| {
+            // Acquire write ownership before checking identity and capacity, so
+            // separate connections cannot race a check followed by an insert.
+            let tx = rusqlite::Transaction::new_unchecked(
+                conn,
+                rusqlite::TransactionBehavior::Immediate,
+            )?;
+            let existing: Option<bool> = tx
+                .query_row(
+                    "SELECT namespace = ?2 AND source IS ?3 AND content = ?4 AND metadata IS ?5
+                     FROM facts WHERE id = ?1",
+                    params![&id, &ns, &src, &content, metadata.to_string()],
+                    |row| row.get(0),
+                )
+                .optional()?;
+            match existing {
+                Some(true) => return Ok(()),
+                Some(false) => return Err(MemoryError::DerivedFactConflict),
+                None => {}
+            }
+            let forgotten: bool = tx.query_row(
+                "SELECT EXISTS (SELECT 1 FROM forgotten_facts WHERE fact_id = ?1)",
+                params![&id],
+                |row| row.get(0),
+            )?;
+            if forgotten {
+                return Err(MemoryError::AuthorityHistoryRetained);
+            }
+            let count = tx.query_row(
+                "SELECT COUNT(*) FROM facts WHERE namespace = ?1",
+                params![&ns],
+                |row| row.get::<_, i64>(0),
+            )? as usize;
+            if count >= max_facts {
+                return Err(MemoryError::NamespaceFull {
+                    namespace: ns,
+                    count,
+                    limit: max_facts,
+                });
+            }
+            insert_fact_in_tx(
+                &tx,
+                &id,
+                &ns,
+                &content,
+                &embedding_bytes,
+                q8.as_deref(),
+                Some(&src),
+                Some(&metadata),
+            )?;
+            if let Some((weights, basis)) = sparse.as_ref().zip(representation.as_deref()) {
+                db::store_sparse_vector(&tx, &format!("fact:{id}"), weights, basis)?;
+            }
+            tx.commit()?;
+            Ok(())
+        })
+        .await?;
+        self.clear_search_cache();
+        #[cfg(feature = "hnsw")]
+        self.sync_pending_hnsw_ops_best_effort("insert_derived_fact_once")
+            .await;
+        Ok(())
+    }
+
     /// Store a fact with a pre-computed embedding.
     pub async fn add_fact_with_embedding(
         &self,

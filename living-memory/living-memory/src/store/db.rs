@@ -72,6 +72,7 @@ impl ForgeStore {
         Self::run_migration_v3(&conn)?;
         Self::run_migration_v4(&conn)?;
         Self::run_migration_v5(&conn)?;
+        Self::run_migration_v6(&conn)?;
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -228,6 +229,28 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
             conn.pragma_update(None, "user_version", schema::FORGE_V5_USER_VERSION)?;
         }
 
+        Ok(())
+    }
+
+    fn run_migration_v6(conn: &Connection) -> ForgeResult<()> {
+        let tx =
+            rusqlite::Transaction::new_unchecked(conn, rusqlite::TransactionBehavior::Immediate)?;
+        let has_scope: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info('tool_receipts') WHERE name = 'observation_scope')",
+            [],
+            |row| row.get(0),
+        )?;
+        if !has_scope {
+            tx.execute(
+                "ALTER TABLE tool_receipts ADD COLUMN observation_scope TEXT",
+                [],
+            )?;
+        }
+        let current: u32 = tx.pragma_query_value(None, "user_version", |row| row.get(0))?;
+        if current < schema::FORGE_V6_USER_VERSION {
+            tx.pragma_update(None, "user_version", schema::FORGE_V6_USER_VERSION)?;
+        }
+        tx.commit()?;
         Ok(())
     }
 
@@ -1014,20 +1037,37 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
 
     // ── Tool Receipts (v3) ──
 
+    /// Insert a receipt once. An exact replay returns `false` without rewriting
+    /// the first observation time; different bytes for the same ID conflict.
     pub fn insert_tool_receipt(&self, row: &ToolReceiptRow) -> ForgeResult<bool> {
-        let result = self.lock_conn()?.execute(
-            "INSERT OR REPLACE INTO tool_receipts (
+        let mut conn = self.lock_conn()?;
+        // Reserve the database writer before looking up this identity. Separate
+        // ForgeStore handles must not race between the lookup and the insert.
+        let tx = conn.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+        if let Some(mut stored) = Self::read_tool_receipt(&tx, &row.receipt_id)? {
+            stored.recorded_at.clone_from(&row.recorded_at);
+            if stored != *row {
+                return Err(ForgeError::ToolReceiptConflict {
+                    receipt_id: row.receipt_id.clone(),
+                });
+            }
+            tx.commit()?;
+            return Ok(false);
+        }
+
+        let result = tx.execute(
+            "INSERT INTO tool_receipts (
                 receipt_id, tool_run_id, tool_name, tool_version, backend_kind,
                 input_digest, output_digest_or_refs_json, policy_hash, approval_state,
                 host_identity, started_at, finished_at, trace_id, trace_ctx_json,
                 attempt_id, trial_id, error_class, retry_owner, replay_link,
-                provider_call_id, raw_payload_json, recorded_at
+                provider_call_id, raw_payload_json, recorded_at, observation_scope
             ) VALUES (
                 ?1, ?2, ?3, ?4, ?5,
                 ?6, ?7, ?8, ?9,
                 ?10, ?11, ?12, ?13, ?14,
                 ?15, ?16, ?17, ?18, ?19,
-                ?20, ?21, ?22
+                ?20, ?21, ?22, ?23
             )",
             rusqlite::params![
                 row.receipt_id,
@@ -1052,18 +1092,28 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
                 row.provider_call_id,
                 row.raw_payload_json,
                 row.recorded_at,
+                row.observation_scope,
             ],
         )?;
+        tx.commit()?;
         Ok(result > 0)
     }
 
     pub fn get_tool_receipt(&self, receipt_id: &str) -> ForgeResult<Option<ToolReceiptRow>> {
-        match self.lock_conn()?.query_row(
+        let conn = self.lock_conn()?;
+        Self::read_tool_receipt(&conn, receipt_id)
+    }
+
+    fn read_tool_receipt(
+        conn: &Connection,
+        receipt_id: &str,
+    ) -> ForgeResult<Option<ToolReceiptRow>> {
+        match conn.query_row(
             "SELECT receipt_id, tool_run_id, tool_name, tool_version, backend_kind,
                     input_digest, output_digest_or_refs_json, policy_hash, approval_state,
                     host_identity, started_at, finished_at, trace_id, trace_ctx_json,
                     attempt_id, trial_id, error_class, retry_owner, replay_link,
-                    provider_call_id, raw_payload_json, recorded_at
+                    provider_call_id, raw_payload_json, recorded_at, observation_scope
              FROM tool_receipts
              WHERE receipt_id = ?1",
             [receipt_id],
@@ -1091,6 +1141,7 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
                     provider_call_id: row.get(19)?,
                     raw_payload_json: row.get(20)?,
                     recorded_at: row.get(21)?,
+                    observation_scope: row.get(22)?,
                 })
             },
         ) {
@@ -1236,7 +1287,7 @@ pub struct RunFailureRow {
     pub occurred_at: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolReceiptRow {
     pub receipt_id: String,
     pub tool_run_id: String,
@@ -1260,6 +1311,8 @@ pub struct ToolReceiptRow {
     pub provider_call_id: Option<String>,
     pub raw_payload_json: String,
     pub recorded_at: String,
+    /// Namespace assigned by the admission owner, if projection was permitted.
+    pub observation_scope: Option<String>,
 }
 
 #[allow(clippy::too_many_arguments)]

@@ -1,7 +1,7 @@
 /// Range of valid user_version values for Forge databases.
 pub const FORGE_MIN_USER_VERSION: u32 = 1;
 pub const FORGE_MAX_USER_VERSION: u32 = 999;
-pub const FORGE_CURRENT_USER_VERSION: u32 = 5;
+pub const FORGE_CURRENT_USER_VERSION: u32 = FORGE_V6_USER_VERSION;
 
 /// Required tables in a Forge database.
 pub const REQUIRED_TABLES: &[&str] = &[
@@ -77,6 +77,7 @@ pub const FORGE_V4_USER_VERSION: u32 = 4;
 
 /// The user_version value for schema v5.
 pub const FORGE_V5_USER_VERSION: u32 = 5;
+pub const FORGE_V6_USER_VERSION: u32 = 6;
 
 /// Compute the schema hash from the sorted CREATE TABLE statements.
 pub fn compute_schema_hash() -> String {

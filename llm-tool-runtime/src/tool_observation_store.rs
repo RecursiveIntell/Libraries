@@ -4,6 +4,8 @@
 //! fact ID and returned only when its owner-stored source and versioned metadata
 //! identify it as a tool observation. Search is approximate: the candidate limit
 //! applies before filtering, so fewer than `limit` observations may be returned.
+//! Similarity search can also collapse identical summaries; it is not a receipt
+//! enumeration API. The underlying projection preserves distinct receipt IDs.
 
 use crate::semantic_memory::{
     ToolObservationDerivedCandidateTraceV1, ToolObservationMemory, ToolObservationMemoryRecordV1,
@@ -47,15 +49,26 @@ impl ToolObservationMemory for MemoryStore {
             "completed_at": record.completed_at,
             "receipt_id": record.receipt_id,
         });
-        self.add_fact(
-            &record.scope,
-            &record.summary,
-            Some(OBSERVATION_SOURCE),
-            Some(metadata),
-        )
-        .await
-        .map(|_| ())
-        .map_err(|e| {
+        let result = if let Some(key) = record.receipt_id.as_deref() {
+            self.insert_derived_fact_once(
+                &record.scope,
+                OBSERVATION_SOURCE,
+                key,
+                &record.summary,
+                metadata,
+            )
+            .await
+        } else {
+            self.add_fact(
+                &record.scope,
+                &record.summary,
+                Some(OBSERVATION_SOURCE),
+                Some(metadata),
+            )
+            .await
+            .map(|_| ())
+        };
+        result.map_err(|e| {
             ToolError::new(
                 ToolErrorClass::ProviderContract,
                 format!("semantic-memory store failed: {e}"),
