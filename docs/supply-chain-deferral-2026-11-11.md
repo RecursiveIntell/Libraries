@@ -24,6 +24,24 @@ unsoundness was added separately in Libraries #87.
 These maintenance advisories track upstream maintenance status. The table
 records how the crates enter the workspace graph and possible migration paths.
 
+## Addendum 2026-11-26: chrono unmaintained (deferred, not fixed)
+
+| Advisory | Crate v | Reachability (puller chain) | Alternative |
+|---|---|---|---|
+| RUSTSEC-2026-0543 | chrono 0.4.45 | Direct dependency of ~35 workspace crates (agent-graph, claim-ledger, semantic-memory, bitemporal-runtime, knowledge-runtime, llm-tool-runtime, llm-pipeline, forge-engine, stack-monitor, ...) plus third-party rmcp, schemars, serde_with, xet-data/xet-runtime | jiff, time |
+
+No patched release exists ("all versions are affected"). The dependent set in
+`Cargo.lock` is identical at 8355499c (last green hardening-gate) and 1c81c58e;
+the gate began failing because the advisory was published, not because a
+workspace change newly introduced chrono. Replacing chrono is a workspace-wide
+migration. Owner: RecursiveIntell supply-chain lane. Review date: 2027-05.
+Immediate action if a vulnerability (not just unmaintained status) is filed
+against chrono.
+
+The same run fixed (not deferred) two vulnerabilities by lockfile bump only:
+RUSTSEC-2026-0592 (`url` 2.5.8 -> 2.5.9, with `form_urlencoded` 1.2.2 -> 1.2.3)
+and RUSTSEC-2026-0594 (`cookie` 0.18.2 -> 0.18.3). Neither has an ignore entry.
+
 ## GLib unsoundness exception
 
 [RUSTSEC-2024-0429](https://rustsec.org/advisories/RUSTSEC-2024-0429.html) affects

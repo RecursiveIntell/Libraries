@@ -37,6 +37,15 @@ ignore = [
     "RUSTSEC-2025-0081", # unic-char-property — tauri
     "RUSTSEC-2025-0098", # unic-ucd-version — tauri
     "RUSTSEC-2025-0100", # unic-ucd-ident — tauri
+    # Deferred 2026-11-26, review 2027-05. chrono 0.4.45 (RUSTSEC-2026-0543,
+    # unmaintained, no patched release; advisory published after the last green
+    # hardening-gate run, not introduced by a lockfile change). It is a direct
+    # dependency of ~35 workspace crates (e.g. agent-graph, claim-ledger,
+    # semantic-memory, bitemporal-runtime, knowledge-runtime, llm-tool-runtime,
+    # llm-pipeline, forge-engine, stack-monitor) and is also pulled by rmcp,
+    # schemars, serde_with and xet-*. Migration to jiff/time is a workspace-wide
+    # change, out of scope for this lockfile fix. Deferred, NOT fixed.
+    "RUSTSEC-2026-0543", # chrono — workspace-wide direct dep + rmcp/schemars/serde_with
 ]
 
 [licenses]
