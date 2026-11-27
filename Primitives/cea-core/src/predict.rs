@@ -48,15 +48,41 @@ pub fn predict_with_config(
     graph: &CausalGraph,
     config: &PredictionConfig,
 ) -> CausalPrediction {
+    predict_with_evidence(signatures, graph, config).0
+}
+
+/// How much graph evidence a prediction actually used.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize)]
+pub struct PredictionEvidence {
+    /// Requested signatures that matched at least one cause node in the graph,
+    /// exactly or by heuristic similarity.
+    pub matched_signatures: usize,
+    /// Of those, the signatures whose own node is in the graph. The rest matched
+    /// only similar nodes.
+    pub exact_matches: usize,
+    /// Causal edges whose signal contributed to the prediction.
+    pub contributing_edges: usize,
+}
+
+/// Same prediction as [`predict_with_config`], plus the evidence it used.
+pub fn predict_with_evidence(
+    signatures: &[EditOpSignature],
+    graph: &CausalGraph,
+    config: &PredictionConfig,
+) -> (CausalPrediction, PredictionEvidence) {
+    let mut evidence = PredictionEvidence::default();
     if signatures.is_empty() {
-        return CausalPrediction {
-            predicted_correctness: 0.5,
-            predicted_novelty: 1.0,
-            confidence: 0.0,
-            coverage_fraction: 0.0,
-            risk_flags: Vec::new(),
-            zero_shot_eligible: false,
-        };
+        return (
+            CausalPrediction {
+                predicted_correctness: 0.5,
+                predicted_novelty: 1.0,
+                confidence: 0.0,
+                coverage_fraction: 0.0,
+                risk_flags: Vec::new(),
+                zero_shot_eligible: false,
+            },
+            evidence,
+        );
     }
 
     let mut positive = 0.0;
@@ -75,6 +101,13 @@ pub fn predict_with_config(
         coverage_total += signature_coverage;
         if matches.is_empty() {
             continue;
+        }
+        evidence.matched_signatures += 1;
+        if graph
+            .node_index_map
+            .contains_key(&edit_op_node_id(signature))
+        {
+            evidence.exact_matches += 1;
         }
 
         let mut signature_confidence = 1.0_f64;
@@ -104,6 +137,7 @@ pub fn predict_with_config(
                 }
 
                 sample_evidence += edge_observations * match_coverage;
+                evidence.contributing_edges += 1;
 
                 if effect_signature.outcome == "pass" {
                     positive += signal;
@@ -180,14 +214,17 @@ pub fn predict_with_config(
             })
     });
 
-    CausalPrediction {
-        predicted_correctness: blended_correctness.clamp(0.0, 1.0),
-        predicted_novelty: (1.0 - coverage_fraction).clamp(0.0, 1.0),
-        confidence,
-        coverage_fraction,
-        risk_flags,
-        zero_shot_eligible,
-    }
+    (
+        CausalPrediction {
+            predicted_correctness: blended_correctness.clamp(0.0, 1.0),
+            predicted_novelty: (1.0 - coverage_fraction).clamp(0.0, 1.0),
+            confidence,
+            coverage_fraction,
+            risk_flags,
+            zero_shot_eligible,
+        },
+        evidence,
+    )
 }
 
 #[derive(Debug, Clone)]
