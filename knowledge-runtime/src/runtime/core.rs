@@ -194,14 +194,29 @@ impl KnowledgeRuntime {
         })
     }
 
-    /// Wire a bitemporal record source so the temporal route answers as-of
-    /// version selection from `bitemporal-runtime` (empty = existing behavior).
+    /// Attach process-local reference records for [`Self::reference_bitemporal_as_of`].
+    /// These records have no scope or search-source identity and are never
+    /// used by scoped or ranked search.
     pub fn with_bitemporal_records(
         mut self,
         records: Vec<bitemporal_runtime::BitemporalRecord<String>>,
     ) -> Self {
         self.bitemporal_records = records;
         self
+    }
+
+    /// Select a snapshot of the caller-supplied reference records. This is not
+    /// a scoped search, a fact lookup, or a read from the persisted owner.
+    pub fn reference_bitemporal_as_of(
+        &self,
+        valid_at: chrono::DateTime<chrono::Utc>,
+        recorded_at_or_before: chrono::DateTime<chrono::Utc>,
+    ) -> Vec<bitemporal_runtime::BitemporalRecord<String>> {
+        crate::temporal::bitemporal_bridge::as_of(
+            &self.bitemporal_records,
+            valid_at,
+            recorded_at_or_before,
+        )
     }
 
     pub(crate) fn adapter_ref(&self) -> &SemanticMemoryAdapter {
@@ -459,35 +474,7 @@ impl KnowledgeRuntime {
         trace.recorded_as_of = Some(recorded_at_or_before.to_string());
         trace.temporal_mode = Some(temporal_mode.to_string());
 
-        let mut results: Vec<SearchResult> = merged.results.into_iter().map(|m| m.result).collect();
-        if !self.bitemporal_records.is_empty() {
-            if let (Ok(v), Ok(r)) = (
-                chrono::DateTime::parse_from_rfc3339(valid_at),
-                chrono::DateTime::parse_from_rfc3339(recorded_at_or_before),
-            ) {
-                let asof = crate::temporal::bitemporal_bridge::as_of(
-                    &self.bitemporal_records,
-                    v.with_timezone(&chrono::Utc),
-                    r.with_timezone(&chrono::Utc),
-                );
-                if !asof.is_empty() {
-                    results = asof
-                        .into_iter()
-                        .map(|rec| SearchResult {
-                            content: rec.value,
-                            source: semantic_memory::SearchSource::Fact {
-                                fact_id: rec.id,
-                                namespace: scope.namespace.clone(),
-                            },
-                            score: 1.0,
-                            bm25_rank: None,
-                            vector_rank: None,
-                            cosine_similarity: None,
-                        })
-                        .collect();
-                }
-            }
-        }
+        let results = merged.results.into_iter().map(|m| m.result).collect();
         Ok((results, trace))
     }
 

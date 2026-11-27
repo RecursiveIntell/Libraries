@@ -90,6 +90,9 @@ pub enum ForgeError {
     #[error("sealed bundle cannot be mutated")]
     SealedBundle,
 
+    #[error("tool receipt '{receipt_id}' already exists with different content")]
+    ToolReceiptConflict { receipt_id: String },
+
     #[error("{0}")]
     Other(String),
 }
@@ -124,6 +127,7 @@ impl ForgeError {
             Self::WriteThroughBlocked => "write_through_blocked",
             Self::PairIncomparable { .. } => "pair_incomparable",
             Self::SealedBundle => "sealed_bundle",
+            Self::ToolReceiptConflict { .. } => "tool_receipt_conflict",
             Self::Other(_) => "other",
         }
     }

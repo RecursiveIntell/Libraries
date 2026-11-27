@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use llm_tool_runtime::semantic_memory::{ToolObservationMemory, ToolObservationMemoryRecordV1};
 use llm_tool_runtime::{ToolError, ToolErrorClass, ToolReceipt, ToolReceiptSink};
 use semantic_memory_forge::{
     ForgeToolBudgetContext, ForgeToolReceiptV2, FORGE_TOOL_RECEIPT_V2_SCHEMA,
@@ -10,17 +11,107 @@ use crate::{store::db::ToolReceiptRow, ForgeStore};
 #[derive(Debug, Clone)]
 pub struct ForgeToolReceiptSink {
     store: Arc<ForgeStore>,
+    observation_admission: Option<(String, String)>,
 }
 
 impl ForgeToolReceiptSink {
     pub fn new(store: Arc<ForgeStore>) -> Self {
-        Self { store }
+        Self {
+            store,
+            observation_admission: None,
+        }
+    }
+
+    /// Bind a single tool and namespace selected by the runtime owner, not by a
+    /// tool request. Construct only after the caller's profile checks pass.
+    pub fn with_observation_scope(
+        store: Arc<ForgeStore>,
+        tool_name: &str,
+        namespace: &str,
+    ) -> Result<Self, ToolError> {
+        let valid = |value: &str| {
+            !value.is_empty()
+                && value.len() <= 128
+                && value
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
+        };
+        if !valid(namespace) || !valid(tool_name) {
+            return Err(ToolError::new(
+                ToolErrorClass::Denied,
+                "invalid tool observation admission",
+            ));
+        }
+        Ok(Self {
+            store,
+            observation_admission: Some((tool_name.into(), namespace.into())),
+        })
+    }
+
+    /// Project one previously committed receipt. A projection retry never
+    /// executes a tool and never rewrites Forge. Legacy and out-of-scope IDs
+    /// deliberately look the same as unknown IDs.
+    pub async fn project_observation(
+        &self,
+        memory: &impl ToolObservationMemory,
+        receipt_id: &str,
+    ) -> Result<(), ToolError> {
+        let denied = || {
+            ToolError::new(
+                ToolErrorClass::Denied,
+                "tool receipt not admitted for observation",
+            )
+        };
+        let (tool_name, namespace) = self.observation_admission.as_ref().ok_or_else(denied)?;
+        let row = self
+            .store
+            .get_tool_receipt(receipt_id)
+            .map_err(|_| {
+                ToolError::new(
+                    ToolErrorClass::ReceiptPersistence,
+                    "could not read committed Forge receipt",
+                )
+            })?
+            .filter(|row| {
+                row.observation_scope.as_deref() == Some(namespace) && row.tool_name == *tool_name
+            })
+            .ok_or_else(denied)?;
+        let status = if row.error_class.is_some() {
+            "failed"
+        } else {
+            "succeeded"
+        };
+        memory
+            .store_tool_observation(ToolObservationMemoryRecordV1 {
+                summary: format!("Tool {tool_name} {status}"),
+                tool_name: row.tool_name,
+                invocation_id: row.tool_run_id,
+                session_id: None,
+                scope: namespace.clone(),
+                status: status.into(),
+                started_at: Some(row.started_at),
+                completed_at: Some(row.finished_at),
+                receipt_id: Some(row.receipt_id),
+            })
+            .await
     }
 }
 
 #[async_trait]
 impl ToolReceiptSink for ForgeToolReceiptSink {
     async fn persist(&self, receipt: &ToolReceipt) -> Result<(), ToolError> {
+        let observation_scope = match &self.observation_admission {
+            Some((tool_name, namespace)) if receipt.tool_name == *tool_name => {
+                Some(namespace.clone())
+            }
+            Some(_) => {
+                return Err(ToolError::new(
+                    ToolErrorClass::Denied,
+                    "tool is not admitted for observation",
+                ))
+            }
+            None => None,
+        };
         let row = ToolReceiptRow {
             receipt_id: receipt.receipt_id.clone(),
             tool_run_id: receipt.tool_run_id.clone(),
@@ -65,6 +156,7 @@ impl ToolReceiptSink for ForgeToolReceiptSink {
                 },
             )?,
             recorded_at: chrono::Utc::now().to_rfc3339(),
+            observation_scope,
         };
         self.store.insert_tool_receipt(&row).map_err(|err| {
             ToolError::new(
