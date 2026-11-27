@@ -1,0 +1,33 @@
+name: Ares2 P05 - graph terminal custody focused Rust qualification
+on:
+  pull_request:
+    paths:
+      - 'agent-graph-mcp/**'
+      - '.github/workflows/ares2-graph-custody.yml'
+permissions:
+  contents: read
+jobs:
+  signed-bundle-warm-cold-receipt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify exact checkout and formatting
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cargo fmt --all -- --check
+      - name: Compile and test the real Graph daemon cold/warm custody contract
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cargo test -p agent-graph-mcp --test mcp_integration
+          cargo test -p agent-graph-mcp --lib
+          cargo clippy -p agent-graph-mcp --all-targets -- -D warnings
