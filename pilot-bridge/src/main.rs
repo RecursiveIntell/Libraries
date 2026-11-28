@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 
 const EVIDENCE_KIND: &str = "forge_pilot";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct BridgeRequest {
     #[serde(default)]
     workspace_path: Option<String>,
@@ -42,21 +42,6 @@ struct BridgeRequest {
     /// main() consumes stdin once before dispatching.
     #[serde(default)]
     receipt: Option<serde_json::Value>,
-}
-
-impl Default for BridgeRequest {
-    fn default() -> Self {
-        Self {
-            workspace_path: None,
-            memory_dir: None,
-            forge_db: None,
-            namespace: None,
-            max_iterations: None,
-            time_budget_secs: None,
-            max_source_files: None,
-            receipt: None,
-        }
-    }
 }
 
 /// Default workspace scale guard: refuse to scan more than this many source
@@ -85,8 +70,23 @@ fn count_source_files(root: &Path) -> usize {
             } else if path.extension().is_some_and(|ext| {
                 matches!(
                     ext.to_str(),
-                    Some("rs" | "py" | "ts" | "tsx" | "js" | "jsx" | "go" | "c" | "h" | "cpp"
-                        | "hpp" | "toml" | "json" | "yaml" | "yml" | "md")
+                    Some(
+                        "rs" | "py"
+                            | "ts"
+                            | "tsx"
+                            | "js"
+                            | "jsx"
+                            | "go"
+                            | "c"
+                            | "h"
+                            | "cpp"
+                            | "hpp"
+                            | "toml"
+                            | "json"
+                            | "yaml"
+                            | "yml"
+                            | "md"
+                    )
                 )
             }) {
                 count += 1;
@@ -143,30 +143,40 @@ async fn dispatch(command: &str, request: &BridgeRequest) -> Result<(), String> 
 }
 
 fn default_paths(request: &BridgeRequest) -> (String, String, String, String) {
-    let workspace = request
-        .workspace_path
-        .clone()
-        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")).display().to_string());
+    let workspace = request.workspace_path.clone().unwrap_or_else(|| {
+        std::env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .display()
+            .to_string()
+    });
     let memory_dir = request
         .memory_dir
         .clone()
-        .unwrap_or_else(|| default_memory_dir());
-    let forge_db = request
-        .forge_db
+        .unwrap_or_else(default_memory_dir);
+    let forge_db = request.forge_db.clone().unwrap_or_else(default_forge_db);
+    let namespace = request
+        .namespace
         .clone()
-        .unwrap_or_else(|| default_forge_db());
-    let namespace = request.namespace.clone().unwrap_or_else(|| "default".to_string());
+        .unwrap_or_else(|| "default".to_string());
     (workspace, memory_dir, forge_db, namespace)
 }
 
 fn default_memory_dir() -> String {
-    std::env::var("PILOT_MEMORY_DIR")
-        .unwrap_or_else(|_| format!("{}/.recall/pilot-memory", std::env::var("HOME").unwrap_or_else(|_| ".".into())))
+    std::env::var("PILOT_MEMORY_DIR").unwrap_or_else(|_| {
+        format!(
+            "{}/.recall/pilot-memory",
+            std::env::var("HOME").unwrap_or_else(|_| ".".into())
+        )
+    })
 }
 
 fn default_forge_db() -> String {
-    std::env::var("PILOT_FORGE_DB")
-        .unwrap_or_else(|_| format!("{}/.recall/forge/forge.db", std::env::var("HOME").unwrap_or_else(|_| ".".into())))
+    std::env::var("PILOT_FORGE_DB").unwrap_or_else(|_| {
+        format!(
+            "{}/.recall/forge/forge.db",
+            std::env::var("HOME").unwrap_or_else(|_| ".".into())
+        )
+    })
 }
 
 fn build_config(request: &BridgeRequest) -> LoopConfig {
@@ -188,8 +198,12 @@ fn build_config(request: &BridgeRequest) -> LoopConfig {
 
 fn open_resources(config: &LoopConfig) -> Result<LoopRunnerResources, String> {
     let memory_dir = Path::new(&config.memory_dir);
-    std::fs::create_dir_all(memory_dir)
-        .map_err(|e| format!("memory dir {} could not be created: {e}", memory_dir.display()))?;
+    std::fs::create_dir_all(memory_dir).map_err(|e| {
+        format!(
+            "memory dir {} could not be created: {e}",
+            memory_dir.display()
+        )
+    })?;
     let memory_config = MemoryConfig {
         base_dir: memory_dir.to_path_buf(),
         ..Default::default()
@@ -202,7 +216,8 @@ fn open_resources(config: &LoopConfig) -> Result<LoopRunnerResources, String> {
     if let Some(parent) = forge_db.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
-    let forge_store = ForgeStore::open(forge_db).map_err(|e| format!("forge db could not be opened: {e}"))?;
+    let forge_store =
+        ForgeStore::open(forge_db).map_err(|e| format!("forge db could not be opened: {e}"))?;
 
     LoopRunnerResources::from_memory_store(memory_store, forge_store, config.runtime_config.clone())
         .map_err(|e| e.to_string())
@@ -213,8 +228,16 @@ fn cmd_status(request: &BridgeRequest) -> Result<(), String> {
     let paths = forge_pilot::inspect_observation_paths(&config);
     let (workspace, memory_dir, forge_db, namespace) = default_paths(request);
 
-    let forge_state = if Path::new(&forge_db).exists() { "present" } else { "missing" };
-    let memory_state = if Path::new(&memory_dir).exists() { "present" } else { "missing" };
+    let forge_state = if Path::new(&forge_db).exists() {
+        "present"
+    } else {
+        "missing"
+    };
+    let memory_state = if Path::new(&memory_dir).exists() {
+        "present"
+    } else {
+        "missing"
+    };
 
     write_stdout_json(&serde_json::json!({
         "status": "ok",
