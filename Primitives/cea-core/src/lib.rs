@@ -32,7 +32,9 @@ pub use calibration::{
 };
 pub use error::CeaCoreError;
 pub use graph::{CausalEdge, CausalGraph, CausalNode, CoverageSummary, EdgeStats};
-pub use predict::{predict, predict_with_config, PredictionConfig};
+pub use predict::{
+    predict, predict_with_config, predict_with_evidence, PredictionConfig, PredictionEvidence,
+};
 pub use types::{
     AnchorKind, CausalPrediction, EditOpKind, EditOpSignature, FileIndex, OpIndex, RiskFlag,
     ScopeTag,
