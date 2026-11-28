@@ -299,78 +299,149 @@ async fn cmd_evaluate(request: &BridgeRequest) -> Result<(), String> {
     }))
 }
 
-/// Verify a receipt.
+/// Name of the digest contract implemented by [`receipt_content_digest`].
+const RECEIPT_DIGEST_CONTRACT: &str = "pilot-bridge.receipt-digest.v1";
+
+/// Deterministic JSON text: object keys sorted, no insignificant whitespace.
 ///
-/// Verification mode depends on the receipt's id shape:
-/// - 64-hex BLAKE3 digest id → recompute the canonical digest over the JSON
-///   and compare (content-integrity verification).
-/// - UUID id (forge-pilot loop receipts) → structural validation: required
-///   fields present, schema_version non-empty, timestamps parseable.
-/// The verdict never overclaims: a structurally valid UUID receipt is
-/// reported as `valid: true` with `verification_mode: "structural"`, not as
-/// a digest match.
+/// Sorting is done here so the result does not depend on whether
+/// `serde_json`'s `preserve_order` feature is enabled somewhere in the build.
+fn canonical_json(value: &serde_json::Value) -> String {
+    match value {
+        serde_json::Value::Object(map) => {
+            let mut keys: Vec<&String> = map.keys().collect();
+            keys.sort();
+            let mut out = String::from("{");
+            for (index, key) in keys.iter().enumerate() {
+                if index > 0 {
+                    out.push(',');
+                }
+                out.push_str(&serde_json::Value::String((*key).clone()).to_string());
+                out.push(':');
+                if let Some(child) = map.get(key.as_str()) {
+                    out.push_str(&canonical_json(child));
+                }
+            }
+            out.push('}');
+            out
+        }
+        serde_json::Value::Array(items) => {
+            let mut out = String::from("[");
+            for (index, item) in items.iter().enumerate() {
+                if index > 0 {
+                    out.push(',');
+                }
+                out.push_str(&canonical_json(item));
+            }
+            out.push(']');
+            out
+        }
+        other => other.to_string(),
+    }
+}
+
+/// Content digest of a receipt under [`RECEIPT_DIGEST_CONTRACT`].
+///
+/// BLAKE3 over: the contract name, one newline, then the canonical JSON of the
+/// receipt with its `receipt_id` field removed. The id is excluded because it
+/// is the value being checked; hashing it would make a match impossible.
+fn receipt_content_digest(receipt: &serde_json::Value) -> String {
+    let mut content = receipt.clone();
+    if let Some(map) = content.as_object_mut() {
+        map.remove("receipt_id");
+    }
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(RECEIPT_DIGEST_CONTRACT.as_bytes());
+    hasher.update(b"\n");
+    hasher.update(canonical_json(&content).as_bytes());
+    hasher.finalize().to_hex().to_string()
+}
+
+/// Build the verdict for a receipt. Pure: performs no I/O.
+///
+/// Both modes run the structural checks (required fields present, timestamps
+/// parseable) and report them as `well_formed` and `problems`.
+///
+/// - 64-hex id: content-integrity mode. `integrity_verified` is true only when
+///   the id equals the recomputed content digest; `valid` requires that and
+///   `well_formed`.
+/// - any other id (for example a UUID): no digest is bound to the receipt, so
+///   `integrity_verified` is false and `valid` is the structural result.
+///
+/// `receipt-verify` checks integrity, not causality, so it never sets
+/// `causal_claim`.
+fn receipt_verdict(receipt: &serde_json::Value) -> serde_json::Value {
+    let declared_id = receipt
+        .get("receipt_id")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+    let schema_version = receipt
+        .get("schema_version")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+    let is_digest = declared_id.len() == 64 && declared_id.bytes().all(|b| b.is_ascii_hexdigit());
+
+    let mut problems: Vec<String> = Vec::new();
+    if declared_id.is_empty() {
+        problems.push("receipt_id missing".to_string());
+    }
+    if schema_version.is_empty() {
+        problems.push("schema_version missing".to_string());
+    }
+    for field in ["started_at", "finished_at"] {
+        if let Some(value) = receipt.get(field).and_then(|v| v.as_str()) {
+            if chrono::DateTime::parse_from_rfc3339(value).is_err() {
+                problems.push(format!("{field} is not a valid RFC3339 timestamp"));
+            }
+        }
+    }
+    if receipt.get("workspace_path").is_none() {
+        problems.push("workspace_path missing".to_string());
+    }
+    let well_formed = problems.is_empty();
+
+    if is_digest {
+        let digest = receipt_content_digest(receipt);
+        let matches = declared_id.eq_ignore_ascii_case(&digest);
+        serde_json::json!({
+            "status": "ok",
+            "valid": matches && well_formed,
+            "integrity_verified": matches,
+            "well_formed": well_formed,
+            "verification_mode": "digest",
+            "digest_contract": RECEIPT_DIGEST_CONTRACT,
+            "declared_id": declared_id,
+            "recomputed_digest": digest,
+            "schema_version": schema_version,
+            "problems": problems,
+            "note": "integrity_verified means receipt_id equals the unkeyed digest of this content (canonical JSON without receipt_id); it does not show who issued the receipt; valid also requires well_formed",
+            "evidence_kind": EVIDENCE_KIND,
+            "causal_claim": false,
+        })
+    } else {
+        serde_json::json!({
+            "status": "ok",
+            "valid": well_formed,
+            "integrity_verified": false,
+            "well_formed": well_formed,
+            "verification_mode": "structural",
+            "declared_id": declared_id,
+            "schema_version": schema_version,
+            "problems": problems,
+            "note": "receipt id is not a content digest, so content integrity cannot be verified; well_formed covers required fields and timestamps only",
+            "evidence_kind": EVIDENCE_KIND,
+            "causal_claim": false,
+        })
+    }
+}
+
+/// Verify a receipt read from the request and print the verdict.
 fn cmd_receipt_verify(request: &BridgeRequest) -> Result<(), String> {
     let receipt = request
         .receipt
         .clone()
         .ok_or_else(|| "receipt missing (pass {\"receipt\": {...}} on stdin)".to_string())?;
-
-    let declared_id = receipt
-        .get("receipt_id")
-        .and_then(|v| v.as_str())
-        .unwrap_or("");
-
-    let is_digest = declared_id.len() == 64 && declared_id.bytes().all(|b| b.is_ascii_hexdigit());
-    let schema_version = receipt
-        .get("schema_version")
-        .and_then(|v| v.as_str())
-        .unwrap_or("");
-
-    if is_digest {
-        // Content-integrity mode: recompute canonical digest and compare.
-        let canonical = serde_json::to_string(&receipt).map_err(|e| e.to_string())?;
-        let digest = blake3::hash(canonical.as_bytes()).to_hex().to_string();
-        write_stdout_json(&serde_json::json!({
-            "status": "ok",
-            "valid": declared_id == digest,
-            "verification_mode": "digest",
-            "declared_id": declared_id,
-            "recomputed_digest": digest,
-            "note": "digest comparison over canonical JSON; mismatch means the receipt content changed after issue",
-            "evidence_kind": EVIDENCE_KIND,
-            "causal_claim": true,
-        }))
-    } else {
-        // Structural mode: required fields + timestamp parse.
-        let mut problems: Vec<String> = Vec::new();
-        if declared_id.is_empty() {
-            problems.push("receipt_id missing".to_string());
-        }
-        if schema_version.is_empty() {
-            problems.push("schema_version missing".to_string());
-        }
-        for field in ["started_at", "finished_at"] {
-            if let Some(value) = receipt.get(field).and_then(|v| v.as_str()) {
-                if chrono::DateTime::parse_from_rfc3339(value).is_err() {
-                    problems.push(format!("{field} is not a valid RFC3339 timestamp"));
-                }
-            }
-        }
-        if receipt.get("workspace_path").is_none() {
-            problems.push("workspace_path missing".to_string());
-        }
-        write_stdout_json(&serde_json::json!({
-            "status": "ok",
-            "valid": problems.is_empty(),
-            "verification_mode": "structural",
-            "declared_id": declared_id,
-            "schema_version": schema_version,
-            "problems": problems,
-            "note": "UUID-bound receipt verified structurally (required fields + timestamps); no content digest is bound to this receipt id",
-            "evidence_kind": EVIDENCE_KIND,
-            "causal_claim": true,
-        }))
-    }
+    write_stdout_json(&receipt_verdict(&receipt))
 }
 
 fn read_stdin_json() -> Result<serde_json::Value, Box<dyn std::error::Error>> {
@@ -393,6 +464,90 @@ fn write_stdout_json(value: &serde_json::Value) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn with_digest_id(mut receipt: serde_json::Value) -> serde_json::Value {
+        let digest = receipt_content_digest(&receipt);
+        receipt["receipt_id"] = serde_json::Value::String(digest);
+        receipt
+    }
+
+    #[test]
+    fn receipt_digest_matches_the_pinned_v1_vector() {
+        // Independently computed: BLAKE3("pilot-bridge.receipt-digest.v1\n" +
+        // "{\"schema_version\":\"v1\",\"workspace_path\":\"/x\"}").
+        let receipt = serde_json::json!({"workspace_path": "/x", "schema_version": "v1"});
+        assert_eq!(
+            receipt_content_digest(&receipt),
+            "268349e976a6bf1a8e40c063846bc6c72555d8bd9accf8270c3284a7a624dbcd"
+        );
+    }
+
+    #[test]
+    fn receipt_digest_ignores_key_order_and_the_id_itself() {
+        let a: serde_json::Value =
+            serde_json::from_str(r#"{"b":{"y":1,"x":2},"a":[1,2],"receipt_id":"ignored"}"#)
+                .unwrap();
+        let b: serde_json::Value =
+            serde_json::from_str(r#"{"a":[1,2],"b":{"x":2,"y":1}}"#).unwrap();
+        assert_eq!(receipt_content_digest(&a), receipt_content_digest(&b));
+        assert_eq!(canonical_json(&b), r#"{"a":[1,2],"b":{"x":2,"y":1}}"#);
+    }
+
+    #[test]
+    fn digest_mode_accepts_a_receipt_whose_id_is_its_content_digest() {
+        let receipt = with_digest_id(serde_json::json!({
+            "schema_version": "v1", "workspace_path": "/x", "payload": "hello"
+        }));
+        let verdict = receipt_verdict(&receipt);
+        assert_eq!(verdict["verification_mode"], "digest");
+        assert_eq!(verdict["valid"], true);
+        assert_eq!(verdict["integrity_verified"], true);
+        assert_eq!(verdict["digest_contract"], RECEIPT_DIGEST_CONTRACT);
+    }
+
+    #[test]
+    fn digest_mode_requires_a_well_formed_receipt_for_valid() {
+        let receipt = with_digest_id(serde_json::json!({"payload": "hello"}));
+        let verdict = receipt_verdict(&receipt);
+        assert_eq!(verdict["verification_mode"], "digest");
+        assert_eq!(verdict["integrity_verified"], true);
+        assert_eq!(verdict["well_formed"], false);
+        assert_eq!(verdict["valid"], false);
+        assert_eq!(
+            verdict["problems"],
+            serde_json::json!(["schema_version missing", "workspace_path missing"])
+        );
+    }
+
+    #[test]
+    fn digest_mode_rejects_a_receipt_whose_content_changed() {
+        let mut receipt = with_digest_id(serde_json::json!({
+            "schema_version": "v1", "workspace_path": "/x", "payload": "hello"
+        }));
+        receipt["payload"] = serde_json::Value::String("tampered".to_string());
+        let verdict = receipt_verdict(&receipt);
+        assert_eq!(verdict["verification_mode"], "digest");
+        assert_eq!(verdict["valid"], false);
+        assert_eq!(verdict["integrity_verified"], false);
+    }
+
+    #[test]
+    fn structural_mode_never_reports_integrity_or_a_causal_claim() {
+        let fabricated = serde_json::json!({
+            "receipt_id": "not-a-digest", "schema_version": "v1", "workspace_path": "/x"
+        });
+        let verdict = receipt_verdict(&fabricated);
+        assert_eq!(verdict["verification_mode"], "structural");
+        assert_eq!(verdict["well_formed"], true);
+        assert_eq!(verdict["valid"], true);
+        assert_eq!(verdict["integrity_verified"], false);
+        assert_eq!(verdict["causal_claim"], false);
+        let incomplete = serde_json::json!({"receipt_id": "not-a-digest", "schema_version": "v1"});
+        let verdict = receipt_verdict(&incomplete);
+        assert_eq!(verdict["well_formed"], false);
+        assert_eq!(verdict["valid"], false);
+        assert_eq!(verdict["integrity_verified"], false);
+    }
 
     #[test]
     fn default_paths_resolve_without_panicking() {
